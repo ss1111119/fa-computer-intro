@@ -1,0 +1,552 @@
+<!-- ai-algorithms-mcq-q4.html -->
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人工智慧（AI）相關演算法：複選題練習</title>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --secondary-color: #f5a623;
+            --success-color: #2ecc71;
+            --error-color: #e74c3c;
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --border-radius: 12px;
+        }
+
+        body {
+            font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+        }
+
+        .badge {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        /* Card Style */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 25px;
+            margin-bottom: 25px;
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .card h2 {
+            font-size: 1.3rem;
+            margin-top: 0;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        /* Question Section */
+        .question-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .options-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-label:hover {
+            background-color: #e9ecef;
+            border-color: var(--primary-color);
+        }
+
+        .option-label input[type="checkbox"] {
+            margin-right: 15px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        /* Buttons */
+        .btn-group {
+            margin-top: 25px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.1s, opacity 0.2s;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .btn-submit {
+            background-color: var(--primary-color);
+            color: white;
+            flex: 2;
+        }
+
+        .btn-explain {
+            background-color: var(--secondary-color);
+            color: white;
+            flex: 1;
+        }
+
+        .btn-reset {
+            background-color: #95a5a6;
+            color: white;
+            flex: 1;
+        }
+
+        /* Result Area */
+        #result-area {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .result-correct {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .result-wrong {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* Explanation Section (Hidden by default) */
+        #detailed-explanation {
+            display: none;
+            margin-top: 20px;
+            background-color: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 5px solid var(--secondary-color);
+        }
+
+        .item-analysis {
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #ccc;
+        }
+        
+        .item-analysis:last-child {
+            border-bottom: none;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        
+        .tag-correct { background-color: var(--success-color); color: white; }
+        .tag-wrong { background-color: var(--error-color); color: white; }
+
+        /* Vocabulary Section */
+        details {
+            background-color: #f8f9fa;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            overflow: hidden;
+        }
+
+        summary {
+            padding: 12px 15px;
+            cursor: pointer;
+            font-weight: bold;
+            background-color: #e9ecef;
+            list-style: none; /* Hide default triangle in some browsers */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        summary::after {
+            content: '+';
+            font-size: 1.2rem;
+            color: #666;
+        }
+        
+        details[open] summary::after {
+            content: '-';
+        }
+
+        .def-content {
+            padding: 15px;
+            background-color: white;
+            font-size: 0.95rem;
+            color: #555;
+        }
+
+        /* Concept Box */
+        .concept-box {
+            background: linear-gradient(to right, #fdfbfb, #ebedee); 
+        }
+
+        .highlight {
+            background-color: yellow;
+            font-weight: bold;
+            padding: 0 4px;
+        }
+
+        .trap-alert {
+            margin-top: 15px;
+            color: #c0392b;
+            font-weight: bold;
+            border: 2px dashed #e74c3c;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        /* Mini Quiz */
+        .mini-quiz-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #fff;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .mini-quiz-actions button {
+            padding: 5px 10px;
+            font-size: 0.9rem;
+            margin-left: 5px;
+            min-width: 40px;
+        }
+
+        .mq-feedback {
+            display: block;
+            margin-top: 5px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .btn-group {
+                flex-direction: column;
+            }
+            .mini-quiz-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .mini-quiz-actions {
+                margin-top: 10px;
+                align-self: flex-end;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <span class="badge">電腦概論 / 人工智慧</span>
+        <h1>人工智慧（AI）相關演算法：複選題練習</h1>
+        <p>跟著老師動手做，分辨「AI 演算法」與「網路通訊名詞」！</p>
+    </header>
+
+    <!-- 題目卡 -->
+    <div class="card">
+        <h2>作答區</h2>
+        <div class="question-text">
+            複選題 4. 下列何者屬於人工智慧(AI)相關的演算法?
+        </div>
+        <div class="options-group">
+            <label class="option-label">
+                <input type="checkbox" name="quiz" value="A"> (A) LAN
+            </label>
+            <label class="option-label">
+                <input type="checkbox" name="quiz" value="B"> (B) CNN
+            </label>
+            <label class="option-label">
+                <input type="checkbox" name="quiz" value="C"> (C) ISDN
+            </label>
+            <label class="option-label">
+                <input type="checkbox" name="quiz" value="D"> (D) RNN
+            </label>
+            <label class="option-label">
+                <input type="checkbox" name="quiz" value="E"> (E) DNS
+            </label>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn-submit" onclick="checkAnswer()">送出答案</button>
+            <button class="btn-explain" onclick="showExplanation()">顯示解析</button>
+            <button class="btn-reset" onclick="resetQuiz()">重作一次</button>
+        </div>
+
+        <!-- 作答回饋區 -->
+        <div id="result-area"></div>
+    </div>
+
+    <!-- 解析卡 -->
+    <div class="card" id="explanation-card" style="display:none;"> <!-- Initially hidden until needed or toggled -->
+        <h2>選項解析</h2>
+        <div id="detailed-explanation" style="display: block;">
+            <div class="item-analysis">
+                <span class="tag tag-wrong">(A) LAN - 錯誤</span>
+                <p><strong>區域網路 (Local Area Network)</strong>：這是指辦公室或家裡的網路連線架構（例如接網路線或 Wi-Fi），是「網路名詞」，不是 AI。</p>
+            </div>
+            <div class="item-analysis">
+                <span class="tag tag-correct">(B) CNN - 正確</span>
+                <p><strong>卷積神經網路 (Convolutional Neural Network)</strong>：這就是 AI！專門用來「看圖片」的演算法，像是人臉辨識、車牌辨識都靠它。</p>
+            </div>
+            <div class="item-analysis">
+                <span class="tag tag-wrong">(C) ISDN - 錯誤</span>
+                <p><strong>整體服務數位網路 (Integrated Services Digital Network)</strong>：這是一種比較舊的「電話線數位傳輸技術」，跟打電話、上網有關，與 AI 無關。</p>
+            </div>
+            <div class="item-analysis">
+                <span class="tag tag-correct">(D) RNN - 正確</span>
+                <p><strong>循環神經網路 (Recurrent Neural Network)</strong>：這也是 AI！它有「記憶」，專門處理有順序的東西，像是翻譯文字、語音辨識、股票預測。</p>
+            </div>
+            <div class="item-analysis">
+                <span class="tag tag-wrong">(E) DNS - 錯誤</span>
+                <p><strong>網域名稱系統 (Domain Name System)</strong>：這是網路的電話簿，幫你把網址 (www.google.com) 轉成 IP 位址，是純粹的「網路系統」。</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 觀念整理區 -->
+    <div class="card concept-box">
+        <h2>老師的觀念整理（必讀！）</h2>
+        
+        <h3>1. AI 演算法在做什麼？</h3>
+        <ul>
+            <li>核心概念：從大量資料中<strong>「學習規律」</strong>。</li>
+            <li>常見應用：影像辨識、語音轉文字、聊天機器人、預測未來趨勢。</li>
+        </ul>
+
+        <h3>2. 快速分類口訣</h3>
+        <ul>
+            <li>看到 <span class="highlight">「神經網路 (Neural Network)」</span> → 99% 是 <strong>AI</strong>。</li>
+            <li>看到 <span class="highlight">「網路 (Network)、通訊、協定」</span> 但沒有「神經」 → 通常是 <strong>電腦網路架構</strong> (非 AI)。</li>
+        </ul>
+
+        <div class="trap-alert">
+            ⚠️ 本題陷阱設計說明：<br>
+            出題老師故意放了很多縮寫長得很像的名詞 (LAN, DNS, CNN)。<br>
+            它們看起來都很「科技」，但只有 CNN 和 RNN 才是真的在做「智慧學習」。
+        </div>
+    </div>
+
+    <!-- 名詞速查區 -->
+    <div class="card">
+        <h2>重要名詞中英對照速查</h2>
+        <p style="font-size: 0.9rem; color: #666;">點擊名詞可展開白話解釋</p>
+        
+        <details>
+            <summary>人工智慧 Artificial Intelligence, AI</summary>
+            <div class="def-content">讓電腦像人一樣思考、學習與解決問題的技術總稱。</div>
+        </details>
+        
+        <details>
+            <summary>卷積神經網路 Convolutional Neural Network, CNN</summary>
+            <div class="def-content">【AI 演算法】擅長處理「圖片」與「影像」特徵，模仿人類視覺皮層的運作。</div>
+        </details>
+        
+        <details>
+            <summary>循環神經網路 Recurrent Neural Network, RNN</summary>
+            <div class="def-content">【AI 演算法】擅長處理「序列」資料（有時間先後順序），如文字翻譯、語音辨識。</div>
+        </details>
+
+        <details>
+            <summary>區域網路 Local Area Network, LAN</summary>
+            <div class="def-content">【網路名詞】小範圍的電腦連接，例如學校電腦教室、家裡的 Wi-Fi 環境。</div>
+        </details>
+
+        <details>
+            <summary>整體服務數位網路 Integrated Services Digital Network, ISDN</summary>
+            <div class="def-content">【網路名詞】早期利用電話線進行語音與數據傳輸的技術。</div>
+        </details>
+
+        <details>
+            <summary>網域名稱系統 Domain Name System, DNS</summary>
+            <div class="def-content">【網路名詞】網路世界的電話簿，將網址名稱轉換成電腦看得懂的 IP 位址。</div>
+        </details>
+    </div>
+
+    <!-- 延伸互動小測驗 -->
+    <div class="card">
+        <h2>延伸互動小測驗（立即回饋）</h2>
+        
+        <div class="mini-quiz-item">
+            <span>1. CNN 常用於影像辨識</span>
+            <div class="mini-quiz-actions">
+                <button onclick="checkMini(this, true, '正確！CNN 像眼睛一樣擅長看圖。')">O</button>
+                <button onclick="checkMini(this, false, '錯誤。CNN 是影像辨識的王者喔！')">X</button>
+            </div>
+        </div>
+        <span class="mq-feedback"></span>
+
+        <div class="mini-quiz-item">
+            <span>2. DNS 是一種機器學習模型</span>
+            <div class="mini-quiz-actions">
+                <button onclick="checkMini(this, false, '錯誤。DNS 是網路查號台，不是機器學習。')">O</button>
+                <button onclick="checkMini(this, true, '正確！DNS 是網路協定，與 AI 無關。')">X</button>
+            </div>
+        </div>
+        <span class="mq-feedback"></span>
+
+        <div class="mini-quiz-item">
+            <span>3. RNN 適合處理有時間順序的資料</span>
+            <div class="mini-quiz-actions">
+                <button onclick="checkMini(this, true, '正確！RNN 有記憶功能，適合處理時間序列。')">O</button>
+                <button onclick="checkMini(this, false, '錯誤。RNN 強項就是處理有先後順序的資料。')">X</button>
+            </div>
+        </div>
+        <span class="mq-feedback"></span>
+    </div>
+
+</div>
+
+<script>
+    // 正確答案設定
+    const CORRECT_ANSWERS = ['B', 'D'];
+
+    function checkAnswer() {
+        // 取得使用者選取的選項
+        const checkboxes = document.querySelectorAll('input[name="quiz"]:checked');
+        const userAnswers = Array.from(checkboxes).map(cb => cb.value).sort();
+        
+        const resultArea = document.getElementById('result-area');
+        
+        // 判斷是否完全正確
+        const isExactMatch = JSON.stringify(userAnswers) === JSON.stringify(CORRECT_ANSWERS);
+        
+        // 分析錯誤 (找出多選的與少選的)
+        const missing = CORRECT_ANSWERS.filter(ans => !userAnswers.includes(ans));
+        const extra = userAnswers.filter(ans => !CORRECT_ANSWERS.includes(ans));
+
+        if (isExactMatch) {
+            resultArea.className = 'result-correct';
+            resultArea.style.display = 'block';
+            resultArea.innerHTML = `
+                <h3>🎉 完全正確！</h3>
+                <p>你已經掌握了 AI 關鍵字！</p>
+                <p><strong>補充提示：</strong> AI 演算法常考的還有 <em>Transformer</em> (用於 ChatGPT) 與 <em>Decision Tree</em> (決策樹)。</p>
+            `;
+            // 自動顯示解析以強化記憶
+            document.getElementById('explanation-card').style.display = 'block';
+        } else {
+            resultArea.className = 'result-wrong';
+            resultArea.style.display = 'block';
+            
+            let msg = '<h3>❌ 答案不完整或有誤</h3>';
+            
+            if (missing.length > 0) {
+                msg += `<p><strong>漏選了：</strong> ${missing.join('、')} (這些是 AI 喔！)</p>`;
+            }
+            if (extra.length > 0) {
+                msg += `<p><strong>多選了：</strong> ${extra.join('、')} (這些是網路名詞，不是 AI)</p>`;
+            }
+            
+            msg += '<p style="margin-top:10px;">請點擊「<strong>顯示解析</strong>」按鈕來釐清觀念吧！</p>';
+            resultArea.innerHTML = msg;
+        }
+    }
+
+    function showExplanation() {
+        const expCard = document.getElementById('explanation-card');
+        const detailExp = document.getElementById('detailed-explanation');
+        
+        expCard.style.display = 'block';
+        detailExp.style.display = 'block';
+        
+        // 捲動到解析區
+        expCard.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function resetQuiz() {
+        // 清空 Checkbox
+        const checkboxes = document.querySelectorAll('input[name="quiz"]');
+        checkboxes.forEach(cb => cb.checked = false);
+        
+        // 隱藏結果與解析
+        document.getElementById('result-area').style.display = 'none';
+        document.getElementById('explanation-card').style.display = 'none';
+        
+        // 捲動回頂端
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // 小測驗功能
+    function checkMini(btn, isCorrect, msg) {
+        // 找到該按鈕對應的回饋區塊 (雖然 DOM 結構中是下一個 sibling 區塊的 span)
+        // 這裡透過 parent 往上找再往下找
+        const parentItem = btn.closest('.mini-quiz-item');
+        const feedbackSpan = parentItem.nextElementSibling; // 假設結構是 .mini-quiz-item + .mq-feedback
+        
+        feedbackSpan.style.display = 'block';
+        feedbackSpan.textContent = msg;
+        
+        if (isCorrect) {
+            feedbackSpan.style.color = '#27ae60'; // Green
+        } else {
+            feedbackSpan.style.color = '#c0392b'; // Red
+        }
+    }
+</script>
+
+</body>
+</html>

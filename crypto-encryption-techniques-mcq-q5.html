@@ -1,0 +1,588 @@
+<!-- 檔名：crypto-encryption-techniques-mcq-q5.html -->
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>資訊加解密技術：複選題練習（對稱式 vs 非對稱式）</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+            --bg-color: #f4f6f7;
+            --card-bg: #ffffff;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Header Style */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+
+        header p {
+            margin-top: 10px;
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        /* Card Style */
+        .card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--accent-color);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            color: var(--primary-color);
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            font-size: 1.4rem;
+        }
+
+        /* Section Specifics */
+        .concept-box {
+            background-color: #eef7fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+
+        .exam-hack {
+            background-color: #fff8e1;
+            border: 1px solid #ffe082;
+            padding: 15px;
+            border-radius: 8px;
+            color: #d35400;
+            font-weight: bold;
+        }
+
+        /* Glossary Details */
+        details {
+            margin-bottom: 10px;
+            border: 1px solid #eee;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        summary {
+            background-color: #fafafa;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--primary-color);
+            list-style: none; /* Hide default triangle */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        summary::after {
+            content: '+';
+            font-size: 1.2rem;
+            color: var(--accent-color);
+        }
+
+        details[open] summary::after {
+            content: '-';
+        }
+
+        details p {
+            padding: 10px 15px;
+            margin: 0;
+            background-color: #fff;
+            color: #555;
+            font-size: 0.95rem;
+            border-top: 1px solid #eee;
+        }
+
+        /* MCQ Style */
+        .question-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .options-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-label:hover {
+            background-color: #f9f9f9;
+            border-color: var(--accent-color);
+        }
+
+        .option-label input[type="checkbox"] {
+            margin-right: 15px;
+            transform: scale(1.2);
+        }
+
+        /* Buttons */
+        .btn-group {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-family: inherit;
+        }
+
+        .btn-submit {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .btn-submit:hover { background-color: #2980b9; }
+
+        .btn-explain {
+            background-color: #95a5a6;
+            color: white;
+        }
+
+        .btn-explain:hover { background-color: #7f8c8d; }
+
+        .btn-reset {
+            background-color: transparent;
+            border: 1px solid #ccc;
+            color: #666;
+        }
+
+        .btn-reset:hover { background-color: #eee; }
+
+        /* Feedback Area */
+        #feedback-area {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+            font-weight: bold;
+        }
+
+        .feedback-correct {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .feedback-wrong {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* Explanation Section */
+        #explanation-card {
+            display: none; /* Hidden by default */
+            border-left-color: #f39c12;
+        }
+
+        .exp-item {
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #eee;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .tag-correct { background-color: #d4edda; color: #155724; }
+        .tag-wrong { background-color: #f8d7da; color: #721c24; }
+
+        /* Mini Quiz */
+        .mini-quiz-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .mini-quiz-btns button {
+            padding: 5px 15px;
+            margin-left: 5px;
+            font-size: 0.9rem;
+        }
+
+        .mini-feedback {
+            margin-left: 10px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        
+        /* Mobile adjustment */
+        @media (max-width: 600px) {
+            .mini-quiz-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .mini-quiz-btns {
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>資訊加解密技術：複選題練習</h1>
+        <p>對稱式 vs 非對稱式｜高中資訊科技 / 資安入門</p>
+    </header>
+
+    <div class="container">
+
+        <!-- 1. 觀念整理區 -->
+        <div class="card">
+            <h2>📚 老師的觀念懶人包</h2>
+            
+            <div class="concept-box">
+                <h3>🔍 加解密在做什麼？</h3>
+                <p>簡單說就是防止資料被偷看！流程如下：</p>
+                <p style="text-align: center; font-weight: bold; color: var(--primary-color);">
+                    明文 (Plaintext) ➡️ 🔑 鑰匙 + 演算法 ➡️ 密文 (Ciphertext)
+                </p>
+                <p style="text-align: center; font-size: 0.9rem; color: #666;">（當然，解密就是反過來做）</p>
+            </div>
+
+            <div class="concept-box">
+                <h3>🔑 兩大派系：鑰匙怎麼用？</h3>
+                <ul>
+                    <li><strong>對稱式加密 (Symmetric)：</strong>
+                        加密跟解密用<strong>「同一把」</strong>鑰匙。速度快，適合大量資料。<br>
+                        <small>（想像你家門鎖，鎖門跟開門都用同一把鑰匙）</small>
+                    </li>
+                    <li><strong>非對稱式加密 (Asymmetric)：</strong>
+                        有兩把鑰匙，<strong>「公鑰 (Public Key)」</strong>加密，<strong>「私鑰 (Private Key)」</strong>解密（成對使用）。<br>
+                        <small>（適合用來做數位簽章、身分認證、交換對稱式的金鑰）</small>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="exam-hack">
+                💡 考試秒殺辨識法：
+                <ul style="margin: 5px 0 0 20px;">
+                    <li>看到 <strong>CNN / RNN</strong> ➡️ 幾乎都是 AI 深度學習（與加密無關）</li>
+                    <li>看到 <strong>DES / AES / RSA</strong> ➡️ 幾乎都是密碼學加解密技術</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 2. 名詞速查區 -->
+        <div class="card">
+            <h2>📖 名詞速查（點擊展開）</h2>
+            
+            <details>
+                <summary>加密 Encryption / 解密 Decryption</summary>
+                <p>將原本看得懂的資訊（明文）透過數學運算變成亂碼（密文）的過程稱為加密；反之還原成明文稱為解密。</p>
+            </details>
+
+            <details>
+                <summary>密碼學 Cryptography</summary>
+                <p>研究如何隱藏資訊內容、驗證資訊來源、防止資料被竄改的科學。</p>
+            </details>
+
+            <details>
+                <summary>對稱式加密 Symmetric Encryption</summary>
+                <p>加密方與解密方持有相同的金鑰（Secret Key）。代表演算法：DES, AES。</p>
+            </details>
+
+            <details>
+                <summary>非對稱式加密 Asymmetric Encryption</summary>
+                <p>又稱公開金鑰密碼學。使用一對金鑰（公鑰與私鑰）。代表演算法：RSA。</p>
+            </details>
+
+            <details>
+                <summary>DES (Data Encryption Standard)</summary>
+                <p>早期的對稱式加密標準，因為金鑰長度較短（56 bits），現在已經容易被破解，不再安全，但考試常考它作為對稱式的代表。</p>
+            </details>
+
+            <details>
+                <summary>AES (Advanced Encryption Standard)</summary>
+                <p>進階加密標準，用來取代 DES 的新一代對稱式加密主流，目前廣泛應用於無線網路（WPA2）、網頁傳輸等。</p>
+            </details>
+
+            <details>
+                <summary>RSA (Rivest–Shamir–Adleman)</summary>
+                <p>最著名的非對稱式加密演算法，利用大數質因數分解的困難度來確保安全。常用於 SSL/TLS 憑證。</p>
+            </details>
+
+            <details>
+                <summary>CNN (Convolutional Neural Network)</summary>
+                <p>卷積神經網路。屬於 AI 深度學習模型，專長是「處理影像」，如人臉辨識、醫學影像分析。</p>
+            </details>
+
+            <details>
+                <summary>RNN (Recurrent Neural Network)</summary>
+                <p>遞歸神經網路。屬於 AI 深度學習模型，專長是「處理有順序的資料」，如語音辨識、自然語言處理、股票預測。</p>
+            </details>
+        </div>
+
+        <!-- 3. 題目區 -->
+        <div class="card">
+            <h2>📝 隨堂練習（複選題）</h2>
+            <div class="question-text">
+                複選題 5. 下列何者屬於資訊加解密的技術?
+            </div>
+            
+            <div class="options-group">
+                <label class="option-label">
+                    <input type="checkbox" name="q5" value="A"> (A) CNN
+                </label>
+                <label class="option-label">
+                    <input type="checkbox" name="q5" value="B"> (B) RNN
+                </label>
+                <label class="option-label">
+                    <input type="checkbox" name="q5" value="C"> (C) DES
+                </label>
+                <label class="option-label">
+                    <input type="checkbox" name="q5" value="D"> (D) AES
+                </label>
+                <label class="option-label">
+                    <input type="checkbox" name="q5" value="E"> (E) RSA
+                </label>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn-submit" onclick="checkAnswer()">送出答案</button>
+                <button class="btn-explain" onclick="showExplanation()">顯示解析</button>
+                <button class="btn-reset" onclick="resetQuiz()">重作一次</button>
+            </div>
+
+            <div id="feedback-area"></div>
+        </div>
+
+        <!-- 4. 解析區 (預設隱藏) -->
+        <div class="card" id="explanation-card">
+            <h2>💡 題目解析</h2>
+            
+            <div class="exp-item">
+                <span class="tag tag-wrong">(A) CNN 錯誤</span>
+                CNN 是卷積神經網路，屬於 <strong>AI 深度學習</strong>技術，常用於影像辨識（看圖），不是加密技術。
+            </div>
+            <div class="exp-item">
+                <span class="tag tag-wrong">(B) RNN 錯誤</span>
+                RNN 是遞歸神經網路，屬於 <strong>AI 深度學習</strong>技術，常用於語音或文字處理（序列資料），不是加密技術。
+            </div>
+            <div class="exp-item">
+                <span class="tag tag-correct">(C) DES 正確</span>
+                Data Encryption Standard，屬於<strong>對稱式加密</strong>。雖然現在被認為不夠安全，但它確實是加解密演算法。
+            </div>
+            <div class="exp-item">
+                <span class="tag tag-correct">(D) AES 正確</span>
+                Advanced Encryption Standard，屬於<strong>對稱式加密</strong>。是目前世界通用的主流標準，非常安全。
+            </div>
+            <div class="exp-item">
+                <span class="tag tag-correct">(E) RSA 正確</span>
+                Rivest–Shamir–Adleman，屬於<strong>非對稱式加密</strong>（公鑰密碼學）。利用兩把鑰匙（公鑰/私鑰）運作。
+            </div>
+            
+            <p style="margin-top: 15px; color: var(--accent-color); font-weight: bold;">
+                📌 總結：C、D 是對稱式，E 是非對稱式。A、B 都是 AI。
+            </p>
+        </div>
+
+        <!-- 5. 延伸互動小測驗 -->
+        <div class="card">
+            <h2>🚀 延伸小測驗（觀念秒懂）</h2>
+            
+            <div class="mini-quiz-item">
+                <span>1. AES 屬於「對稱式」加密技術？</span>
+                <div class="mini-quiz-btns" id="mq1">
+                    <button onclick="checkMiniQuiz(1, true)">O</button>
+                    <button onclick="checkMiniQuiz(1, false)">X</button>
+                    <span class="mini-feedback"></span>
+                </div>
+            </div>
+
+            <div class="mini-quiz-item">
+                <span>2. RSA 使用「公鑰與私鑰」成對運作？</span>
+                <div class="mini-quiz-btns" id="mq2">
+                    <button onclick="checkMiniQuiz(2, true)">O</button>
+                    <button onclick="checkMiniQuiz(2, false)">X</button>
+                    <span class="mini-feedback"></span>
+                </div>
+            </div>
+
+            <div class="mini-quiz-item">
+                <span>3. CNN 是常見的加密演算法？</span>
+                <div class="mini-quiz-btns" id="mq3">
+                    <button onclick="checkMiniQuiz(3, true)">O</button>
+                    <button onclick="checkMiniQuiz(3, false)">X</button>
+                    <span class="mini-feedback"></span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // 正確答案設定
+        const correctAnswers = ['C', 'D', 'E'];
+
+        function checkAnswer() {
+            // 取得所有被勾選的選項
+            const checkboxes = document.querySelectorAll('input[name="q5"]:checked');
+            const userAnswers = Array.from(checkboxes).map(cb => cb.value).sort();
+            
+            const feedbackDiv = document.getElementById('feedback-area');
+            feedbackDiv.style.display = 'block';
+
+            // 判斷是否完全正確
+            // 1. 數量必須一樣
+            // 2. 內容必須完全吻合
+            const isMatch = userAnswers.length === correctAnswers.length && 
+                            userAnswers.every((val, index) => val === correctAnswers[index]);
+
+            if (isMatch) {
+                feedbackDiv.className = 'feedback-correct';
+                feedbackDiv.innerHTML = `
+                    🎉 完全正確！(C)(D)(E)<br>
+                    <span style="font-weight:normal; font-size:0.9rem;">
+                    沒錯，DES 與 AES 是對稱式加密；RSA 是非對稱式加密。它們都是密碼學家族的成員！
+                    </span>`;
+                // 自動顯示解析
+                showExplanation();
+            } else {
+                // 分析錯誤原因
+                let extra = userAnswers.filter(x => !correctAnswers.includes(x));
+                let missing = correctAnswers.filter(x => !userAnswers.includes(x));
+                
+                let msg = "⚠️ 答錯囉！<br>";
+                
+                if (userAnswers.length === 0) {
+                    msg += "你還沒選擇任何答案喔。";
+                } else {
+                    if (extra.length > 0) msg += `你多選了：${extra.join(', ')} (這些是 AI 技術)<br>`;
+                    if (missing.length > 0) msg += `你漏選了：${missing.join(', ')} (這些也是加密技術)<br>`;
+                }
+                
+                msg += `<div style="margin-top:8px; font-weight:normal; font-size:0.9rem;">
+                        👉 建議點擊「顯示解析」來複習一下觀念喔！
+                        </div>`;
+
+                feedbackDiv.className = 'feedback-wrong';
+                feedbackDiv.innerHTML = msg;
+            }
+        }
+
+        function showExplanation() {
+            const expCard = document.getElementById('explanation-card');
+            expCard.style.display = 'block';
+            // 捲動到解析區
+            expCard.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function resetQuiz() {
+            // 清空 Checkbox
+            const checkboxes = document.querySelectorAll('input[name="q5"]');
+            checkboxes.forEach(cb => cb.checked = false);
+            
+            // 隱藏與清空 Feedback
+            const feedbackDiv = document.getElementById('feedback-area');
+            feedbackDiv.style.display = 'none';
+            feedbackDiv.innerHTML = '';
+            
+            // 隱藏解析
+            document.getElementById('explanation-card').style.display = 'none';
+
+            // 重置 Mini Quiz (非必要，但為了體驗一致性)
+            document.querySelectorAll('.mini-feedback').forEach(el => el.innerHTML = '');
+            document.querySelectorAll('.mini-quiz-btns button').forEach(btn => btn.disabled = false);
+            
+            // 捲動回頂部
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Mini Quiz Logic
+        function checkMiniQuiz(qId, userChoice) {
+            let isCorrect = false;
+            let explanation = "";
+            let container = document.getElementById('mq' + qId);
+            let feedbackSpan = container.querySelector('.mini-feedback');
+            let buttons = container.querySelectorAll('button');
+
+            // 題庫邏輯
+            if (qId === 1) {
+                // AES 是對稱式? (True)
+                isCorrect = (userChoice === true);
+                explanation = isCorrect ? "沒錯！只有一把金鑰。" : "AES 是對稱式加密喔！";
+            } else if (qId === 2) {
+                // RSA 是公私鑰成對? (True)
+                isCorrect = (userChoice === true);
+                explanation = isCorrect ? "正確！一把鎖，一把開。" : "RSA 是非對稱式，需要一對金鑰。";
+            } else if (qId === 3) {
+                // CNN 是加密? (False)
+                isCorrect = (userChoice === false);
+                explanation = isCorrect ? "正確！CNN 是做影像辨識的 AI。" : "不對喔，CNN 是深度學習模型。";
+            }
+
+            // 顯示結果
+            if (isCorrect) {
+                feedbackSpan.style.color = "#27ae60";
+                feedbackSpan.innerHTML = `⭕ ${explanation}`;
+            } else {
+                feedbackSpan.style.color = "#e74c3c";
+                feedbackSpan.innerHTML = `❌ ${explanation}`;
+            }
+
+            // 鎖定按鈕避免重複點擊
+            buttons.forEach(btn => btn.disabled = true);
+        }
+    </script>
+</body>
+</html>

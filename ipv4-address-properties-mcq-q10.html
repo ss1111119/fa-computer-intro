@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高中電腦概論：IPv4 位址特性完全解析</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --highlight-color: #e67e22;
+            --success-color: #27ae60;
+            --error-color: #c0392b;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: "Microsoft JhengHei", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: #666;
+            font-size: 1rem;
+        }
+
+        /* Card Style */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+            padding: 25px;
+            border-left: 5px solid var(--accent-color);
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            color: var(--primary-color);
+            font-size: 1.4rem;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        /* Question Section */
+        .question-text {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .options label {
+            display: block;
+            margin: 10px 0;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .options label:hover {
+            background: #eef2f5;
+        }
+
+        .options input[type="checkbox"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+
+        .btn-group {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        .btn-submit { background-color: var(--accent-color); color: white; }
+        .btn-submit:hover { background-color: #2980b9; }
+
+        .btn-explain { background-color: var(--highlight-color); color: white; display: none; }
+        .btn-explain:hover { background-color: #d35400; }
+
+        .btn-reset { background-color: #95a5a6; color: white; }
+        .btn-reset:hover { background-color: #7f8c8d; }
+
+        #feedback-area {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 6px;
+            font-weight: bold;
+            display: none;
+        }
+
+        .feedback-correct { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .feedback-wrong { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+        /* Concept Visualization */
+        .ip-visual {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #eee;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-family: monospace;
+            font-size: 1.2rem;
+            flex-wrap: wrap;
+        }
+
+        .byte-block {
+            background: var(--primary-color);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 4px;
+            margin: 0 5px;
+            position: relative;
+            text-align: center;
+        }
+
+        .byte-block::after {
+            content: "1 Byte (8 bits)";
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.6rem;
+            color: #666;
+            width: 80px;
+        }
+
+        .dot { font-weight: bold; color: #888; margin: 0 5px; }
+
+        .highlight-text {
+            color: var(--error-color);
+            font-weight: bold;
+        }
+
+        /* Glossary Accordion */
+        details {
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        summary {
+            padding: 12px;
+            background-color: #f8f9fa;
+            cursor: pointer;
+            font-weight: bold;
+            list-style: none; /* Hide default triangle */
+            position: relative;
+        }
+
+        summary::after {
+            content: '+';
+            position: absolute;
+            right: 15px;
+            font-weight: bold;
+        }
+
+        details[open] summary::after {
+            content: '-';
+        }
+
+        .term-content {
+            padding: 15px;
+            background-color: #fff;
+            border-top: 1px solid #ddd;
+            color: #555;
+            font-size: 0.95rem;
+        }
+
+        /* Analysis Card */
+        .analysis-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px dashed #eee;
+        }
+        
+        .analysis-item:last-child { border-bottom: none; }
+
+        .option-tag {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            text-align: center;
+            border-radius: 50%;
+            color: white;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .tag-correct { background-color: var(--success-color); }
+        .tag-wrong { background-color: var(--error-color); }
+
+        /* Mini Quiz */
+        .quiz-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fdfdfd;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            border: 1px solid #eee;
+            border-radius: 6px;
+        }
+
+        .quiz-btns button {
+            padding: 5px 15px;
+            margin-left: 5px;
+            font-size: 0.9rem;
+        }
+
+        .quiz-feedback {
+            margin-left: 10px;
+            font-weight: bold;
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 600px) {
+            .ip-visual { font-size: 1rem; }
+            .byte-block { padding: 5px 10px; margin: 5px; }
+            .quiz-item { flex-direction: column; align-items: flex-start; }
+            .quiz-btns { margin-top: 10px; width: 100%; display: flex; justify-content: flex-end; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>網路概論教室：IPv4 位址特訓</h1>
+        <p>掌握長度、表示法與常見陷阱，一次搞懂！</p>
+    </header>
+
+    <!-- 卡片 1：題目卡 -->
+    <div class="card" id="question-card">
+        <h2>隨堂練習：IPv4 特性</h2>
+        <div class="question-text">
+            複選題 10. 下列何者為 IPv4 位址的特性?
+        </div>
+        <form class="options" id="quiz-form">
+            <label><input type="checkbox" name="option" value="A"> (A) 2-byte 長度</label>
+            <label><input type="checkbox" name="option" value="B"> (B) 4-byte 長度</label>
+            <label><input type="checkbox" name="option" value="C"> (C) 8-byte 長度</label>
+            <label><input type="checkbox" name="option" value="D"> (D) 依位元組區別辨識</label>
+            <label><input type="checkbox" name="option" value="E"> (E) 分 A，B，C 三大類</label>
+        </form>
+
+        <div id="feedback-area"></div>
+
+        <div class="btn-group">
+            <button class="btn-submit" onclick="checkAnswer()">送出答案</button>
+            <button class="btn-explain" id="show-explain-btn" onclick="scrollToExplain()">顯示解析</button>
+            <button class="btn-reset" onclick="resetQuiz()">重作一次</button>
+        </div>
+    </div>
+
+    <!-- 卡片 2：觀念卡 -->
+    <div class="card">
+        <h2>核心觀念：IPv4 結構拆解</h2>
+        <p>請記住這個最重要的轉換公式：</p>
+        <p style="text-align: center; font-size: 1.2rem; font-weight: bold; color: var(--primary-color);">
+            IPv4 長度 = 32 bits = 4 bytes
+        </p>
+        
+        <div class="ip-visual">
+            <div class="byte-block">192</div>
+            <div class="dot">.</div>
+            <div class="byte-block">168</div>
+            <div class="dot">.</div>
+            <div class="byte-block">1</div>
+            <div class="dot">.</div>
+            <div class="byte-block">1</div>
+        </div>
+        <p style="text-align: center; font-size: 0.9rem; color: #666; margin-top: 25px;">
+            ▲ 點分十進位表示法：切成 4 段，每段 1 byte (0~255)
+        </p>
+
+        <ul style="margin-top: 20px;">
+            <li><strong>長度：</strong> 電腦底層看是 32 個 0 或 1 (bits)，為了方便人類閱讀，每 8 bits 算成 1 byte，共 4 bytes。</li>
+            <li><strong>辨識：</strong> 因為用「點」分開，每一段剛好就是一個 Byte。這就是選項 (D) 所說的「依位元組區別辨識」。</li>
+        </ul>
+    </div>
+
+    <!-- 卡片 3：類別卡 -->
+    <div class="card">
+        <h2>傳統分類 (Classful) 與陷阱</h2>
+        <p>為什麼選項 (E) 說「分 A, B, C 三大類」是錯的？這裡有兩個觀念層次：</p>
+        <ol>
+            <li><strong>分類不只三種：</strong> 傳統分類法其實分為 <strong>Class A, B, C, D, E</strong> 共五類。
+                <ul>
+                    <li>A/B/C：一般單播 (Unicast) 使用。</li>
+                    <li>D：群播 (Multicast) 使用。</li>
+                    <li>E：保留實驗用。</li>
+                </ul>
+                <span class="highlight-text">→ 只說「三大類」是定義不完整。</span>
+            </li>
+            <li><strong>現代觀點 (補充)：</strong> 現在網路多採用 <strong>CIDR (無類別域間路由)</strong>，不再嚴格區分 A/B/C 類別，而是看「子網路遮罩」長度（如 /24, /16）。</li>
+        </ol>
+    </div>
+
+    <!-- 卡片 4：名詞速查 -->
+    <div class="card">
+        <h2>名詞速查 (點擊展開)</h2>
+        
+        <details>
+            <summary>IPv4 (Internet Protocol version 4)</summary>
+            <div class="term-content">
+                網際網路通訊協定第四版。是目前網路上最廣泛使用的標準，用來給每一個連上網的裝置一個獨一無二的門牌號碼。
+            </div>
+        </details>
+
+        <details>
+            <summary>位址 (Address)</summary>
+            <div class="term-content">
+                就像你家的地址一樣，在網路世界中，用來定位傳送資料的目標位置。
+            </div>
+        </details>
+
+        <details>
+            <summary>位元 (Bit) / 位元組 (Byte)</summary>
+            <div class="term-content">
+                <strong>Bit (b)：</strong> 電腦最小單位 (0 或 1)。<br>
+                <strong>Byte (B)：</strong> 1 Byte = 8 Bits。<br>
+                IPv4 = 32 bits，換算後除以 8，就是 4 bytes。
+            </div>
+        </details>
+
+        <details>
+            <summary>點分十進位表示法 (Dotted Decimal Notation)</summary>
+            <div class="term-content">
+                因為 32 個 0 和 1 太難背了 (例如 1100000010101000...)，所以每 8 個切一刀，轉換成十進位數字，中間加「點」區隔。例如：192.168.1.1。
+            </div>
+        </details>
+
+        <details>
+            <summary>類別式位址 (Classful Addressing)</summary>
+            <div class="term-content">
+                早期的 IP 分配策略，依照 IP 開頭的數字範圍強制分為 A、B、C、D、E 類，用來決定網路的大小。
+            </div>
+        </details>
+    </div>
+
+    <!-- 卡片 5：詳細解析 -->
+    <div class="card" id="explanation-card" style="display: none;">
+        <h2>本題詳細解析</h2>
+        
+        <div class="analysis-item">
+            <span class="option-tag tag-wrong">A</span> <strong>2-byte 長度</strong>
+            <p>錯誤。2 bytes = 16 bits，這長度不夠用。IPv4 是 32 bits。</p>
+        </div>
+
+        <div class="analysis-item">
+            <span class="option-tag tag-correct">B</span> <strong>4-byte 長度</strong>
+            <p>正確。<strong>IPv4 = 32 bits = 4 bytes</strong>。這是定義，必背！</p>
+        </div>
+
+        <div class="analysis-item">
+            <span class="option-tag tag-wrong">C</span> <strong>8-byte 長度</strong>
+            <p>錯誤。8 bytes = 64 bits。這通常是學生跟 IPv6 (16 bytes) 或其他數值搞混的陷阱。</p>
+        </div>
+
+        <div class="analysis-item">
+            <span class="option-tag tag-correct">D</span> <strong>依位元組區別辨識</strong>
+            <p>正確。IPv4 的結構通常以 4 個 byte 分段呈現（點分十進位），且在判斷網段（NetID）與主機（HostID）時，傳統上也是依 byte 邊界來切分（例如 Class A 切第1個 byte）。</p>
+        </div>
+
+        <div class="analysis-item">
+            <span class="option-tag tag-wrong">E</span> <strong>分 A，B，C 三大類</strong>
+            <p>錯誤。雖然我們常教 A/B/C，但完整定義包含 D 與 E 類，故不能只說「三大類」。且此題為複選，相較於 B 與 D 的絕對正確，E 的敘述有瑕疵。</p>
+        </div>
+
+        <p style="text-align: right; font-weight: bold; color: var(--primary-color);">正確答案：B、D</p>
+    </div>
+
+    <!-- 卡片 6：延伸練習 -->
+    <div class="card">
+        <h2>⚡ 閃電測驗：觀念確認</h2>
+        <p>點擊按鈕，立即檢查觀念是否正確！</p>
+
+        <div class="quiz-item">
+            <span>1. IPv4 位址長度是 32 bits？</span>
+            <div class="quiz-btns">
+                <button onclick="miniQuiz(this, true, '沒錯！32 bits = 4 bytes')">O</button>
+                <button onclick="miniQuiz(this, false, '錯囉！IPv4 確實是 32 bits')">X</button>
+                <span class="quiz-feedback"></span>
+            </div>
+        </div>
+
+        <div class="quiz-item">
+            <span>2. 192.168.1.1 共有四段，是因為 IPv4 切成 4 個 byte？</span>
+            <div class="quiz-btns">
+                <button onclick="miniQuiz(this, true, '正確！一段就是 1 byte')">O</button>
+                <button onclick="miniQuiz(this, false, '不對喔，這是正確敘述')">X</button>
+                <span class="quiz-feedback"></span>
+            </div>
+        </div>
+
+        <div class="quiz-item">
+            <span>3. IPv6 位址長度是 8 bytes？</span>
+            <div class="quiz-btns">
+                <button onclick="miniQuiz(this, false, '錯誤！IPv6 是 128 bits = 16 bytes')">O</button>
+                <button onclick="miniQuiz(this, true, '好眼力！IPv6 是 16 bytes 才對')">X</button>
+                <span class="quiz-feedback"></span>
+            </div>
+        </div>
+    </div>
+
+    <footer style="text-align: center; color: #888; font-size: 0.8rem; margin-top: 20px;">
+        &copy; 電腦概論教學資源 | IPv4 基礎篇
+    </footer>
+</div>
+
+<script>
+    function checkAnswer() {
+        const correctAnswers = ['B', 'D'];
+        const form = document.getElementById('quiz-form');
+        const feedback = document.getElementById('feedback-area');
+        const explainBtn = document.getElementById('show-explain-btn');
+        const inputs = form.querySelectorAll('input[type="checkbox"]:checked');
+        
+        let userAnswers = [];
+        inputs.forEach(input => userAnswers.push(input.value));
+        userAnswers.sort();
+
+        // 判斷邏輯
+        const isCorrect = JSON.stringify(userAnswers) === JSON.stringify(correctAnswers);
+        
+        feedback.style.display = 'block';
+        feedback.className = isCorrect ? 'feedback-correct' : 'feedback-wrong';
+        
+        if (isCorrect) {
+            feedback.innerHTML = '✅ 完全正確！<br>記住核心觀念：IPv4 = 32 bits = 4 bytes。';
+        } else {
+            let msg = '❌ 答案不對喔！<br>';
+            
+            // 分析錯誤
+            if (userAnswers.length === 0) {
+                msg += '你沒有選擇任何選項。';
+            } else {
+                // 檢查漏選
+                const missing = correctAnswers.filter(x => !userAnswers.includes(x));
+                if (missing.length > 0) msg += `漏選了：${missing.join(', ')}。<br>`;
+                
+                // 檢查多選
+                const extra = userAnswers.filter(x => !correctAnswers.includes(x));
+                if (extra.length > 0) {
+                    msg += `多選了：${extra.join(', ')}。<br>`;
+                    if (extra.includes('E')) {
+                        msg += '<small>(提示：選項 E 雖然常見，但分類其實有 5 類，且現代多用 CIDR)</small>';
+                    }
+                }
+            }
+            msg += '<br>請點擊「顯示解析」查看詳細說明。';
+            feedback.innerHTML = msg;
+        }
+
+        // 無論對錯都允許看解析
+        explainBtn.style.display = 'inline-block';
+    }
+
+    function resetQuiz() {
+        // 清空表單
+        document.getElementById('quiz-form').reset();
+        
+        // 隱藏回饋與解析按鈕
+        const feedback = document.getElementById('feedback-area');
+        feedback.style.display = 'none';
+        feedback.className = '';
+        feedback.innerHTML = '';
+        
+        document.getElementById('show-explain-btn').style.display = 'none';
+        
+        // 隱藏解析卡
+        document.getElementById('explanation-card').style.display = 'none';
+        
+        // 滾動回頂部
+        document.getElementById('question-card').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function scrollToExplain() {
+        const explainCard = document.getElementById('explanation-card');
+        explainCard.style.display = 'block';
+        // 稍微延遲滾動以確保 display block 生效
+        setTimeout(() => {
+            explainCard.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+    }
+
+    // 延伸練習的互動邏輯
+    function miniQuiz(btn, isCorrect, message) {
+        const feedbackSpan = btn.parentElement.querySelector('.quiz-feedback');
+        
+        // 重置該題所有按鈕樣式
+        const allBtns = btn.parentElement.querySelectorAll('button');
+        allBtns.forEach(b => {
+            b.style.backgroundColor = '';
+            b.style.color = '';
+            b.disabled = false;
+        });
+
+        // 設定當前按鈕樣式
+        btn.style.backgroundColor = isCorrect ? 'var(--success-color)' : 'var(--error-color)';
+        btn.style.color = 'white';
+        
+        // 顯示訊息
+        feedbackSpan.style.color = isCorrect ? 'var(--success-color)' : 'var(--error-color)';
+        feedbackSpan.innerHTML = (isCorrect ? '⭕ ' : '❌ ') + message;
+    }
+</script>
+
+</body>
+</html>

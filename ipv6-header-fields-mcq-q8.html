@@ -1,0 +1,503 @@
+<!-- 檔名：ipv6-header-fields-mcq-q8.html -->
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPv6 資料報標頭欄位辨識：複選題</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --success-color: #27ae60;
+            --error-color: #c0392b;
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Header Style */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid var(--accent-color);
+            padding-bottom: 10px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1rem;
+        }
+
+        /* Card System */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 25px;
+            margin-bottom: 25px;
+            border-left: 5px solid var(--accent-color);
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+        }
+
+        .card-title::before {
+            content: '📚';
+            margin-right: 10px;
+        }
+
+        .highlight-red {
+            color: var(--error-color);
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        /* Question Section */
+        .question-box {
+            background-color: #ecf0f1;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            border: 1px dashed #bdc3c7;
+        }
+
+        .options-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-label:hover {
+            background-color: #fdfdfd;
+            border-color: var(--accent-color);
+        }
+
+        .option-label input[type="checkbox"] {
+            margin-right: 15px;
+            transform: scale(1.5);
+            accent-color: var(--accent-color);
+        }
+
+        /* Buttons */
+        .btn-group {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+            transition: transform 0.1s, box-shadow 0.2s;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .btn-submit { background-color: var(--accent-color); color: white; }
+        .btn-explain { background-color: #f39c12; color: white; }
+        .btn-reset { background-color: #95a5a6; color: white; }
+        
+        button:hover { opacity: 0.9; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+
+        /* Feedback Area */
+        #feedback-area {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .feedback-correct {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .feedback-wrong {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* Explanation & Concepts */
+        .concept-box {
+            background-color: #e8f6f3;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .concept-highlight {
+            color: #d35400;
+            font-weight: bold;
+        }
+
+        /* Glossary */
+        details {
+            margin-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        summary {
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--accent-color);
+            list-style: none; /* Hide default arrow */
+        }
+        
+        summary::-webkit-details-marker { display: none; }
+        
+        summary::after {
+            content: "+"; 
+            float: right; 
+            font-weight: bold;
+        }
+        
+        details[open] summary::after { content: "-"; }
+
+        details p {
+            margin-top: 5px;
+            margin-left: 15px;
+            font-size: 0.95rem;
+            color: #555;
+        }
+
+        /* Mini Quiz */
+        .mini-quiz-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .mini-quiz-btns button {
+            padding: 5px 15px;
+            font-size: 0.9rem;
+            margin-left: 5px;
+        }
+
+        .mini-feedback {
+            font-size: 0.9rem;
+            margin-top: 5px;
+            font-weight: bold;
+        }
+
+        /* Analysis Table like view */
+        .analysis-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-left: 4px solid #ddd;
+        }
+        .analysis-item.correct-type { border-color: var(--success-color); }
+        .analysis-item.wrong-type { border-color: var(--error-color); }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>IPv6 資料報 (Datagram) 標頭欄位辨識</h1>
+        <div class="subtitle">電腦概論 / 網路概論 - 高中職進階觀念</div>
+    </header>
+
+    <!-- Section 1: Concept Review -->
+    <div class="card" style="border-left-color: #8e44ad;">
+        <div class="card-title">老師的觀念整理（先看這裡！）</div>
+        <p>各位同學，IPv4 地址不夠用，所以我們有了 IPv6。除了地址變長（128-bit），IPv6 另一個大重點是<strong>「提升路由器處理速度」</strong>。怎麼提升？就是把標頭變簡單！</p>
+        
+        <div class="concept-box">
+            <h3>🚀 IPv6 設計重點 (考試必背)</h3>
+            <ul>
+                <li><strong>固定長度：</strong>基本標頭固定為 <strong>40 bytes</strong>（處理超快）。</li>
+                <li><strong>簡化欄位：</strong>不重要的、少用的欄位通通拿掉。</li>
+                <li><strong>延伸標頭 (Extension Header)：</strong>如果要用特殊功能（如安全性、路由指定），再外掛「延伸標頭」，不要塞在主標頭裡。</li>
+            </ul>
+        </div>
+        
+        <div class="concept-box" style="background-color: #fff3cd; margin-top: 15px;">
+            <h3>⚡ 快速記憶法：IPv6「簡化、不檢查、不選用」</h3>
+            <ol>
+                <li><strong>NO Header Checksum：</strong>現在網路傳輸很穩，不用每經過一個路由器都檢查錯誤，那是浪費時間！交給上層（TCP/UDP）或下層（Data Link）去做就好。</li>
+                <li><strong>NO Options：</strong>IPv4 標頭長度不固定就是因為有 Options，IPv6 把它移到延伸標頭去了。</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- Section 2: Glossary -->
+    <div class="card" style="border-left-color: #16a085;">
+        <div class="card-title">名詞速查區 (點擊展開)</div>
+        <details>
+            <summary>IPv6 (Internet Protocol version 6)</summary>
+            <p>第六代網際網路通訊協定，用來解決 IPv4 位址耗盡的問題，提供更大的位址空間與更有效率的封包處理。</p>
+        </details>
+        <details>
+            <summary>資料報 Datagram</summary>
+            <p>在網路層傳輸的基本資料單位，包含了標頭 (Header) 與資料 (Payload)。</p>
+        </details>
+        <details>
+            <summary>內層標頭 Next Header</summary>
+            <p>IPv6 的重要欄位，用來告訴接收端：「跟在我這個標頭後面的，是 TCP？UDP？還是一個延伸標頭？」</p>
+        </details>
+        <details>
+            <summary>荷載長度 Payload Length</summary>
+            <p>告訴路由器這包資料有多長（不包含前面固定的 40 bytes 標頭）。</p>
+        </details>
+        <details>
+            <summary>標頭檢查和 Header Checksum</summary>
+            <p>用來檢查標頭在傳輸中有沒有壞掉。IPv4 有，但 <strong>IPv6 移除了</strong>，因為太耗費路由器運算資源。</p>
+        </details>
+        <details>
+            <summary>流量類型 Traffic Class</summary>
+            <p>類似 IPv4 的 TOS，用來區分封包的優先順序（例如：語音視訊優先傳、E-mail 可以慢點傳）。</p>
+        </details>
+        <details>
+            <summary>延伸標頭 Extension Header</summary>
+            <p>IPv6 的「外掛包」。當主標頭不夠用（例如需要加密、來源路由）時，才會加掛在後面。</p>
+        </details>
+    </div>
+
+    <!-- Section 3: The Quiz -->
+    <div class="card">
+        <div class="card-title">📝 隨堂練習</div>
+        <div class="question-box">
+            複選題 8. 下列欄位 <span class="highlight-red">不屬於</span> IPv6 資料報 (datagram) 的標頭?
+        </div>
+
+        <div class="options-group">
+            <label class="option-label">
+                <input type="checkbox" name="q1" value="A">
+                (A) 內層標頭 (next header)
+            </label>
+            <label class="option-label">
+                <input type="checkbox" name="q1" value="B">
+                (B) 荷載長度 (payload length)
+            </label>
+            <label class="option-label">
+                <input type="checkbox" name="q1" value="C">
+                (C) 標頭檢查和 (header checksum)
+            </label>
+            <label class="option-label">
+                <input type="checkbox" name="q1" value="D">
+                (D) 選用欄位 (options)
+            </label>
+            <label class="option-label">
+                <input type="checkbox" name="q1" value="E">
+                (E) 流量類型 (traffic class)
+            </label>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn-submit" onclick="checkAnswer()">送出答案</button>
+            <button class="btn-explain" onclick="showExplanation()">顯示解析</button>
+            <button class="btn-reset" onclick="resetQuiz()">重作一次</button>
+        </div>
+
+        <div id="feedback-area"></div>
+    </div>
+
+    <!-- Section 4: Analysis (Hidden initially) -->
+    <div class="card" id="analysis-card" style="display: none; border-left-color: #e67e22;">
+        <div class="card-title">💡 選項詳細解析</div>
+        
+        <div class="analysis-item wrong-type">
+            <strong>(A) 內層標頭 (Next Header)：屬於 IPv6</strong>
+            <p>這是 IPv6 最核心的欄位之一！因為 IPv6 把很多功能拆出去了，必須靠這個欄位來「串聯」下一個協定是誰（TCP? UDP? 還是延伸標頭?）。</p>
+        </div>
+
+        <div class="analysis-item wrong-type">
+            <strong>(B) 荷載長度 (Payload Length)：屬於 IPv6</strong>
+            <p>如果不標示長度，接收端就不知道資料哪裡結束。注意：這裡的長度不包含固定的 40 bytes 主標頭。</p>
+        </div>
+
+        <div class="analysis-item correct-type" style="background-color: #fdf2f2;">
+            <strong>(C) 標頭檢查和 (Header Checksum)：<span class="highlight-red">不屬於 IPv6</span> (正確答案)</strong>
+            <p>🎯 <strong>考試重點：</strong> 為了讓路由器轉送變快，IPv6 認為錯誤檢查交給 Data Link Layer (L2) 或 Transport Layer (L4) 就好，不用自己做。</p>
+        </div>
+
+        <div class="analysis-item correct-type" style="background-color: #fdf2f2;">
+            <strong>(D) 選用欄位 (Options)：<span class="highlight-red">不屬於 IPv6</span> (正確答案)</strong>
+            <p>🎯 <strong>考試重點：</strong> IPv4 因為有 Options，導致標頭長度不固定（20~60 bytes）。IPv6 為了維持「固定 40 bytes」，把 Options 功能移出主標頭，改名為「延伸標頭」。</p>
+        </div>
+
+        <div class="analysis-item wrong-type">
+            <strong>(E) 流量類型 (Traffic Class)：屬於 IPv6</strong>
+            <p>為了支援 QoS (服務品質)，讓網路電話、視訊會議能跑得順暢，這個功能必須保留。</p>
+        </div>
+    </div>
+
+    <!-- Section 5: Mini Quiz -->
+    <div class="card" style="border-left-color: #34495e;">
+        <div class="card-title">⚡ 延伸互動小測驗 (立即回饋)</div>
+        
+        <div class="mini-quiz-item">
+            <span>1. IPv6 的標頭長度是固定的 (40 bytes)。</span>
+            <div class="mini-quiz-btns">
+                <button onclick="miniQuiz(1, true)">O</button>
+                <button onclick="miniQuiz(1, false)">X</button>
+            </div>
+        </div>
+        <div id="mq-feedback-1" class="mini-feedback"></div>
+
+        <div class="mini-quiz-item">
+            <span>2. IPv6 仍保留 Header Checksum 以確保正確性。</span>
+            <div class="mini-quiz-btns">
+                <button onclick="miniQuiz(2, true)">O</button>
+                <button onclick="miniQuiz(2, false)">X</button>
+            </div>
+        </div>
+        <div id="mq-feedback-2" class="mini-feedback"></div>
+
+        <div class="mini-quiz-item">
+            <span>3. IPv6 的 Options 功能是透過 Extension Header 處理。</span>
+            <div class="mini-quiz-btns">
+                <button onclick="miniQuiz(3, true)">O</button>
+                <button onclick="miniQuiz(3, false)">X</button>
+            </div>
+        </div>
+        <div id="mq-feedback-3" class="mini-feedback"></div>
+    </div>
+
+    <footer style="text-align: center; margin-top: 40px; color: #95a5a6; font-size: 0.9rem;">
+        &copy; 電腦概論 / 網路概論教學模組 - IPv6 標頭篇
+    </footer>
+
+</div>
+
+<script>
+    // 正確答案：不屬於 IPv6 的欄位是 C 和 D
+    const CORRECT_ANSWERS = ['C', 'D'];
+
+    function checkAnswer() {
+        const checkboxes = document.querySelectorAll('input[name="q1"]:checked');
+        const userAnswers = Array.from(checkboxes).map(cb => cb.value).sort();
+        const feedbackArea = document.getElementById('feedback-area');
+        
+        feedbackArea.style.display = 'block';
+
+        // 判斷是否完全正確
+        const isCorrect = JSON.stringify(userAnswers) === JSON.stringify(CORRECT_ANSWERS);
+
+        if (isCorrect) {
+            feedbackArea.className = 'feedback-correct';
+            feedbackArea.innerHTML = `
+                <h3>🎉 答對了！</h3>
+                <p>完全正確！<strong>Header Checksum</strong> 和 <strong>Options</strong> 確實已從 IPv6 主標頭中移除。</p>
+                <p>補充提示：IPv6 為了效率，把複雜功能都交給了「延伸標頭」！</p>
+            `;
+        } else {
+            feedbackArea.className = 'feedback-wrong';
+            
+            // 分析錯誤
+            let missed = CORRECT_ANSWERS.filter(x => !userAnswers.includes(x));
+            let extra = userAnswers.filter(x => !CORRECT_ANSWERS.includes(x));
+            
+            let msg = `<h3>⚠️ 答案不完全正確</h3>`;
+            
+            if (missed.length > 0) {
+                msg += `<p>你漏選了：<strong>${missed.join('、')}</strong> (這些不屬於 IPv6)</p>`;
+            }
+            if (extra.length > 0) {
+                msg += `<p>你多選了：<strong>${extra.join('、')}</strong> (這些其實屬於 IPv6 哦)</p>`;
+            }
+            
+            msg += `<p>👇 快點擊「顯示解析」來看看為什麼吧！</p>`;
+            feedbackArea.innerHTML = msg;
+        }
+    }
+
+    function showExplanation() {
+        const analysisCard = document.getElementById('analysis-card');
+        analysisCard.style.display = 'block';
+        // 平滑捲動到解析區
+        analysisCard.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function resetQuiz() {
+        // 清空 Checkbox
+        const checkboxes = document.querySelectorAll('input[name="q1"]');
+        checkboxes.forEach(cb => cb.checked = false);
+
+        // 隱藏回饋與解析
+        document.getElementById('feedback-area').style.display = 'none';
+        document.getElementById('analysis-card').style.display = 'none';
+        
+        // 捲動回頂部題目
+        document.querySelector('.question-box').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Mini Quiz Logic
+    function miniQuiz(qIndex, answer) {
+        const feedbackEl = document.getElementById(`mq-feedback-${qIndex}`);
+        let isCorrect = false;
+        let msg = "";
+
+        if (qIndex === 1) {
+            // Q1: IPv6 標頭固定 (O)
+            isCorrect = (answer === true);
+            msg = isCorrect ? "⭕ 正確！IPv6 標頭固定為 40 bytes，處理超快。" : "❌ 錯誤。IPv6 是固定長度，不像 IPv4 變動。";
+        } else if (qIndex === 2) {
+            // Q2: 保留 Checksum (X)
+            isCorrect = (answer === false);
+            msg = isCorrect ? "⭕ 正確！IPv6 為了效能，已經移除了 Checksum。" : "❌ 錯誤。IPv6 相信傳輸層與鏈結層的檢查，自己不檢查了。";
+        } else if (qIndex === 3) {
+            // Q3: Options 用 Extension Header 處理 (O)
+            isCorrect = (answer === true);
+            msg = isCorrect ? "⭕ 正確！把選用功能外掛，主標頭才不會塞車。" : "❌ 錯誤。這正是 IPv6 的核心設計改變。";
+        }
+
+        feedbackEl.style.color = isCorrect ? "green" : "red";
+        feedbackEl.innerHTML = msg;
+    }
+</script>
+
+</body>
+</html>

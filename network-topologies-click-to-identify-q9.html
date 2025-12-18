@@ -1,0 +1,696 @@
+<!-- 
+    Filename: network-topologies-click-to-identify-q9.html
+    Author: 電腦概論補教名師
+    Description: 單一 HTML 檔互動式教學網頁，包含網路拓樸觀念、互動辨識測驗與解析。
+    Target: 高中電腦/資訊科技學生
+-->
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>【電概名師開講】網路拓樸大解析 - 互動特訓班</title>
+    <style>
+        :root {
+            --primary: #3b82f6; /* 補習班藍 */
+            --primary-dark: #1d4ed8;
+            --secondary: #10b981; /* 正確綠 */
+            --danger: #ef4444; /* 錯誤紅 */
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+
+        header p {
+            margin: 10px 0 0;
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+
+        /* Card System */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow);
+            border-left: 5px solid var(--primary);
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            color: var(--primary-dark);
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .badge {
+            background: var(--primary);
+            color: white;
+            font-size: 0.8rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+            vertical-align: middle;
+        }
+
+        /* Checkbox Form */
+        .quiz-options label {
+            display: block;
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .quiz-options label:hover {
+            background-color: #f9fafb;
+        }
+
+        .quiz-options input[type="checkbox"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+
+        .btn-group {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-secondary { background: var(--text-muted); color: white; }
+        .btn-success { background: var(--secondary); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+
+        /* Feedback Areas */
+        .feedback {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+        .feedback.success { background: #d1fae5; color: #065f46; border: 1px solid #34d399; }
+        .feedback.error { background: #fee2e2; color: #991b1b; border: 1px solid #f87171; }
+        .feedback.info { background: #eff6ff; color: #1e40af; border: 1px solid #60a5fa; }
+
+        /* Glossary Accordion */
+        .glossary-item {
+            margin-bottom: 5px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .glossary-header {
+            padding: 10px 15px;
+            background: #f9fafb;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+        }
+
+        .glossary-content {
+            padding: 0 15px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background: white;
+            color: #4b5563;
+            font-size: 0.95rem;
+        }
+
+        .glossary-content.open {
+            padding: 15px;
+            max-height: 200px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        /* Interactive Visual Quiz */
+        .visual-quiz-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .topology-svg-wrapper {
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 10px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .topology-svg-wrapper:hover {
+            border-color: var(--primary);
+            background: #eff6ff;
+        }
+
+        .topology-svg-wrapper.active {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.3);
+            background: #fff;
+        }
+
+        .click-hint {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
+        svg {
+            width: 100%;
+            height: 100px;
+            display: block;
+            margin: 0 auto;
+        }
+
+        /* SVG Styles */
+        .node { fill: white; stroke: #333; stroke-width: 2; }
+        .center-node { fill: var(--primary); stroke: #1d4ed8; }
+        .link { stroke: #666; stroke-width: 2; }
+        .backbone { stroke: #333; stroke-width: 4; stroke-linecap: round; }
+        .terminator { fill: #333; }
+
+        /* Quiz Interaction Area */
+        #visual-quiz-interaction {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f0f9ff;
+            border-radius: 8px;
+            border: 1px solid #bae6fd;
+            display: none; /* Hidden until clicked */
+            text-align: center;
+        }
+
+        #visual-score {
+            float: right;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        /* True/False Buttons */
+        .tf-question {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px dashed #ddd;
+        }
+        .tf-question:last-child { border-bottom: none; }
+        .tf-options { margin-top: 8px; }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .btn-group { flex-direction: column; }
+            button { width: 100%; }
+            #visual-score { float: none; display: block; margin-bottom: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>名師開講：網路拓樸大解析</h1>
+        <p>跟著老師動手做，一次搞懂 Star、Ring、Bus、Tree、P2P！</p>
+    </header>
+
+    <!-- 1. 名詞速查 (Glossary) -->
+    <div class="card">
+        <h2>📚 名詞速查 <span style="font-size:0.9rem; font-weight:normal; margin-left:auto; color: #666;">(點擊展開)</span></h2>
+        <div id="glossary-list">
+            <!-- Items injected by JS -->
+        </div>
+    </div>
+
+    <!-- 2. 題目卡 (The Question) -->
+    <div class="card">
+        <h2>📝 複選題 9</h2>
+        <p style="font-size: 1.1rem; font-weight: bold;">下列何者是常見的電腦網路拓樸結構?</p>
+        <div class="quiz-options">
+            <label><input type="checkbox" name="q9" value="A"> (A) 樹狀 (Tree)</label>
+            <label><input type="checkbox" name="q9" value="B"> (B) 環狀 (Ring)</label>
+            <label><input type="checkbox" name="q9" value="C"> (Star) 星狀</label>
+            <label><input type="checkbox" name="q9" value="D"> (Bus) 匯流排</label>
+            <label><input type="checkbox" name="q9" value="E"> (Peer2Peer) 點對點</label>
+        </div>
+        <div class="btn-group">
+            <button class="btn-primary" onclick="checkMainQuiz()">送出答案</button>
+            <button class="btn-secondary" onclick="toggleExplanation()">顯示解析</button>
+            <button class="btn-outline" onclick="resetMainQuiz()">重作一次</button>
+        </div>
+        <div id="main-quiz-feedback" class="feedback"></div>
+    </div>
+
+    <!-- 3. 觀念卡 (Concepts) -->
+    <div class="card">
+        <h2>💡 觀念懶人包</h2>
+        <ul style="padding-left: 20px;">
+            <li><strong>匯流排 (Bus)</strong>：所有電腦掛在一條主幹線 (Backbone) 上，最省線，但斷線全掛。</li>
+            <li><strong>環狀 (Ring)</strong>：手牽手圍圈圈，資料單向繞圈傳，有人斷線就麻煩 (除非雙環)。</li>
+            <li><strong>星狀 (Star)</strong>：中間有個老大 (集線器/交換器)，大家都連它。現在最常見！</li>
+            <li><strong>樹狀 (Tree)</strong>：像家族樹，一層一層分支，大型網路愛用。</li>
+            <li><strong>點對點 (P2P/Mesh)</strong>：大家隨意連，沒大沒小，最可靠但線最複雜。</li>
+        </ul>
+    </div>
+
+    <!-- 4. 可點圖辨識卡 (Interactive Visual Quiz) -->
+    <div class="card" style="border-left-color: var(--secondary);">
+        <h2>👀 互動特訓：看圖猜猜看</h2>
+        <p>請點擊下方的示意圖，然後選出正確的拓樸名稱！</p>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <button class="btn-outline" onclick="initVisualQuiz(true)" style="padding: 5px 10px; font-size: 0.9rem;">🔄 隨機排列圖案</button>
+            <span id="visual-score">答對 0 / 共 0</span>
+            <button class="btn-outline" onclick="resetScore()" style="padding: 5px 10px; font-size: 0.9rem; margin-left:10px;">歸零</button>
+        </div>
+
+        <!-- 這裡放置 SVG 圖形 -->
+        <div id="topology-grid" class="visual-quiz-container">
+            <!-- Generated by JS -->
+        </div>
+
+        <!-- 作答區塊 (點圖後顯示) -->
+        <div id="visual-quiz-interaction">
+            <h3 id="selected-img-title">請選擇這張圖的名稱：</h3>
+            <select id="topology-select" style="padding: 10px; font-size: 1rem; border-radius: 4px;">
+                <option value="">-- 請選擇 --</option>
+                <option value="Tree">樹狀 (Tree)</option>
+                <option value="Ring">環狀 (Ring)</option>
+                <option value="Star">星狀 (Star)</option>
+                <option value="Bus">匯流排 (Bus)</option>
+                <option value="P2P">點對點 (P2P/Mesh)</option>
+            </select>
+            <button class="btn-primary" onclick="checkVisualAnswer()">判定</button>
+            <div id="visual-feedback" style="margin-top: 10px; font-weight: bold;"></div>
+        </div>
+    </div>
+
+    <!-- 5. 解析卡 (Detailed Explanation) -->
+    <div class="card" id="explanation-card" style="display:none;">
+        <h2>📖 老師詳解</h2>
+        <p><strong>正確答案：A、B、C、D、E (全選)</strong></p>
+        <p>這一題考的是「廣義的拓樸分類」。不管是實體的線路接法，還是邏輯上的資料流向，這五個都是課本定義的標準拓樸。</p>
+        <hr style="margin: 15px 0; border: 0; border-top: 1px solid #eee;">
+        
+        <h4>各選項解析：</h4>
+        <ul>
+            <li><strong>(A) Tree</strong>：由 Star 延伸而來，具有階層性 (Hierarchy)，企業網路、校園網路主幹常是這種結構。</li>
+            <li><strong>(B) Ring</strong>：早期 Token Ring 技術使用。訊號繞圈跑，優點是沒有碰撞，缺點是維護不易。</li>
+            <li><strong>(C) Star</strong>：現代乙太網路 (Ethernet) 的標準。如果你家裡有 Wi-Fi 分享器或 Switch，拉線出去給電腦，這就是星狀！</li>
+            <li><strong>(D) Bus</strong>：早期的同軸電纜網路。特色是兩端要有終端電阻 (Terminator)。</li>
+            <li><strong>(E) P2P</strong>：在拓樸學中，指節點之間有直接連線 (Mesh 網狀結構是其極致)。注意不要跟軟體的 P2P 下載混淆，但在實體結構上，點對點直連確實是一種拓樸。</li>
+        </ul>
+
+        <div class="feedback error" style="display:block; margin-top:15px;">
+            <strong>⚠️ 考試常見陷阱：</strong>
+            <ul style="margin-bottom:0;">
+                <li><strong>Client-Server (主從式架構)</strong>：這是「網路軟體架構」或「運作模式」，<strong>不是</strong>實體拓樸！如果選項出現這個，千萬別選。</li>
+                <li><strong>混合型 (Hybrid)</strong>：真實世界通常是混合的 (例如 Star + Bus = Tree)，如果選項有 Hybrid 也是對的。</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 6. 延伸練習 (Extended Practice) -->
+    <div class="card">
+        <h2>🚀 課後小測驗 (是非題)</h2>
+        
+        <div class="tf-question">
+            <p>1. 星狀拓樸 (Star) 一定有一個中心節點 (如 Hub 或 Switch)？</p>
+            <div class="tf-options">
+                <button class="btn-outline" onclick="checkTF(this, true, '沒錯！所有電腦都連向這個中心設備。')">O</button>
+                <button class="btn-outline" onclick="checkTF(this, false, '錯囉！星狀的核心特徵就是要有中心節點。')">X</button>
+            </div>
+            <div class="tf-feedback"></div>
+        </div>
+
+        <div class="tf-question">
+            <p>2. 匯流排拓樸 (Bus) 的特徵是所有電腦共用一條主幹，且兩端需要終端電阻？</p>
+            <div class="tf-options">
+                <button class="btn-outline" onclick="checkTF(this, true, '正確！就像公車行駛在主要幹道上。')">O</button>
+                <button class="btn-outline" onclick="checkTF(this, false, '不對喔！這是 Bus 拓樸最標準的定義。')">X</button>
+            </div>
+            <div class="tf-feedback"></div>
+        </div>
+
+        <div class="tf-question">
+            <p>3. Client-Server (主從式) 是一種常見的實體線路拓樸？</p>
+            <div class="tf-options">
+                <button class="btn-outline" onclick="checkTF(this, false, '錯！陷阱題！Client-Server 是軟體運作模式，不是接線形狀。')">O</button>
+                <button class="btn-outline" onclick="checkTF(this, true, '答對了！這不是拓樸，Star 或 Bus 才是拓樸。')">X</button>
+            </div>
+            <div class="tf-feedback"></div>
+        </div>
+    </div>
+
+    <footer style="text-align: center; margin-top: 30px; color: #6b7280; font-size: 0.9rem;">
+        <p>&copy; 電腦概論補教團隊 | 專注升學考試</p>
+    </footer>
+</div>
+
+<script>
+    /* --- 1. Glossary Data & Logic --- */
+    const glossaryData = [
+        { term: "拓樸 (Topology)", desc: "指網路中設備與線路連接的幾何形狀或是邏輯架構。" },
+        { term: "樹狀 (Tree)", desc: "階層式結構，像樹根分支，常用於大型網路主幹。" },
+        { term: "環狀 (Ring)", desc: "節點首尾相接形成封閉圓環，資料單向傳輸。" },
+        { term: "星狀 (Star)", desc: "所有節點連接到一個中央設備 (Hub/Switch)。" },
+        { term: "匯流排 (Bus)", desc: "所有節點共用一條傳輸線 (主幹)，結構簡單。" },
+        { term: "點對點 (P2P)", desc: "節點間直接互連，不一定依賴中心，可靠性高。" },
+        { term: "中心節點 (Hub/Switch)", desc: "星狀拓樸的核心設備，負責轉送資料。" },
+        { term: "主幹 (Backbone)", desc: "匯流排或樹狀結構中，承載主要流量的線路。" }
+    ];
+
+    function renderGlossary() {
+        const container = document.getElementById('glossary-list');
+        let html = '';
+        glossaryData.forEach((item, index) => {
+            html += `
+                <div class="glossary-item">
+                    <div class="glossary-header" onclick="toggleGlossary(${index})">
+                        ${item.term} <span>▼</span>
+                    </div>
+                    <div class="glossary-content" id="gloss-content-${index}">
+                        ${item.desc}
+                    </div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    }
+
+    function toggleGlossary(index) {
+        const content = document.getElementById(`gloss-content-${index}`);
+        content.classList.toggle('open');
+    }
+
+    /* --- 2. Main Quiz Logic --- */
+    function checkMainQuiz() {
+        const checkboxes = document.querySelectorAll('input[name="q9"]:checked');
+        const feedback = document.getElementById('main-quiz-feedback');
+        const correctAnswers = ['A', 'B', 'C', 'D', 'E'];
+        
+        let userAnswers = [];
+        checkboxes.forEach(cb => userAnswers.push(cb.value));
+        
+        feedback.style.display = 'block';
+        feedback.className = 'feedback';
+
+        // Check if user selected exactly A, B, C, D, E
+        if (userAnswers.length === 5) {
+            feedback.classList.add('success');
+            feedback.innerHTML = `<strong>🎉 完全正確！</strong><br>本題考的是「是否屬於拓樸種類」，這五個選項全都是電腦網路定義的標準拓樸結構。`;
+        } else {
+            feedback.classList.add('error');
+            let msg = `<strong>❌ 答錯囉！</strong><br>`;
+            if (userAnswers.length < 5) msg += `你漏選了！這五個全部都是拓樸喔。<br>`;
+            msg += `記住：只要是用來描述「節點連接形狀」的名詞，通常都是。`;
+            feedback.innerHTML = msg;
+        }
+    }
+
+    function toggleExplanation() {
+        const card = document.getElementById('explanation-card');
+        card.style.display = card.style.display === 'none' ? 'block' : 'none';
+        // Auto scroll to explanation
+        if(card.style.display === 'block') card.scrollIntoView({behavior: "smooth"});
+    }
+
+    function resetMainQuiz() {
+        document.querySelectorAll('input[name="q9"]').forEach(cb => cb.checked = false);
+        document.getElementById('main-quiz-feedback').style.display = 'none';
+        document.getElementById('explanation-card').style.display = 'none';
+    }
+
+    /* --- 3. Interactive Visual Quiz Logic (SVG Generation) --- */
+    
+    // SVG Templates (Functions returning SVG string)
+    const svgs = {
+        'Star': () => `
+            <svg viewBox="0 0 200 100">
+                <line x1="100" y1="50" x2="50" y2="20" class="link" />
+                <line x1="100" y1="50" x2="150" y2="20" class="link" />
+                <line x1="100" y1="50" x2="50" y2="80" class="link" />
+                <line x1="100" y1="50" x2="150" y2="80" class="link" />
+                <line x1="100" y1="50" x2="100" y2="10" class="link" />
+                
+                <circle cx="50" cy="20" r="8" class="node" />
+                <circle cx="150" cy="20" r="8" class="node" />
+                <circle cx="50" cy="80" r="8" class="node" />
+                <circle cx="150" cy="80" r="8" class="node" />
+                <circle cx="100" cy="10" r="8" class="node" />
+                
+                <rect x="90" y="40" width="20" height="20" class="center-node" />
+            </svg>`,
+        
+        'Bus': () => `
+            <svg viewBox="0 0 200 100">
+                <line x1="20" y1="50" x2="180" y2="50" class="backbone" />
+                <rect x="15" y="45" width="5" height="10" class="terminator" />
+                <rect x="180" y="45" width="5" height="10" class="terminator" />
+                
+                <line x1="50" y1="50" x2="50" y2="75" class="link" />
+                <line x1="100" y1="50" x2="100" y2="25" class="link" />
+                <line x1="150" y1="50" x2="150" y2="75" class="link" />
+                
+                <circle cx="50" cy="80" r="8" class="node" />
+                <circle cx="100" cy="20" r="8" class="node" />
+                <circle cx="150" cy="80" r="8" class="node" />
+            </svg>`,
+        
+        'Ring': () => `
+            <svg viewBox="0 0 200 100">
+                <path d="M100,20 L150,50 L130,90 L70,90 L50,50 Z" fill="none" class="link" />
+                
+                <circle cx="100" cy="20" r="8" class="node" />
+                <circle cx="150" cy="50" r="8" class="node" />
+                <circle cx="130" cy="90" r="8" class="node" />
+                <circle cx="70" cy="90" r="8" class="node" />
+                <circle cx="50" cy="50" r="8" class="node" />
+            </svg>`,
+            
+        'Tree': () => `
+            <svg viewBox="0 0 200 100">
+                <line x1="100" y1="15" x2="60" y2="50" class="link" />
+                <line x1="100" y1="15" x2="140" y2="50" class="link" />
+                
+                <line x1="60" y1="50" x2="40" y2="85" class="link" />
+                <line x1="60" y1="50" x2="80" y2="85" class="link" />
+                <line x1="140" y1="50" x2="120" y2="85" class="link" />
+                <line x1="140" y1="50" x2="160" y2="85" class="link" />
+                
+                <circle cx="100" cy="15" r="8" class="center-node" />
+                <circle cx="60" cy="50" r="8" class="node" />
+                <circle cx="140" cy="50" r="8" class="node" />
+                <circle cx="40" cy="85" r="8" class="node" />
+                <circle cx="80" cy="85" r="8" class="node" />
+                <circle cx="120" cy="85" r="8" class="node" />
+                <circle cx="160" cy="85" r="8" class="node" />
+            </svg>`,
+            
+        'P2P': () => `
+            <svg viewBox="0 0 200 100">
+                <!-- Messy connections -->
+                <line x1="40" y1="30" x2="160" y2="30" class="link" />
+                <line x1="40" y1="30" x2="100" y2="80" class="link" />
+                <line x1="160" y1="30" x2="100" y2="80" class="link" />
+                <line x1="40" y1="30" x2="40" y2="80" class="link" />
+                <line x1="160" y1="30" x2="160" y2="80" class="link" />
+                <line x1="40" y1="80" x2="160" y2="80" class="link" />
+                
+                <circle cx="40" cy="30" r="8" class="node" />
+                <circle cx="160" cy="30" r="8" class="node" />
+                <circle cx="100" cy="80" r="8" class="node" />
+                <circle cx="40" cy="80" r="8" class="node" />
+                <circle cx="160" cy="80" r="8" class="node" />
+            </svg>`
+    };
+
+    const hints = {
+        'Star': '特徵：中間有一個核心設備 (方塊)，大家都連它。',
+        'Bus': '特徵：中間有一條粗粗的主幹線，兩頭有終端。',
+        'Ring': '特徵：圍成一個圈圈，沒有中心，也沒有頭尾。',
+        'Tree': '特徵：像樹根一樣分岔，上面是根，下面是葉子。',
+        'P2P': '特徵：網狀或多點互連，線路複雜，大家地位平等。'
+    };
+
+    let currentScore = 0;
+    let totalAttempts = 0;
+    let currentSelectedTopology = null;
+    let currentSelectedDiv = null;
+
+    // Initialize visual quiz
+    function initVisualQuiz(randomize = false) {
+        const grid = document.getElementById('topology-grid');
+        grid.innerHTML = '';
+        
+        // Hide interaction area
+        document.getElementById('visual-quiz-interaction').style.display = 'none';
+        
+        let keys = Object.keys(svgs);
+        if (randomize) {
+            keys.sort(() => Math.random() - 0.5);
+        }
+
+        keys.forEach(key => {
+            const div = document.createElement('div');
+            div.className = 'topology-svg-wrapper';
+            div.innerHTML = svgs[key]();
+            div.innerHTML += `<div class="click-hint">點我作答</div>`;
+            div.onclick = () => selectTopologyImage(div, key);
+            grid.appendChild(div);
+        });
+    }
+
+    function selectTopologyImage(divElement, topologyKey) {
+        // Highlight logic
+        document.querySelectorAll('.topology-svg-wrapper').forEach(el => el.classList.remove('active'));
+        divElement.classList.add('active');
+        
+        // Setup interaction area
+        currentSelectedTopology = topologyKey;
+        currentSelectedDiv = divElement;
+        
+        const interactionArea = document.getElementById('visual-quiz-interaction');
+        interactionArea.style.display = 'block';
+        document.getElementById('selected-img-title').innerText = "你覺得這張圖是？";
+        document.getElementById('visual-feedback').innerHTML = '';
+        document.getElementById('topology-select').value = '';
+        
+        // Scroll slightly if needed on mobile
+        interactionArea.scrollIntoView({behavior: "smooth", block: "nearest"});
+    }
+
+    function checkVisualAnswer() {
+        const userSelect = document.getElementById('topology-select').value;
+        const feedback = document.getElementById('visual-feedback');
+        
+        if (!userSelect) {
+            alert("請先選擇一個答案！");
+            return;
+        }
+
+        totalAttempts++;
+
+        if (userSelect === currentSelectedTopology) {
+            currentScore++;
+            feedback.innerHTML = `<span style="color:var(--secondary)">✅ 答對了！</span> 這是 ${currentSelectedTopology}。`;
+            // Visual cue on the grid item
+            currentSelectedDiv.style.borderColor = 'var(--secondary)';
+            currentSelectedDiv.style.background = '#d1fae5';
+            currentSelectedDiv.querySelector('.click-hint').innerText = "✅ 已完成";
+        } else {
+            feedback.innerHTML = `<span style="color:var(--danger)">❌ 答錯了！</span> 這其實是 <strong>${currentSelectedTopology}</strong>。<br><span style="font-weight:normal; font-size:0.9rem">${hints[currentSelectedTopology]}</span>`;
+            currentSelectedDiv.style.borderColor = 'var(--danger)';
+            currentSelectedDiv.style.background = '#fee2e2';
+        }
+
+        updateScoreBoard();
+    }
+
+    function updateScoreBoard() {
+        document.getElementById('visual-score').innerText = `答對 ${currentScore} / 共 ${totalAttempts}`;
+    }
+
+    function resetScore() {
+        currentScore = 0;
+        totalAttempts = 0;
+        updateScoreBoard();
+        initVisualQuiz(true);
+    }
+
+    /* --- 4. Extended Practice Logic (True/False) --- */
+    function checkTF(btn, isCorrect, explanation) {
+        const parent = btn.parentElement;
+        const feedbackDiv = parent.nextElementSibling; // .tf-feedback
+        
+        // Reset buttons style in this group
+        parent.querySelectorAll('button').forEach(b => {
+            b.classList.remove('btn-success', 'btn-danger');
+            b.classList.add('btn-outline');
+        });
+
+        if (isCorrect) {
+            btn.classList.remove('btn-outline');
+            btn.classList.add('btn-success');
+            feedbackDiv.innerHTML = `<span style="color:var(--secondary); font-weight:bold;">⭕ 正確！</span> ${explanation}`;
+        } else {
+            btn.classList.remove('btn-outline');
+            btn.classList.add('btn-danger');
+            feedbackDiv.innerHTML = `<span style="color:var(--danger); font-weight:bold;">❌ 錯誤！</span> ${explanation}`;
+        }
+    }
+
+    // Init on load
+    window.onload = function() {
+        renderGlossary();
+        initVisualQuiz(true); // Randomize initially
+    };
+
+</script>
+</body>
+</html>

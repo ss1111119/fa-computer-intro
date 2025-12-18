@@ -1,0 +1,531 @@
+<!-- 
+    Filename: application-layer-protocols-mcq-q6.html 
+    Description: 網路通訊協定分層：應用層互動式教學網頁
+    Author: 電腦概論補教名師
+-->
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>網路通訊協定分層：應用層（Application Layer）複選題</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #1e40af;
+            --success-color: #16a34a;
+            --error-color: #dc2626;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-sub: #4b5563;
+        }
+
+        body {
+            font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Header Styles */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: var(--text-sub);
+            font-weight: bold;
+        }
+
+        /* Card Styles */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            margin-bottom: 25px;
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .card h2 {
+            font-size: 1.4rem;
+            margin-top: 0;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            color: var(--secondary-color);
+        }
+
+        /* Question Styles */
+        .question-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .options-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-item:hover {
+            background-color: #eff6ff;
+            border-color: var(--primary-color);
+        }
+
+        .option-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 15px;
+            cursor: pointer;
+        }
+
+        /* Button Styles */
+        .btn-group {
+            margin-top: 25px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .btn-submit { background-color: var(--primary-color); color: white; }
+        .btn-explain { background-color: #f59e0b; color: white; }
+        .btn-reset { background-color: #9ca3af; color: white; }
+
+        /* Feedback Section */
+        #feedback-area {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+            font-weight: bold;
+        }
+
+        .feedback-success { background-color: #dcfce7; color: var(--success-color); border: 1px solid var(--success-color); }
+        .feedback-error { background-color: #fee2e2; color: var(--error-color); border: 1px solid var(--error-color); }
+
+        /* Explanation Section */
+        #explanation-card {
+            display: none;
+            background-color: #fffbeb; /* Light yellow for notes */
+            border-left-color: #f59e0b;
+        }
+
+        .explain-item {
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px dashed #cbd5e1;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            margin-right: 8px;
+            font-weight: bold;
+        }
+
+        .badge-app { background-color: #dcfce7; color: #166534; } /* Green for App Layer */
+        .badge-trans { background-color: #fee2e2; color: #991b1b; } /* Red for Transport Layer */
+
+        /* Vocabulary Section */
+        details {
+            margin-bottom: 10px;
+            background-color: #f8fafc;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        summary {
+            padding: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            background-color: #e2e8f0;
+            user-select: none;
+        }
+        
+        summary:hover {
+            background-color: #cbd5e1;
+        }
+
+        .vocab-content {
+            padding: 15px;
+            font-size: 0.95rem;
+            color: #334155;
+            background-color: #fff;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        /* Concept Map Section */
+        .concept-box {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .concept-col {
+            flex: 1;
+            min-width: 250px;
+            background: #f0f9ff;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .concept-col.transport {
+            background: #fff1f2;
+        }
+
+        .mnemonic {
+            background-color: #4f46e5;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        /* Mini Quiz */
+        .mini-quiz-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .mini-quiz-result {
+            font-weight: bold;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>網路通訊協定分層：應用層（Application Layer）複選題</h1>
+        <p class="subtitle">【電腦概論／網路概論】重點觀念突破</p>
+    </header>
+
+    <!-- Section 1: Vocabulary -->
+    <div class="card">
+        <h2>📚 名詞速查區（點擊展開看白話文）</h2>
+        <p style="font-size: 0.9rem; color: #666; margin-bottom: 15px;">遇到不懂的英文縮寫？點一下馬上懂！</p>
+        
+        <details>
+            <summary>應用層 (Application Layer)</summary>
+            <div class="vocab-content">
+                OSI 模型或 TCP/IP 模型的最上層。直接跟使用者（你）打交道的地方，比如瀏覽器、Email 軟體都在這一層運作。
+            </div>
+        </details>
+        
+        <details>
+            <summary>傳輸層 (Transport Layer)</summary>
+            <div class="vocab-content">
+                應用層的樓下。負責把應用層的資料切塊、編號，確保資料能從這台電腦送到那台電腦（像物流公司）。
+            </div>
+        </details>
+
+        <details>
+            <summary>HTTP (HyperText Transfer Protocol)</summary>
+            <div class="vocab-content">
+                「超文本傳輸協定」。你在看網頁時用的就是它，負責傳送網頁文字、圖片。
+            </div>
+        </details>
+
+        <details>
+            <summary>FTP (File Transfer Protocol)</summary>
+            <div class="vocab-content">
+                「檔案傳輸協定」。專門用來上傳或下載檔案的標準，就像網路上的搬家公司。
+            </div>
+        </details>
+
+        <details>
+            <summary>SMTP (Simple Mail Transfer Protocol)</summary>
+            <div class="vocab-content">
+                「簡單郵件傳輸協定」。負責「寄信」的郵差，把你的 Email 送到對方的郵件伺服器。
+            </div>
+        </details>
+
+        <details>
+            <summary>TCP (Transmission Control Protocol)</summary>
+            <div class="vocab-content">
+                「傳輸控制協定」。傳輸層的大哥，做事很謹慎，資料掉了會重傳，保證使命必達（慢一點但可靠）。
+            </div>
+        </details>
+
+        <details>
+            <summary>UDP (User Datagram Protocol)</summary>
+            <div class="vocab-content">
+                「使用者資料包協定」。傳輸層的小弟，做事求快，資料丟出去就不管了，適合直播或語音通話（快但可能會掉封包）。
+            </div>
+        </details>
+    </div>
+
+    <!-- Section 2: Concept Map -->
+    <div class="card">
+        <h2>💡 觀念整理區：別再死背了！</h2>
+        <p>網路分層就像公司分部門，各司其職：</p>
+        
+        <div class="concept-box">
+            <div class="concept-col">
+                <h3 style="color: #0369a1;">🔼 應用層 (Application)</h3>
+                <ul>
+                    <li><strong>重點：</strong>直接服務「使用者」或「應用程式」。</li>
+                    <li><strong>功能：</strong>定義資料是用來幹嘛的（看網頁？寄信？傳檔案？）。</li>
+                    <li><strong>常見：</strong>HTTP, FTP, SMTP, DNS, Telnet。</li>
+                </ul>
+            </div>
+            <div class="concept-col transport">
+                <h3 style="color: #be123c;">🔽 傳輸層 (Transport)</h3>
+                <ul>
+                    <li><strong>重點：</strong>服務「應用層」，不直接對人。</li>
+                    <li><strong>功能：</strong>管資料怎麼送、穩不穩、快不快。</li>
+                    <li><strong>常見：</strong>只有兩個大咖 <strong>TCP</strong> 和 <strong>UDP</strong>。</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="mnemonic">
+            👨‍🏫 老師的考試口訣：<br>
+            看到 HTTP / FTP / SMTP (用途很明確) → 應用層<br>
+            看到 TCP / UDP (只有 P 沒有具體用途) → 傳輸層
+        </div>
+    </div>
+
+    <!-- Section 3: Interactive Quiz -->
+    <div class="card" id="quiz-card">
+        <h2>📝 實戰演練</h2>
+        <div class="question-text">
+            複選題 6. 下列的網路通訊協定，何者屬於應用層的協定標準?
+        </div>
+
+        <div class="options-group">
+            <label class="option-item">
+                <input type="checkbox" name="q6" value="A" id="opt-A">
+                (A) HTTP
+            </label>
+            <label class="option-item">
+                <input type="checkbox" name="q6" value="B" id="opt-B">
+                (B) FTP
+            </label>
+            <label class="option-item">
+                <input type="checkbox" name="q6" value="C" id="opt-C">
+                (C) SMTP
+            </label>
+            <label class="option-item">
+                <input type="checkbox" name="q6" value="D" id="opt-D">
+                (D) TCP
+            </label>
+            <label class="option-item">
+                <input type="checkbox" name="q6" value="E" id="opt-E">
+                (E) UDP
+            </label>
+        </div>
+
+        <div id="feedback-area"></div>
+
+        <div class="btn-group">
+            <button class="btn btn-submit" onclick="checkAnswer()">📤 送出答案</button>
+            <button class="btn btn-explain" onclick="showExplanation()">🔍 顯示解析</button>
+            <button class="btn btn-reset" onclick="resetQuiz()">🔄 重作一次</button>
+        </div>
+    </div>
+
+    <!-- Section 4: Explanation (Hidden initially) -->
+    <div class="card" id="explanation-card">
+        <h2>📖 選項詳細解析</h2>
+        
+        <div class="explain-item">
+            <span class="badge badge-app">應用層</span> <strong>(A) HTTP：正確</strong><br>
+            網頁資料傳輸協定 (HyperText Transfer Protocol)，這是我們上網瀏覽網頁時最直接使用的協定，屬於應用層。
+        </div>
+
+        <div class="explain-item">
+            <span class="badge badge-app">應用層</span> <strong>(B) FTP：正確</strong><br>
+            檔案傳輸協定 (File Transfer Protocol)，專門用來處理檔案的上傳與下載服務，屬於應用層。
+        </div>
+
+        <div class="explain-item">
+            <span class="badge badge-app">應用層</span> <strong>(C) SMTP：正確</strong><br>
+            簡單郵件傳輸協定 (Simple Mail Transfer Protocol)，這是用來「寄送」電子郵件的標準，屬於應用層。
+        </div>
+
+        <div class="explain-item">
+            <span class="badge badge-trans">傳輸層</span> <strong>(D) TCP：錯誤</strong><br>
+            傳輸控制協定 (Transmission Control Protocol)，這是負責資料可靠傳輸的底層機制，屬於<strong>傳輸層</strong>。
+        </div>
+
+        <div class="explain-item">
+            <span class="badge badge-trans">傳輸層</span> <strong>(E) UDP：錯誤</strong><br>
+            使用者資料包協定 (User Datagram Protocol)，負責快速但不可靠的傳輸，屬於<strong>傳輸層</strong>。
+        </div>
+    </div>
+
+    <!-- Section 5: Mini Quiz -->
+    <div class="card">
+        <h2>⚡ 延伸互動小測驗（馬上測馬上懂）</h2>
+        
+        <div class="mini-quiz-item">
+            <span>1. HTTP 是建立在 TCP 之上的應用層協定？</span>
+            <div>
+                <button class="btn" style="padding: 5px 10px; background: #e0e7ff;" onclick="checkMini(1, true)">O</button>
+                <button class="btn" style="padding: 5px 10px; background: #fee2e2;" onclick="checkMini(1, false)">X</button>
+                <span id="mini-res-1" class="mini-quiz-result"></span>
+            </div>
+        </div>
+
+        <div class="mini-quiz-item">
+            <span>2. TCP 屬於應用層，直接提供使用者服務？</span>
+            <div>
+                <button class="btn" style="padding: 5px 10px; background: #e0e7ff;" onclick="checkMini(2, true)">O</button>
+                <button class="btn" style="padding: 5px 10px; background: #fee2e2;" onclick="checkMini(2, false)">X</button>
+                <span id="mini-res-2" class="mini-quiz-result"></span>
+            </div>
+        </div>
+
+        <div class="mini-quiz-item">
+            <span>3. SMTP 用來傳送電子郵件？</span>
+            <div>
+                <button class="btn" style="padding: 5px 10px; background: #e0e7ff;" onclick="checkMini(3, true)">O</button>
+                <button class="btn" style="padding: 5px 10px; background: #fee2e2;" onclick="checkMini(3, false)">X</button>
+                <span id="mini-res-3" class="mini-quiz-result"></span>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // 正確答案配置
+    const correctAnswers = ['A', 'B', 'C'];
+    const allOptions = ['A', 'B', 'C', 'D', 'E'];
+
+    function checkAnswer() {
+        const feedbackEl = document.getElementById('feedback-area');
+        let selected = [];
+        
+        // 取得使用者勾選的項目
+        allOptions.forEach(opt => {
+            const checkbox = document.getElementById('opt-' + opt);
+            if (checkbox.checked) {
+                selected.push(opt);
+            }
+        });
+
+        // 判斷邏輯
+        let missing = correctAnswers.filter(x => !selected.includes(x)); // 應選而未選
+        let extra = selected.filter(x => !correctAnswers.includes(x));   // 不應選而選
+
+        feedbackEl.style.display = 'block';
+        feedbackEl.className = ''; // 清除之前的 class
+
+        if (missing.length === 0 && extra.length === 0) {
+            // 全對
+            feedbackEl.textContent = "🎉 恭喜答對！觀念非常清楚喔！(提示：應用層協定幾乎都建立在 TCP 或 UDP 之上)";
+            feedbackEl.classList.add('feedback-success');
+        } else {
+            // 有錯
+            let msg = "⚠️ 答案不完全正確喔！\n";
+            if (extra.length > 0) {
+                msg += `👉 你多選了屬於「傳輸層」的選項：${extra.join(', ')}。\n`;
+            }
+            if (missing.length > 0) {
+                msg += `👉 你漏選了屬於「應用層」的選項：${missing.join(', ')}。\n`;
+            }
+            msg += "建議點擊「顯示解析」複習一下！";
+            
+            feedbackEl.innerText = msg; // 使用 innerText 以支援換行
+            feedbackEl.classList.add('feedback-error');
+        }
+    }
+
+    function showExplanation() {
+        document.getElementById('explanation-card').style.display = 'block';
+        // 自動捲動到解析區
+        document.getElementById('explanation-card').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function resetQuiz() {
+        // 清空 checkbox
+        allOptions.forEach(opt => {
+            document.getElementById('opt-' + opt).checked = false;
+        });
+        
+        // 隱藏回饋與解析
+        document.getElementById('feedback-area').style.display = 'none';
+        document.getElementById('explanation-card').style.display = 'none';
+        
+        // 捲動回題目
+        document.getElementById('quiz-card').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function checkMini(qIndex, answer) {
+        const resEl = document.getElementById(`mini-res-${qIndex}`);
+        let isCorrect = false;
+        let msg = "";
+
+        // 題目邏輯
+        if (qIndex === 1) {
+            // Q1: HTTP 建立在 TCP 上 (True)
+            isCorrect = (answer === true);
+            msg = isCorrect ? "✅ 正確！HTTP 需要 TCP 的可靠傳輸。" : "❌ 錯誤，HTTP 確實是依靠 TCP 運作的。";
+        } else if (qIndex === 2) {
+            // Q2: TCP 屬於應用層 (False)
+            isCorrect = (answer === false);
+            msg = isCorrect ? "✅ 正確！TCP 是傳輸層，不直接對人。" : "❌ 錯誤，TCP 是負責運送的傳輸層。";
+        } else if (qIndex === 3) {
+            // Q3: SMTP 傳送郵件 (True)
+            isCorrect = (answer === true);
+            msg = isCorrect ? "✅ 正確！SMTP 是寄信標準協定。" : "❌ 錯誤，SMTP 就是專門寄信的。";
+        }
+
+        resEl.style.color = isCorrect ? "#16a34a" : "#dc2626";
+        resEl.textContent = msg;
+    }
+</script>
+
+</body>
+</html>

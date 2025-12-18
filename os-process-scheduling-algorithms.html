@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>作業系統排程演算法 - 互動式考前衝刺教學</title>
+    <style>
+        /* --- 基礎設定 (Reset & Variables) --- */
+        :root {
+            --primary-color: #2563eb;       /* 專業藍 */
+            --accent-color: #f59e0b;        /* 重點橘 */
+            --success-color: #10b981;       /* 正確綠 */
+            --error-color: #ef4444;         /* 錯誤紅 */
+            --bg-color: #f3f4f6;
+            --text-color: #1f2937;
+            --card-bg: #ffffff;
+            --border-radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding-bottom: 50px;
+        }
+
+        /* --- 通用元件類別 --- */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border-left: 5px solid var(--primary-color);
+        }
+
+        h1, h2, h3 {
+            margin-bottom: 15px;
+            color: #111827;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 1.4rem;
+            border-bottom: 2px solid var(--bg-color);
+            padding-bottom: 10px;
+        }
+
+        .highlight {
+            background-color: #fef3c7;
+            color: #92400e;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .badge-must {
+            display: inline-block;
+            background-color: var(--error-color);
+            color: white;
+            font-size: 0.8rem;
+            padding: 2px 8px;
+            border-radius: 20px;
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+
+        .badge-key {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            font-size: 0.8rem;
+            padding: 2px 8px;
+            border-radius: 20px;
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+
+        /* --- Header --- */
+        header {
+            background: var(--primary-color);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        /* --- 表格樣式 --- */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        .comparison-table th, .comparison-table td {
+            padding: 12px;
+            border: 1px solid #e5e7eb;
+            text-align: center;
+        }
+        .comparison-table th {
+            background-color: #f8fafc;
+            color: var(--text-color);
+        }
+        .status-ok { color: var(--success-color); font-weight: bold; }
+        .status-no { color: var(--error-color); font-weight: bold; }
+
+        /* --- 題目區塊 --- */
+        .question-box {
+            background-color: #eff6ff;
+            border: 2px dashed var(--primary-color);
+            padding: 20px;
+            border-radius: var(--border-radius);
+        }
+        .options-list {
+            list-style: none;
+            margin-left: 10px;
+        }
+        .options-list li {
+            margin: 8px 0;
+            font-weight: bold;
+        }
+
+        /* --- 互動模擬區 (核心) --- */
+        .sim-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+
+        .sim-btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 6px;
+            background-color: #e5e7eb;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .sim-btn:hover { background-color: #d1d5db; }
+        .sim-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        .sim-btn.active-wrong {
+            background-color: var(--error-color);
+            color: white;
+        }
+
+        .sim-stage {
+            background: #1f2937;
+            border-radius: 8px;
+            padding: 20px;
+            min-height: 250px;
+            position: relative;
+            color: white;
+            overflow: hidden;
+        }
+
+        .sim-info-bar {
+            background: rgba(255,255,255,0.1);
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        
+        .sim-warning {
+            color: #fca5a5;
+            font-weight: bold;
+            display: block;
+            margin-top: 5px;
+        }
+
+        /* 視覺化元素 */
+        .queue-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 1px dashed #6b7280;
+            padding-bottom: 20px;
+        }
+        
+        .cpu-container {
+            width: 120px;
+            height: 120px;
+            border: 3px solid var(--success-color);
+            border-radius: 10px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        .cpu-label {
+            position: absolute;
+            top: -12px;
+            background: #1f2937;
+            padding: 0 10px;
+            color: var(--success-color);
+            font-weight: bold;
+        }
+
+        .process-node {
+            width: 60px;
+            height: 60px;
+            background: white;
+            color: #1f2937;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+            border: 3px solid #60a5fa;
+            transition: all 0.5s ease;
+        }
+        
+        .process-node small { font-size: 0.7rem; color: #666; }
+        .process-node.active-process {
+            background: var(--accent-color);
+            color: white;
+            border-color: white;
+            box-shadow: 0 0 15px var(--accent-color);
+        }
+
+        /* --- 測驗區 --- */
+        .quiz-option {
+            display: block;
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .quiz-option:hover { background-color: #f9fafb; }
+        .quiz-option input { margin-right: 10px; }
+
+        .feedback-box {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 6px;
+            display: none;
+        }
+        .feedback-correct { background-color: #d1fae5; color: #065f46; border: 1px solid #34d399; }
+        .feedback-wrong { background-color: #fee2e2; color: #991b1b; border: 1px solid #f87171; }
+
+        /* --- RWD --- */
+        @media (max-width: 600px) {
+            h1 { font-size: 1.5rem; }
+            .card { padding: 15px; }
+            .comparison-table { font-size: 0.85rem; }
+            .sim-btn { width: 100%; margin-bottom: 5px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<header>
+    <h1>作業系統排程演算法</h1>
+    <p>考試專用：5 分鐘搞懂「誰能先用 CPU？」</p>
+</header>
+
+<div class="container">
+
+    <!-- 2. 題目區 -->
+    <section class="card question-box">
+        <h3><span class="badge-key">本題</span>下列何者屬於一般作業系統處理程序（Process）的排程演算法？</h3>
+        <p style="color: #666; font-size: 0.9rem; margin-bottom: 10px;">（本題為複選題）</p>
+        <ul class="options-list">
+            <li>(A) FIFO</li>
+            <li>(B) FILO</li>
+            <li>(C) Priority</li>
+            <li>(D) Round Robin</li>
+            <li>(E) Random</li>
+        </ul>
+        <p style="text-align: right; font-size: 0.9rem; color: #2563eb;">↓ 往下看完教學，答案自然浮現 ↓</p>
+    </section>
+
+    <!-- 4. 新手導入 -->
+    <section class="card" id="intro">
+        <h2>🔰 新手導入：什麼是排程？</h2>
+        <p>想像 <strong>CPU</strong> 是一個超忙的「大廚」，而 <strong>行程 (Process)</strong> 是等著被料理的「點菜單」。</p>
+        <br>
+        <ul style="margin-left: 20px;">
+            <li>大廚只有一個人（單核 CPU），一次只能炒一道菜。</li>
+            <li>但是點菜單一直送進來。</li>
+            <li>作業系統 (OS) 就像「餐廳經理」，他必須決定：<strong>「下一道菜該炒哪一張單？」</strong></li>
+        </ul>
+        <br>
+        <div style="background: #f0fdf4; padding: 15px; border-radius: 8px; border-left: 4px solid var(--success-color);">
+            <strong>【必背白話】</strong><br>
+            排程演算法 (Scheduling Algorithm) 就是：<br>
+            <span style="font-size: 1.2rem; font-weight: bold; color: var(--success-color);">決定「誰先用 CPU」以及「用多久」的規則。</span>
+        </div>
+    </section>
+
+    <!-- 5. 必背總表 -->
+    <section class="card" id="table">
+        <h2><span class="badge-must">必背</span>常見排程演算法總表</h2>
+        <p>考試最常考這幾種，請先記住哪些是「YES」，哪些是「NO」。</p>
+        
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th>名稱 (英文)</th>
+                    <th>中文名稱</th>
+                    <th>是 OS 排程嗎？</th>
+                    <th>一句話說明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>FIFO</strong></td>
+                    <td>先來先服務</td>
+                    <td class="status-ok">✅ 是</td>
+                    <td>先排隊的先做 (公平)</td>
+                </tr>
+                <tr>
+                    <td><strong>Priority</strong></td>
+                    <td>優先權排程</td>
+                    <td class="status-ok">✅ 是</td>
+                    <td>VIP 先做 (緊急的先做)</td>
+                </tr>
+                <tr>
+                    <td><strong>Round Robin</strong></td>
+                    <td>輪轉排程</td>
+                    <td class="status-ok">✅ 是</td>
+                    <td>大家輪流用 (每人吃一口)</td>
+                </tr>
+                <tr>
+                    <td>FILO (LIFO)</td>
+                    <td>後進先出</td>
+                    <td class="status-no">❌ 不是</td>
+                    <td>這是堆疊 (Stack) 資料結構</td>
+                </tr>
+                <tr>
+                    <td>Random</td>
+                    <td>隨機排程</td>
+                    <td class="status-no">❌ 不是</td>
+                    <td>OS 需要穩定，不能亂選</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- 6. 互動模擬區 -->
+    <section class="card" id="simulation">
+        <h2>🎮 互動模擬：CPU 怎麼選？</h2>
+        <p>點擊下方按鈕，觀察 CPU 如何挑選行程（Process）。</p>
+        <br>
+
+        <!-- 控制按鈕 -->
+        <div class="sim-controls">
+            <button class="sim-btn" onclick="startSim('FIFO')">FIFO (先來先服務)</button>
+            <button class="sim-btn" onclick="startSim('Priority')">Priority (優先權)</button>
+            <button class="sim-btn" onclick="startSim('RR')">Round Robin (輪轉)</button>
+            <button class="sim-btn" onclick="startSim('FILO')" style="border: 1px solid #ef4444;">FILO (錯誤示範)</button>
+            <button class="sim-btn" onclick="startSim('Random')" style="border: 1px solid #ef4444;">Random (錯誤示範)</button>
+        </div>
+
+        <!-- 模擬舞台 -->
+        <div class="sim-stage">
+            <div id="sim-message" class="sim-info-bar">請選擇一種演算法開始模擬...</div>
+            
+            <div style="font-size: 0.8rem; color: #9ca3af; margin-bottom: 5px;">等待佇列 (Ready Queue):</div>
+            <div class="queue-container" id="queue-box">
+                <!-- JS 會在這裡產生 Process -->
+            </div>
+
+            <div class="cpu-container">
+                <span class="cpu-label">CPU</span>
+                <div id="cpu-slot" style="font-size: 2rem; opacity: 0.3;">⚙️</div>
+            </div>
+        </div>
+        
+        <div style="margin-top: 10px; font-size: 0.9rem; color: #666;">
+            <strong>圖例說明：</strong> P1, P2... 代表行程。<br>
+            <span style="display:inline-block; width:10px; height:10px; background:var(--accent-color); border-radius:50%;"></span> 代表正在使用 CPU。
+        </div>
+    </section>
+
+    <!-- 7. 選項破解 -->
+    <section class="card" id="analysis">
+        <h2>💡 選項逐一破解</h2>
+        
+        <div style="margin-bottom: 15px;">
+            <h3 style="color: var(--success-color);">(A) FIFO (First-In First-Out) ✅</h3>
+            <p><strong>說明：</strong>就像去便利商店排隊結帳，誰先排隊誰先結帳。這是最基本、最簡單的 OS 排程法。</p>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <h3 style="color: var(--error-color);">(B) FILO (First-In Last-Out) ❌</h3>
+            <p><strong>說明：</strong>就像洗盤子，最後放上去的髒盤子會先被洗（堆疊 Stack 概念）。</p>
+            <p class="highlight">為什麼不是排程？因為這會導致最早來的程式永遠等不到執行（餓死），不符合公平原則。</p>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <h3 style="color: var(--success-color);">(C) Priority (優先權排程) ✅</h3>
+            <p><strong>說明：</strong>就像急診室檢傷分類，病情嚴重（優先權高）的病人先看診，不管他是不是晚到。</p>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <h3 style="color: var(--success-color);">(D) Round Robin (輪轉排程) ✅</h3>
+            <p><strong>說明：</strong>這是「分時系統」最常用的。CPU 給每個人固定的時間（例如 2 秒），時間到就換下一個人，大家輪流用，這讓使用者覺得電腦好像同時在做很多事。</p>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <h3 style="color: var(--error-color);">(E) Random (隨機排程) ❌</h3>
+            <p><strong>說明：</strong>抽籤決定。這不是標準的 OS 排程，因為電腦運作追求「可預測」與「公平」，隨機太不穩定了。</p>
+        </div>
+    </section>
+
+    <!-- 9. 記憶技巧 & 10. 常見錯誤 -->
+    <section class="card" style="background: linear-gradient(to right, #fff, #fffbeb);">
+        <h2>🧠 考前速記 & 常見錯誤</h2>
+        
+        <div style="margin-bottom: 20px;">
+            <h4>【考試口訣】</h4>
+            <ul>
+                <li><strong>「排程三兄弟：FIFO、Priority、RR」</strong>（看到這三個就打勾）。</li>
+                <li><strong>「看到 FILO 想到 Stack」</strong>（它是資料結構，不是排程）。</li>
+                <li><strong>「Round Robin 就是輪流吃一口」</strong>。</li>
+            </ul>
+        </div>
+
+        <div>
+            <h4>【⚠️ 學生最容易錯的地方】</h4>
+            <ol>
+                <li><strong>眼花選錯：</strong>看到 FIFO 和 FILO 長很像，以為是一組的就一起選。記得：FIFO 是排隊(O)，FILO 是插隊/堆疊(X)。</li>
+                <li><strong>誤選 Random：</strong>以為「隨機」也是一種演算法。雖然實作寫得出來，但一般 OS 教科書不將其列為標準排程法。</li>
+                <li><strong>漏選：</strong>題目是複選題，常漏掉 Round Robin 或 Priority。</li>
+            </ol>
+        </div>
+    </section>
+
+    <!-- 8. 小測驗區 -->
+    <section class="card" id="quiz">
+        <h2>📝 隨堂小測驗</h2>
+        <p>回到最上面的題目，現在請試著選出正確答案（複選）：</p>
+        <p style="font-weight: bold; margin: 10px 0;">下列何者屬於一般作業系統處理程序（Process）的排程演算法？</p>
+        
+        <form id="quiz-form">
+            <label class="quiz-option"><input type="checkbox" name="ans" value="A"> (A) FIFO (First-In First-Out)</label>
+            <label class="quiz-option"><input type="checkbox" name="ans" value="B"> (B) FILO (First-In Last-Out)</label>
+            <label class="quiz-option"><input type="checkbox" name="ans" value="C"> (C) Priority (優先權排程)</label>
+            <label class="quiz-option"><input type="checkbox" name="ans" value="D"> (D) Round Robin (輪轉排程)</label>
+            <label class="quiz-option"><input type="checkbox" name="ans" value="E"> (E) Random (隨機排程)</label>
+            
+            <button type="button" onclick="checkAnswer()" style="margin-top: 10px; background: var(--primary-color); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 1rem;">提交答案</button>
+        </form>
+
+        <div id="quiz-feedback" class="feedback-box"></div>
+    </section>
+
+</div>
+
+<script>
+    // --- 互動模擬邏輯 ---
+    
+    // 定義行程資料 (模擬用)
+    // Priority: 數字越小越高 (1最高)
+    // Duration: 執行所需時間
+    const processesTemplate = [
+        { id: 'P1', arrival: 1, priority: 3, name: 'P1' }, // 普通
+        { id: 'P2', arrival: 2, priority: 1, name: 'P2' }, // 最緊急
+        { id: 'P3', arrival: 3, priority: 2, name: 'P3' }, // 次緊急
+        { id: 'P4', arrival: 4, priority: 3, name: 'P4' }  // 普通
+    ];
+
+    let currentTimeout = null;
+    let isRunning = false;
+
+    function startSim(algo) {
+        // 1. 重置 UI
+        const queueBox = document.getElementById('queue-box');
+        const cpuSlot = document.getElementById('cpu-slot');
+        const msgBox = document.getElementById('sim-message');
+        const btns = document.querySelectorAll('.sim-btn');
+        
+        // 清除舊的計時器與狀態
+        if(currentTimeout) clearTimeout(currentTimeout);
+        queueBox.innerHTML = '';
+        cpuSlot.innerHTML = '⚙️';
+        cpuSlot.style.opacity = '0.3';
+        
+        // 按鈕樣式切換
+        btns.forEach(b => {
+            b.classList.remove('active', 'active-wrong');
+            if (b.textContent.includes(algo)) {
+                if (algo === 'FILO' || algo === 'Random') {
+                    b.classList.add('active-wrong');
+                } else {
+                    b.classList.add('active');
+                }
+            }
+        });
+
+        // 2. 準備行程資料 (深拷貝)
+        let tasks = JSON.parse(JSON.stringify(processesTemplate));
+        let explanation = "";
+        let isWrongAlgo = false;
+
+        // 3. 根據演算法排序
+        switch(algo) {
+            case 'FIFO':
+                explanation = "【FIFO】依照到達順序：P1 -> P2 -> P3 -> P4";
+                // 陣列原本就是照 id/arrival 排的，不用動
+                break;
+            case 'Priority':
+                explanation = "【Priority】優先權高的先做 (假設 P2 最緊急)：P2 -> P3 -> P1 -> P4";
+                tasks.sort((a, b) => a.priority - b.priority);
+                break;
+            case 'RR':
+                explanation = "【Round Robin】每人輪流做一點：P1 -> P2 -> P3 -> P4 -> P1...";
+                // 模擬輪轉：這裡簡單演示順序重複的效果
+                tasks = [
+                    {id:'P1', name:'P1'}, {id:'P2', name:'P2'}, {id:'P3', name:'P3'}, 
+                    {id:'P4', name:'P4'}, {id:'P1', name:'P1(續)'}, {id:'P2', name:'P2(續)'}
+                ];
+                break;
+            case 'FILO':
+                explanation = "【FILO】後進先出 (Stack)：最後來的 P4 先做。";
+                explanation += "<span class='sim-warning'>⚠️ 警告：這不是標準 OS 排程，會導致先來的人餓死！</span>";
+                tasks.reverse(); // 反轉
+                isWrongAlgo = true;
+                break;
+            case 'Random':
+                explanation = "【Random】隨機亂選：完全不可預測。";
+                explanation += "<span class='sim-warning'>⚠️ 警告：這不是標準 OS 排程，系統需要穩定性！</span>";
+                tasks.sort(() => Math.random() - 0.5); // 隨機
+                isWrongAlgo = true;
+                break;
+        }
+
+        msgBox.innerHTML = explanation;
+
+        // 4. 繪製初始佇列
+        tasks.forEach(t => {
+            const node = document.createElement('div');
+            node.className = 'process-node';
+            node.id = `node-${t.id}-${Math.random().toString(36).substr(2, 5)}`; // 唯一ID避免重複
+            node.innerHTML = `${t.name}`;
+            if(algo === 'Priority') node.innerHTML += `<small>Pri:${t.priority}</small>`;
+            queueBox.appendChild(node);
+        });
+
+        // 5. 執行視覺化動畫函數
+        runAnimationSequence(tasks, 0, cpuSlot, queueBox);
+    }
+
+    function runAnimationSequence(tasks, index, cpuSlot, queueBox) {
+        if (index >= tasks.length) {
+            cpuSlot.innerHTML = '✅';
+            cpuSlot.style.background = 'transparent';
+            cpuSlot.style.color = 'var(--success-color)';
+            return;
+        }
+
+        const task = tasks[index];
+        // 找出佇列中對應的 DOM 元素 (取第一個符合的)
+        const nodes = queueBox.querySelectorAll('.process-node');
+        let targetNode = null;
+        
+        // 簡單的比對邏輯來找到對應的視覺元素
+        for(let node of nodes) {
+            if (node.innerText.includes(task.name) && node.style.visibility !== 'hidden') {
+                targetNode = node;
+                break;
+            }
+        }
+
+        if(targetNode) {
+            // "進場" 效果
+            targetNode.classList.add('active-process');
+            cpuSlot.innerHTML = '';
+            cpuSlot.style.opacity = '1';
+            
+            // 複製一個 node 到 CPU 裡面顯示
+            const runningNode = targetNode.cloneNode(true);
+            runningNode.style.margin = '0';
+            runningNode.style.width = '80px';
+            runningNode.style.height = '80px';
+            cpuSlot.appendChild(runningNode);
+            
+            // 隱藏佇列中的
+            targetNode.style.visibility = 'hidden';
+
+            // 執行時間模擬 (1秒後換下一個)
+            currentTimeout = setTimeout(() => {
+                cpuSlot.innerHTML = '⚙️'; // 清空 CPU
+                targetNode.remove(); // 真的從佇列移除
+                runAnimationSequence(tasks, index + 1, cpuSlot, queueBox);
+            }, 1000);
+        }
+    }
+
+    // --- 測驗判斷邏輯 ---
+    function checkAnswer() {
+        const correctAnswers = ['A', 'C', 'D'];
+        const form = document.getElementById('quiz-form');
+        const feedback = document.getElementById('quiz-feedback');
+        
+        // 取得使用者選的項目
+        const checkboxes = form.querySelectorAll('input[name="ans"]:checked');
+        let userAnswers = [];
+        checkboxes.forEach((checkbox) => {
+            userAnswers.push(checkbox.value);
+        });
+        
+        // 排序以便比對
+        userAnswers.sort();
+
+        // 判斷邏輯
+        const isCorrect = JSON.stringify(userAnswers) === JSON.stringify(correctAnswers);
+        
+        feedback.style.display = 'block';
+        feedback.className = 'feedback-box ' + (isCorrect ? 'feedback-correct' : 'feedback-wrong');
+
+        if (isCorrect) {
+            feedback.innerHTML = `
+                <strong>🎉 答對了！</strong><br>
+                正確答案就是 <strong>FIFO (A)、Priority (C)、Round Robin (D)</strong>。<br>
+                這三個是作業系統真正的排程演算法！
+            `;
+        } else {
+            // 分析錯誤
+            let msg = `<strong>❌ 答錯囉！</strong><br>`;
+            
+            // 檢查有沒有選到地雷
+            if (userAnswers.includes('B')) msg += `👉 <strong>FILO</strong> 是資料結構，不是排程演算法喔（會讓人餓死）。<br>`;
+            if (userAnswers.includes('E')) msg += `👉 <strong>Random</strong> 不穩定，OS 不會用它。<br>`;
+            
+            // 檢查有沒有漏選
+            if (!userAnswers.includes('D')) msg += `👉 別忘了 <strong>Round Robin</strong> 是分時系統最重要的排程！<br>`;
+            
+            msg += `<br>請再試一次，想想「作業系統排程三兄弟」是誰？`;
+            feedback.innerHTML = msg;
+        }
+    }
+
+    // 頁面載入時預設跑一次 FIFO 讓畫面不空白
+    window.onload = function() {
+        // 為了讓使用者先看文字，這裡不自動開始跑動畫，只顯示待機狀態
+    };
+</script>
+
+</body>
+</html>

@@ -1,0 +1,534 @@
+<!-- 檔名建議：ipv4-address-characteristics-mcq-q10.html -->
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPv4 位址特性辨識：複選題練習</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --success-color: #27ae60;
+            --error-color: #c0392b;
+            --bg-color: #f4f6f7;
+            --card-bg: #ffffff;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: "Noto Sans TC", "Microsoft JhengHei", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Header Styles */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid var(--accent-color);
+            padding-bottom: 10px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            margin: 0;
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1rem;
+            margin-top: 5px;
+        }
+
+        /* Card System */
+        .card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 25px;
+            margin-bottom: 20px;
+            border-left: 5px solid var(--accent-color);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            font-size: 1.4rem;
+            color: var(--primary-color);
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        /* Concept Review Section */
+        .concept-box {
+            background-color: #e8f6f3;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px dashed var(--success-color);
+        }
+        
+        .concept-list {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .concept-list li {
+            margin-bottom: 10px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .concept-list li::before {
+            content: "★";
+            color: var(--accent-color);
+            position: absolute;
+            left: 0;
+        }
+
+        .highlight-red { color: var(--error-color); font-weight: bold; }
+        .highlight-blue { color: var(--accent-color); font-weight: bold; }
+
+        /* Glossary Section */
+        .glossary-item {
+            margin-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .glossary-term {
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--primary-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 5px;
+            background-color: #f8f9fa;
+        }
+
+        .glossary-term:hover {
+            background-color: #e9ecef;
+        }
+
+        .glossary-desc {
+            display: none;
+            padding: 10px;
+            color: #555;
+            background-color: #fff;
+            font-size: 0.95rem;
+        }
+
+        .glossary-desc.show {
+            display: block;
+        }
+
+        /* MCQ Section */
+        .question-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .options-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-label:hover {
+            background-color: #f0f8ff;
+            border-color: var(--accent-color);
+        }
+
+        .option-label input[type="checkbox"] {
+            margin-right: 15px;
+            transform: scale(1.5);
+        }
+
+        /* Buttons */
+        .btn-group {
+            margin-top: 25px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 25px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: bold;
+            transition: opacity 0.2s;
+        }
+
+        .btn-primary { background-color: var(--accent-color); color: white; }
+        .btn-secondary { background-color: var(--primary-color); color: white; }
+        .btn-reset { background-color: #95a5a6; color: white; }
+        
+        .btn:hover { opacity: 0.9; }
+
+        /* Feedback Section */
+        #feedback-area {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        .feedback-correct {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .feedback-wrong {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .explanation-card {
+            display: none;
+            border-left-color: var(--success-color);
+            background-color: #fffbf0;
+        }
+
+        .explanation-item {
+            margin-bottom: 10px;
+            padding: 8px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            color: white;
+            margin-right: 8px;
+        }
+        .status-badge.correct { background-color: var(--success-color); }
+        .status-badge.wrong { background-color: var(--error-color); }
+
+        /* Mini Quiz */
+        .mini-quiz-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            flex-wrap: wrap;
+        }
+
+        .mini-quiz-options button {
+            margin-left: 5px;
+            padding: 5px 15px;
+            border: 1px solid #ddd;
+            background: white;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+
+        .mini-quiz-feedback {
+            width: 100%;
+            margin-top: 5px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .btn-group {
+                flex-direction: column;
+            }
+            .btn { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>IPv4 位址特性辨識：複選題練習</h1>
+        <div class="subtitle">高中電腦/網路概論精選題庫 - 名師重點解析</div>
+    </header>
+
+    <!-- 觀念整理區 -->
+    <div class="card">
+        <h2>📚 觀念重點整理 (考前必看)</h2>
+        <div class="concept-box">
+            <h3>IPv4 位址的基本結構</h3>
+            <ul class="concept-list">
+                <li><strong>總長度：</strong>32 bits = <span class="highlight-blue">4 bytes</span>。</li>
+                <li><strong>表示法：</strong>通常以「<span class="highlight-blue">點分十進位</span>」表示（例如：192.168.1.1）。</li>
+            </ul>
+
+            <h3>IPv4 的辨識方式</h3>
+            <ul class="concept-list">
+                <li>以「每一個位元組（8 bits）」作為區隔。</li>
+                <li>每個位元組的數值範圍為 <strong>0 ~ 255</strong> (2的8次方為256)。</li>
+            </ul>
+
+            <h3>IPv4 的傳統分類方式（考試重點）</h3>
+            <ul class="concept-list">
+                <li>傳統上分為 <span class="highlight-blue">A、B、C 類</span>（Classful Addressing）。</li>
+                <li>依「第一個位元組的數值範圍」來區分網路規模。</li>
+                <li>雖然實務上已被 CIDR 取代，但這是觀念題的常客。</li>
+            </ul>
+
+            <h3>⚡ 快速排除法技巧</h3>
+            <ul class="concept-list">
+                <li>看到 <span class="highlight-red">2 bytes</span> → 錯誤 (這是 Port 號長度)。</li>
+                <li>看到 <span class="highlight-red">8 bytes</span> → 錯誤 (那是 IPv6 16 bytes 的一半，也不對)。</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 重要名詞速查 -->
+    <div class="card">
+        <h2>🔍 重要名詞速查區 (點擊展開)</h2>
+        <div id="glossary-container">
+            <div class="glossary-item">
+                <div class="glossary-term" onclick="toggleGlossary(this)">IPv4 (Internet Protocol version 4) <span>▼</span></div>
+                <div class="glossary-desc">網際網路通訊協定第四版，是目前網路上使用最廣泛的通訊協定標準。</div>
+            </div>
+            <div class="glossary-item">
+                <div class="glossary-term" onclick="toggleGlossary(this)">位元組 Byte <span>▼</span></div>
+                <div class="glossary-desc">電腦資訊計量單位，1 Byte 等於 8 個 bits (位元)。IPv4 由 4 個 Bytes 組成。</div>
+            </div>
+            <div class="glossary-item">
+                <div class="glossary-term" onclick="toggleGlossary(this)">類別式位址 Classful Addressing <span>▼</span></div>
+                <div class="glossary-desc">早期分配 IP 的方法，依照網路規模大小分為 A、B、C、D、E 五類。</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 題目區 -->
+    <div class="card">
+        <h2>✍️ 實戰演練</h2>
+        <div class="question-text">
+            複選題 10. 下列何者為 IPv4 位址的特性?
+        </div>
+        
+        <form id="quiz-form">
+            <div class="options-group">
+                <label class="option-label">
+                    <input type="checkbox" name="option" value="A"> (A) 2-byte 長度
+                </label>
+                <label class="option-label">
+                    <input type="checkbox" name="option" value="B"> (B) 4-byte 長度
+                </label>
+                <label class="option-label">
+                    <input type="checkbox" name="option" value="C"> (C) 8-byte 長度
+                </label>
+                <label class="option-label">
+                    <input type="checkbox" name="option" value="D"> (D) 依位元組區別辨識
+                </label>
+                <label class="option-label">
+                    <input type="checkbox" name="option" value="E"> (E) 分 A，B，C 三大類
+                </label>
+            </div>
+
+            <div class="btn-group">
+                <button type="button" class="btn btn-primary" onclick="submitAnswer()">送出答案</button>
+                <button type="button" class="btn btn-secondary" onclick="showExplanation()" id="btn-explain" style="display:none;">顯示解析</button>
+                <button type="button" class="btn btn-reset" onclick="resetQuiz()">重作一次</button>
+            </div>
+        </form>
+
+        <!-- 作答回饋區 -->
+        <div id="feedback-area"></div>
+    </div>
+
+    <!-- 解析區 -->
+    <div class="card explanation-card" id="explanation-area">
+        <h2>💡 詳解分析</h2>
+        <div class="explanation-item">
+            <span class="status-badge wrong">錯誤</span> <strong>(A) 2-byte 長度</strong><br>
+            2 bytes 只有 16 bits，通常是 Port (埠號) 的長度，非 IPv4。
+        </div>
+        <div class="explanation-item">
+            <span class="status-badge correct">正確</span> <strong>(B) 4-byte 長度</strong><br>
+            IPv4 位址總長為 32 bits，換算後為 4 bytes (32 / 8 = 4)。
+        </div>
+        <div class="explanation-item">
+            <span class="status-badge wrong">錯誤</span> <strong>(C) 8-byte 長度</strong><br>
+            8 bytes 為 64 bits，既非 IPv4 也非 IPv6 (IPv6 為 128 bits = 16 bytes)。
+        </div>
+        <div class="explanation-item">
+            <span class="status-badge correct">正確</span> <strong>(D) 依位元組區別辨識</strong><br>
+            IPv4 以 4 個位元組組成，並以「.」符號將每個位元組分開 (點分十進位)。
+        </div>
+        <div class="explanation-item">
+            <span class="status-badge correct">正確</span> <strong>(E) 分 A，B，C 三大類</strong><br>
+            傳統 IPv4 類別式位址分為 A、B、C 類（以及 D 類群播、E 類保留），這是考試重點。
+        </div>
+    </div>
+
+    <!-- 延伸互動小測驗 -->
+    <div class="card">
+        <h2>🚀 課後快問快答 (立即回饋)</h2>
+        
+        <div class="mini-quiz-item">
+            <span>1. IPv4 位址總長度為 32 bits</span>
+            <div class="mini-quiz-options">
+                <button onclick="checkMiniQuiz(this, true, '正確！32 bits = 4 bytes。')">O</button>
+                <button onclick="checkMiniQuiz(this, false, '錯誤！正確應為 32 bits。')">X</button>
+            </div>
+            <div class="mini-quiz-feedback"></div>
+        </div>
+
+        <div class="mini-quiz-item">
+            <span>2. IPv4 一定使用 CIDR 表示法</span>
+            <div class="mini-quiz-options">
+                <button onclick="checkMiniQuiz(this, false, '錯誤！CIDR 是較新的技術，傳統是用類別(Class)區分。')">O</button>
+                <button onclick="checkMiniQuiz(this, true, '正確！傳統使用 A/B/C 類別，CIDR 是後來才有的。')">X</button>
+            </div>
+            <div class="mini-quiz-feedback"></div>
+        </div>
+
+        <div class="mini-quiz-item">
+            <span>3. A、B、C 類位址是依第一個位元組範圍區分</span>
+            <div class="mini-quiz-options">
+                <button onclick="checkMiniQuiz(this, true, '正確！例如 A 類是 0~127 開頭。')">O</button>
+                <button onclick="checkMiniQuiz(this, false, '錯誤！正是依據第一個位元組(前 8 bits)來區分的。')">X</button>
+            </div>
+            <div class="mini-quiz-feedback"></div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // 正確答案設定
+    const correctAnswers = ['B', 'D', 'E'];
+
+    // 名詞解釋展開功能
+    function toggleGlossary(element) {
+        const desc = element.nextElementSibling;
+        const arrow = element.querySelector('span');
+        
+        if (desc.style.display === "block") {
+            desc.style.display = "none";
+            arrow.textContent = "▼";
+        } else {
+            desc.style.display = "block";
+            arrow.textContent = "▲";
+        }
+    }
+
+    // 主測驗送出判斷
+    function submitAnswer() {
+        const checkboxes = document.querySelectorAll('input[name="option"]:checked');
+        const selectedValues = Array.from(checkboxes).map(cb => cb.value);
+        const feedbackArea = document.getElementById('feedback-area');
+        const btnExplain = document.getElementById('btn-explain');
+
+        // 比較邏輯
+        let isCorrect = false;
+        // 檢查是否選取數量相同且每個選取的都在正確答案中
+        if (selectedValues.length === correctAnswers.length && 
+            selectedValues.every(val => correctAnswers.includes(val))) {
+            isCorrect = true;
+        }
+
+        // 找出漏選與多選
+        const missed = correctAnswers.filter(x => !selectedValues.includes(x));
+        const extra = selectedValues.filter(x => !correctAnswers.includes(x));
+
+        feedbackArea.style.display = "block";
+        btnExplain.style.display = "inline-block";
+
+        if (isCorrect) {
+            feedbackArea.className = "feedback-correct";
+            feedbackArea.innerHTML = `
+                <h3>🎉 完全正確！太棒了！</h3>
+                <p>補充提示：IPv4 關鍵字記得「4 bytes」、「點分十進位」、「A/B/C 類」。</p>
+            `;
+        } else {
+            feedbackArea.className = "feedback-wrong";
+            let msg = `<h3>⚠️ 答案不完全正確喔！</h3>`;
+            
+            if (selectedValues.length === 0) {
+                msg += `<p>你還沒有選擇任何選項。</p>`;
+            } else {
+                if (missed.length > 0) msg += `<p><strong>漏選了：</strong> ${missed.join(', ')}</p>`;
+                if (extra.length > 0) msg += `<p><strong>多選了：</strong> ${extra.join(', ')} (這些是錯的)</p>`;
+            }
+            msg += `<p>👉 請點擊「顯示解析」按鈕來釐清觀念。</p>`;
+            feedbackArea.innerHTML = msg;
+        }
+    }
+
+    // 顯示解析
+    function showExplanation() {
+        document.getElementById('explanation-area').style.display = "block";
+        // 自動捲動到解析區
+        document.getElementById('explanation-area').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // 重置測驗
+    function resetQuiz() {
+        // 清空 Checkbox
+        const checkboxes = document.querySelectorAll('input[name="option"]');
+        checkboxes.forEach(cb => cb.checked = false);
+
+        // 隱藏回饋與解析
+        document.getElementById('feedback-area').style.display = "none";
+        document.getElementById('explanation-area').style.display = "none";
+        document.getElementById('btn-explain').style.display = "none";
+        
+        // 捲動回題目
+        document.querySelector('.question-text').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // 小測驗功能
+    function checkMiniQuiz(btn, isCorrectAnswer, msg) {
+        const feedbackDiv = btn.parentElement.nextElementSibling;
+        const allBtns = btn.parentElement.querySelectorAll('button');
+        
+        // 重置按鈕樣式
+        allBtns.forEach(b => {
+            b.style.backgroundColor = "white";
+            b.style.color = "black";
+            b.disabled = false;
+        });
+
+        // 設定點擊按鈕的樣式
+        if (isCorrectAnswer) {
+            btn.style.backgroundColor = "var(--success-color)";
+            btn.style.color = "white";
+            feedbackDiv.style.color = "var(--success-color)";
+        } else {
+            btn.style.backgroundColor = "var(--error-color)";
+            btn.style.color = "white";
+            feedbackDiv.style.color = "var(--error-color)";
+        }
+
+        feedbackDiv.innerText = msg;
+    }
+</script>
+
+</body>
+</html>

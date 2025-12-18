@@ -1,0 +1,523 @@
+<!-- 
+檔名：os-kernel-components-mcq-q3.html
+主題：作業系統核心（Kernel）組成元件
+教學對象：高中生（初次接觸 OS）
+-->
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>作業系統核心（Kernel）組成元件：複選題練習</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+            --warning-color: #f39c12;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "PingFang TC", "Heiti TC", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* header styles */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        /* Card Component */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 25px;
+            margin-bottom: 25px;
+            border-left: 5px solid var(--accent-color);
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            color: var(--primary-color);
+            font-size: 1.4em;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        /* Glossary Section */
+        .glossary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        details {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 1px solid #e9ecef;
+        }
+
+        details[open] {
+            background-color: #e3f2fd;
+            border-color: var(--accent-color);
+        }
+
+        summary {
+            font-weight: bold;
+            color: var(--primary-color);
+            list-style: none; /* Hide default arrow */
+        }
+        
+        summary::after {
+            content: "+"; 
+            float: right;
+            font-weight: bold;
+        }
+        
+        details[open] summary::after {
+            content: "-";
+        }
+
+        .glossary-content {
+            margin-top: 8px;
+            font-size: 0.9em;
+            color: #555;
+        }
+
+        /* Concept Section */
+        .concept-box {
+            background-color: #fff8e1; /* Light yellow */
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--warning-color);
+        }
+        
+        .concept-title {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+            color: #d35400;
+        }
+
+        /* Quiz Section */
+        .question-text {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        .options-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-label:hover {
+            background-color: #f0f7ff;
+            border-color: var(--accent-color);
+        }
+
+        .option-label input[type="checkbox"] {
+            margin-right: 15px;
+            width: 20px;
+            height: 20px;
+            accent-color: var(--accent-color);
+        }
+
+        .btn-group {
+            margin-top: 25px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .btn-submit {
+            background-color: var(--accent-color);
+            color: white;
+        }
+        .btn-submit:hover { background-color: #2980b9; }
+
+        .btn-explain {
+            background-color: var(--warning-color);
+            color: white;
+        }
+        .btn-explain:hover { background-color: #e67e22; }
+
+        .btn-reset {
+            background-color: #95a5a6;
+            color: white;
+        }
+        .btn-reset:hover { background-color: #7f8c8d; }
+
+        /* Feedback Area */
+        #feedback-area {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+            font-weight: bold;
+        }
+
+        .feedback-correct {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .feedback-wrong {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* Explanation Area */
+        #explanation-area {
+            display: none;
+            margin-top: 20px;
+            border-top: 1px dashed #ccc;
+            padding-top: 20px;
+        }
+
+        .explain-item {
+            margin-bottom: 10px;
+            padding: 8px;
+            border-radius: 4px;
+        }
+        .explain-item.correct { border-left: 3px solid var(--success-color); background: #f0fff4; }
+        .explain-item.wrong { border-left: 3px solid var(--error-color); background: #fff5f5; }
+
+        /* Extension Quiz */
+        .tf-question {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .tf-question:last-child { border-bottom: none; }
+        
+        .tf-btn-group {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .tf-btn {
+            padding: 5px 10px;
+            font-size: 0.9em;
+            background-color: #e0e0e0;
+            color: #333;
+        }
+        
+        .tf-result {
+            display: block;
+            margin-top: 5px;
+            font-size: 0.9em;
+            font-style: italic;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>💻 作業系統基礎教室</h1>
+        <p>主題：作業系統核心（Kernel）內部組成元件</p>
+    </header>
+
+    <!-- 區塊一：重要名詞中英對照 -->
+    <div class="card">
+        <h2>📚 重點名詞小辭典（點擊展開）</h2>
+        <div class="glossary-grid">
+            <details>
+                <summary>核心 Kernel</summary>
+                <div class="glossary-content">OS 的心臟，常駐記憶體，直接控制硬體並提供服務給應用程式。</div>
+            </details>
+            <details>
+                <summary>檔案管理 File Management</summary>
+                <div class="glossary-content">負責檔案的儲存、讀取、權限控管及磁碟空間配置。</div>
+            </details>
+            <details>
+                <summary>裝置驅動程式 Device Driver</summary>
+                <div class="glossary-content">軟硬體的翻譯官，讓核心能控制鍵盤、螢幕、硬碟等周邊。</div>
+            </details>
+            <details>
+                <summary>記憶體管理 Memory Management</summary>
+                <div class="glossary-content">分配 RAM 給各個程式，確保程式間不會互相干擾。</div>
+            </details>
+            <details>
+                <summary>排程 Scheduling</summary>
+                <div class="glossary-content">決定哪一個程式可以獲得 CPU 的使用權，以及使用多久。</div>
+            </details>
+        </div>
+    </div>
+
+    <!-- 區塊二：觀念整理 -->
+    <div class="card">
+        <h2>💡 老師的觀念補給站</h2>
+        <div class="concept-box">
+            <span class="concept-title">【核心做什麼？Kernel Space】</span>
+            它是電腦的大管家。所有跟「硬體資源分配」、「系統安全」、「硬體控制」有關的，都是它的工作。
+            <br>★ 關鍵字：管記憶體、管 CPU (排程)、管 I/O、系統呼叫。
+        </div>
+        <div class="concept-box" style="border-left-color: #8e44ad; background-color: #f4ecf7;">
+            <span class="concept-title">【非核心（使用者空間）User Space】</span>
+            這是給使用者玩的地方。你看到的應用程式多半在這。
+            <br>★ 例子：Word、Chrome、Line、資料庫軟體 (Database)、小畫家。
+        </div>
+    </div>
+
+    <!-- 區塊三：互動題目 -->
+    <div class="card">
+        <h2>✏️ 隨堂練習：複選題</h2>
+        <div class="question-text">
+            複選題 3. 下列何者屬於作業系統內部核心組成元件?
+        </div>
+        
+        <div class="options-group">
+            <label class="option-label">
+                <input type="checkbox" name="os-q1" value="A">
+                (A) 圖形資料庫
+            </label>
+            <label class="option-label">
+                <input type="checkbox" name="os-q1" value="B">
+                (B) 檔案管理者
+            </label>
+            <label class="option-label">
+                <input type="checkbox" name="os-q1" value="C">
+                (C) 裝置驅動程式
+            </label>
+            <label class="option-label">
+                <input type="checkbox" name="os-q1" value="D">
+                (D) 記憶體管理者
+            </label>
+            <label class="option-label">
+                <input type="checkbox" name="os-q1" value="E">
+                (E) 排程程式
+            </label>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn-submit" onclick="checkAnswer()">送出答案</button>
+            <button class="btn-explain" onclick="showExplanation()">偷看解析</button>
+            <button class="btn-reset" onclick="resetQuiz()">重作一次</button>
+        </div>
+
+        <!-- 作答回饋區 -->
+        <div id="feedback-area"></div>
+
+        <!-- 詳細解析區 -->
+        <div id="explanation-area">
+            <h3>📝 老師詳解</h3>
+            <div class="explain-item wrong">
+                <strong>(A) 圖形資料庫 ❌</strong><br>
+                這通常是屬於「應用程式」層級（例如 Neo4j 或 MongoDB 等），運行在使用者空間（User Space），不是 OS 核心必須具備的功能。
+            </div>
+            <div class="explain-item correct">
+                <strong>(B) 檔案管理者 ⭕</strong><br>
+                核心必須負責將硬碟的 0/1 訊號轉換成我們看得懂的「檔案」與「資料夾」結構，並管理讀寫權限。
+            </div>
+            <div class="explain-item correct">
+                <strong>(C) 裝置驅動程式 ⭕</strong><br>
+                Kernel 就像總司令，而驅動程式是負責傳令給各個硬體（顯卡、網卡）的傳令官，通常被視為核心的一部分（尤其在單核心 Monolithic Kernel 架構下）。
+            </div>
+            <div class="explain-item correct">
+                <strong>(D) 記憶體管理者 ⭕</strong><br>
+                這是核心最基本的任務！負責追蹤記憶體使用狀況，處理分頁（Paging）、分段（Segmentation）與回收。
+            </div>
+            <div class="explain-item correct">
+                <strong>(E) 排程程式 ⭕</strong><br>
+                CPU 只有一顆（或少數幾顆），但執行的程式有一堆。核心必須透過 Scheduler 決定誰先跑、跑多久，這就是 CPU 排程。
+            </div>
+        </div>
+    </div>
+
+    <!-- 區塊四：小測驗延伸 -->
+    <div class="card">
+        <h2>🚀 觀念強化：是非題快問快答</h2>
+        
+        <div class="tf-question">
+            <span>1. Device Driver (驅動程式) 運作在使用者模式，不屬於核心？</span>
+            <div>
+                <div class="tf-btn-group">
+                    <button class="tf-btn" onclick="checkTF(this, false, '錯！驅動程式通常運作在 Kernel Mode 以便直接控制硬體。')">O</button>
+                    <button class="tf-btn" onclick="checkTF(this, true, '正確！它通常是核心的一部分，擁有高權限。')">X</button>
+                </div>
+                <span class="tf-result"></span>
+            </div>
+        </div>
+
+        <div class="tf-question">
+            <span>2. File System (檔案系統) 是 OS 核心提供的服務之一？</span>
+            <div>
+                <div class="tf-btn-group">
+                    <button class="tf-btn" onclick="checkTF(this, true, '正確！管理資料儲存是核心重要工作。')">O</button>
+                    <button class="tf-btn" onclick="checkTF(this, false, '錯！檔案系統是核心的基礎服務喔。')">X</button>
+                </div>
+                <span class="tf-result"></span>
+            </div>
+        </div>
+
+        <div class="tf-question">
+            <span>3. Scheduler (排程器) 的主要工作是分配記憶體空間？</span>
+            <div>
+                <div class="tf-btn-group">
+                    <button class="tf-btn" onclick="checkTF(this, false, '錯！那是 Memory Manager 的工作。Scheduler 是管 CPU 時間。')">O</button>
+                    <button class="tf-btn" onclick="checkTF(this, true, '正確！Scheduler 是分配 CPU 時間，不是記憶體。')">X</button>
+                </div>
+                <span class="tf-result"></span>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // 正確答案設定
+    const correctAnswers = ['B', 'C', 'D', 'E'];
+
+    function checkAnswer() {
+        const checkboxes = document.querySelectorAll('input[name="os-q1"]');
+        const feedbackArea = document.getElementById('feedback-area');
+        
+        // 收集使用者選的答案
+        let userSelected = [];
+        checkboxes.forEach(cb => {
+            if (cb.checked) {
+                userSelected.push(cb.value);
+            }
+        });
+
+        // 判斷邏輯
+        userSelected.sort(); // 排序以便比較
+        
+        // 找出多選的 (在 userSelected 但不在 correctAnswers)
+        let extra = userSelected.filter(x => !correctAnswers.includes(x));
+        
+        // 找出少選的 (在 correctAnswers 但不在 userSelected)
+        let missing = correctAnswers.filter(x => !userSelected.includes(x));
+
+        feedbackArea.style.display = 'block';
+        feedbackArea.className = ''; // 清除舊樣式
+
+        if (extra.length === 0 && missing.length === 0) {
+            // 全對
+            feedbackArea.className = 'feedback-correct';
+            feedbackArea.innerHTML = '🎉 完全正確！太棒了！<br>你掌握了核心的三大支柱：記憶體管理、程序排程、I/O 與檔案系統。';
+        } else {
+            // 有錯
+            feedbackArea.className = 'feedback-wrong';
+            let msg = '⚠️ 答錯囉！<br>';
+            
+            if (userSelected.length === 0) {
+                msg += '你還沒有選擇任何選項喔！';
+            } else {
+                if (extra.length > 0) msg += `你多選了：${extra.join(', ')} (它不是核心元件)<br>`;
+                if (missing.length > 0) msg += `你漏選了：${missing.join(', ')} (這是核心元件)<br>`;
+                msg += '<br>👉 請點擊「顯示解析」來看看為什麼。';
+            }
+            feedbackArea.innerHTML = msg;
+        }
+    }
+
+    function showExplanation() {
+        const explainArea = document.getElementById('explanation-area');
+        explainArea.style.display = 'block';
+        // 平滑捲動到解析區
+        explainArea.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function resetQuiz() {
+        // 清空 checkbox
+        const checkboxes = document.querySelectorAll('input[name="os-q1"]');
+        checkboxes.forEach(cb => cb.checked = false);
+
+        // 隱藏回饋與解析
+        document.getElementById('feedback-area').style.display = 'none';
+        document.getElementById('explanation-area').style.display = 'none';
+        
+        // 重置是非題
+        const tfResults = document.querySelectorAll('.tf-result');
+        tfResults.forEach(span => {
+            span.innerHTML = '';
+            span.style.color = 'inherit';
+        });
+    }
+
+    // 是非題邏輯
+    function checkTF(btn, isCorrect, explanation) {
+        // 找到該按鈕旁邊的結果顯示區
+        const resultSpan = btn.parentElement.nextElementSibling;
+        
+        if (isCorrect) {
+            resultSpan.innerHTML = "✅ " + explanation;
+            resultSpan.style.color = "green";
+        } else {
+            resultSpan.innerHTML = "❌ " + explanation;
+            resultSpan.style.color = "red";
+        }
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>作業系統觀念：分時 vs 多工 (Time Sharing vs Multitasking)</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #e74c3c; /* 考試重點紅 */
+            --highlight-color: #f1c40f;
+            --success-color: #27ae60;
+            --bg-color: #f4f6f7;
+            --card-bg: #ffffff;
+            --text-color: #333;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* 通用卡片樣式 */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 25px;
+            margin-bottom: 25px;
+            border-left: 5px solid var(--primary-color);
+        }
+
+        h1, h2, h3 {
+            color: var(--primary-color);
+            margin-top: 0;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .header-highlight {
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        /* 標籤樣式 */
+        .tag {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        .tag-must { background-color: var(--accent-color); color: white; }
+        .tag-key { background-color: var(--highlight-color); color: #333; }
+
+        /* 題目區塊 */
+        .question-box {
+            background-color: #e8f6f3;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #d1f2eb;
+        }
+        .options-list {
+            list-style: none;
+            padding: 0;
+        }
+        .options-list li {
+            padding: 8px 0;
+            border-bottom: 1px dashed #ccc;
+        }
+
+        /* 表格樣式 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .correct-row {
+            background-color: #eafaf1 !important;
+            font-weight: bold;
+        }
+
+        /* 互動模擬區 */
+        .sim-container {
+            text-align: center;
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 15px;
+            position: relative;
+        }
+
+        .cpu {
+            width: 80px;
+            height: 80px;
+            background: #3498db;
+            margin: 0 auto 30px auto;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            box-shadow: 0 0 15px #3498db;
+            position: relative;
+            z-index: 2;
+        }
+
+        .tasks-row {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+
+        .task {
+            width: 70px;
+            height: 70px;
+            background: #555;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            opacity: 0.4;
+            transition: all 0.1s;
+            border: 3px solid transparent;
+        }
+
+        .task.active {
+            opacity: 1;
+            transform: scale(1.1);
+            border-color: var(--highlight-color);
+            box-shadow: 0 0 20px var(--highlight-color);
+            background: #d35400;
+        }
+
+        .controls {
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 5px;
+            transition: background 0.3s;
+        }
+        .btn-start { background: var(--success-color); color: white; }
+        .btn-slow { background: var(--highlight-color); color: #333; }
+        .btn-reset { background: #95a5a6; color: white; }
+        .btn:hover { opacity: 0.9; }
+
+        .sim-status {
+            min-height: 40px;
+            margin-top: 15px;
+            font-size: 1.1rem;
+            color: #ecf0f1;
+        }
+
+        /* 測驗區 */
+        .quiz-option {
+            display: block;
+            margin: 10px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .quiz-option:hover {
+            background: #e9ecef;
+        }
+        .feedback {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .feedback.correct {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .feedback.wrong {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* 重點強調文字 */
+        .emphasis {
+            color: var(--accent-color);
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        @media (max-width: 600px) {
+            .task { width: 60px; height: 60px; font-size: 0.7rem; }
+            h1 { font-size: 1.4rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- Header -->
+    <header class="card" style="text-align: center; border-top: 5px solid var(--accent-color);">
+        <h1>作業系統觀念釐清</h1>
+        <p style="font-size: 1.2rem;">一句話重點：<span class="header-highlight">「錯覺來自分時，表現叫做多工」</span></p>
+    </header>
+
+    <!-- 題目展示區 -->
+    <section class="card">
+        <h2><span class="tag tag-must">本題</span> 觀念挑戰</h2>
+        <div class="question-box">
+            <p><strong>下列何種技術造成在<span class="emphasis">錯覺上</span>，作業系統可同時處理一個以上的工作？</strong></p>
+            <p style="font-size: 0.9rem; color: #666;">（提示：本題為複選題）</p>
+            <ul class="options-list">
+                <li>(A) 同步處理（homogeneous）</li>
+                <li>(B) 分時（time sharing）</li>
+                <li>(C) 異質處理（heterogeneous）</li>
+                <li>(D) 無線（wireless）</li>
+                <li>(E) 多工（multitasking）</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- 關鍵字導入 -->
+    <section class="card">
+        <h2><span class="tag tag-key">關鍵字破解</span> 為什麼會選錯？</h2>
+        <p>很多初學者看到「同時處理」就只想選 Multitasking，但忽略了題目中最重要的三個字：</p>
+        <p class="emphasis" style="font-size: 1.3rem; text-align: center;">「錯覺上 (Illusion)」</p>
+        <hr>
+        <p><strong>【必背觀念】：</strong></p>
+        <ul>
+            <li>CPU 只有一個（單核情境），物理上<strong>一次只能做一件事</strong>。</li>
+            <li>所謂的「同時」，其實是<strong>切換速度太快</strong>，快到人類的眼睛和感覺跟不上。</li>
+            <li><strong>錯覺（Illusion）</strong> = CPU 快速切換（Switching）。</li>
+        </ul>
+    </section>
+
+    <!-- 必背對照表 -->
+    <section class="card">
+        <h2><span class="tag tag-must">必背</span> 分時 vs 多工 對照表</h2>
+        <p>這兩個名詞常一起出現，但在考試定義上有因果關係：</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>中文名稱</th>
+                    <th>英文名稱</th>
+                    <th>本質</th>
+                    <th>是否為技術核心？</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="correct-row">
+                    <td>分時</td>
+                    <td>Time Sharing</td>
+                    <td>CPU 快速切換時間片 (Time Slice)</td>
+                    <td>✅ 是 (造成錯覺的原因)</td>
+                </tr>
+                <tr class="correct-row">
+                    <td>多工</td>
+                    <td>Multitasking</td>
+                    <td>作業系統能「看起來」同時做多件事</td>
+                    <td>✅ 是 (使用者感受到的結果)</td>
+                </tr>
+                <tr>
+                    <td>同步處理</td>
+                    <td>Homogeneous</td>
+                    <td>多處理機系統的一種架構</td>
+                    <td>❌ 與本題無關</td>
+                </tr>
+                <tr>
+                    <td>異質處理</td>
+                    <td>Heterogeneous</td>
+                    <td>不同硬體/系統架構</td>
+                    <td>❌ 與本題無關</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="emphasis">👉 結論：分時是「手段」，多工是「目的/現象」。兩者皆為正確選項。</p>
+    </section>
+
+    <!-- 互動模擬區 -->
+    <section class="card">
+        <h2><span class="tag tag-key">核心</span> 互動模擬：看懂「錯覺」</h2>
+        <p>請點擊下方按鈕，觀察 CPU 如何工作。</p>
+        
+        <div class="sim-container">
+            <div class="cpu" id="cpu-display">CPU</div>
+            
+            <div class="tasks-row">
+                <div class="task" id="task-0">
+                    <span style="font-size: 1.5rem;">🎵</span>
+                    <span>音樂 P1</span>
+                </div>
+                <div class="task" id="task-1">
+                    <span style="font-size: 1.5rem;">⌨️</span>
+                    <span>打字 P2</span>
+                </div>
+                <div class="task" id="task-2">
+                    <span style="font-size: 1.5rem;">⬇️</span>
+                    <span>下載 P3</span>
+                </div>
+            </div>
+
+            <div class="sim-status" id="sim-status">請按下開始...</div>
+
+            <div class="controls">
+                <button class="btn btn-start" onclick="startSim(200)">開始分時切換 (快)</button>
+                <button class="btn btn-slow" onclick="startSim(1000)">放慢速度 (看真相)</button>
+                <button class="btn btn-reset" onclick="resetSim()">重置</button>
+            </div>
+        </div>
+        <div style="margin-top: 15px; background: #f0f0f0; padding: 10px; border-radius: 5px;">
+            <p><strong>觀察重點：</strong></p>
+            <ul>
+                <li><strong>快速模式下：</strong>三個工作看起來像是一起在亮（同時執行）。這就是<span class="emphasis">Multitasking 的錯覺</span>。</li>
+                <li><strong>慢速模式下：</strong>你會發現 CPU 其實一次只指向一個工作。這就是<span class="emphasis">Time Sharing 的技術真相</span>。</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- 選項逐一破解 -->
+    <section class="card">
+        <h2>選項逐一破解</h2>
+        <ul>
+            <li>
+                <strong>(A) 同步處理 (Homogeneous) ❌</strong><br>
+                這是指多處理機系統中，所有 CPU 結構相同。與單一 CPU 的排程錯覺無關。
+            </li>
+            <li style="background-color: #eafaf1; padding: 5px; border-radius: 5px;">
+                <strong>(B) 分時 (Time Sharing) ✅ 【正解】</strong><br>
+                將 CPU 時間切成小片段（Time Slice），輪流分給不同行程（Process）。這是造成錯覺的<strong>底層技術</strong>。
+            </li>
+            <li>
+                <strong>(C) 異質處理 (Heterogeneous) ❌</strong><br>
+                指系統包含不同類型的處理器或系統，非本題考點。
+            </li>
+            <li>
+                <strong>(D) 無線 (Wireless) ❌</strong><br>
+                這是通訊技術，完全來亂的選項。
+            </li>
+            <li style="background-color: #eafaf1; padding: 5px; border-radius: 5px;">
+                <strong>(E) 多工 (Multitasking) ✅ 【正解】</strong><br>
+                指作業系統允許使用者同時執行多個程式的<strong>能力/狀態</strong>。因為題目問「造成錯覺」，廣義上多工是此現象的描述，通常與分時一同視為正解。
+            </li>
+        </ul>
+    </section>
+
+    <!-- 記憶技巧與口訣 -->
+    <section class="card" style="background-color: #fff8e1; border-left-color: #f1c40f;">
+        <h2><span class="tag tag-must">必背</span> 記憶口訣</h2>
+        <div style="font-size: 1.2rem; font-weight: bold; text-align: center; margin: 15px 0;">
+            「錯覺靠分時，感覺叫多工」
+        </div>
+        <p><strong>快速判斷法：</strong></p>
+        <ul>
+            <li>題目看到「錯覺」、「看起來同時」、「輪流執行」 → <strong>必選 分時 (Time Sharing)</strong>。</li>
+            <li>題目看到「同時做很多事」、「現代作業系統特性」 → <strong>選 多工 (Multitasking)</strong>。</li>
+            <li>本題兩者皆有，故為複選題 B、E。</li>
+        </ul>
+    </section>
+
+    <!-- 小測驗區 -->
+    <section class="card">
+        <h2>📝 立即驗收 (複選題)</h2>
+        <p>下列何種技術造成在錯覺上，作業系統可同時處理一個以上的工作？(請勾選正確答案)</p>
+        <form id="quiz-form">
+            <label class="quiz-option"><input type="checkbox" name="ans" value="A"> (A) 同步處理 (Homogeneous)</label>
+            <label class="quiz-option"><input type="checkbox" name="ans" value="B"> (B) 分時 (Time Sharing)</label>
+            <label class="quiz-option"><input type="checkbox" name="ans" value="C"> (C) 異質處理 (Heterogeneous)</label>
+            <label class="quiz-option"><input type="checkbox" name="ans" value="D"> (D) 無線 (Wireless)</label>
+            <label class="quiz-option"><input type="checkbox" name="ans" value="E"> (E) 多工 (Multitasking)</label>
+            <button type="button" class="btn btn-start" onclick="checkAnswer()">送出答案</button>
+        </form>
+        
+        <div id="feedback-msg" class="feedback"></div>
+    </section>
+
+    <!-- 常見錯誤 -->
+    <section class="card">
+        <h2>🚫 學生常見錯誤</h2>
+        <ol>
+            <li><strong>只選 (E) 多工：</strong> 忽略了題目問的是「造成錯覺的技術」，分時才是技術核心。</li>
+            <li><strong>漏選 (B) 分時：</strong> 認為分時是舊電腦的詞彙（這是錯的，現代 OS 依然基於分時）。</li>
+            <li><strong>看到英文就慌：</strong> 請務必記住 Time Sharing 與 Multitasking 這兩個單字。</li>
+        </ol>
+    </section>
+
+</div>
+
+<script>
+    /* * 互動模擬程式碼
+     * 邏輯：使用 setInterval 來模擬 CPU 在不同 Process 間的切換
+     */
+    
+    let intervalId = null;
+    let currentTask = 0;
+    const tasks = ['task-0', 'task-1', 'task-2'];
+    const taskNames = ['P1 (聽音樂)', 'P2 (打字)', 'P3 (下載)'];
+
+    function startSim(speed) {
+        // 先清除舊的排程
+        resetSim();
+        
+        const statusEl = document.getElementById('sim-status');
+        const speedText = speed < 300 ? "極速切換 (產生同時錯覺)" : "慢速分析 (看清分時真相)";
+        
+        statusEl.innerHTML = `模式：${speedText}<br>CPU 排程運作中...`;
+        
+        // 立即執行一次
+        switchTask();
+
+        // 設定定時器
+        intervalId = setInterval(switchTask, speed);
+    }
+
+    function switchTask() {
+        // 移除所有 task 的 active class
+        tasks.forEach(id => {
+            document.getElementById(id).classList.remove('active');
+        });
+
+        // 加上當前 task 的 active class
+        const activeId = tasks[currentTask];
+        document.getElementById(activeId).classList.add('active');
+
+        // 更新 CPU 文字
+        const cpuDisplay = document.getElementById('cpu-display');
+        cpuDisplay.textContent = `Exe: P${currentTask+1}`;
+        cpuDisplay.style.background = '#e74c3c'; // CPU 忙碌色
+
+        // 準備下一個
+        currentTask = (currentTask + 1) % tasks.length;
+    }
+
+    function resetSim() {
+        if (intervalId) clearInterval(intervalId);
+        intervalId = null;
+        currentTask = 0;
+
+        // 重置 UI
+        tasks.forEach(id => {
+            document.getElementById(id).classList.remove('active');
+        });
+        
+        const cpuDisplay = document.getElementById('cpu-display');
+        cpuDisplay.textContent = 'CPU';
+        cpuDisplay.style.background = '#3498db'; // CPU 閒置色
+
+        document.getElementById('sim-status').textContent = "等待指令...";
+    }
+
+    /*
+     * 測驗系統程式碼
+     */
+    function checkAnswer() {
+        const checkboxes = document.querySelectorAll('input[name="ans"]:checked');
+        const feedback = document.getElementById('feedback-msg');
+        let selected = [];
+        
+        checkboxes.forEach((checkbox) => {
+            selected.push(checkbox.value);
+        });
+        
+        // 排序以便比對
+        selected.sort();
+        
+        // 正確答案是 B 和 E
+        const correct = ['B', 'E'];
+        
+        // 比對陣列是否相等
+        const isCorrect = JSON.stringify(selected) === JSON.stringify(correct);
+        
+        feedback.style.display = 'block';
+        
+        if (isCorrect) {
+            feedback.className = 'feedback correct';
+            feedback.innerHTML = `
+                <strong>✅ 答對了！太棒了！</strong><br>
+                正確觀念：<br>
+                1. <strong>分時 (Time Sharing)</strong> 是造成錯覺的技術手段。<br>
+                2. <strong>多工 (Multitasking)</strong> 是表現出來的結果。
+            `;
+        } else {
+            feedback.className = 'feedback wrong';
+            let msg = `<strong>❌ 答錯囉！</strong><br>你選擇了：${selected.join(', ') || '未作答'}<br><br>`;
+            
+            if (selected.includes('D')) {
+                msg += '💡 提示：Wireless 是無線網路，跟 OS 排程沒關係喔。<br>';
+            }
+            if (selected.includes('A')) {
+                msg += '💡 提示：同步處理 (Homogeneous) 通常指多處理機架構。<br>';
+            }
+            if (!selected.includes('B')) {
+                msg += '💡 關鍵：一定要選 <strong>(B) 分時</strong>！沒有分時技術，就沒有同時的錯覺。<br>';
+            }
+            if (!selected.includes('E')) {
+                msg += '💡 關鍵：<strong>(E) 多工</strong> 也是正解，因為這是使用者感受到的狀態。<br>';
+            }
+            
+            msg += '<br>👉 請回去看上方的「必背對照表」與「口訣」。';
+            feedback.innerHTML = msg;
+        }
+    }
+</script>
+
+</body>
+</html>

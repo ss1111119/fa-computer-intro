@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UTP 網路線等級與乙太網路速率教學</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #1e40af;
+            --accent-color: #f59e0b;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-color: #1f2937;
+            --correct-color: #10b981;
+            --wrong-color: #ef4444;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Card Style */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: 24px;
+            margin-bottom: 24px;
+            border-left: 5px solid var(--primary-color);
+        }
+
+        h1, h2, h3 {
+            color: var(--secondary-color);
+            margin-top: 0;
+        }
+
+        h1 {
+            text-align: center;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+
+        .highlight {
+            font-weight: bold;
+            color: var(--primary-color);
+            background-color: #eff6ff;
+            padding: 2px 5px;
+            border-radius: 4px;
+        }
+
+        /* Table Style */
+        .spec-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background-color: white;
+        }
+
+        .spec-table th, .spec-table td {
+            border: 1px solid #e5e7eb;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .spec-table th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .spec-table tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+
+        /* Quiz Styles */
+        .quiz-option {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            background-color: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+
+        .quiz-option:hover:not(:disabled) {
+            border-color: var(--primary-color);
+            background-color: #eff6ff;
+        }
+
+        .quiz-option:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .quiz-option.correct {
+            background-color: var(--correct-color);
+            color: white;
+            border-color: var(--correct-color);
+        }
+
+        .quiz-option.wrong {
+            background-color: var(--wrong-color);
+            color: white;
+            border-color: var(--wrong-color);
+        }
+
+        .feedback {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 6px;
+            font-weight: bold;
+            display: none;
+        }
+
+        .feedback.show {
+            display: block;
+        }
+
+        /* Exam Box */
+        .exam-box {
+            background-color: #fffbeb;
+            border: 2px dashed var(--accent-color);
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        /* Memory Card */
+        .memory-card {
+            background: linear-gradient(135deg, #1e40af, #2563eb);
+            color: white;
+            text-align: center;
+            border-left: none;
+        }
+        
+        .memory-card h2 {
+            color: white;
+        }
+
+        .mnemonic {
+            font-size: 1.5rem;
+            font-weight: bold;
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: inline-block;
+        }
+
+        .reset-btn {
+            display: block;
+            width: 100%;
+            max-width: 200px;
+            margin: 30px auto;
+            padding: 12px;
+            background-color: var(--text-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .reset-btn:hover {
+            background-color: black;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .spec-table {
+                font-size: 0.9rem;
+            }
+            .spec-table th, .spec-table td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header class="card">
+        <h1>UTP 網路線等級與速率對應<br><small style="font-size: 0.6em; color: #666;">為什麼 Cat 3 不能跑 Gigabit？</small></h1>
+        <p>👋 哈囉同學！在準備電腦概論或網路概論考試時，你是否覺得網路線看起來都長得一樣，為什麼還有分 Cat 3、Cat 5e、Cat 6？這篇互動式教學將幫你釐清觀念，破解常見考題陷阱！</p>
+    </header>
+
+    <!-- 一、暖身 -->
+    <section class="card">
+        <h2>🚗 一、暖身：為什麼網路線也分等級？</h2>
+        <p>雙絞線（UTP, Unshielded Twisted Pair）就像是數據傳輸的「道路」。</p>
+        <ul>
+            <li><strong>Category（等級/類別）越高</strong>：代表道路越寬、路面越平整（抗干擾能力越好）。</li>
+            <li><strong>傳輸速率（頻寬）</strong>：就像車速限制。</li>
+        </ul>
+        <div style="background: #eef2ff; padding: 15px; border-radius: 8px; margin-top: 10px;">
+            <p><strong>💡 生活比喻：</strong></p>
+            <p>🏎️ <strong>Gigabit 資料（高速跑車）</strong> 需要好一點的路（Cat 5e 以上）才跑得起來。</p>
+            <p>🚲 如果你讓跑車開在 <strong>碎石子路（Cat 3）</strong> 上，它根本跑不快，甚至會拋錨（資料傳輸失敗）。</p>
+        </div>
+    </section>
+
+    <!-- 二、核心觀念 -->
+    <section class="card">
+        <h2>⚡ 二、核心觀念：Gigabit 是多少？</h2>
+        <p>題目中常出現的「Gigabit 乙太網路」指的是：</p>
+        <div style="text-align: center; font-size: 1.2rem; margin: 20px 0;">
+            <strong>1 Gbps = 1000 Mbps</strong>
+        </div>
+        <p>考試提到的 <span class="highlight">1000BASE-T</span> 就是這個等級。</p>
+    </section>
+
+    <!-- 三、對照表 -->
+    <section class="card">
+        <h2>📊 三、Cat 3 / Cat 5e / Cat 6 對照表</h2>
+        <p>這是考試最愛考的重點，請務必記住紅字部分：</p>
+        <table class="spec-table">
+            <thead>
+                <tr>
+                    <th>等級 (Category)</th>
+                    <th>常見最高速率</th>
+                    <th>常見用途 / 備註</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Cat 3</strong></td>
+                    <td style="color: var(--wrong-color); font-weight: bold;">10 Mbps</td>
+                    <td>早期乙太網路 (10BASE-T)、電話線。<br>❌ 無法支援 Gigabit。</td>
+                </tr>
+                <tr>
+                    <td><strong>Cat 5e</strong></td>
+                    <td style="color: var(--correct-color); font-weight: bold;">1 Gbps (1000 Mbps)</td>
+                    <td>✅ <strong>Gigabit 乙太網路的基本門檻</strong>。<br>目前家用最普及。</td>
+                </tr>
+                <tr>
+                    <td><strong>Cat 6</strong></td>
+                    <td style="color: var(--correct-color); font-weight: bold;">1 Gbps / 10 Gbps</td>
+                    <td>更抗干擾、更穩。短距離可支援到 10G。<br>新裝潢建議使用。</td>
+                </tr>
+            </tbody>
+        </table>
+        <p>👉 <strong>結論：Gigabit 起跳至少要 Cat 5e，Cat 3 絕對不夠！</strong></p>
+    </section>
+
+    <!-- 四、考題解析 -->
+    <section class="card">
+        <h2>📝 四、經典考題解析</h2>
+        <div class="exam-box">
+            <p><strong>題目：</strong></p>
+            <p>「第三類非遮罩式雙絞線（UTP Cat 3）可以做為 Gigabit 的乙太網路傳輸。」</p>
+            <p>(A) O &nbsp;&nbsp;&nbsp; (B) X</p>
+            <hr style="border: 0; border-top: 1px dashed #ccc; margin: 15px 0;">
+            <p><strong>正確答案：<span style="color: var(--wrong-color); font-size: 1.2em;">(B) X</span></strong></p>
+            <p><strong>解析：</strong></p>
+            <p>Gigabit (1000 Mbps) 對線材品質要求較高。Cat 3 的頻寬僅能支援到 10 Mbps（如電話或極舊的網路），無法負荷 1000 Mbps 的傳輸量。要跑 Gigabit，<strong>至少需要 Cat 5e</strong>。</p>
+        </div>
+    </section>
+
+    <!-- 五、互動測驗 -->
+    <section class="card">
+        <h2>🎮 五、互動小測驗</h2>
+        <p>點選你覺得正確的答案，測測看你懂了嗎？</p>
+
+        <!-- Q1 -->
+        <div class="quiz-item" id="q1">
+            <p><strong>1. 「Gigabit Ethernet（1 Gbps）」至少需要哪一種網路線等級？</strong></p>
+            <button class="quiz-option" onclick="checkAnswer('q1', 'A', 'B', 'Cat 3 只有 10 Mbps，太慢了！')">(A) Cat 3</button>
+            <button class="quiz-option" onclick="checkAnswer('q1', 'B', 'B', '沒錯！Gigabit 起跳就是 Cat 5e。')">(B) Cat 5e</button>
+            <button class="quiz-option" onclick="checkAnswer('q1', 'C', 'B', 'Cat 2 比 Cat 3 更舊，完全不行喔！')">(C) Cat 2</button>
+            <div class="feedback"></div>
+        </div>
+
+        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+
+        <!-- Q2 -->
+        <div class="quiz-item" id="q2">
+            <p><strong>2. 「Cat 3 可以用來跑 1000 Mbps 的乙太網路。」這句話是？</strong></p>
+            <button class="quiz-option" onclick="checkAnswer('q2', 'A', 'B', '答錯囉！Cat 3 跑不動 1000 Mbps。')">(A) O (正確)</button>
+            <button class="quiz-option" onclick="checkAnswer('q2', 'B', 'B', '正解！Cat 3 只能跑 10 Mbps。')">(B) X (錯誤)</button>
+            <div class="feedback"></div>
+        </div>
+
+        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+
+        <!-- Q3 -->
+        <div class="quiz-item" id="q3">
+            <p><strong>3. 下列哪一個最符合 Cat 3 的常見用途？</strong></p>
+            <button class="quiz-option" onclick="checkAnswer('q3', 'A', 'A', '完全正確！現在多用於市內電話線。')">(A) 早期低速網路/電話線</button>
+            <button class="quiz-option" onclick="checkAnswer('q3', 'B', 'A', '資料中心需要極高速率（如 Cat 6A 或光纖），Cat 3 無法勝任。')">(B) 10GbE 資料中心</button>
+            <button class="quiz-option" onclick="checkAnswer('q3', 'C', 'A', '光纖是完全不同的材質（玻璃/塑膠），不是銅線喔！')">(C) 光纖骨幹網路</button>
+            <div class="feedback"></div>
+        </div>
+
+        <button class="reset-btn" onclick="resetQuiz()">🔄 重新作答</button>
+    </section>
+
+    <!-- 六、記憶小卡 -->
+    <section class="card memory-card">
+        <h2>🧠 六、考前速記小卡</h2>
+        <div style="text-align: left; background: rgba(0,0,0,0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+            <p>🔹 <strong>Cat 3</strong> → 10 Mbps（太老、太慢，只能講電話）</p>
+            <p>🔹 <strong>Cat 5e</strong> → Gigabit (1000 Mbps) 起跳標準</p>
+            <p>🔹 <strong>Cat 6</strong> → 更穩、更高規</p>
+        </div>
+        <p>考試口訣：</p>
+        <div class="mnemonic">
+            「Gigabit 起跳 5e，Cat 3 只跑十。」
+        </div>
+    </section>
+
+    <footer style="text-align: center; color: #666; margin-top: 40px; font-size: 0.9em;">
+        <p>加油！祝你考試順利 💯</p>
+    </footer>
+</div>
+
+<script>
+    function checkAnswer(questionId, selectedValue, correctValue, explanationText) {
+        const container = document.getElementById(questionId);
+        const buttons = container.getElementsByClassName('quiz-option');
+        const feedback = container.querySelector('.feedback');
+        
+        // 鎖定該題所有按鈕
+        for (let btn of buttons) {
+            btn.disabled = true;
+            
+            // 標示使用者點擊的項目
+            if (btn.innerText.startsWith('(' + selectedValue + ')')) {
+                if (selectedValue === correctValue) {
+                    btn.classList.add('correct');
+                    btn.innerHTML += ' ✅';
+                    feedback.style.backgroundColor = '#d1fae5';
+                    feedback.style.color = '#065f46';
+                    feedback.innerText = '⭕ 答對了！ ' + explanationText;
+                } else {
+                    btn.classList.add('wrong');
+                    btn.innerHTML += ' ❌';
+                    feedback.style.backgroundColor = '#fee2e2';
+                    feedback.style.color = '#991b1b';
+                    feedback.innerText = '❌ 答錯了！ ' + explanationText;
+                }
+            }
+            
+            // 如果答錯，顯示正確答案是哪一個
+            if (selectedValue !== correctValue && btn.innerText.startsWith('(' + correctValue + ')')) {
+                btn.style.borderColor = 'var(--correct-color)';
+                btn.style.color = 'var(--correct-color)';
+                btn.style.fontWeight = 'bold';
+            }
+        }
+
+        feedback.classList.add('show');
+    }
+
+    function resetQuiz() {
+        const buttons = document.getElementsByClassName('quiz-option');
+        const feedbacks = document.getElementsByClassName('feedback');
+        
+        // 重置所有按鈕狀態
+        for (let btn of buttons) {
+            btn.disabled = false;
+            btn.classList.remove('correct', 'wrong');
+            btn.style.borderColor = '#e5e7eb';
+            btn.style.color = 'var(--text-color)';
+            btn.style.fontWeight = 'normal';
+            btn.style.backgroundColor = 'white';
+            
+            // 移除 ✅ ❌ 符號 (重置文字)
+            const originalText = btn.innerText.replace(' ✅', '').replace(' ❌', '');
+            btn.innerText = originalText;
+        }
+
+        // 隱藏回饋訊息
+        for (let fb of feedbacks) {
+            fb.classList.remove('show');
+        }
+    }
+</script>
+
+</body>
+</html>

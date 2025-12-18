@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FCS (Frame Check Sequence) 與 鏈結層 (Link Layer) 互動教學</title>
+    <style>
+        /* === 基礎重置與變數 === */
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e67e22;
+            --success-color: #27ae60;
+            --error-color: #c0392b;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --border-radius: 8px;
+            --spacing: 20px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            padding-bottom: 50px;
+        }
+
+        /* === 版面結構 === */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        section {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+            padding: 25px;
+            border-left: 5px solid var(--secondary-color);
+        }
+
+        h1, h2, h3 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 1.8rem;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            font-weight: normal;
+            margin-bottom: 20px;
+        }
+
+        /* === 題目區塊 === */
+        .question-block {
+            background-color: #eef7fc;
+            border-left-color: var(--primary-color);
+        }
+        
+        .question-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .options-list {
+            list-style: none;
+        }
+
+        .options-list li {
+            padding: 8px 0;
+            padding-left: 15px;
+        }
+
+        /* === 核心觀念表格 === */
+        .concept-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .concept-table th, .concept-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .concept-table th {
+            background-color: var(--primary-color);
+            color: white;
+            width: 30%;
+        }
+
+        .highlight-row {
+            background-color: #fff9e6;
+            border: 2px solid var(--accent-color);
+            font-weight: bold;
+        }
+
+        /* === 互動演示區 (核心) === */
+        #interactive-demo {
+            border-left-color: var(--accent-color);
+        }
+
+        .demo-layout {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .demo-main {
+            flex: 2;
+            min-width: 300px;
+        }
+
+        .demo-sidebar {
+            flex: 1;
+            min-width: 250px;
+            background: #fdf2e9;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            border: 1px dashed var(--accent-color);
+        }
+
+        /* Frame 視覺化 */
+        .frame-container {
+            display: flex;
+            overflow-x: auto;
+            margin: 20px 0;
+            padding-bottom: 10px;
+            border: 1px solid #ccc;
+            background: #eee;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        .frame-field {
+            border: 1px solid #999;
+            background: #fff;
+            padding: 10px 5px;
+            text-align: center;
+            font-size: 0.85rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-width: 60px;
+            margin-right: 2px;
+            position: relative;
+        }
+
+        .field-label {
+            font-weight: bold;
+            font-size: 0.7rem;
+            color: #666;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .field-value {
+            font-family: monospace;
+            word-break: break-all;
+        }
+
+        /* 特別欄位樣式 */
+        .field-payload {
+            flex-grow: 1;
+            background-color: #e8f6f3;
+            min-width: 120px;
+        }
+
+        .field-fcs {
+            background-color: #fce4ec;
+            border: 2px solid #e91e63;
+            font-weight: bold;
+            min-width: 80px;
+            transition: all 0.3s;
+        }
+
+        /* 控制面板 */
+        .controls {
+            margin-top: 15px;
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: var(--border-radius);
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        input[type="text"] {
+            padding: 8px;
+            width: 100%;
+            max-width: 300px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            color: white;
+            transition: opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .btn-calc { background-color: var(--secondary-color); }
+        .btn-err { background-color: var(--error-color); }
+        .btn-verify { background-color: var(--success-color); }
+        .btn-retry { background-color: #7f8c8d; }
+
+        .result-box {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            display: none;
+        }
+
+        .result-success { background-color: #d5f5e3; color: #1e8449; }
+        .result-error { background-color: #fadbd8; color: #943126; }
+
+        /* === 破解選項卡片 === */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .option-card {
+            background: #fff;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 6px;
+        }
+
+        .option-card.correct {
+            border: 2px solid var(--success-color);
+            background-color: #f0fdf4;
+        }
+
+        .option-tag {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .tag-correct { background: var(--success-color); color: white; }
+        .tag-wrong { background: #95a5a6; color: white; }
+
+        /* === 小測驗 === */
+        .quiz-option {
+            display: block;
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .quiz-option:hover {
+            background-color: #f0f0f0;
+        }
+
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+
+        /* === 延伸知識 (Accordion) === */
+        .accordion {
+            background-color: #eee;
+            color: #444;
+            cursor: pointer;
+            padding: 18px;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: 0.4s;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .accordion:after {
+            content: '\002B';
+            font-weight: bold;
+        }
+
+        .active:after {
+            content: "\2212";
+        }
+
+        .panel {
+            padding: 0 18px;
+            background-color: white;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.2s ease-out;
+            border: 1px solid #eee;
+            border-top: none;
+        }
+
+        /* 動畫效果 */
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+
+        .shake-animation {
+            animation: shake 0.4s ease-in-out;
+        }
+
+        .highlight-flash {
+            animation: flash 1s;
+        }
+
+        @keyframes flash {
+            0% { background-color: yellow; }
+            100% { background-color: transparent; }
+        }
+
+        /* 手機適配 */
+        @media (max-width: 600px) {
+            .concept-table th, .concept-table td {
+                font-size: 0.9rem;
+                padding: 8px;
+            }
+            .frame-container {
+                font-size: 0.7rem;
+            }
+            .btn-group {
+                flex-direction: column;
+            }
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <!-- 1. Header -->
+    <header>
+        <h1>FCS (Frame Check Sequence) 互動教學</h1>
+        <p class="subtitle">口訣：看到 Frame/FCS，就想到「鏈結層 (Link Layer)」</p>
+    </header>
+
+    <!-- 2. 本題區 -->
+    <section class="question-block">
+        <h2><span style="color: var(--secondary-color);">▍</span> 本題</h2>
+        <div class="question-text">
+            FCS（Frame Check Sequence）的計算，在 TCP/IP 網路中是屬於哪一層的功能？
+        </div>
+        <ul class="options-list">
+            <li>(A) 鏈結層（Link Layer）</li>
+            <li>(B) 網路層（Network Layer）</li>
+            <li>(C) 會議層（Session Layer）</li>
+            <li>(D) 應用層（Application Layer）</li>
+        </ul>
+    </section>
+
+    <!-- 3. 核心觀念區 -->
+    <section>
+        <h2><span style="color: var(--secondary-color);">▍</span> 核心觀念：資料單位的層級</h2>
+        <p>在資料傳輸過程中，每一層都有不同的名稱來稱呼資料單位（PDU）。<strong>FCS</strong> 是為了保護 <strong>Frame（資料框）</strong> 的完整性而設計的，它位於 Frame 的尾部。</p>
+        <p style="margin-top: 10px;">請記住下表中的對應關係，這是解題的關鍵：</p>
+
+        <table class="concept-table">
+            <thead>
+                <tr>
+                    <th>層級 (Layer)</th>
+                    <th>資料單位 (PDU)</th>
+                    <th>關鍵設備/功能</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>應用層 (Application)</td>
+                    <td>Data / Message</td>
+                    <td>HTTP, DNS, SMTP</td>
+                </tr>
+                <tr>
+                    <td>傳輸層 (Transport)</td>
+                    <td><strong>Segment (分段)</strong></td>
+                    <td>TCP, UDP, Port 埠號</td>
+                </tr>
+                <tr>
+                    <td>網路層 (Network)</td>
+                    <td><strong>Packet (封包)</strong></td>
+                    <td>IP, Router (路由器)</td>
+                </tr>
+                <tr class="highlight-row">
+                    <td>鏈結層 (Link Layer)</td>
+                    <td><strong>Frame (資料框)</strong></td>
+                    <td>MAC, Switch, <strong>FCS/CRC</strong></td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- 4. 互動演示區 -->
+    <section id="interactive-demo">
+        <h2><span style="color: var(--secondary-color);">▍</span> 互動演示：FCS 如何工作？</h2>
+        <p style="font-size: 0.9rem; color: #666; margin-bottom: 15px;">
+            請操作下方模擬器。FCS 欄位儲存的是對 Payload 進行數學計算（如 CRC）後的結果。接收端會重新計算並比對。
+        </p>
+
+        <div class="demo-layout">
+            <!-- 左側操作區 -->
+            <div class="demo-main">
+                
+                <!-- 視覺化 Frame -->
+                <div class="frame-container">
+                    <div class="frame-field">
+                        <div class="field-label">Dest MAC</div>
+                        <div class="field-value">AA:BB:CC...</div>
+                    </div>
+                    <div class="frame-field">
+                        <div class="field-label">Src MAC</div>
+                        <div class="field-value">11:22:33...</div>
+                    </div>
+                    <div class="frame-field">
+                        <div class="field-label">Type</div>
+                        <div class="field-value">IPv4</div>
+                    </div>
+                    <div class="frame-field field-payload" id="visual-payload-box">
+                        <div class="field-label">Payload (資料)</div>
+                        <div class="field-value" id="visual-payload">Hello</div>
+                    </div>
+                    <div class="frame-field field-fcs" id="visual-fcs-box">
+                        <div class="field-label">FCS (CRC)</div>
+                        <div class="field-value" id="visual-fcs">等待計算</div>
+                    </div>
+                </div>
+
+                <!-- 控制按鈕 -->
+                <div class="controls">
+                    <div class="input-group">
+                        <label for="input-payload">輸入資料內容 (Payload)：</label>
+                        <input type="text" id="input-payload" value="Hello" maxlength="10">
+                    </div>
+                    
+                    <div class="btn-group">
+                        <button class="btn-calc" onclick="demoCalculate()">1. 計算 FCS (發送端)</button>
+                        <button class="btn-err" onclick="demoCorrupt()">2. 模擬傳輸錯誤 (雜訊)</button>
+                        <button class="btn-verify" onclick="demoVerify()">3. 驗證 FCS (接收端)</button>
+                        <button class="btn-retry" onclick="resetDemo()">重置</button>
+                    </div>
+
+                    <div id="demo-result" class="result-box"></div>
+                    <div style="margin-top: 10px; font-size: 0.8rem; color: #888;">
+                        *註：此處 FCS 使用簡易 Checksum 演算法示意，真實乙太網路使用 CRC-32。
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右側提示區 -->
+            <div class="demo-sidebar">
+                <h3 style="font-size: 1.1rem; border-bottom: 2px solid #ccc; padding-bottom: 5px;">層級提示面板</h3>
+                <ul style="list-style-type: none; padding: 0;">
+                    <li style="margin-bottom: 15px;">
+                        <strong>當前結構：</strong><br>
+                        Frame (資料框)
+                    </li>
+                    <li style="margin-bottom: 15px;">
+                        <strong>所屬層級：</strong><br>
+                        <span style="color: var(--secondary-color); font-weight: bold; font-size: 1.2rem;">鏈結層 (Link Layer)</span>
+                        <br><span style="font-size: 0.85rem; color: #666;">(Data Link Layer)</span>
+                    </li>
+                    <li style="margin-bottom: 15px;">
+                        <strong>FCS 用途：</strong><br>
+                        檢查 Frame 在傳輸過程中是否損壞。
+                    </li>
+                    <li id="exam-tip" style="display:none; background: #fff; padding: 8px; border-radius: 4px; border: 1px solid var(--error-color); color: var(--error-color); font-weight: bold;">
+                        💡 考試重點：<br>偵測到 Frame 錯誤，這就是 Link Layer 的工作！
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. 選項逐一破解區 -->
+    <section>
+        <h2><span style="color: var(--secondary-color);">▍</span> 選項逐一破解</h2>
+        <div class="card-grid">
+            <div class="option-card correct">
+                <div class="option-tag tag-correct">(A) 鏈結層</div>
+                <p><strong>正解。</strong>資料傳輸單位為 <strong>Frame</strong>。FCS (Frame Check Sequence) 位於 Frame 的尾部，專門用來檢查物理傳輸（如乙太網路線、Wi-Fi）過程中是否發生位元錯誤。</p>
+            </div>
+            <div class="option-card">
+                <div class="option-tag tag-wrong">(B) 網路層</div>
+                <p>資料單位為 <strong>Packet (封包)</strong>。負責 IP 定址與路由路徑選擇。雖有 Header Checksum，但不是 Frame 的 FCS。</p>
+            </div>
+            <div class="option-card">
+                <div class="option-tag tag-wrong">(C) 會議層</div>
+                <p>屬於 OSI 7 層模型中的第 5 層，負責管理連線對話。TCP/IP 模型通常將其功能併入應用層。與底層錯誤偵測無關。</p>
+            </div>
+            <div class="option-card">
+                <div class="option-tag tag-wrong">(D) 應用層</div>
+                <p>處理 HTTP、SMTP 等應用協定。應用層資料會被往下層層封裝，直到鏈結層才加上 FCS。</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. 小測驗區 -->
+    <section id="quiz-section">
+        <h2><span style="color: var(--secondary-color);">▍</span> 小測驗：立即驗收</h2>
+        <div style="font-weight: bold; margin-bottom: 10px;">題目：FCS (Frame Check Sequence) 的計算，在 TCP/IP 網路中屬於哪一層？</div>
+        
+        <form id="quiz-form">
+            <label class="quiz-option">
+                <input type="radio" name="layer" value="link"> (A) 鏈結層 (Link Layer)
+            </label>
+            <label class="quiz-option">
+                <input type="radio" name="layer" value="network"> (B) 網路層 (Network Layer)
+            </label>
+            <label class="quiz-option">
+                <input type="radio" name="layer" value="session"> (C) 會議層 (Session Layer)
+            </label>
+            <label class="quiz-option">
+                <input type="radio" name="layer" value="app"> (D) 應用層 (Application Layer)
+            </label>
+        </form>
+
+        <div id="quiz-feedback" class="quiz-feedback"></div>
+    </section>
+
+    <!-- 7. 延伸知識 Accordion -->
+    <section>
+        <button class="accordion">延伸知識：TCP/IP 與 OSI 模型對照</button>
+        <div class="panel">
+            <div style="padding: 15px;">
+                <p>雖然現今網路多以 <strong>TCP/IP 4 層模型</strong> 為主，但考試常會提及 OSI 7 層模型。以下是簡單對照：</p>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    <li><strong>Link Layer (TCP/IP)</strong> ≈ Data Link Layer + Physical Layer (OSI L1+L2)。</li>
+                    <li><strong>FCS</strong> 主要運作在 Data Link Layer (L2)。</li>
+                    <li><strong>Internet Layer (TCP/IP)</strong> = Network Layer (OSI L3)。</li>
+                </ul>
+                <p style="margin-top: 10px; color: #666; font-size: 0.9rem;">
+                    備註：Ethernet Frame 的尾巴就是 FCS，負責硬體層級的資料完整性校驗。
+                </p>
+            </div>
+        </div>
+    </section>
+
+</div>
+
+<script>
+    // === 互動演示邏輯 ===
+    let currentPayload = "Hello";
+    let storedFCS = "";
+    let isCorrupted = false;
+
+    // 簡單的 Hash 函數模擬 FCS (示意用)
+    function simpleHash(str) {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            let char = str.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash = hash & 0xFFFF; // 限制在 16 位元
+        }
+        return hash.toString(16).toUpperCase().padStart(4, '0'); // 回傳 Hex
+    }
+
+    // 1. 計算 FCS
+    function demoCalculate() {
+        const inputVal = document.getElementById('input-payload').value;
+        if (!inputVal) {
+            alert("請輸入 Payload 資料！");
+            return;
+        }
+        
+        currentPayload = inputVal;
+        storedFCS = simpleHash(currentPayload);
+        isCorrupted = false;
+
+        // 更新畫面
+        document.getElementById('visual-payload').innerText = currentPayload;
+        document.getElementById('visual-fcs').innerText = storedFCS;
+        document.getElementById('visual-payload').style.color = "black";
+        
+        // 重置結果框
+        const resBox = document.getElementById('demo-result');
+        resBox.style.display = 'block';
+        resBox.className = 'result-box';
+        resBox.style.backgroundColor = '#e8f8f5';
+        resBox.style.color = '#333';
+        resBox.innerText = `✅ FCS 已計算完畢：${storedFCS}。準備發送 Frame。`;
+        
+        // 隱藏提示
+        document.getElementById('exam-tip').style.display = 'none';
+        document.getElementById('visual-fcs-box').style.borderColor = '#e91e63'; // reset border
+    }
+
+    // 2. 模擬錯誤
+    function demoCorrupt() {
+        if (!storedFCS) {
+            alert("請先計算 FCS！");
+            return;
+        }
+        if (isCorrupted) return; // 已經壞了就不再壞
+
+        // 修改最後一個字元
+        let originalText = currentPayload;
+        let corruptedText = originalText.substring(0, originalText.length - 1) + 
+                            String.fromCharCode(originalText.charCodeAt(originalText.length - 1) + 1);
+        
+        currentPayload = corruptedText;
+        isCorrupted = true;
+
+        // 更新畫面：FCS 保持不變 (因為這是傳輸過來的舊 FCS)，但 Payload 變了
+        document.getElementById('visual-payload').innerText = currentPayload;
+        document.getElementById('visual-payload').style.color = "red"; // 標示變更
+        
+        // 提示
+        const resBox = document.getElementById('demo-result');
+        resBox.style.display = 'block';
+        resBox.className = 'result-box result-error';
+        resBox.innerText = `⚠️ 傳輸過程中受到干擾！Payload 變成了 "${currentPayload}"，但 FCS 欄位仍是舊的 "${storedFCS}"。`;
+    }
+
+    // 3. 驗證 FCS
+    function demoVerify() {
+        if (!storedFCS) {
+            alert("沒有 FCS 可驗證，請先計算！");
+            return;
+        }
+
+        // 接收端重新計算 Payload 的 FCS
+        const recalculatedFCS = simpleHash(currentPayload);
+        const resBox = document.getElementById('demo-result');
+        const visualFcsBox = document.getElementById('visual-fcs-box');
+
+        resBox.style.display = 'block';
+
+        if (recalculatedFCS === storedFCS) {
+            // 成功
+            resBox.className = 'result-box result-success';
+            resBox.innerHTML = `✅ 驗證成功！<br>接收端計算結果 (${recalculatedFCS}) == Frame FCS (${storedFCS})。<br>資料完整無誤。`;
+            visualFcsBox.style.borderColor = '#27ae60';
+            visualFcsBox.style.backgroundColor = '#d5f5e3';
+        } else {
+            // 失敗
+            resBox.className = 'result-box result-error';
+            resBox.innerHTML = `❌ 驗證失敗！<br>接收端計算結果 (${recalculatedFCS}) != Frame FCS (${storedFCS})。<br>偵測到錯誤，丟棄此 Frame！`;
+            
+            // 視覺效果
+            visualFcsBox.classList.add('shake-animation');
+            visualFcsBox.style.borderColor = 'red';
+            visualFcsBox.style.backgroundColor = '#fadbd8';
+            setTimeout(() => {
+                visualFcsBox.classList.remove('shake-animation');
+            }, 500);
+
+            // 顯示側邊欄考試提示
+            document.getElementById('exam-tip').style.display = 'block';
+        }
+    }
+
+    function resetDemo() {
+        document.getElementById('input-payload').value = "Hello";
+        document.getElementById('visual-payload').innerText = "Hello";
+        document.getElementById('visual-payload').style.color = "black";
+        document.getElementById('visual-fcs').innerText = "等待計算";
+        document.getElementById('visual-fcs-box').style.borderColor = '#e91e63';
+        document.getElementById('visual-fcs-box').style.backgroundColor = '#fce4ec';
+        document.getElementById('demo-result').style.display = 'none';
+        document.getElementById('exam-tip').style.display = 'none';
+        currentPayload = "Hello";
+        storedFCS = "";
+        isCorrupted = false;
+    }
+
+    // === 小測驗邏輯 ===
+    const quizOptions = document.querySelectorAll('input[name="layer"]');
+    const feedbackDiv = document.getElementById('quiz-feedback');
+
+    quizOptions.forEach(option => {
+        option.addEventListener('change', function() {
+            const val = this.value;
+            feedbackDiv.style.display = 'block';
+            
+            if (val === 'link') {
+                feedbackDiv.className = 'quiz-feedback result-success';
+                feedbackDiv.innerHTML = `
+                    <strong>✅ 答對了！</strong><br>
+                    FCS 是 Frame (資料框) 的一部分，負責確保實體傳輸的完整性，屬於 <strong>鏈結層 (Link Layer)</strong> 的功能。
+                `;
+            } else {
+                feedbackDiv.className = 'quiz-feedback result-error';
+                feedbackDiv.innerHTML = `
+                    <strong>❌ 答錯了...</strong><br>
+                    提示：看看 Frame 的結構，FCS 用來檢查 Frame 是否壞掉。<br>
+                    <button class="btn-retry" style="margin-top:10px;" onclick="scrollToDemo()">帶我回互動演示複習</button>
+                `;
+            }
+        });
+    });
+
+    function scrollToDemo() {
+        const demoSection = document.getElementById('interactive-demo');
+        demoSection.scrollIntoView({ behavior: 'smooth' });
+        // 高亮 FCS 區塊提示
+        setTimeout(() => {
+            const fcsBox = document.getElementById('visual-fcs-box');
+            fcsBox.classList.add('highlight-flash');
+            setTimeout(() => fcsBox.classList.remove('highlight-flash'), 1000);
+        }, 800);
+    }
+
+    // === Accordion 邏輯 ===
+    const acc = document.getElementsByClassName("accordion");
+    for (let i = 0; i < acc.length; i++) {
+        acc[i].addEventListener("click", function() {
+            this.classList.toggle("active");
+            const panel = this.nextElementSibling;
+            if (panel.style.maxHeight) {
+                panel.style.maxHeight = null;
+            } else {
+                panel.style.maxHeight = panel.scrollHeight + "px";
+            }
+        });
+    }
+
+    // 初始化演示
+    resetDemo();
+
+</script>
+
+</body>
+</html>

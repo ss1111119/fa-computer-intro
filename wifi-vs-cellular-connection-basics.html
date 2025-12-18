@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WiFi 終端設備連線特性教學</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --highlight-bg: #e8f4fd;
+            --correct-color: #27ae60;
+            --wrong-color: #c0392b;
+            --card-bg: #ffffff;
+            --bg-color: #f3f4f6;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px 0;
+            border-bottom: 3px solid var(--accent-color);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            color: var(--primary-color);
+        }
+
+        header p {
+            color: #7f8c8d;
+            font-size: 1rem;
+        }
+
+        /* Card Style */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.2s ease;
+        }
+
+        .card h2 {
+            border-left: 5px solid var(--accent-color);
+            padding-left: 15px;
+            margin-top: 0;
+            font-size: 1.4rem;
+        }
+
+        .highlight-box {
+            background-color: var(--highlight-bg);
+            border: 1px solid #bde0fe;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .warning-text {
+            color: #d35400;
+            font-weight: bold;
+        }
+
+        /* Diagram Style */
+        .diagram-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .diagram-node {
+            background: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            text-align: center;
+            min-width: 100px;
+        }
+
+        .diagram-arrow {
+            color: var(--accent-color);
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        /* Table Style */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.95rem;
+        }
+
+        .comparison-table th, .comparison-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .comparison-table th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .comparison-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        /* Quiz Styles */
+        .quiz-option {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .quiz-option:hover {
+            background: #e2e6ea;
+            border-color: var(--accent-color);
+        }
+
+        .quiz-option.correct {
+            background-color: #d4edda;
+            border-color: var(--correct-color);
+            color: var(--correct-color);
+        }
+
+        .quiz-option.wrong {
+            background-color: #f8d7da;
+            border-color: var(--wrong-color);
+            color: var(--wrong-color);
+        }
+
+        .feedback {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 6px;
+            display: none;
+            font-weight: bold;
+        }
+
+        .btn-reset {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 15px;
+            display: inline-block;
+        }
+
+        .btn-reset:hover {
+            background-color: #2980b9;
+        }
+
+        /* Flashcards */
+        .flashcard {
+            background: #fff3cd;
+            border: 2px dashed #ffeeba;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .flashcard h3 {
+            color: #856404;
+            margin-top: 0;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .diagram-container {
+                flex-direction: column;
+            }
+            .diagram-arrow {
+                transform: rotate(90deg);
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>資訊概論：網路連線基礎</h1>
+        <p>主題：WiFi 終端設備的連線特性解析</p>
+    </header>
+
+    <!-- Section 1: Warm-up -->
+    <div class="card">
+        <h2>一、暖身：為什麼這題容易答錯？</h2>
+        <p>很多同學在做這類考題時，會直覺地想到自己的使用經驗：</p>
+        <div class="highlight-box">
+            <em>「我的手機可以同時開 LINE、聽 YouTube、還能背景下載遊戲，這樣不是同時連了很多地方嗎？」</em>
+        </div>
+        <p>這就是最常見的誤區！考試問的通常是<strong>「實體層或連結層」</strong>的連線模型，而不是應用程式（App）的行為。</p>
+        <p class="warning-text">★ 關鍵點：請區分「同時間的連線對象（硬體）」與「同時間執行的服務（軟體）」。</p>
+    </div>
+
+    <!-- Section 2: Core Concept -->
+    <div class="card">
+        <h2>二、WiFi 終端設備的基本連線概念</h2>
+        <p>WiFi 技術屬於<strong>無線區域網路（WLAN）</strong>的一種。對於任何一個終端設備（如你的手機、筆電、平板）來說，有一個鐵律：</p>
+        <p><strong>在同一時間點，無線網卡只能與一個存取點（Access Point, AP）建立連線關係。</strong></p>
+        
+        <h3>白話文解釋：</h3>
+        <ul>
+            <li>裝置與 AP 是<strong>「一對一」</strong>的連線關係（就像講電話，你同時間只能跟一個人通話）。</li>
+            <li>雖然你想連去 Google、Facebook 或 IG，這些資料都是先傳給<strong>同一個 AP</strong>，再由 AP 幫你傳送到網際網路。</li>
+            <li>對你的手機硬體而言，它的「對口單位」只有一個。</li>
+        </ul>
+
+        <div class="diagram-container">
+            <div class="diagram-node">你的手機</div>
+            <div class="diagram-arrow">↔</div>
+            <div class="diagram-node" style="background-color: var(--accent-color);">WiFi AP</div>
+            <div class="diagram-arrow">↔</div>
+            <div class="diagram-node" style="background-color: #7f8c8d;">網際網路</div>
+        </div>
+    </div>
+
+    <!-- Section 3: The Illusion of Concurrency -->
+    <div class="card">
+        <h2>三、為什麼「看起來」可以同時連很多服務？</h2>
+        <p>既然硬體上只能連一個 AP，那為什麼我可以同時開網頁又聽音樂？</p>
+        <p>這是依靠以下技術達成「同時」的錯覺：</p>
+        <ol>
+            <li><strong>封包交換 (Packet Switching)</strong>：資料被切成很小的封包，輪流傳送。</li>
+            <li><strong>時間分割 (Time Slicing)</strong>：傳輸速度極快，手機在極短時間內處理不同 App 的資料，人眼感覺不出來。</li>
+            <li><strong>作業系統多工</strong>：iOS 或 Android 系統在背景幫你管理這些應用層的請求。</li>
+        </ol>
+        <p class="warning-text">注意：這些是「應用層與傳輸層」的行為，並不會改變「硬體層」一次只連一個 AP 的事實。</p>
+    </div>
+
+    <!-- Section 4: Comparison Table -->
+    <div class="card">
+        <h2>四、WiFi vs 行動網路 (4G/5G) 對照表</h2>
+        <p>無論是 WiFi 還是手機網路，基本的「終端連線物理特性」其實是很像的。</p>
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th>項目</th>
+                    <th>WiFi</th>
+                    <th>行動網路 (4G/5G)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>連線對象</strong></td>
+                    <td>單一 存取點 (AP)</td>
+                    <td>單一 基地台 (Base Station)</td>
+                </tr>
+                <tr>
+                    <td><strong>連線型態</strong></td>
+                    <td>區域網路 (WLAN)</td>
+                    <td>廣域行動網路 (WWAN)</td>
+                </tr>
+                <tr>
+                    <td><strong>同時間實體連線</strong></td>
+                    <td><span style="color:red; font-weight:bold;">一個</span></td>
+                    <td><span style="color:red; font-weight:bold;">一個</span></td>
+                </tr>
+                <tr>
+                    <td><strong>多服務來源</strong></td>
+                    <td>由後端網路路由處理</td>
+                    <td>由電信核心網路處理</td>
+                </tr>
+            </tbody>
+        </table>
+        <p><small>註：雖然現代技術（如 CA 載波聚合）允許手機同時接收不同頻段訊號，但在基礎網路概念題型中，我們仍視為與「單一邏輯基地台系統」連線。</small></p>
+    </div>
+
+    <!-- Section 5: Exam Analysis -->
+    <div class="card">
+        <h2>五、本題對應考題解析</h2>
+        <div class="highlight-box">
+            <p><strong>題目：</strong><br>「一個以 WiFi 連接環境的終端設備，同時間只能連通另一個網路設備。」</p>
+            <p><strong>(A) O</strong><br><strong>(B) X</strong></p>
+        </div>
+        <h3>正確答案：<span style="color: var(--correct-color);">(A) O</span></h3>
+        <p><strong>解析理由：</strong></p>
+        <ul>
+            <li>這裡的「另一個網路設備」指的就是 <strong>無線存取點 (AP)</strong>。</li>
+            <li>終端設備（手機）的無線網卡，在同一時間點，確實只能鎖定並連接單一 AP 進行通訊。</li>
+            <li>符合基礎網路模型的定義。</li>
+        </ul>
+    </div>
+
+    <!-- Section 6: Interactive Quiz -->
+    <div class="card">
+        <h2>六、互動小測驗</h2>
+        <p>點選答案，看看你是否真的理解了！</p>
+
+        <!-- Question 1 -->
+        <div id="q1-container" style="margin-bottom: 30px;">
+            <p><strong>題目 1（是非題）：</strong><br>「WiFi 終端設備在同一時間只能與一個存取點（AP）連線。」</p>
+            <button class="quiz-option" onclick="checkAnswer('q1', 'A')">(A) O</button>
+            <button class="quiz-option" onclick="checkAnswer('q1', 'B')">(B) X</button>
+            <div id="q1-feedback" class="feedback"></div>
+        </div>
+
+        <!-- Question 2 -->
+        <div id="q2-container">
+            <p><strong>題目 2（選擇題）：</strong><br>「為什麼手機可以同時使用多個 App 上網？」</p>
+            <button class="quiz-option" onclick="checkAnswer('q2', 'A')">(A) 因為同時連很多 AP</button>
+            <button class="quiz-option" onclick="checkAnswer('q2', 'B')">(B) 因為時間分割與封包交換</button>
+            <button class="quiz-option" onclick="checkAnswer('q2', 'C')">(C) 因為 WiFi 可以無限連線</button>
+            <div id="q2-feedback" class="feedback"></div>
+        </div>
+
+        <div style="text-align: center;">
+            <button class="btn-reset" onclick="resetQuiz()">重新作答</button>
+        </div>
+    </div>
+
+    <!-- Section 7: Flashcards -->
+    <div class="card flashcard">
+        <h2>七、考前速記記憶卡</h2>
+        <h3>觀念重點</h3>
+        <p>WiFi 終端設備 → 同時間只連一個 AP</p>
+        <p>多個 App ≠ 多個實體連線</p>
+        <hr style="border-top: 1px dashed #dfa549; margin: 15px 0;">
+        <h3>考試口訣</h3>
+        <p style="font-size: 1.2rem; font-weight: bold; color: var(--primary-color);">
+            「WiFi 同時間，只認一個點。」<br>
+            「App 很多，但線只有一條。」
+        </p>
+    </div>
+
+</div>
+
+<script>
+    // 測驗邏輯
+    const answers = {
+        'q1': 'A', // O is Correct
+        'q2': 'B'  // Time slicing is Correct
+    };
+
+    const explanations = {
+        'q1': {
+            'correct': '答對了！硬體層面上，無線網卡一次只能鎖定一個 AP。',
+            'wrong': '答錯囉！請記得口訣：「WiFi 同時間，只認一個點」。'
+        },
+        'q2': {
+            'correct': '正解！這是靠軟體與傳輸協定的快速切換造成的錯覺，並非物理上連多條線。',
+            'wrong': '不對喔！手機一次只能連一個 AP，能多工是因為「時間分割」與「封包交換」。'
+        }
+    };
+
+    function checkAnswer(questionId, selectedOption) {
+        // 取得該題所有按鈕並停用
+        const container = document.getElementById(questionId + '-container');
+        const buttons = container.getElementsByClassName('quiz-option');
+        const feedback = document.getElementById(questionId + '-feedback');
+        
+        // 防止重複點擊
+        if (container.getAttribute('data-answered') === 'true') return;
+        container.setAttribute('data-answered', 'true');
+
+        const isCorrect = (selectedOption === answers[questionId]);
+
+        // 顯示回饋文字
+        feedback.style.display = 'block';
+        if (isCorrect) {
+            feedback.style.backgroundColor = '#d4edda';
+            feedback.style.color = '#155724';
+            feedback.innerText = '⭕ ' + explanations[questionId].correct;
+        } else {
+            feedback.style.backgroundColor = '#f8d7da';
+            feedback.style.color = '#721c24';
+            feedback.innerText = '❌ ' + explanations[questionId].wrong;
+        }
+
+        // 標記按鈕樣式
+        for (let btn of buttons) {
+            // 找出按下的按鈕
+            if (btn.innerText.includes('(' + selectedOption + ')')) {
+                if (isCorrect) {
+                    btn.classList.add('correct');
+                } else {
+                    btn.classList.add('wrong');
+                }
+            }
+            // 為了學習，如果答錯，同時標示出正確答案
+            if (!isCorrect && btn.innerText.includes('(' + answers[questionId] + ')')) {
+                btn.classList.add('correct');
+                btn.style.opacity = '0.7'; // 稍微淡化以區別
+            }
+            btn.style.cursor = 'default';
+        }
+    }
+
+    function resetQuiz() {
+        const questions = ['q1', 'q2'];
+        
+        questions.forEach(qid => {
+            const container = document.getElementById(qid + '-container');
+            const feedback = document.getElementById(qid + '-feedback');
+            const buttons = container.getElementsByClassName('quiz-option');
+
+            container.removeAttribute('data-answered');
+            feedback.style.display = 'none';
+            
+            for (let btn of buttons) {
+                btn.classList.remove('correct', 'wrong');
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+            }
+        });
+    }
+</script>
+
+</body>
+</html>

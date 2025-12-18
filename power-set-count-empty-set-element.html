@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>集合教學：含空集合元素的子集合數量</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #e74c3c;
+            --highlight-bg: #fff3cd;
+            --success-color: #27ae60;
+            --info-bg: #e8f4f8;
+            --border-radius: 8px;
+            --font-main: "Helvetica Neue", Helvetica, Arial, "Microsoft JhengHei", sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-main);
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+
+        /* Container */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            min-height: 100vh;
+            box-shadow: 0 0 15px rgba(0,0,0,0.05);
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: var(--accent-color);
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        /* Section Styling */
+        section {
+            margin-bottom: 40px;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            border: 1px solid #eee;
+        }
+
+        h2 {
+            border-left: 5px solid var(--accent-color);
+            padding-left: 10px;
+            color: var(--primary-color);
+            font-size: 1.4rem;
+            margin-top: 0;
+        }
+
+        h3 {
+            color: #555;
+            margin-top: 20px;
+            font-size: 1.2rem;
+        }
+
+        /* Tags and Badges */
+        .badge {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+
+        .badge-important {
+            background-color: var(--accent-color);
+        }
+
+        /* The Question Block */
+        .question-box {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            font-size: 1.1rem;
+        }
+        
+        .question-options {
+            margin-top: 15px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .question-options div {
+            background: rgba(255,255,255,0.1);
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        /* Concept Cards */
+        .concept-card {
+            background-color: var(--info-bg);
+            border: 1px solid #bde0ed;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 15px;
+        }
+
+        .comparison-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .comparison-box {
+            flex: 1;
+            min-width: 280px;
+            border: 2px solid #ddd;
+            padding: 15px;
+            border-radius: var(--border-radius);
+        }
+
+        .comparison-box.highlight {
+            border-color: var(--accent-color);
+            background-color: #fff5f5;
+        }
+
+        .big-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        /* Formula Box */
+        .formula-box {
+            border: 3px dashed var(--accent-color);
+            background-color: #fffdf0;
+            padding: 20px;
+            text-align: center;
+            margin: 20px 0;
+            border-radius: var(--border-radius);
+        }
+
+        .formula-main {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            margin: 10px 0;
+        }
+
+        /* Interactive Area */
+        .interactive-area {
+            background-color: #f4f6f7;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            border: 1px solid #ccc;
+        }
+
+        .set-display {
+            font-family: "Courier New", monospace;
+            font-size: 1.5rem;
+            text-align: center;
+            margin-bottom: 20px;
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .element-chip {
+            display: inline-block;
+            padding: 5px 10px;
+            margin: 0 5px;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            font-size: 1rem;
+            border: 1px solid #bbb;
+        }
+
+        .special-element {
+            background-color: #ffe0b2; /* Orange tint for empty set element */
+            border-color: #ffb74d;
+            font-weight: bold;
+        }
+
+        .controls {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            transition: background 0.2s;
+        }
+
+        .btn-primary { background-color: var(--primary-color); color: white; }
+        .btn-secondary { background-color: #95a5a6; color: white; }
+        .btn-action { background-color: var(--success-color); color: white; }
+
+        button:hover { opacity: 0.9; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+
+        .output-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .subset-card {
+            background: white;
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+            border-radius: 4px;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: fadeIn 0.5s forwards;
+            font-family: "Courier New", monospace;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .counter-text {
+            text-align: center;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        /* Option Analysis */
+        .option-analysis {
+            list-style: none;
+            padding: 0;
+        }
+
+        .option-analysis li {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-left: 4px solid #ddd;
+            background: #fff;
+        }
+
+        .option-analysis li.correct {
+            border-left-color: var(--success-color);
+            background-color: #e8f8f5;
+        }
+
+        .option-analysis li.wrong {
+            border-left-color: var(--accent-color);
+        }
+
+        /* Quiz Section */
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .quiz-option {
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quiz-option:hover {
+            background-color: #f0f0f0;
+            border-color: #aaa;
+        }
+
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .feedback-correct {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .feedback-wrong {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* Mnemonics & Mistakes */
+        .mnemonic-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+        }
+        
+        .mistake-list li {
+            margin-bottom: 10px;
+            color: #c0392b;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .question-options {
+                grid-template-columns: 1fr;
+            }
+            .formula-main {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>集合與子集合觀念教學</h1>
+        <div class="subtitle">一句話重點：子集合只看「元素數量」，不看長相！</div>
+    </header>
+
+    <!-- 1. 題目展示 -->
+    <section id="question-section">
+        <h2><span class="badge">本題</span> 請問 A 有多少個子集合？</h2>
+        <div class="question-box">
+            <p style="margin-top:0;">一個集合 <strong>A = {1, 2, ∅}</strong></p>
+            <div class="question-options">
+                <div>(A) 3</div>
+                <div>(B) 4</div>
+                <div>(C) 8</div>
+                <div>(D) 12</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 2. 新手導入與核心觀念 -->
+    <section>
+        <h2><span class="badge">新手觀念</span> 什麼是集合與元素？</h2>
+        <p>歡迎來到集合論（Set Theory）的世界！</p>
+        <ul>
+            <li><strong>集合 (Set)：</strong> 一堆東西的總稱，用大括號 <code>{ }</code> 包起來。</li>
+            <li><strong>元素 (Element)：</strong> 集合裡面的每一個成員，用逗號 <code>,</code> 隔開。</li>
+            <li><strong>子集合 (Subset)：</strong> 從原本的集合裡，隨便挑幾個元素（也可以全挑或都不挑），包成一個新的集合。</li>
+        </ul>
+
+        <div class="concept-card">
+            <h3><span class="badge badge-important">一定要會</span> ∅ (Empty Set) 的兩種角色</h3>
+            <p>這是新手最容易搞混的地方，請務必分清楚：</p>
+            
+            <div class="comparison-container">
+                <!-- 角色 A -->
+                <div class="comparison-box highlight">
+                    <div class="big-text">角色 A：當元素</div>
+                    <p>當 ∅ 出現在大括號 <code>{ }</code> 裡面時：</p>
+                    <p style="text-align:center; font-size:1.2rem;"><code>A = {1, 2, <strong>∅</strong>}</code></p>
+                    <p>這時候，它就只是一個<strong>普通的符號</strong>，跟 1 或 2 沒有兩樣。</p>
+                    <hr>
+                    <p><strong>👉 結論：這裡算 1 個元素。</strong></p>
+                </div>
+
+                <!-- 角色 B -->
+                <div class="comparison-box">
+                    <div class="big-text">角色 B：當集合</div>
+                    <p>當我們在講「空集合」這個概念時：</p>
+                    <p style="text-align:center; font-size:1.2rem;"><code>∅</code> (裡面沒東西)</p>
+                    <p>它代表「什麼都不選」的狀態。</p>
+                    <hr>
+                    <p><strong>👉 結論：它是任何集合的子集合。</strong></p>
+                </div>
+            </div>
+            <p style="text-align:center; margin-top:15px; font-weight:bold; color:var(--accent-color);">
+                ★ 本題的關鍵：大括號裡有 ∅，所以把它當成一個「元素」來數！
+            </p>
+        </div>
+    </section>
+
+    <!-- 3. 必背公式 -->
+    <section>
+        <h2><span class="badge badge-important">必背公式</span> 子集合數量</h2>
+        <p>考試不用一個一個列出來，直接套公式最快！</p>
+        
+        <div class="formula-box">
+            <p>若集合有 <strong>n</strong> 個元素</p>
+            <div class="formula-main">子集合總數 = 2<sup>n</sup></div>
+        </div>
+
+        <h3>套用到本題：</h3>
+        <p>集合 A = {1, 2, ∅}</p>
+        <ol>
+            <li>數一數元素：有 1、有 2、還有 ∅。</li>
+            <li><strong>元素個數 (Cardinality) n = 3</strong></li>
+            <li>代入公式：2<sup>3</sup> = 2 × 2 × 2 = <strong>8</strong></li>
+        </ol>
+    </section>
+
+    <!-- 4. 互動操作區 -->
+    <section id="interactive-demo">
+        <h2><span class="badge">互動實驗</span> 親眼見證這 8 個子集合</h2>
+        <p>我們來實際操作，把這 8 個子集合「變」出來給你看。</p>
+
+        <div class="interactive-area">
+            <div style="text-align: center; margin-bottom: 10px;">目前集合 A 的元素：</div>
+            <div class="set-display">
+                { <span class="element-chip">1</span> , <span class="element-chip">2</span> , <span class="element-chip special-element">∅</span> }
+            </div>
+            
+            <div class="controls">
+                <button class="btn-action" id="btn-next" onclick="showNextSubset()">下一個子集合</button>
+                <button class="btn-primary" id="btn-all" onclick="showAllSubsets()">一次顯示全部</button>
+                <button class="btn-secondary" onclick="resetSubsets()">重置</button>
+            </div>
+
+            <div id="subset-container" class="output-grid">
+                <!-- Javascript will populate this -->
+            </div>
+            <div id="counter-label" class="counter-text">目前顯示：0 / 8 個</div>
+            
+            <div style="margin-top: 20px; text-align: center; color: #555; background: #fff; padding: 10px; border-radius: 4px;">
+                💡 提示：不管元素是數字還是 ∅，只要算<strong>「有幾個元素」</strong>就好。
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. 選項破解 -->
+    <section>
+        <h2><span class="badge">解題分析</span> 選項逐一破解</h2>
+        <ul class="option-analysis">
+            <li class="wrong">
+                <strong>(A) 3 ❌</strong><br>
+                錯誤原因：這是把「元素個數」誤當成「子集合數量」。n=3 是次數，不是答案。
+            </li>
+            <li class="wrong">
+                <strong>(B) 4 ❌</strong><br>
+                錯誤原因：這通常是因為忽略了 ∅ 是元素的情況，或者少算了一部分組合。
+            </li>
+            <li class="correct">
+                <strong>(C) 8 ✅ (正解)</strong><br>
+                正確原因：因為 A 有 3 個元素 {1, 2, ∅}，根據公式 2<sup>3</sup> = 8。
+            </li>
+            <li class="wrong">
+                <strong>(D) 12 ❌</strong><br>
+                錯誤原因：這是常見的亂猜選項，集合論中沒有 3 變 12 的常見運算。
+            </li>
+        </ul>
+    </section>
+
+    <!-- 6. 小測驗區 -->
+    <section id="quiz-section">
+        <h2><span class="badge">隨堂測驗</span> 你學會了嗎？</h2>
+        <p>題目：一個集合 A = {1, 2, ∅}，請問 A 有多少個子集合？</p>
+        
+        <div class="quiz-options">
+            <div class="quiz-option" onclick="checkAnswer('A')">(A) 3</div>
+            <div class="quiz-option" onclick="checkAnswer('B')">(B) 4</div>
+            <div class="quiz-option" onclick="checkAnswer('C')">(C) 8</div>
+            <div class="quiz-option" onclick="checkAnswer('D')">(D) 12</div>
+        </div>
+
+        <div id="quiz-feedback" class="quiz-feedback"></div>
+        <div id="quiz-action" style="text-align: center; margin-top: 10px; display: none;">
+            <button class="btn-secondary" onclick="scrollToDemo()">帶我回去看那 8 個子集合</button>
+        </div>
+    </section>
+
+    <!-- 7. 記憶技巧與常見錯誤 -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+        <section class="mnemonic-box">
+            <h2 style="color:white; border-left:none;">🧠 考試口訣</h2>
+            <ul>
+                <li>「子集合，只數元素，不管長相」</li>
+                <li>「看到 ∅ 在大括號裡，照樣算 1 個」</li>
+                <li>「n 個元素 → 2 的 n 次方」</li>
+            </ul>
+        </section>
+
+        <section style="background-color: #fff0f0; border-color: #ffdcdc;">
+            <h2 style="color: #c0392b; border-color: #c0392b;">⚠️ 常見錯誤坑</h2>
+            <ul class="mistake-list">
+                <li>以為 ∅ 是空氣，不把它算成一個元素 (導致 n 算錯)。</li>
+                <li>列舉子集合時，忘記「空集合本身」也是子集合之一。</li>
+                <li>把 {∅} 和 ∅ 搞混：前者是有裝東西的袋子，後者是空袋子。</li>
+            </ul>
+        </section>
+    </div>
+
+</div>
+
+<script>
+    /* * 資料結構：定義所有子集合
+     * 為了教學清楚，針對含 ∅ 的子集合做了特別標註 
+     */
+    const subsetsData = [
+        { text: "∅", note: "空集合 (什麼都不選)" },
+        { text: "{1}", note: "選 1" },
+        { text: "{2}", note: "選 2" },
+        { text: "{∅}", note: "選 ∅ (注意這是一個集合)" },
+        { text: "{1, 2}", note: "選 1 和 2" },
+        { text: "{1, ∅}", note: "選 1 和 ∅" },
+        { text: "{2, ∅}", note: "選 2 和 ∅" },
+        { text: "{1, 2, ∅}", note: "全選 (A本身)" }
+    ];
+
+    let currentStep = 0;
+    const container = document.getElementById('subset-container');
+    const label = document.getElementById('counter-label');
+    const btnNext = document.getElementById('btn-next');
+    const btnAll = document.getElementById('btn-all');
+
+    // 產生一個子集合卡片的 HTML
+    function createSubsetCard(index) {
+        const item = subsetsData[index];
+        const div = document.createElement('div');
+        div.className = 'subset-card';
+        div.innerHTML = `
+            <div style="font-weight:bold; font-size:1.2rem; color:#2c3e50;">${item.text}</div>
+            <div style="font-size:0.8rem; color:#888; margin-top:5px;">${item.note}</div>
+            <div style="font-size:0.75rem; color:#aaa; margin-top:2px;">第 ${index + 1} 個</div>
+        `;
+        return div;
+    }
+
+    // 顯示下一個
+    function showNextSubset() {
+        if (currentStep < subsetsData.length) {
+            const card = createSubsetCard(currentStep);
+            container.appendChild(card);
+            currentStep++;
+            updateUI();
+        }
+    }
+
+    // 顯示全部
+    function showAllSubsets() {
+        while (currentStep < subsetsData.length) {
+            showNextSubset();
+        }
+    }
+
+    // 重置
+    function resetSubsets() {
+        container.innerHTML = '';
+        currentStep = 0;
+        updateUI();
+    }
+
+    // 更新按鈕狀態與計數器
+    function updateUI() {
+        label.innerText = `目前顯示：${currentStep} / ${subsetsData.length} 個`;
+        
+        if (currentStep >= subsetsData.length) {
+            btnNext.disabled = true;
+            btnAll.disabled = true;
+            btnNext.innerText = "已顯示完畢";
+        } else {
+            btnNext.disabled = false;
+            btnAll.disabled = false;
+            btnNext.innerText = "下一個子集合";
+        }
+    }
+
+    // 小測驗邏輯
+    function checkAnswer(answer) {
+        const feedbackEl = document.getElementById('quiz-feedback');
+        const actionEl = document.getElementById('quiz-action');
+        
+        feedbackEl.style.display = 'block';
+        feedbackEl.className = 'quiz-feedback'; // reset class
+
+        if (answer === 'C') {
+            // Correct
+            feedbackEl.classList.add('feedback-correct');
+            feedbackEl.innerHTML = `🎉 答對了！<br>元素個數 n=3，所以 2³ = 8 個子集合。`;
+            actionEl.style.display = 'none';
+        } else {
+            // Wrong
+            feedbackEl.classList.add('feedback-wrong');
+            let reason = "";
+            if(answer === 'A') reason = "3 是元素個數，不是子集合數喔！";
+            if(answer === 'B') reason = "4 太少了，你是不是沒算到含 ∅ 的組合？";
+            if(answer === 'D') reason = "想太多囉，公式是 2 的 n 次方。";
+            
+            feedbackEl.innerHTML = `❌ 答錯了。<br>${reason}<br>公式：2³ = 8`;
+            actionEl.style.display = 'block';
+        }
+    }
+
+    // 捲動到互動區
+    function scrollToDemo() {
+        const section = document.getElementById('interactive-demo');
+        section.scrollIntoView({ behavior: 'smooth' });
+        // 自動顯示全部以強化記憶
+        if(currentStep < 8) {
+            setTimeout(() => {
+                showAllSubsets();
+            }, 800);
+        }
+    }
+</script>
+
+</body>
+</html>

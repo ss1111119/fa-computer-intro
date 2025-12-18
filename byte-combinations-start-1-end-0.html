@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>互動教學：Byte 組合計算 (以1開頭，以0結束)</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #10b981;
+            --bg-color: #f3f4f6;
+            --text-color: #1f2937;
+            --card-bg: #ffffff;
+            --accent-red: #ef4444;
+            --fixed-gray: #9ca3af;
+            --border-radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans TC", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            font-size: 1.1rem;
+        }
+
+        /* Card Styles */
+        section {
+            background: var(--card-bg);
+            padding: 25px;
+            margin-bottom: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            transition: transform 0.2s;
+        }
+
+        h2 {
+            border-left: 5px solid var(--primary-color);
+            padding-left: 15px;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+        }
+
+        /* Question Box */
+        .question-box {
+            background: #eef2ff;
+            border: 2px solid var(--primary-color);
+        }
+
+        .question-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .question-options ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .question-options li {
+            padding: 5px 0;
+            font-family: monospace;
+            font-size: 1.1rem;
+        }
+
+        /* Core Concepts */
+        .concepts ul {
+            padding-left: 20px;
+        }
+        
+        .highlight {
+            background-color: #fef3c7;
+            padding: 0 4px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        /* Interactive Section - The Heart */
+        .interactive-area {
+            border: 2px solid var(--secondary-color);
+        }
+
+        .bit-container {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .bit-box {
+            width: 45px;
+            height: 60px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            font-weight: bold;
+            position: relative;
+            background: white;
+            transition: all 0.3s;
+        }
+
+        .bit-box.fixed {
+            background-color: #e5e7eb;
+            border-color: #9ca3af;
+            color: #4b5563;
+        }
+
+        .bit-box.free {
+            background-color: #d1fae5; /* Green-100 */
+            border-color: var(--secondary-color);
+            color: #065f46;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        .bit-label {
+            font-size: 0.7rem;
+            position: absolute;
+            top: -20px;
+            color: #6b7280;
+        }
+
+        .bit-status {
+            font-size: 0.6rem;
+            position: absolute;
+            bottom: 2px;
+        }
+
+        .bit-val {
+            font-size: 1.2rem;
+            font-family: monospace;
+        }
+
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: #f9fafb;
+            border-radius: 8px;
+        }
+
+        input[type=range] {
+            width: 100%;
+            max-width: 300px;
+            margin: 10px 0;
+            cursor: pointer;
+        }
+
+        .result-display {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 1.2rem;
+        }
+
+        .big-number {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            font-weight: bold;
+            display: block;
+            margin: 10px 0;
+        }
+
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #1d4ed8;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .btn-outline:hover {
+            background: #eef2ff;
+        }
+
+        .combinations-list {
+            margin-top: 15px;
+            background: #1f2937;
+            color: #10b981;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none; /* Hidden by default */
+            text-align: left;
+        }
+
+        .hint-text {
+            text-align: center;
+            color: #6b7280;
+            margin-top: 15px;
+            font-style: italic;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 10px;
+        }
+
+        /* Option Breakdown */
+        .option-card {
+            border: 1px solid #e5e7eb;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .option-header {
+            padding: 10px 15px;
+            background: #f9fafb;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .option-header:hover {
+            background-color: #f3f4f6;
+        }
+
+        .option-content {
+            padding: 15px;
+            display: none;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .option-content.show {
+            display: block;
+        }
+
+        .correct-badge {
+            color: var(--secondary-color);
+            font-weight: bold;
+        }
+        
+        .wrong-badge {
+            color: var(--accent-red);
+            font-weight: bold;
+        }
+
+        /* Quiz Section */
+        .quiz-option {
+            display: block;
+            margin: 10px 0;
+            padding: 10px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quiz-option:hover {
+            border-color: var(--primary-color);
+            background-color: #eef2ff;
+        }
+
+        .quiz-option input {
+            margin-right: 10px;
+        }
+
+        .feedback {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .feedback.success {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #34d399;
+        }
+        
+        .feedback.error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #f87171;
+        }
+
+        /* Accordion / Details */
+        details {
+            background: #f9fafb;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        summary {
+            font-weight: bold;
+            padding: 5px;
+        }
+        
+        .details-content {
+            padding: 10px;
+            border-top: 1px solid #e5e7eb;
+            margin-top: 10px;
+        }
+
+        /* Utility */
+        .bit-highlight {
+            animation: highlight-pulse 1s 3;
+        }
+
+        @keyframes highlight-pulse {
+            0% { transform: scale(1); border-color: var(--secondary-color); }
+            50% { transform: scale(1.1); border-color: var(--accent-red); }
+            100% { transform: scale(1); border-color: var(--secondary-color); }
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 600px) {
+            .bit-box {
+                width: 35px;
+                height: 50px;
+            }
+            .bit-val { font-size: 1rem; }
+            .bit-label { font-size: 0.6rem; }
+            .bit-status { display: none; } /* Hide status text on small screens */
+            .big-number { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>位元組組合計算</h1>
+        <div class="subtitle">固定頭尾，看中間幾格能變</div>
+    </header>
+
+    <!-- 1. 題目區 -->
+    <section class="question-box">
+        <h2>本題</h2>
+        <div class="question-text">
+            一個以 1 開頭，以 0 結束 的位元組（byte），可以有多少種組合？
+        </div>
+        <div class="question-options">
+            <ul>
+                <li>(A) 2</li>
+                <li>(B) 32</li>
+                <li>(C) 64</li>
+                <li>(D) 128</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- 2. 核心觀念 -->
+    <section class="concepts">
+        <h2>核心觀念</h2>
+        <ul>
+            <li><strong>位元 (Bit)</strong>：電腦最小單位，只有 0 或 1 兩種狀態。</li>
+            <li><strong>位元組 (Byte)</strong>：由 8 個 bits 組成。</li>
+            <li><strong>固定位元 (Fixed Bit)</strong>：題目規定不能動的格子（本題為頭與尾）。</li>
+            <li><strong>自由位元 (Free Bit)</strong>：可以任意填入 0 或 1 的格子。</li>
+            <li><strong>組合公式</strong>：組合數 = $2^{\text{自由位元數量}}$ (2 的自由位元次方)。</li>
+        </ul>
+    </section>
+
+    <!-- 3. 互動操作區 -->
+    <section class="interactive-area" id="interactive">
+        <h2>互動實驗室</h2>
+        <p style="margin-bottom: 15px;">請觀察下方 8 個位元。灰色代表題目已固定，<span style="color:var(--secondary-color); font-weight:bold;">綠色</span>代表可以自由變化的位置。</p>
+        
+        <!-- Bit Visualization -->
+        <div class="bit-container" id="bitContainer">
+            <!-- Will be populated by JS -->
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <label for="freeBitSlider">
+                調整中間自由位元數量 (模擬測試)：<span id="sliderValue" style="font-weight:bold; color:var(--primary-color);">6</span> 個
+            </label>
+            <br>
+            <input type="range" id="freeBitSlider" min="0" max="6" value="6" step="1">
+            <div style="font-size: 0.9rem; color: #666;">(本題頭尾固定，故中間最多 6 個自由位元)</div>
+        </div>
+
+        <!-- Result Display -->
+        <div class="result-display">
+            <div>組合數計算公式：</div>
+            <div style="font-family: monospace; font-size: 1.5rem;">
+                2 <sup id="exponentVal">6</sup> = <span class="big-number" id="resultVal">64</span>
+            </div>
+        </div>
+
+        <!-- Enumeration -->
+        <div style="text-align: center;">
+            <button class="btn btn-outline" onclick="toggleCombinations()">顯示部分組合示意</button>
+        </div>
+        <div class="combinations-list" id="comboList">
+            <!-- Populated by JS -->
+        </div>
+
+        <!-- Teaching Hint -->
+        <div class="hint-text">
+            💡 提示：頭尾各固定 1 個 bit → 8 減 2 = 剩下 6 個 bit 可自由變化 → 組合數 = 2⁶
+        </div>
+    </section>
+
+    <!-- 4. 選項破解 -->
+    <section class="breakdown">
+        <h2>選項逐一解析</h2>
+        <p style="margin-bottom: 15px;">點擊選項查看詳細說明：</p>
+        
+        <div class="option-card">
+            <div class="option-header" onclick="toggleOption('optA')">
+                (A) 2 <span class="wrong-badge">✕ 錯誤</span>
+            </div>
+            <div class="option-content" id="optA">
+                這是 $2^1$。只有當題目說「只有 1 個位元可以動」的時候才是這個答案。本題中間有 6 個位元可以動。
+            </div>
+        </div>
+
+        <div class="option-card">
+            <div class="option-header" onclick="toggleOption('optB')">
+                (B) 32 <span class="wrong-badge">✕ 錯誤</span>
+            </div>
+            <div class="option-content" id="optB">
+                這是 $2^5$。如果你誤以為固定了 3 個 bit，或者計算錯誤，可能會選這個。
+            </div>
+        </div>
+
+        <div class="option-card">
+            <div class="option-header" onclick="toggleOption('optC')">
+                (C) 64 <span class="correct-badge">✓ 正確</span>
+            </div>
+            <div class="option-content" id="optC">
+                <strong>完全正確！</strong><br>
+                1 Byte = 8 bits。<br>
+                扣掉開頭(1)和結尾(1)，共扣掉 2 個。<br>
+                自由位元 = $8 - 2 = 6$。<br>
+                組合數 = $2^6 = 64$。
+            </div>
+        </div>
+
+        <div class="option-card">
+            <div class="option-header" onclick="toggleOption('optD')">
+                (D) 128 <span class="wrong-badge">✕ 錯誤</span>
+            </div>
+            <div class="option-content" id="optD">
+                這是 $2^7$。這代表只有 1 個 bit 被固定。但題目說「開頭」跟「結尾」都固定了，所以應該要扣掉 2 個 bit。
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. 小測驗 -->
+    <section class="quiz">
+        <h2>隨堂小測驗</h2>
+        <p>確認你是否真的理解了！</p>
+        <div style="margin-top: 15px;">
+            <p><strong>題目：一個以 1 開頭，以 0 結束 的位元組，可以有多少種組合？</strong></p>
+            
+            <label class="quiz-option">
+                <input type="radio" name="quiz" value="2"> (A) 2
+            </label>
+            <label class="quiz-option">
+                <input type="radio" name="quiz" value="32"> (B) 32
+            </label>
+            <label class="quiz-option">
+                <input type="radio" name="quiz" value="64"> (C) 64
+            </label>
+            <label class="quiz-option">
+                <input type="radio" name="quiz" value="128"> (D) 128
+            </label>
+            
+            <button class="btn" onclick="checkAnswer()">送出答案</button>
+        </div>
+
+        <div id="quizFeedback" class="feedback"></div>
+    </section>
+
+    <!-- 6. 延伸知識 -->
+    <section class="extensions">
+        <details>
+            <summary>📚 延伸知識：通用公式（點擊展開）</summary>
+            <div class="details-content">
+                <h3>通用公式</h3>
+                <p>若一個 $n$-bit 的資料中，有 $k$ 個 bit 被固定（不能動）：</p>
+                <p style="background:#e0e7ff; padding:10px; border-radius:4px; margin: 10px 0; font-weight:bold;">
+                    組合數 = $2^{(n - k)}$
+                </p>
+                
+                <h4>舉例說明：</h4>
+                <ul style="margin-left:20px;">
+                    <li><strong>8-bit，固定 3 個 bit：</strong><br>
+                        自由位元 = $8 - 3 = 5$。<br>
+                        組合數 = $2^5 = 32$。
+                    </li>
+                    <li><strong>16-bit，固定 4 個 bit：</strong><br>
+                        自由位元 = $16 - 4 = 12$。<br>
+                        組合數 = $2^{12} = 4096$。
+                    </li>
+                </ul>
+            </div>
+        </details>
+    </section>
+</div>
+
+<script>
+    // 初始化
+    const bitContainer = document.getElementById('bitContainer');
+    const slider = document.getElementById('freeBitSlider');
+    const sliderValue = document.getElementById('sliderValue');
+    const exponentVal = document.getElementById('exponentVal');
+    const resultVal = document.getElementById('resultVal');
+    const comboList = document.getElementById('comboList');
+    
+    // 預設狀態 (題目狀態)
+    // Bit 7 固定 (1), Bit 0 固定 (0), 中間 6 個自由
+    // 為了配合 Slider 邏輯，我們定義：
+    // Slider 值 = 中間自由位元的數量 (0~6)
+    // 總 bits = 8
+    // 頭尾始終固定
+    
+    function renderBits(freeCount) {
+        bitContainer.innerHTML = '';
+        
+        // Bit 7 (MSB) - Fixed
+        addBit(7, '1', true);
+        
+        // Middle bits (6 down to 1)
+        // 邏輯：Slider 控制有多少個是 "Free"。
+        // 題目是 6 個 Free。如果 Slider < 6，代表我們"模擬"固定了更多 bit。
+        // 為了視覺簡單，我們從左邊開始固定額外的 bit。
+        
+        const totalMiddleSlots = 6;
+        const fixedInMiddle = totalMiddleSlots - freeCount;
+        
+        for (let i = 6; i >= 1; i--) {
+            // 前面 fixedInMiddle 個設為固定(模擬)，剩下的設為 Free
+            // 注意迴圈是從 6 降到 1
+            // 索引 6 是左邊第一個中間位
+            
+            // 判斷當前 bit 是否屬於被額外固定的範圍
+            // 比如 free=6, fixedInMiddle=0 -> 全部 free
+            // free=4, fixedInMiddle=2 -> Bit 6, 5 固定, 4,3,2,1 free
+            
+            if (i > (6 - fixedInMiddle)) {
+                // 模擬固定 (設為 0 或 1 都可以，這邊設為 0 以示區別)
+                addBit(i, '0', true);
+            } else {
+                // 自由位元
+                addBit(i, '0/1', false);
+            }
+        }
+        
+        // Bit 0 (LSB) - Fixed
+        addBit(0, '0', true);
+    }
+
+    function addBit(index, value, isFixed) {
+        const div = document.createElement('div');
+        div.className = `bit-box ${isFixed ? 'fixed' : 'free'}`;
+        div.id = `bit-${index}`; // 用於動畫高亮
+        
+        const label = document.createElement('span');
+        label.className = 'bit-label';
+        label.innerText = `bit${index}`;
+        
+        const valSpan = document.createElement('span');
+        valSpan.className = 'bit-val';
+        valSpan.innerText = isFixed ? (value === '0/1' ? '?' : value) : '?';
+        
+        // 如果是自由位元，讓數字跳動模擬
+        if (!isFixed) {
+            valSpan.innerText = Math.round(Math.random());
+            // 簡單的隨機跳動效果
+            setInterval(() => {
+                if(div.classList.contains('free')) {
+                    valSpan.innerText = Math.round(Math.random());
+                }
+            }, 800 + Math.random() * 500);
+        } else {
+            // 加入鎖頭圖示或文字
+             const status = document.createElement('span');
+             status.className = 'bit-status';
+             status.innerText = '🔒 固定';
+             div.appendChild(status);
+        }
+
+        div.appendChild(label);
+        div.appendChild(valSpan);
+        bitContainer.appendChild(div);
+    }
+
+    function updateCalculation(val) {
+        sliderValue.innerText = val;
+        exponentVal.innerText = val;
+        resultVal.innerText = Math.pow(2, val);
+        
+        // 隱藏列表並重置按鈕文字，因為參數變了
+        comboList.style.display = 'none';
+        document.querySelector('#interactive button').innerText = '顯示部分組合示意';
+    }
+
+    // Slider Event
+    slider.addEventListener('input', (e) => {
+        const val = parseInt(e.target.value);
+        renderBits(val);
+        updateCalculation(val);
+    });
+
+    // 初始渲染
+    renderBits(6);
+
+    // 顯示組合列表邏輯
+    function toggleCombinations() {
+        if (comboList.style.display === 'block') {
+            comboList.style.display = 'none';
+            return;
+        }
+
+        const freeBits = parseInt(slider.value);
+        const totalCombos = Math.pow(2, freeBits);
+        let html = `<p>自由位元數：${freeBits}，總組合數：${totalCombos}</p>`;
+        html += `<p>格式：<strong>1</strong> (中間自由) <strong>0</strong></p><hr style="border-color:#374151; margin:10px 0;">`;
+        
+        // 為了避免當機，最多顯示前 16 筆
+        const limit = Math.min(totalCombos, 16);
+        
+        for (let i = 0; i < limit; i++) {
+            // 將數字轉為二進位字串，並補零
+            let binaryMid = i.toString(2).padStart(freeBits, '0');
+            
+            // 如果 slider < 6，代表有額外固定的 0 在前面
+            const fixedPadding = 6 - freeBits;
+            let prefixFixed = "";
+            for(let k=0; k<fixedPadding; k++) prefixFixed += "0";
+
+            html += `<div>#${i+1}: <span style="color:#9ca3af">1</span> <span style="color:#9ca3af">${prefixFixed}</span><span style="color:#10b981">${binaryMid}</span> <span style="color:#9ca3af">0</span></div>`;
+        }
+
+        if (totalCombos > limit) {
+            html += `<div>... (還有 ${totalCombos - limit} 種) ...</div>`;
+        }
+
+        comboList.innerHTML = html;
+        comboList.style.display = 'block';
+    }
+
+    // 選項 Accordion
+    function toggleOption(id) {
+        const content = document.getElementById(id);
+        const isShown = content.classList.contains('show');
+        
+        // 關閉所有
+        document.querySelectorAll('.option-content').forEach(el => el.classList.remove('show'));
+        
+        // 如果原本沒開，就打開點擊的這個
+        if (!isShown) {
+            content.classList.add('show');
+        }
+    }
+
+    // 測驗邏輯
+    function checkAnswer() {
+        const selected = document.querySelector('input[name="quiz"]:checked');
+        const feedback = document.getElementById('quizFeedback');
+        
+        if (!selected) {
+            alert('請先選擇一個答案！');
+            return;
+        }
+
+        if (selected.value === '64') {
+            feedback.className = 'feedback success';
+            feedback.innerHTML = `
+                <h3>🎉 答對了！</h3>
+                <p>邏輯完全正確：8 bits - 2 個固定 = 6 個自由位元。</p>
+                <p>組合數 = $2^6 = 64$。</p>
+            `;
+            feedback.style.display = 'block';
+        } else {
+            feedback.className = 'feedback error';
+            feedback.innerHTML = `
+                <h3>❌ 再想一下...</h3>
+                <p>你選擇了 ${selected.value}，這不是正確答案。</p>
+                <p>記得口訣：<strong>只有中間綠色的格子可以變</strong>。</p>
+                <button class="btn btn-outline" style="margin-top:10px; background:white;" onclick="scrollToInteractive()">帶我回互動操作區看一次</button>
+            `;
+            feedback.style.display = 'block';
+        }
+    }
+
+    function scrollToInteractive() {
+        const section = document.getElementById('interactive');
+        section.scrollIntoView({ behavior: 'smooth' });
+        
+        // 重置 slider 到題目狀態
+        slider.value = 6;
+        renderBits(6);
+        updateCalculation(6);
+
+        // 高亮中間自由位元
+        setTimeout(() => {
+            document.querySelectorAll('.bit-box.free').forEach(el => {
+                el.classList.add('bit-highlight');
+                // 動畫結束後移除 class 以便下次觸發
+                setTimeout(() => el.classList.remove('bit-highlight'), 3000);
+            });
+        }, 800);
+    }
+</script>
+
+</body>
+</html>

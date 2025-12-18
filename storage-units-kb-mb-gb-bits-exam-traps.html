@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>資料儲存單位換算：KB/MB/GB 與 bits 對照（含考試陷阱提醒）</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --warning-color: #e74c3c;
+            --success-color: #27ae60;
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Noto Sans TC", "Microsoft JhengHei", -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            border-left: 5px solid var(--accent-color);
+            padding-left: 15px;
+            margin-top: 30px;
+            font-size: 1.4rem;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 0.95rem;
+        }
+
+        /* Card Style */
+        .card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            padding: 25px;
+            margin-bottom: 25px;
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: #fff;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        /* Highlight Boxes */
+        .highlight-box {
+            background-color: #e8f4fd;
+            border-left: 4px solid var(--accent-color);
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .trap-box {
+            background-color: #fdedec;
+            border-left: 4px solid var(--warning-color);
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .trap-title {
+            color: var(--warning-color);
+            font-weight: bold;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .mnemonic {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            text-align: center;
+            padding: 10px;
+            background: #f0f8ff;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+
+        /* Comparison Visualization */
+        .unit-comparison {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+
+        .bit-box, .byte-box {
+            border: 2px solid var(--primary-color);
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .bit-box {
+            width: 60px;
+            background: #ecf0f1;
+        }
+
+        .byte-box {
+            width: 160px;
+            background: #d5dbdb;
+            display: flex;
+            justify-content: space-around;
+            font-size: 0.8rem;
+        }
+
+        .byte-box span {
+            border: 1px solid #999;
+            width: 15px;
+            height: 20px;
+            display: block;
+            background: white;
+        }
+
+        /* Quiz Styles */
+        .quiz-container {
+            margin-top: 20px;
+        }
+
+        .question-block {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .options label {
+            display: block;
+            padding: 10px 15px;
+            margin: 8px 0;
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .options label:hover {
+            background: #e2e6ea;
+            border-color: var(--accent-color);
+        }
+
+        .options input[type="radio"] {
+            margin-right: 10px;
+        }
+
+        .feedback {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            display: none;
+        }
+
+        .feedback.correct {
+            background-color: #d4edda;
+            color: #155724;
+            display: block;
+        }
+
+        .feedback.wrong {
+            background-color: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+
+        .btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-reset {
+            background-color: #95a5a6;
+            margin-top: 20px;
+            width: 100%;
+        }
+        
+        .btn-reset:hover {
+            background-color: #7f8c8d;
+        }
+
+        /* Flashcard footer */
+        .flashcard {
+            background: var(--primary-color);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 40px;
+            border: 3px dashed #f1c40f;
+        }
+
+        .flashcard h3 {
+            color: #f1c40f;
+            margin-top: 0;
+            text-align: center;
+        }
+
+        .flashcard ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .flashcard li {
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            padding-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>資料儲存單位換算</h1>
+        <p class="subtitle">KB / MB / GB 與 bits 對照（含考試陷阱提醒）</p>
+    </header>
+
+    <!-- 1. 暖身 -->
+    <section class="card">
+        <h2>一、暖身：為什麼考試要考這個？</h2>
+        <p>電腦的世界是二進制的，無論是買硬碟、算網路速度，還是寫程式，都離不開單位換算。</p>
+        <div class="highlight-box">
+            <strong>考試重點方向：</strong>
+            <ul>
+                <li><strong>2 的次方關係：</strong>電腦不講 1000，講 1024 (2<sup>10</sup>)。</li>
+                <li><strong>單位混淆：</strong>bit (小寫 b) 與 Byte (大寫 B) 的差異。</li>
+                <li><strong>常見陷阱：</strong>題目寫 bits，但你腦中只有 Bytes 的公式。</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- 2. 基本定義 -->
+    <section class="card">
+        <h2>二、基本定義：bit 與 Byte</h2>
+        <div class="unit-comparison">
+            <div class="bit-box">
+                bit<br>(位元)
+                <div style="font-size:0.8rem; margin-top:5px;">0 或 1</div>
+            </div>
+            <div style="font-size: 2rem;">× 8 =</div>
+            <div class="byte-box">
+                <div>Byte (位元組)<br>
+                    <div style="display:flex; gap:2px; margin-top:5px; justify-content:center;">
+                        <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <ul>
+            <li><strong>bit (位元)：</strong>電腦最小的儲存單位，只能存 0 或 1。</li>
+            <li><strong>Byte (位元組)：</strong>資料儲存的基本單位。<strong>1 Byte = 8 bits</strong>。</li>
+            <li><strong>直覺例子：</strong>一個英文字母（如 'A'）通常需要 1 Byte 的空間來儲存。</li>
+        </ul>
+    </section>
+
+    <!-- 3. KB/MB/GB 規則 -->
+    <section class="card">
+        <h2>三、KB／MB／GB 的 2 次方規則（核心）</h2>
+        <p>這是最常考的部分，請務必記住以下口訣：</p>
+        
+        <div class="mnemonic">「K 十、M 二十、G 三十」</div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>單位</th>
+                    <th>Bytes (考試常用)</th>
+                    <th>記憶口訣</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1 KB</td>
+                    <td>2<sup>10</sup> Bytes</td>
+                    <td>K 十</td>
+                </tr>
+                <tr>
+                    <td>1 MB</td>
+                    <td>2<sup>20</sup> Bytes</td>
+                    <td>M 二十</td>
+                </tr>
+                <tr>
+                    <td>1 GB</td>
+                    <td>2<sup>30</sup> Bytes</td>
+                    <td>G 三十</td>
+                </tr>
+            </tbody>
+        </table>
+        <p><small>註：硬碟廠商標示通常用 1000 進位（1KB=1000B），但<strong>電腦概論考試</strong>與作業系統計算通常採用 <strong>1024 進位 (2<sup>10</sup>)</strong>。</small></p>
+    </section>
+
+    <!-- 4. Bytes ↔ bits 對照 -->
+    <section class="card">
+        <h2>四、Bytes ↔ bits 對照（進階理解）</h2>
+        <p>有時候題目會很壞，問你等於多少 <strong>bits</strong>，而不是 Bytes。</p>
+        <div class="highlight-box">
+            <strong>核心觀念：</strong><br>
+            因為 1 Byte = 8 bits，而 <span style="font-size:1.2em; color:var(--accent-color)">8 = 2<sup>3</sup></span>。<br>
+            所以換算成 bits 時，次方數要 <strong>+3</strong>。
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>單位</th>
+                    <th>等於多少 Bytes (B)</th>
+                    <th>等於多少 bits (b)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1 KB</td>
+                    <td>2<sup>10</sup> B</td>
+                    <td>2<sup>13</sup> bits (10+3)</td>
+                </tr>
+                <tr>
+                    <td>1 MB</td>
+                    <td>2<sup>20</sup> B</td>
+                    <td>2<sup>23</sup> bits (20+3)</td>
+                </tr>
+                <tr>
+                    <td>1 GB</td>
+                    <td>2<sup>30</sup> B</td>
+                    <td>2<sup>33</sup> bits (30+3)</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- 5. 考試陷阱 -->
+    <section class="card">
+        <h2>五、考試陷阱提醒（⚠️ 高危險區）</h2>
+        
+        <div class="trap-box">
+            <div class="trap-title">⚠️ 陷阱情境：題目問「1GB 表示？」</div>
+            <p>選項同時出現 <strong>2<sup>30</sup></strong> 和 <strong>2<sup>33</sup></strong> 時，該怎麼選？</p>
+            <hr style="border:0; border-top:1px dashed #cca4a4; margin:10px 0;">
+            <p><strong>解題策略：</strong></p>
+            <ol>
+                <li><strong>預設情況（考單位倍數）：</strong><br>
+                    如果題目沒有特別強調「bits」或「位元」，通常是指 Bytes。<br>
+                    <span style="color:var(--success-color)">👉 選 2<sup>30</sup> (Bytes)</span> - 這是最常見的考試規則。
+                </li>
+                <li><strong>嚴格換算（考 bit/Byte 精算）：</strong><br>
+                    如果題目問「1 GB 等於多少 <strong>bits</strong>？」或「多少<strong>位元</strong>？」<br>
+                    <span style="color:var(--warning-color)">👉 選 2<sup>33</sup> (bits)</span> - 記得次方 +3。
+                </li>
+            </ol>
+        </div>
+
+        <p><strong>簡短例題判斷：</strong></p>
+        <ul>
+            <li>題型 A：1 GB 約等於多少？ (A) 2<sup>30</sup> (B) 2<sup>40</sup>... <br>→ <strong>選 2<sup>30</sup></strong> (預設為 Bytes)。</li>
+            <li>題型 B：1 GB 若換算成位元(bits)為？ (A) 2<sup>30</sup> (B) 2<sup>33</sup>... <br>→ <strong>選 2<sup>33</sup></strong> (關鍵字：位元/bits)。</li>
+        </ul>
+    </section>
+
+    <!-- 6. 互動測驗 -->
+    <section class="card">
+        <h2>六、互動小測驗</h2>
+        <p>點選答案後會立即顯示結果。</p>
+
+        <div class="quiz-container" id="quiz-area">
+            
+            <!-- Q1 -->
+            <div class="question-block" data-id="1">
+                <p><strong>1. 是非題：</strong>「1 Byte = 8 bits」這句話是正確的嗎？</p>
+                <div class="options">
+                    <label><input type="radio" name="q1" value="O" onclick="checkAnswer(1, 'O')"> (O) 正確</label>
+                    <label><input type="radio" name="q1" value="X" onclick="checkAnswer(1, 'O')"> (X) 錯誤</label>
+                </div>
+                <div class="feedback" id="feedback-1"></div>
+            </div>
+
+            <!-- Q2 -->
+            <div class="question-block" data-id="2">
+                <p><strong>2. 單選題：</strong>「1 MB 約等於多少 Bytes（考試常見定義）？」</p>
+                <div class="options">
+                    <label><input type="radio" name="q2" value="A" onclick="checkAnswer(2, 'B')"> (A) 2<sup>10</sup></label>
+                    <label><input type="radio" name="q2" value="B" onclick="checkAnswer(2, 'B')"> (B) 2<sup>20</sup></label>
+                    <label><input type="radio" name="q2" value="C" onclick="checkAnswer(2, 'C')"> (C) 2<sup>30</sup></label>
+                </div>
+                <div class="feedback" id="feedback-2"></div>
+            </div>
+
+            <!-- Q3 -->
+            <div class="question-block" data-id="3">
+                <p><strong>3. 單選題：</strong>「1 GB 等於多少 Bytes（考試常見定義）？」</p>
+                <div class="options">
+                    <label><input type="radio" name="q3" value="A" onclick="checkAnswer(3, 'A')"> (A) 2<sup>30</sup></label>
+                    <label><input type="radio" name="q3" value="B" onclick="checkAnswer(3, 'B')"> (B) 2<sup>33</sup></label>
+                    <label><input type="radio" name="q3" value="C" onclick="checkAnswer(3, 'C')"> (C) 2<sup>20</sup></label>
+                </div>
+                <div class="feedback" id="feedback-3"></div>
+            </div>
+
+            <!-- Q4 Trap -->
+            <div class="question-block" data-id="4">
+                <p><strong>4. 陷阱題：</strong>「若嚴格換算，1 GB 等於多少 <strong>bits</strong>？」</p>
+                <div class="options">
+                    <label><input type="radio" name="q4" value="A" onclick="checkAnswer(4, 'B')"> (A) 2<sup>30</sup></label>
+                    <label><input type="radio" name="q4" value="B" onclick="checkAnswer(4, 'B')"> (B) 2<sup>33</sup></label>
+                    <label><input type="radio" name="q4" value="C" onclick="checkAnswer(4, 'C')"> (C) 2<sup>20</sup></label>
+                </div>
+                <div class="feedback" id="feedback-4"></div>
+            </div>
+
+            <button class="btn btn-reset" onclick="resetQuiz()">重新作答</button>
+        </div>
+    </section>
+
+    <!-- 7. 記憶小卡 -->
+    <div class="flashcard">
+        <h3>⚡ 考前速記卡 ⚡</h3>
+        <ul>
+            <li><strong>記憶口訣 (Bytes)：</strong>K 十、M 二十、G 三十 (次方)</li>
+            <li><strong>基本換算：</strong>1 Byte = 8 bits = 2<sup>3</sup> bits</li>
+            <li><strong>單位變換：</strong>若題目問 bits，次方要 <strong>+3</strong></li>
+            <li><strong>解題心法：</strong>先看題目問的是 Bytes 還是 bits，GB 預設為 2<sup>30</sup>，若強調 bits 則為 2<sup>33</sup>。</li>
+        </ul>
+    </div>
+
+    <footer style="text-align: center; margin-top: 30px; color: #888; font-size: 0.9rem;">
+        &copy; 電腦概論學習資源 | 祝考試順利！
+    </footer>
+</div>
+
+<script>
+    // 定義每個問題的解析
+    const explanations = {
+        1: "正確！這是最基本的定義，一定要背起來。",
+        2: "正確！記住口訣「M 二十」，所以是 2 的 20 次方。",
+        3: "正確！記住口訣「G 三十」，所以是 2 的 30 次方。",
+        4: "正確！因為 1 Byte = 8 bits (2^3)，所以 2^30 * 2^3 = 2^33。"
+    };
+
+    const errorExplanations = {
+        1: "錯誤。請記住 1 Byte (位元組) = 8 bits (位元)。",
+        2: "錯誤。2^10 是 KB，2^30 是 GB。M 對應的是 20。",
+        3: "錯誤。2^33 是 bits 的換算結果，這裡問的是 Bytes（預設）。",
+        4: "錯誤。題目強調「bits」，所以要多乘 8 (2^3)，指數相加 30+3=33。"
+    };
+
+    function checkAnswer(qId, correctVal) {
+        // 取得該題所有選項
+        const radios = document.getElementsByName('q1'.replace('1', qId));
+        let selectedVal = null;
+
+        // 找出被選中的值
+        for (const radio of radios) {
+            if (radio.checked) {
+                selectedVal = radio.value;
+                break;
+            }
+        }
+
+        const feedbackEl = document.getElementById('feedback-' + qId);
+        
+        // 移除舊的樣式
+        feedbackEl.classList.remove('correct', 'wrong');
+
+        if (selectedVal === correctVal) {
+            feedbackEl.textContent = "✅ " + explanations[qId];
+            feedbackEl.classList.add('correct');
+        } else {
+            feedbackEl.textContent = "❌ " + errorExplanations[qId];
+            feedbackEl.classList.add('wrong');
+        }
+    }
+
+    function resetQuiz() {
+        // 清除所有選取狀態
+        const allRadios = document.querySelectorAll('input[type="radio"]');
+        for (const radio of allRadios) {
+            radio.checked = false;
+        }
+
+        // 隱藏所有回饋
+        const allFeedbacks = document.querySelectorAll('.feedback');
+        for (const fb of allFeedbacks) {
+            fb.classList.remove('correct', 'wrong');
+            fb.textContent = '';
+            fb.style.display = 'none';
+        }
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C 語言世代大解密 - 互動教學網頁</title>
+    <style>
+        :root {
+            --primary: #2563eb;       /* 主色藍 */
+            --secondary: #475569;     /* 副色灰 */
+            --accent: #f59e0b;        /* 強調黃 */
+            --danger: #ef4444;        /* 錯誤紅 */
+            --success: #22c55e;       /* 正確綠 */
+            --bg-light: #f8fafc;
+            --text-main: #1e293b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "Microsoft JhengHei", "Noto Sans TC", -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        /* --- Layout Containers --- */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+        }
+
+        /* --- Typography --- */
+        h1 { font-size: 2rem; color: var(--primary); margin-bottom: 10px; text-align: center; }
+        h2 { font-size: 1.5rem; color: var(--text-main); border-left: 5px solid var(--primary); padding-left: 10px; margin-bottom: 20px; }
+        h3 { font-size: 1.2rem; margin-bottom: 10px; color: var(--secondary); }
+        .subtitle { text-align: center; color: var(--secondary); margin-bottom: 20px; font-weight: bold; }
+        .highlight { color: var(--primary); font-weight: bold; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.9em; margin-right: 5px; color: white; }
+        .badge-must { background-color: var(--danger); }
+        .badge-tip { background-color: var(--accent); }
+
+        /* --- Question Header --- */
+        .question-header {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border: 2px solid var(--primary);
+            text-align: center;
+        }
+        .main-q { font-size: 1.3rem; font-weight: bold; margin: 15px 0; }
+        .options-preview { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
+        .opt-box { background: white; padding: 8px 15px; border-radius: 20px; border: 1px solid #cbd5e1; color: #64748b; }
+
+        /* --- Table Section --- */
+        .table-wrapper { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        th, td { padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: left; }
+        th { background-color: #f1f5f9; color: var(--text-main); font-weight: bold; }
+        tr:hover { background-color: #f8fafc; }
+        
+        /* Special styling for Gen 3 row */
+        tr.gen-3-row { background-color: #fffbeb; border-left: 5px solid var(--accent); }
+        tr.gen-3-row.flash { animation: flashHighlight 1.5s ease-in-out infinite; }
+        
+        @keyframes flashHighlight {
+            0% { background-color: #fffbeb; }
+            50% { background-color: #fcd34d; }
+            100% { background-color: #fffbeb; }
+        }
+
+        /* --- Interactive Tabs --- */
+        .tabs { display: flex; gap: 5px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; }
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            background: white;
+            cursor: pointer;
+            border-radius: 8px;
+            text-align: center;
+            white-space: nowrap;
+            transition: all 0.2s;
+            font-weight: bold;
+        }
+        .tab-btn.active { background-color: var(--primary); color: white; border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2); }
+        .tab-content { background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s; }
+
+        /* --- Option Cards --- */
+        .option-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; }
+        .option-card { padding: 15px; border: 1px solid #e2e8f0; border-radius: 8px; position: relative; }
+        .option-card.correct { border: 2px solid var(--success); background-color: #f0fdf4; }
+        .option-card.wrong { border-left: 4px solid var(--danger); }
+        .card-header { font-weight: bold; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+
+        /* --- Quiz Section --- */
+        .quiz-options { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
+        .quiz-btn {
+            padding: 15px;
+            border: 2px solid #cbd5e1;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            text-align: left;
+            transition: all 0.2s;
+        }
+        .quiz-btn:hover { background-color: #f1f5f9; border-color: var(--primary); }
+        .quiz-btn.correct-ans { background-color: #dcfce7; border-color: var(--success); color: #166534; }
+        .quiz-btn.wrong-ans { background-color: #fee2e2; border-color: var(--danger); color: #991b1b; }
+        
+        #feedback-area { margin-top: 15px; padding: 15px; border-radius: 8px; display: none; }
+        .feedback-success { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        .feedback-error { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+        
+        .jump-btn {
+            margin-top: 10px;
+            padding: 8px 16px;
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .jump-btn:hover { background-color: #334155; }
+
+        /* --- Memory Tricks --- */
+        .memory-box { background-color: #fff7ed; border-left: 4px solid var(--accent); padding: 15px; margin-bottom: 10px; }
+        .mistake-list li { margin-bottom: 8px; color: var(--danger); }
+        .mistake-list span { color: var(--text-main); }
+
+        /* --- Footer --- */
+        footer { text-align: center; color: #94a3b8; font-size: 0.8rem; margin-top: 30px; padding-bottom: 20px; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Mobile Tweaks */
+        @media (max-width: 600px) {
+            h1 { font-size: 1.5rem; }
+            .tabs { flex-wrap: wrap; }
+            .tab-btn { flex: 1 1 40%; font-size: 0.9rem; }
+            .quiz-btn { padding: 12px; font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <!-- HEADER -->
+    <header>
+        <h1>C 語言世代大解密</h1>
+        <p class="subtitle">1分鐘搞懂：機器語言 vs 組合語言 vs 高階語言</p>
+    </header>
+
+    <!-- 1. 題目區塊 (Question Only) -->
+    <section class="question-header">
+        <span class="badge badge-must">本題</span>
+        <p class="main-q">C 是屬於哪一代的電腦程式語言？</p>
+        <div class="options-preview">
+            <div class="opt-box">(A) 第二代</div>
+            <div class="opt-box">(B) 第三代</div>
+            <div class="opt-box">(C) 第四代</div>
+            <div class="opt-box">(D) 第五代</div>
+        </div>
+        <p style="margin-top:10px; font-size:0.9rem; color: var(--secondary);">（答案將在學習完畢後揭曉）</p>
+    </section>
+
+    <!-- 2. 新手導入 -->
+    <section id="intro">
+        <h2>什麼是「程式語言世代」？</h2>
+        <p>就像人類語言的演變一樣，程式語言也是從「講給機器聽（0與1）」慢慢進化成「講給人類聽（接近英文）」。</p>
+        <p style="margin-top: 10px;">
+            世代數字越大，代表越接近人類語言，越不用管硬體細節。<br>
+            <strong>C 語言</strong> 位於這個演化史的關鍵轉折點。
+        </p>
+    </section>
+
+    <!-- 3. 必背總覽表 -->
+    <section id="table-area">
+        <h2>【必背】程式語言世代總覽表</h2>
+        <p style="margin-bottom: 10px; color: var(--secondary); font-size: 0.9rem;">
+            <span class="badge badge-tip">提示</span> 考試最常考 2、3、4 代的區別。
+        </p>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th width="15%">世代</th>
+                        <th width="25%">中文 / 英文</th>
+                        <th>特徵</th>
+                        <th width="20%">代表例子</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>第一代</td>
+                        <td>
+                            <b>機器語言</b><br>
+                            <small>Machine Language</small>
+                        </td>
+                        <td>電腦只看得懂這個 (0與1)</td>
+                        <td>二進位碼</td>
+                    </tr>
+                    <tr>
+                        <td>第二代</td>
+                        <td>
+                            <b>組合語言</b><br>
+                            <small>Assembly Language</small>
+                        </td>
+                        <td>用助記符號 (ADD, MOV) 代替 0/1</td>
+                        <td>Assembly</td>
+                    </tr>
+                    <!-- C Language Row -->
+                    <tr class="gen-3-row" id="gen3-row">
+                        <td style="font-weight:bold; color:var(--primary);">第三代</td>
+                        <td>
+                            <b>高階語言</b><br>
+                            <small>High-level Language (3GL)</small>
+                        </td>
+                        <td><span class="highlight">接近人類語法、程序導向</span></td>
+                        <td><b>C</b>, C++, Java, Python</td>
+                    </tr>
+                    <tr>
+                        <td>第四代</td>
+                        <td>
+                            <b>第四代語言</b><br>
+                            <small>4GL</small>
+                        </td>
+                        <td>非程序導向、專注資料處理</td>
+                        <td>SQL (資料庫)</td>
+                    </tr>
+                    <tr>
+                        <td>第五代</td>
+                        <td>
+                            <b>第五代語言</b><br>
+                            <small>5GL</small>
+                        </td>
+                        <td>人工智慧、邏輯推演、自然語言</td>
+                        <td>Prolog, LISP</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- 4. 互動學習區 -->
+    <section id="interactive-area">
+        <h2>互動學習：點擊世代看詳解</h2>
+        <p style="margin-bottom: 10px;">請點擊下方按鈕，觀察 C 語言在哪裡：</p>
+        
+        <div class="tabs">
+            <button class="tab-btn" onclick="showGen(1)">第一代</button>
+            <button class="tab-btn" onclick="showGen(2)">第二代</button>
+            <button class="tab-btn active" onclick="showGen(3)">第三代 (C語言)</button>
+            <button class="tab-btn" onclick="showGen(4)">第四代</button>
+            <button class="tab-btn" onclick="showGen(5)">第五代</button>
+        </div>
+
+        <div id="content-gen1" class="tab-content">
+            <h3>第一代：機器語言 (Machine Language)</h3>
+            <p><strong>特徵：</strong>全是 0 和 1 的數字串。</p>
+            <p><strong>C 語言在這嗎？</strong> <span style="color:var(--danger); font-weight:bold;">不在這裡</span>。</p>
+            <div class="memory-box">
+                口訣：看到 010101 就是第一代。
+            </div>
+        </div>
+
+        <div id="content-gen2" class="tab-content">
+            <h3>第二代：組合語言 (Assembly Language)</h3>
+            <p><strong>特徵：</strong>使用助記符號（如 MOV, ADD）來控制硬體。</p>
+            <p><strong>C 語言在這嗎？</strong> <span style="color:var(--danger); font-weight:bold;">不在這裡</span>。</p>
+            <p>很多新手會以為 C 很難所以是組合語言，這是錯的！C 已經是用英文單字寫的了。</p>
+            <div class="memory-box">
+                口訣：看到「助記符號」或「Assembly」選第二代。
+            </div>
+        </div>
+
+        <div id="content-gen3" class="tab-content active" style="border: 2px solid var(--accent); background-color: #fffdf5;">
+            <h3 style="color: var(--primary);">第三代：高階語言 (High-level Language) ★ 正解</h3>
+            <p><strong>特徵：</strong>語法結構化（if, for, while），接近人類英文，可跨平台。</p>
+            <p><strong>C 語言在這裡！</strong></p>
+            <ul style="margin-left: 20px; margin-top: 10px;">
+                <li>C 語言有 `if`, `else`, `while` 這種人類看得懂的邏輯。</li>
+                <li>它是最經典的「程序導向」高階語言。</li>
+                <li>雖然它能做底層控制，但它本質是第三代。</li>
+            </ul>
+            <div class="memory-box" style="margin-top: 15px;">
+                <span class="badge badge-must">必考</span> <strong>看到 C、C++、Java、BASIC → 都是第三代。</strong>
+            </div>
+        </div>
+
+        <div id="content-gen4" class="tab-content">
+            <h3>第四代：4GL</h3>
+            <p><strong>特徵：</strong>告訴電腦「做什麼 (What)」而不是「怎麼做 (How)」。通常指資料庫語言。</p>
+            <p><strong>C 語言在這嗎？</strong> <span style="color:var(--danger); font-weight:bold;">不在這裡</span>。</p>
+            <p>代表語言是 <strong>SQL</strong>。</p>
+            <div class="memory-box">
+                口訣：看到 SQL、資料庫查詢、報表 → 第四代。
+            </div>
+        </div>
+
+        <div id="content-gen5" class="tab-content">
+            <h3>第五代：5GL</h3>
+            <p><strong>特徵：</strong>人工智慧 (AI)、自然語言處理、邏輯推論。</p>
+            <p><strong>C 語言在這嗎？</strong> <span style="color:var(--danger); font-weight:bold;">不在這裡</span>。</p>
+            <p>代表語言是 <strong>Prolog</strong>。</p>
+            <div class="memory-box">
+                口訣：看到 AI、人工智慧、Prolog → 第五代。
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. 選項破解 -->
+    <section id="options-breakdown">
+        <h2>選項逐一破解</h2>
+        <div class="option-grid">
+            <div class="option-card wrong">
+                <div class="card-header">(A) 第二代 <span style="color:var(--danger)">✕</span></div>
+                <p><strong>錯誤原因：</strong>第二代是「組合語言」，直接對應機器指令。C 語言雖然效率高，但它是寫給人類看的結構化語言，屬於高階。</p>
+            </div>
+            
+            <div class="option-card correct">
+                <div class="card-header">(B) 第三代 <span style="color:var(--success)">✓ 正解</span></div>
+                <p><strong>正確原因：</strong>C 語言具備高階語言特徵（程序導向、英文關鍵字、可攜性），是 3GL 的代表作。</p>
+            </div>
+            
+            <div class="option-card wrong">
+                <div class="card-header">(C) 第四代 <span style="color:var(--danger)">✕</span></div>
+                <p><strong>錯誤原因：</strong>第四代通常指 SQL 這類「非程序導向」語言，用來下指令查資料，與 C 用來寫系統程式不同。</p>
+            </div>
+
+            <div class="option-card wrong">
+                <div class="card-header">(D) 第五代 <span style="color:var(--danger)">✕</span></div>
+                <p><strong>錯誤原因：</strong>第五代專注於解決邏輯與 AI 問題（如 Prolog），C 不屬於此範疇。</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. 記憶技巧與常見錯誤 -->
+    <section id="memory-tricks">
+        <h2>【必背】記憶技巧與誤區</h2>
+        
+        <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+            <div style="flex: 1; min-width: 280px;">
+                <h3>🧠 快速判斷法（口訣）</h3>
+                <div class="memory-box">
+                    <p>1. <strong>「會寫 if / for / while 給人看」</strong> → 選 <strong>第三代</strong> (C, Java, Python)</p>
+                    <p>2. <strong>「像查資料 (Select * From)」</strong> → 選 <strong>第四代</strong> (SQL)</p>
+                    <p>3. <strong>「問電腦問題給它想」</strong> → 選 <strong>第五代</strong> (AI, Prolog)</p>
+                </div>
+            </div>
+
+            <div style="flex: 1; min-width: 280px;">
+                <h3>⚠️ 學生最常錯的地方</h3>
+                <ul class="mistake-list">
+                    <li>❌ <strong>誤區 1：</strong>以為 C 可以控制硬體，所以是組合語言(第二代)。<br><span>(正解：C 只是功能強大的第三代。)</span></li>
+                    <li>❌ <strong>誤區 2：</strong>以為 Python 比較新，所以是第四代。<br><span>(正解：Python 仍是程序/物件導向，算第三代範疇。)</span></li>
+                    <li>❌ <strong>誤區 3：</strong>把 SQL 和 C 混在一起。<br><span>(正解：SQL 是第四代，C 是第三代。)</span></li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- 7. 小測驗區 -->
+    <section id="quiz-area">
+        <h2><span class="badge badge-must">測驗</span> 驗收時刻</h2>
+        <p>C 是屬於哪一代的電腦程式語言？</p>
+        
+        <div class="quiz-options">
+            <button class="quiz-btn" onclick="checkAnswer('A', this)">(A) 第二代 (Assembly)</button>
+            <button class="quiz-btn" onclick="checkAnswer('B', this)">(B) 第三代 (High-level)</button>
+            <button class="quiz-btn" onclick="checkAnswer('C', this)">(C) 第四代 (4GL)</button>
+            <button class="quiz-btn" onclick="checkAnswer('D', this)">(D) 第五代 (5GL)</button>
+        </div>
+
+        <div id="feedback-area">
+            <h3 id="feedback-title"></h3>
+            <p id="feedback-msg"></p>
+            <button id="retry-btn" class="jump-btn" onclick="scrollToTable()" style="display:none;">帶我回總覽表複習</button>
+        </div>
+    </section>
+
+    <footer>
+        <p>程式語言世代教學 © 2024 | 專為新手設計的互動講義</p>
+    </footer>
+
+</div>
+
+<script>
+    // Tab Interaction Logic
+    function showGen(gen) {
+        // Hide all contents
+        const contents = document.querySelectorAll('.tab-content');
+        contents.forEach(c => c.classList.remove('active'));
+
+        // Reset all buttons
+        const buttons = document.querySelectorAll('.tab-btn');
+        buttons.forEach(b => b.classList.remove('active'));
+
+        // Show selected content & active button
+        document.getElementById(`content-gen${gen}`).classList.add('active');
+        buttons[gen-1].classList.add('active');
+    }
+
+    // Quiz Logic
+    function checkAnswer(answer, btnElement) {
+        // Reset styles first
+        const allBtns = document.querySelectorAll('.quiz-btn');
+        allBtns.forEach(btn => {
+            btn.classList.remove('correct-ans', 'wrong-ans');
+            btn.disabled = true; // Disable buttons after answering
+        });
+
+        const feedbackArea = document.getElementById('feedback-area');
+        const feedbackTitle = document.getElementById('feedback-title');
+        const feedbackMsg = document.getElementById('feedback-msg');
+        const retryBtn = document.getElementById('retry-btn');
+
+        feedbackArea.style.display = 'block';
+        feedbackArea.className = ''; // reset class
+
+        if (answer === 'B') {
+            // Correct
+            btnElement.classList.add('correct-ans');
+            feedbackArea.classList.add('feedback-success');
+            feedbackTitle.innerText = '🎉 答對了！';
+            feedbackMsg.innerText = '沒錯！C 語言是經典的「第三代高階語言」。它擁有結構化的語法，是現代程式設計的基石。';
+            retryBtn.style.display = 'none';
+        } else {
+            // Wrong
+            btnElement.classList.add('wrong-ans');
+            feedbackArea.classList.add('feedback-error');
+            feedbackTitle.innerText = '❌ 答錯囉！';
+            
+            let explanation = '';
+            if(answer === 'A') explanation = '第二代是「組合語言」，C 不是組語喔！';
+            if(answer === 'C') explanation = '第四代通常指 SQL 資料庫語言。';
+            if(answer === 'D') explanation = '第五代是指 AI 邏輯語言。';
+
+            feedbackMsg.innerText = `${explanation} C 語言屬於高階語言，也就是第三代。`;
+            retryBtn.style.display = 'inline-block';
+        }
+    }
+
+    // Scroll to table and highlight logic
+    function scrollToTable() {
+        const tableSection = document.getElementById('table-area');
+        const gen3Row = document.getElementById('gen3-row');
+        
+        tableSection.scrollIntoView({ behavior: 'smooth' });
+        
+        // Wait for scroll to finish then highlight
+        setTimeout(() => {
+            // Reset Quiz buttons for retry
+            const allBtns = document.querySelectorAll('.quiz-btn');
+            allBtns.forEach(btn => btn.disabled = false);
+            document.getElementById('feedback-area').style.display = 'none';
+
+            // Flash effect
+            gen3Row.classList.add('flash');
+            setTimeout(() => {
+                gen3Row.classList.remove('flash');
+            }, 3000);
+        }, 800);
+    }
+</script>
+
+</body>
+</html>

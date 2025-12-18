@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>循序搜尋 vs 二分搜尋 | 高中演算法互動教學</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #16a34a;
+            --accent-color: #f59e0b;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-sub: #4b5563;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1, h2, h3 {
+            color: #111827;
+            margin-bottom: 0.5em;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 30px;
+            font-size: 2rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Highlight Boxes */
+        .highlight-box {
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 5px solid transparent;
+        }
+        
+        .linear-style {
+            background-color: #eff6ff;
+            border-left-color: var(--primary-color);
+        }
+
+        .binary-style {
+            background-color: #f0fdf4;
+            border-left-color: var(--secondary-color);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.9em;
+            color: white;
+        }
+        .bg-blue { background-color: var(--primary-color); }
+        .bg-green { background-color: var(--secondary-color); }
+        .bg-red { background-color: #dc2626; }
+
+        /* Visualization Area */
+        .vis-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-linear { background-color: var(--primary-color); color: white; }
+        .btn-linear:hover:not(:disabled) { background-color: #1d4ed8; transform: translateY(-2px); }
+
+        .btn-binary { background-color: var(--secondary-color); color: white; }
+        .btn-binary:hover:not(:disabled) { background-color: #15803d; transform: translateY(-2px); }
+
+        .btn-reset { background-color: #9ca3af; color: white; }
+        .btn-reset:hover:not(:disabled) { background-color: #6b7280; }
+
+        .array-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin: 30px 0;
+            min-height: 80px;
+        }
+
+        .array-item {
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .array-item.active {
+            background-color: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+            transform: scale(1.15);
+            z-index: 10;
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+        }
+
+        .array-item.checked {
+            background-color: #dbeafe;
+            border-color: #93c5fd;
+            color: #6b7280;
+        }
+
+        .array-item.found {
+            background-color: var(--secondary-color);
+            color: white;
+            border-color: var(--secondary-color);
+            transform: scale(1.2);
+            z-index: 11;
+            box-shadow: 0 0 15px rgba(22, 163, 74, 0.6);
+        }
+
+        .array-item.dimmed {
+            opacity: 0.2;
+            background-color: #e5e7eb;
+            transform: scale(0.9);
+        }
+
+        .stats-panel {
+            display: flex;
+            justify-content: space-around;
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .stat-box {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .status-msg {
+            text-align: center;
+            font-weight: bold;
+            margin-top: 10px;
+            min-height: 1.5em;
+            color: var(--text-sub);
+        }
+
+        /* Comparison Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        
+        th, td {
+            border: 1px solid #e5e7eb;
+            padding: 12px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f9fafb;
+            color: #374151;
+        }
+
+        /* Cheat Sheet */
+        .cheat-sheet {
+            background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%);
+            color: white;
+            text-align: center;
+            border-radius: 12px;
+            padding: 30px;
+        }
+
+        .cheat-sheet h2 { color: white; margin-top: 0; }
+        .cheat-sheet .big-text { font-size: 1.5rem; margin: 10px 0; font-weight: bold; }
+        .cheat-sheet .tip { font-style: italic; opacity: 0.9; margin-top: 15px; }
+
+        /* Exam Box */
+        .exam-box {
+            border-left: 5px solid #8b5cf6;
+            background: #f5f3ff;
+            padding: 20px;
+        }
+        .option { margin: 5px 0; padding: 5px; }
+        .correct-answer { color: var(--secondary-color); font-weight: bold; margin-top: 10px; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🔍 循序搜尋 vs 二分搜尋</h1>
+
+    <!-- Section 1: Intro -->
+    <div class="card">
+        <h2>1. 暖身：搜尋是什麼？</h2>
+        <p>搜尋（Search）就是在一堆資料中找到我們要的那個數字。如果不講究方法，資料量一多，找起來會非常慢！<br>
+        這裡比較兩種考試最愛考的方法：</p>
+        <ul>
+            <li><strong>循序搜尋 (Linear Search)</strong>：最直覺，但也最慢。</li>
+            <li><strong>二分搜尋 (Binary Search)</strong>：聰明的方法，快很多，但有前提條件。</li>
+        </ul>
+    </div>
+
+    <!-- Section 2: Concepts -->
+    <div class="grid-2">
+        <div class="card highlight-box linear-style">
+            <h3>🐌 循序搜尋 (Linear Search)</h3>
+            <p><strong>方法：</strong>從頭開始，一個一個比對。沒找到就看下一個。</p>
+            <p><strong>特點：</strong>就像翻書找頁碼，卻不知道目錄，只能一頁一頁翻。</p>
+            <p><span class="badge bg-blue">最壞情況</span> 如果資料在最後一個，要比對 <strong>N</strong> 次。</p>
+            <p><span class="badge bg-blue">時間複雜度</span> <strong>O(N)</strong></p>
+        </div>
+        <div class="card highlight-box binary-style">
+            <h3>⚡ 二分搜尋 (Binary Search)</h3>
+            <p><strong>條件：</strong>資料必須 <span style="color:red; font-weight:bold;">先排序 (Sorted)</span>。</p>
+            <p><strong>方法：</strong>每次都跟「中間」的比。如果目標比中間大，就丟掉左半邊；比中間小，就丟掉右半邊。</p>
+            <p><span class="badge bg-green">最壞情況</span> 每次範圍砍半，比對 <strong>log N</strong> 次。</p>
+            <p><span class="badge bg-green">時間複雜度</span> <strong>O(log N)</strong></p>
+        </div>
+    </div>
+
+    <!-- Section 3: Visualization -->
+    <div class="card">
+        <h2>🎮 動畫互動區</h2>
+        <p style="text-align: center; color: #666; margin-bottom: 20px;">請觀察下方陣列，並比較兩種搜尋的亮燈次數。</p>
+
+        <div class="vis-controls">
+            <label>搜尋目標：
+                <select id="targetSelect" style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                    <!-- Javascript will populate this -->
+                </select>
+            </label>
+            <button class="btn-linear" onclick="startLinearSearch()" id="btnLinear">▶ 開始循序搜尋</button>
+            <button class="btn-binary" onclick="startBinarySearch()" id="btnBinary">▶ 開始二分搜尋</button>
+            <button class="btn-reset" onclick="resetVisualization()">↺ 重置</button>
+        </div>
+
+        <div class="array-container" id="arrayContainer">
+            <!-- Javascript will generate blocks here -->
+        </div>
+
+        <div class="status-msg" id="statusMessage">準備就緒，請選擇搜尋方式...</div>
+
+        <div class="stats-panel">
+            <div class="stat-box">
+                <div>循序搜尋比對次數</div>
+                <div class="stat-number" id="linearCount">0</div>
+            </div>
+            <div class="stat-box">
+                <div>二分搜尋比對次數</div>
+                <div class="stat-number" id="binaryCount">0</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 4: Comparison Table -->
+    <div class="card">
+        <h2>📊 重點對照表 (考試必背)</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>項目</th>
+                    <th>循序搜尋 (Linear)</th>
+                    <th>二分搜尋 (Binary)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>是否需先排序</strong></td>
+                    <td style="color:red;">否 (資料亂的也可以)</td>
+                    <td style="color:green; font-weight:bold;">是 (一定要排序)</td>
+                </tr>
+                <tr>
+                    <td><strong>搜尋方式</strong></td>
+                    <td>從頭一個一個找</td>
+                    <td>每次砍一半範圍</td>
+                </tr>
+                <tr>
+                    <td><strong>最壞比對次數</strong></td>
+                    <td>N 次</td>
+                    <td>log₂N 次</td>
+                </tr>
+                <tr>
+                    <td><strong>時間複雜度</strong></td>
+                    <td><span class="badge bg-blue">O(N)</span></td>
+                    <td><span class="badge bg-green">O(log N)</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Section 5: Exam Question -->
+    <div class="card exam-box">
+        <h3>📝 考題解析</h3>
+        <p><strong>題目：</strong>「以循序搜尋演算法處理 N 個數字的搜尋運算，其比對的次數與下列何者成正比？」</p>
+        <div class="option">(A) log N</div>
+        <div class="option">(B) N</div>
+        <div class="option">(C) N²</div>
+        <div class="option">(D) N log N</div>
+        
+        <div class="correct-answer">
+            ✅ 正確答案：(B) N
+        </div>
+        <p><strong>理由：</strong>循序搜尋最運氣不好的時候，要從第 1 個比對到第 N 個才能確定答案。比對次數隨資料量 N 線性成長，故為 O(N)。<br>
+        <small>如果是問二分搜尋，答案就會選 (A)。</small></p>
+    </div>
+
+    <!-- Section 6: Cheat Sheet -->
+    <div class="card cheat-sheet">
+        <h2>🧠 考前記憶小卡</h2>
+        <div class="big-text">Linear Search → O(N)</div>
+        <div class="big-text">Binary Search → O(log N)</div>
+        <div style="margin: 20px 0; border-top: 1px solid rgba(255,255,255,0.3);"></div>
+        <h3>口訣：</h3>
+        <p class="big-text">「一個一個找是 N，砍一半的是 log N。」</p>
+        <p class="tip">別忘了：二分搜尋一定要「先排序」！</p>
+    </div>
+
+</div>
+
+<script>
+    // Configuration
+    const ARRAY_SIZE = 16;
+    const ANIMATION_SPEED = 600; // ms
+    let dataArray = [];
+    let isSearching = false;
+
+    // DOM Elements
+    const arrayContainer = document.getElementById('arrayContainer');
+    const targetSelect = document.getElementById('targetSelect');
+    const statusMessage = document.getElementById('statusMessage');
+    const linearCountDisplay = document.getElementById('linearCount');
+    const binaryCountDisplay = document.getElementById('binaryCount');
+    const btnLinear = document.getElementById('btnLinear');
+    const btnBinary = document.getElementById('btnBinary');
+
+    // Initialization
+    function init() {
+        // Generate sorted random numbers for valid Binary Search
+        let current = Math.floor(Math.random() * 5) + 1;
+        dataArray = [];
+        for (let i = 0; i < ARRAY_SIZE; i++) {
+            dataArray.push(current);
+            current += Math.floor(Math.random() * 5) + 1;
+        }
+
+        renderArray();
+        populateSelect();
+        resetStats();
+    }
+
+    function renderArray() {
+        arrayContainer.innerHTML = '';
+        dataArray.forEach((num, index) => {
+            const div = document.createElement('div');
+            div.className = 'array-item';
+            div.id = `item-${index}`;
+            div.textContent = num;
+            arrayContainer.appendChild(div);
+        });
+    }
+
+    function populateSelect() {
+        targetSelect.innerHTML = '';
+        // Add existing values
+        dataArray.forEach(num => {
+            const opt = document.createElement('option');
+            opt.value = num;
+            opt.textContent = num;
+            targetSelect.appendChild(opt);
+        });
+        
+        // Add a non-existing value (simulate 'not found' case) mostly larger than max
+        const notFoundVal = dataArray[dataArray.length - 1] + 10;
+        const opt = document.createElement('option');
+        opt.value = notFoundVal;
+        opt.textContent = `${notFoundVal} (不在陣列中)`;
+        targetSelect.appendChild(opt);
+
+        // Select a middle value by default
+        targetSelect.value = dataArray[Math.floor(ARRAY_SIZE / 2)];
+    }
+
+    function resetStats() {
+        linearCountDisplay.textContent = '0';
+        binaryCountDisplay.textContent = '0';
+        statusMessage.textContent = '準備就緒，請選擇搜尋方式...';
+        statusMessage.style.color = '#4b5563';
+        
+        // Clear styles
+        const items = document.querySelectorAll('.array-item');
+        items.forEach(item => {
+            item.className = 'array-item';
+        });
+    }
+
+    function resetVisualization() {
+        if(isSearching) return; // Prevent reset during animation
+        resetStats();
+    }
+
+    // Helper for animation delay
+    const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+    function setButtonsState(enabled) {
+        btnLinear.disabled = !enabled;
+        btnBinary.disabled = !enabled;
+        targetSelect.disabled = !enabled;
+    }
+
+    // --- Linear Search Logic ---
+    async function startLinearSearch() {
+        if (isSearching) return;
+        isSearching = true;
+        setButtonsState(false);
+        resetStats();
+
+        const target = parseInt(targetSelect.value);
+        let count = 0;
+        let found = false;
+
+        statusMessage.textContent = `正在進行循序搜尋：尋找 ${target}...`;
+
+        for (let i = 0; i < dataArray.length; i++) {
+            const itemDiv = document.getElementById(`item-${i}`);
+            
+            // Highlight current
+            itemDiv.classList.add('active');
+            count++;
+            linearCountDisplay.textContent = count;
+            statusMessage.textContent = `比對第 ${i+1} 個數字：${dataArray[i]} 是否等於 ${target}？`;
+
+            await sleep(ANIMATION_SPEED);
+
+            if (dataArray[i] === target) {
+                itemDiv.classList.remove('active');
+                itemDiv.classList.add('found');
+                statusMessage.textContent = `🎉 找到了！在索引 ${i} 的位置。`;
+                statusMessage.style.color = 'var(--secondary-color)';
+                found = true;
+                break;
+            } else {
+                itemDiv.classList.remove('active');
+                itemDiv.classList.add('checked'); // Mark as checked/passed
+            }
+        }
+
+        if (!found) {
+            statusMessage.textContent = `❌ 找遍了所有資料，數字 ${target} 不存在。`;
+            statusMessage.style.color = '#dc2626';
+        }
+
+        isSearching = false;
+        setButtonsState(true);
+    }
+
+    // --- Binary Search Logic ---
+    async function startBinarySearch() {
+        if (isSearching) return;
+        isSearching = true;
+        setButtonsState(false);
+        resetStats();
+
+        const target = parseInt(targetSelect.value);
+        let count = 0;
+        let low = 0;
+        let high = dataArray.length - 1;
+        let found = false;
+
+        statusMessage.textContent = `正在進行二分搜尋：尋找 ${target}...`;
+
+        while (low <= high) {
+            let mid = Math.floor((low + high) / 2);
+            const midVal = dataArray[mid];
+            const midDiv = document.getElementById(`item-${mid}`);
+
+            // Visualize Range (Dim items outside low-high)
+            for(let i=0; i<dataArray.length; i++) {
+                const div = document.getElementById(`item-${i}`);
+                if (i < low || i > high) {
+                    div.classList.add('dimmed');
+                } else {
+                    div.classList.remove('dimmed');
+                }
+            }
+
+            // Highlight Middle
+            midDiv.classList.add('active');
+            count++;
+            binaryCountDisplay.textContent = count;
+            statusMessage.textContent = `範圍 [${low}~${high}]，中間是 ${midVal}。 ${midVal} 比 ${target} ${midVal > target ? '大' : (midVal < target ? '小' : '一樣')}...`;
+
+            await sleep(ANIMATION_SPEED * 1.5); // Slightly slower to let user see
+
+            if (midVal === target) {
+                midDiv.classList.remove('active');
+                midDiv.classList.add('found');
+                statusMessage.textContent = `🎉 找到了！在索引 ${mid} 的位置。只花了 ${count} 次！`;
+                statusMessage.style.color = 'var(--secondary-color)';
+                found = true;
+                break;
+            } else if (midVal < target) {
+                midDiv.classList.remove('active');
+                // Target is in the right half, discard left (including mid)
+                low = mid + 1;
+                statusMessage.textContent = `太小了！砍掉左半邊。往右邊找。`;
+            } else {
+                midDiv.classList.remove('active');
+                // Target is in the left half, discard right (including mid)
+                high = mid - 1;
+                statusMessage.textContent = `太大了！砍掉右半邊。往左邊找。`;
+            }
+            await sleep(ANIMATION_SPEED);
+        }
+
+        if (!found) {
+             // Dim all at the end
+             for(let i=0; i<dataArray.length; i++) {
+                document.getElementById(`item-${i}`).classList.add('dimmed');
+            }
+            statusMessage.textContent = `❌ 範圍縮減至 0，數字 ${target} 不存在。`;
+            statusMessage.style.color = '#dc2626';
+        }
+
+        isSearching = false;
+        setButtonsState(true);
+    }
+
+    // Initialize on load
+    window.onload = init;
+
+</script>
+
+</body>
+</html>

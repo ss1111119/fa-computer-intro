@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>無向連通圖與邊數限制 - 互動教學</title>
+    <style>
+        /* --- 基礎設定 (Reset & Variables) --- */
+        :root {
+            --primary-color: #2563eb; /* 藍色 */
+            --secondary-color: #10b981; /* 綠色 */
+            --error-color: #ef4444; /* 紅色 */
+            --warning-color: #f59e0b; /* 橘色 */
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+            --border-radius: 8px;
+            --spacing-unit: 1rem;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding-bottom: 50px;
+        }
+
+        /* --- 版面結構 --- */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        section {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+        }
+
+        h2 {
+            border-left: 5px solid var(--primary-color);
+            padding-left: 10px;
+            margin-bottom: 1rem;
+            font-size: 1.4rem;
+            color: #334155;
+        }
+
+        /* --- 題目區 --- */
+        .question-box {
+            background-color: #eff6ff;
+            border: 1px solid #bfdbfe;
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+        }
+
+        .options-list {
+            list-style: none;
+            margin-top: 1rem;
+        }
+
+        .options-list li {
+            padding: 0.5rem 0;
+            font-weight: bold;
+        }
+
+        /* --- 核心觀念區 --- */
+        .concept-list li {
+            margin-bottom: 0.5rem;
+        }
+
+        .highlight {
+            color: var(--error-color);
+            font-weight: bold;
+            background-color: #fee2e2;
+            padding: 0 4px;
+            border-radius: 4px;
+        }
+
+        /* --- 互動模擬區 (核心) --- */
+        .simulation-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (min-width: 768px) {
+            .simulation-container {
+                grid-template-columns: 3fr 2fr; /* 左畫布，右控制 */
+            }
+        }
+
+        /* 畫布 */
+        .canvas-wrapper {
+            background-color: #f1f5f9;
+            border: 2px solid #cbd5e1;
+            border-radius: var(--border-radius);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        canvas {
+            max-width: 100%;
+            height: auto;
+            background: #fff;
+        }
+
+        /* 控制面板 */
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .control-group {
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            border: 1px solid #e2e8f0;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        input[type=range] {
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        button {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .btn-demo {
+            background-color: #e2e8f0;
+            color: #334155;
+            flex: 1;
+            min-width: 120px;
+        }
+        
+        .btn-demo:hover {
+            background-color: #cbd5e1;
+        }
+
+        /* Log 面板 */
+        .log-panel {
+            background: #1e293b;
+            color: #a3e635; /* Terminal green */
+            padding: 1rem;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            min-height: 150px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        .status-connected { background-color: var(--secondary-color); }
+        .status-disconnected { background-color: var(--error-color); }
+
+        /* --- 選項破解 (Accordion 風格) --- */
+        .accordion-item {
+            border: 1px solid #e2e8f0;
+            margin-bottom: 0.5rem;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .accordion-header {
+            background: #f8fafc;
+            padding: 1rem;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .accordion-header:hover {
+            background-color: #f1f5f9;
+        }
+
+        .accordion-content {
+            padding: 1rem;
+            background: white;
+            display: none; /* JS 切換 */
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        .accordion-content.active {
+            display: block;
+        }
+
+        /* --- 小測驗 --- */
+        .quiz-option {
+            display: block;
+            width: 100%;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            background: white;
+            text-align: left;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .quiz-option:hover {
+            border-color: var(--primary-color);
+            background-color: #eff6ff;
+        }
+
+        .quiz-option.correct {
+            border-color: var(--secondary-color);
+            background-color: #ecfdf5;
+        }
+
+        .quiz-option.wrong {
+            border-color: var(--error-color);
+            background-color: #fef2f2;
+        }
+
+        .feedback-area {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .goto-simulation-btn {
+            display: inline-block;
+            margin-top: 0.5rem;
+            padding: 0.5rem 1rem;
+            background-color: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        /* 視覺動畫提示 */
+        @keyframes pulse-yellow {
+            0% { background-color: transparent; }
+            50% { background-color: #fef08a; }
+            100% { background-color: transparent; }
+        }
+        
+        .highlight-pulse {
+            animation: pulse-yellow 2s ease-in-out infinite;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="container">
+            <h1>無向連通圖：邊數的不可能任務</h1>
+            <p>Undirected Connected Graph: Impossible Edge Counts</p>
+            <div style="margin-top: 10px; font-size: 0.9rem; background: rgba(255,255,255,0.2); display: inline-block; padding: 5px 15px; border-radius: 20px;">
+                核心觀念：要連通，最少要 N-1 條邊
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <!-- 1. 題目區 -->
+        <section id="problem-section">
+            <h2>本題</h2>
+            <div class="question-box">
+                <p>一個沒方向性的連接網路圖（Undirected Connected Graph），若節點數為 <strong>N</strong>（N＞2），則其邊的個數<strong>不可能</strong>為何？</p>
+                <ul class="options-list">
+                    <li>(A) N-2</li>
+                    <li>(B) N-1</li>
+                    <li>(C) N</li>
+                    <li>(D) N+1</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- 2. 核心觀念區 -->
+        <section>
+            <h2>核心觀念 (Core Concepts)</h2>
+            <p style="margin-bottom: 1rem;">
+                在圖論（Graph Theory）中，要讓 N 個節點（Nodes）全部串連在一起（Connected），就像要用電線把 N 個房子通通通電一樣。
+            </p>
+            <ul class="concept-list" style="padding-left: 1.5rem;">
+                <li><strong>連通 (Connected)：</strong> 圖中任意兩個節點之間，至少有一條路徑可以走到。</li>
+                <li><strong>最少邊數 (Minimum Edges)：</strong> 要連通 N 個點，最少需要 <span class="highlight">N-1</span> 條邊。這時形成一個「樹 (Tree)」。</li>
+                <li><strong>斷開 (Disconnected)：</strong> 如果邊數少於 N-1 (例如 <span class="highlight">N-2</span>)，節點數量不夠，圖形一定會斷裂成兩個或多個區塊，稱為連通分量 (Connected Components)。</li>
+            </ul>
+        </section>
+
+        <!-- 3. 互動模擬區 -->
+        <section id="simulation-section">
+            <h2>互動模擬實驗室 (Interactive Lab)</h2>
+            <p style="margin-bottom: 1rem; color: var(--text-sub);">
+                調整 N 與 E，觀察什麼時候圖會斷開？<br>
+                <small id="hint-text">提示：注意看當 E < N-1 時會發生什麼。</small>
+            </p>
+
+            <div class="simulation-container">
+                <!-- 左側：畫布 -->
+                <div class="canvas-wrapper">
+                    <canvas id="graphCanvas" width="400" height="350"></canvas>
+                </div>
+
+                <!-- 右側：控制 -->
+                <div class="controls">
+                    <!-- 參數控制 -->
+                    <div class="control-group">
+                        <label for="sliderN">節點數 (Nodes, N): <span id="valN">5</span></label>
+                        <input type="range" id="sliderN" min="3" max="10" value="5">
+                    </div>
+
+                    <div class="control-group">
+                        <label for="sliderE">邊數 (Edges, E): <span id="valE">3</span></label>
+                        <input type="range" id="sliderE" min="0" max="10" value="3">
+                        <div style="font-size: 0.85rem; margin-top: 5px; color: #64748b;">
+                            連通門檻 (N-1): <span id="thresholdDisplay" style="font-weight:bold;">4</span>
+                        </div>
+                    </div>
+
+                    <!-- 快速示範按鈕 -->
+                    <div class="control-group">
+                        <label>一鍵示範 (Quick Demo)</label>
+                        <div class="btn-group">
+                            <button class="btn-demo" onclick="setPreset('impossible')">E = N-2<br>(必不連通)</button>
+                            <button class="btn-demo" onclick="setPreset('tree')">E = N-1<br>(樹/連通)</button>
+                            <button class="btn-demo" onclick="setPreset('cycle')">E = N<br>(連通+迴圈)</button>
+                        </div>
+                    </div>
+
+                    <!-- Log 區 -->
+                    <div class="log-panel" id="logPanel">
+                        <!-- JS 動態寫入 -->
+                        初始化完成... 請調整滑桿或點擊示範按鈕。
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. 選項逐一破解 -->
+        <section>
+            <h2>選項逐一破解</h2>
+            <p>點擊展開查看詳細解析：</p>
+            
+            <div class="accordion-item">
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    (A) N-2 <span style="font-size: 0.8em; color: var(--error-color);">[不可能連通]</span>
+                </div>
+                <div class="accordion-content">
+                    <p><strong>這是正確答案（題目問不可能的）。</strong></p>
+                    <p>數學上已證明，擁有 N 個節點的圖，若要連通，邊數 E 必須滿足 $E \ge N-1$。</p>
+                    <p>當 $E = N-2$ 時，邊的數量根本不夠把所有點串起來，圖形一定會分裂成至少兩個「連通分量」。</p>
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    (B) N-1 <span style="font-size: 0.8em; color: var(--secondary-color);">[可能]</span>
+                </div>
+                <div class="accordion-content">
+                    <p><strong>這是可能的（形成樹 Tree）。</strong></p>
+                    <p>當邊數剛好是 N-1 且圖連通時，這個圖被稱為「樹」。它的特色是沒有迴圈（No Cycle），且任意斷開一條邊，圖就會變得不連通。</p>
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    (C) N <span style="font-size: 0.8em; color: var(--secondary-color);">[可能]</span>
+                </div>
+                <div class="accordion-content">
+                    <p><strong>這是可能的。</strong></p>
+                    <p>如果你在樹（N-1 條邊）的基礎上，隨便找兩個已經連通的點再加一條邊，邊數就會變成 N。這會產生一個「迴圈 (Cycle)」，但圖依然保持連通。</p>
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    (D) N+1 <span style="font-size: 0.8em; color: var(--secondary-color);">[可能]</span>
+                </div>
+                <div class="accordion-content">
+                    <p><strong>這是可能的。</strong></p>
+                    <p>只要邊數大於等於 N-1，圖就有「機會」連通（當然如果邊都亂連在同一區，也可能不連通，但題目問的是數值存在的可能性）。N+1 條邊通常代表圖中有更多的迴路，連通性更強。</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. 小測驗 -->
+        <section id="quiz-section">
+            <h2>隨堂測驗 (Quiz)</h2>
+            <p>一個沒方向性的連接網路圖，節點為 N (N>2)，則其邊的個數<strong>不可能</strong>為何？</p>
+            
+            <div style="margin-top: 1rem;">
+                <button class="quiz-option" onclick="checkAnswer('A', this)">(A) N - 2</button>
+                <button class="quiz-option" onclick="checkAnswer('B', this)">(B) N - 1</button>
+                <button class="quiz-option" onclick="checkAnswer('C', this)">(C) N</button>
+                <button class="quiz-option" onclick="checkAnswer('D', this)">(D) N + 1</button>
+            </div>
+
+            <div id="quiz-feedback" class="feedback-area"></div>
+        </section>
+
+        <!-- 6. 延伸知識 -->
+        <section>
+            <h2>延伸知識 (Extended Knowledge)</h2>
+            <ul style="padding-left: 1.5rem;">
+                <li><strong>完全圖 (Complete Graph)：</strong> 若任兩點都有邊相連，邊數會達到最大值 $N(N-1)/2$。</li>
+                <li><strong>樹 (Tree) 的性質：</strong> N 個點、N-1 條邊、連通、無迴圈。這四個性質只要滿足其中兩個，通常就能推導出另外兩個（視定義而定）。</li>
+                <li><strong>現實應用：</strong> 鋪設網路纜線或設計電路板時，為了節省成本，我們常尋找「最小生成樹 (Minimum Spanning Tree)」，也就是用最少的邊（成本）讓所有點連通。</li>
+            </ul>
+        </section>
+
+    </div>
+
+    <!-- JavaScript 邏輯 -->
+    <script>
+    (function() {
+        // --- 變數與初始化 ---
+        const canvas = document.getElementById('graphCanvas');
+        const ctx = canvas.getContext('2d');
+        const sliderN = document.getElementById('sliderN');
+        const sliderE = document.getElementById('sliderE');
+        const valN = document.getElementById('valN');
+        const valE = document.getElementById('valE');
+        const thresholdDisplay = document.getElementById('thresholdDisplay');
+        const logPanel = document.getElementById('logPanel');
+
+        let N = 5;
+        let E = 3;
+        let nodes = [];
+        let edges = [];
+        let components = []; // 儲存連通分量資訊
+
+        // 初始化
+        updateMaxEdges();
+        generateGraph('random');
+
+        // --- 事件監聽 ---
+        sliderN.addEventListener('input', (e) => {
+            N = parseInt(e.target.value);
+            valN.textContent = N;
+            thresholdDisplay.textContent = N - 1;
+            updateMaxEdges();
+            // 保持 E 在合理範圍
+            if (E > N * (N - 1) / 2) {
+                E = Math.floor(N * (N - 1) / 2);
+                sliderE.value = E;
+                valE.textContent = E;
+            }
+            generateGraph('random');
+        });
+
+        sliderE.addEventListener('input', (e) => {
+            E = parseInt(e.target.value);
+            valE.textContent = E;
+            generateGraph('random');
+        });
+
+        // 更新 E 滑桿的最大值
+        function updateMaxEdges() {
+            const maxE = (N * (N - 1)) / 2;
+            sliderE.max = maxE;
+        }
+
+        // --- 核心邏輯：生成圖與計算 ---
+        
+        // 生成圖形資料結構
+        // mode: 'random' (隨機邊), 'tree' (強制生成樹), 'cycle' (樹+1邊), 'impossible' (N-2邊)
+        function generateGraph(mode) {
+            // 1. 生成節點座標 (圓形排列)
+            nodes = [];
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = 120;
+            
+            for (let i = 0; i < N; i++) {
+                const angle = (i * 2 * Math.PI) / N - Math.PI / 2; // 從上方開始
+                nodes.push({
+                    id: i,
+                    x: centerX + radius * Math.cos(angle),
+                    y: centerY + radius * Math.sin(angle)
+                });
+            }
+
+            // 2. 生成邊
+            edges = [];
+            
+            if (mode === 'tree') {
+                // 強制生成樹：N-1 邊，保證連通
+                // 簡單作法：0連1, 1連2... 或隨機打亂後串接
+                // 為了視覺好看，我們隨機串接
+                let visited = [0];
+                let unvisited = [];
+                for(let i=1; i<N; i++) unvisited.push(i);
+
+                while(unvisited.length > 0) {
+                    // 從已訪問中選一個
+                    let u = visited[Math.floor(Math.random() * visited.length)];
+                    // 從未訪問中選一個
+                    let vIndex = Math.floor(Math.random() * unvisited.length);
+                    let v = unvisited[vIndex];
+                    
+                    edges.push({source: u, target: v});
+                    visited.push(v);
+                    unvisited.splice(vIndex, 1);
+                }
+                
+                // 同步滑桿
+                E = N - 1;
+                sliderE.value = E;
+                valE.textContent = E;
+
+            } else if (mode === 'impossible') {
+                // 強制 N-2 邊 (隨機選取)
+                E = N - 2;
+                sliderE.value = E;
+                valE.textContent = E;
+                generateRandomEdges(E);
+
+            } else if (mode === 'cycle') {
+                // 樹 + 1 邊 (連通且有圈)
+                // 先造樹
+                let visited = [0];
+                let unvisited = [];
+                for(let i=1; i<N; i++) unvisited.push(i);
+
+                while(unvisited.length > 0) {
+                    let u = visited[Math.floor(Math.random() * visited.length)];
+                    let vIndex = Math.floor(Math.random() * unvisited.length);
+                    let v = unvisited[vIndex];
+                    edges.push({source: u, target: v});
+                    visited.push(v);
+                    unvisited.splice(vIndex, 1);
+                }
+
+                // 加 1 條不重複的邊
+                E = N;
+                let added = false;
+                let attempts = 0;
+                while(!added && attempts < 100) {
+                    let u = Math.floor(Math.random() * N);
+                    let v = Math.floor(Math.random() * N);
+                    if (u !== v && !edgeExists(u, v)) {
+                        edges.push({source: u, target: v});
+                        added = true;
+                    }
+                    attempts++;
+                }
+                
+                sliderE.value = E;
+                valE.textContent = E;
+
+            } else {
+                // 一般隨機模式 (slider 觸發)
+                generateRandomEdges(E);
+            }
+
+            // 3. 檢查連通性 (BFS)
+            checkConnectivity();
+
+            // 4. 繪圖
+            draw();
+
+            // 5. 更新 Log
+            updateLog(mode);
+        }
+
+        // 輔助：生成指定數量的隨機邊 (不重複、無自環)
+        function generateRandomEdges(count) {
+            edges = [];
+            let allPossibleEdges = [];
+            for (let i = 0; i < N; i++) {
+                for (let j = i + 1; j < N; j++) {
+                    allPossibleEdges.push({source: i, target: j});
+                }
+            }
+
+            // 洗牌
+            for (let i = allPossibleEdges.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [allPossibleEdges[i], allPossibleEdges[j]] = [allPossibleEdges[j], allPossibleEdges[i]];
+            }
+
+            // 取前 count 個
+            edges = allPossibleEdges.slice(0, count);
+        }
+
+        // 輔助：檢查邊是否存在
+        function edgeExists(u, v) {
+            return edges.some(e => (e.source === u && e.target === v) || (e.source === v && e.target === u));
+        }
+
+        // 按鈕預設功能
+        function setPreset(mode) {
+            generateGraph(mode);
+            // 視覺提示
+            const hint = document.getElementById('hint-text');
+            hint.classList.add('highlight-pulse');
+            setTimeout(() => hint.classList.remove('highlight-pulse'), 2000);
+        }
+
+        // --- BFS 連通性檢查演算法 ---
+        function checkConnectivity() {
+            // 建鄰接表
+            let adj = Array.from({length: N}, () => []);
+            edges.forEach(e => {
+                adj[e.source].push(e.target);
+                adj[e.target].push(e.source);
+            });
+
+            let visited = new Array(N).fill(false);
+            let componentCount = 0;
+            components = new Array(N).fill(0); // 紀錄每個 node 屬於哪個 component ID
+
+            for (let i = 0; i < N; i++) {
+                if (!visited[i]) {
+                    componentCount++;
+                    // BFS Start
+                    let queue = [i];
+                    visited[i] = true;
+                    components[i] = componentCount;
+
+                    while (queue.length > 0) {
+                        let u = queue.shift();
+                        for (let v of adj[u]) {
+                            if (!visited[v]) {
+                                visited[v] = true;
+                                components[v] = componentCount;
+                                queue.push(v);
+                            }
+                        }
+                    }
+                }
+            }
+            return componentCount;
+        }
+
+        // --- 繪圖邏輯 ---
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 定義連通分量顏色 (最多支援 10 個分量不同色)
+            const componentColors = [
+                '#94a3b8', // 0 (unused)
+                '#2563eb', // Blue
+                '#dc2626', // Red
+                '#16a34a', // Green
+                '#d97706', // Amber
+                '#9333ea', // Purple
+                '#0891b2', // Cyan
+                '#be185d', // Pink
+                '#4f46e5', // Indigo
+                '#ca8a04'  // Yellow-dark
+            ];
+
+            const componentCount = checkConnectivity();
+            const isConnected = componentCount === 1;
+
+            // 畫邊
+            ctx.lineWidth = 2;
+            edges.forEach(e => {
+                const u = nodes[e.source];
+                const v = nodes[e.target];
+                
+                // 如果兩點屬於同一分量(一定屬於)，給予分量顏色
+                // 如果圖不連通，邊用灰色或分量色；若連通，用標準色
+                ctx.strokeStyle = '#94a3b8'; // 預設灰
+                if (components[e.source] === components[e.target]) {
+                    // 使用分量顏色，如果不連通可以更明顯看出分群
+                    if (!isConnected) {
+                        ctx.strokeStyle = componentColors[components[e.source] % componentColors.length];
+                        ctx.globalAlpha = 0.5; // 不連通時邊淡一點
+                    } else {
+                        ctx.strokeStyle = '#334155'; // 連通時深色
+                        ctx.globalAlpha = 1.0;
+                    }
+                }
+                
+                ctx.beginPath();
+                ctx.moveTo(u.x, u.y);
+                ctx.lineTo(v.x, v.y);
+                ctx.stroke();
+                ctx.globalAlpha = 1.0;
+            });
+
+            // 畫節點
+            nodes.forEach((node, idx) => {
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, 18, 0, 2 * Math.PI);
+                
+                // 填色：依據連通分量 ID
+                let colorIndex = components[idx] % componentColors.length;
+                ctx.fillStyle = componentColors[colorIndex];
+                
+                ctx.fill();
+                ctx.strokeStyle = 'white';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+
+                // 文字
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 14px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(idx, node.x, node.y);
+            });
+
+            // 左上角狀態文字
+            ctx.fillStyle = '#1e293b';
+            ctx.font = '16px sans-serif';
+            ctx.textAlign = 'left';
+            
+            let statusText = isConnected ? "狀態: 連通 (Connected)" : "狀態: 不連通 (Disconnected)";
+            ctx.fillText(statusText, 10, 25);
+
+            if (!isConnected) {
+                ctx.font = '14px sans-serif';
+                ctx.fillStyle = '#ef4444';
+                ctx.fillText(`連通分量數: ${componentCount}`, 10, 45);
+            }
+        }
+
+        // --- Log 更新 ---
+        function updateLog(mode) {
+            const componentCount = checkConnectivity();
+            const isConnected = componentCount === 1;
+            const threshold = N - 1;
+
+            let html = `<div>目前設定：N = ${N}, E = ${E}</div>`;
+            html += `<div>最少連通需求 (N-1) = ${threshold}</div>`;
+            html += `<hr style="border-color:#334155; margin: 8px 0;">`;
+
+            // 判斷邏輯輸出
+            if (E < threshold) {
+                html += `<div style="color: #ef4444;">❌ E < N-1 (${E} < ${threshold})</div>`;
+                html += `<div>結論：<strong>必不連通 (Impossible)</strong></div>`;
+                html += `<div>節點數不夠連成一線，一定會斷開。</div>`;
+            } else if (E === threshold) {
+                 if (isConnected) {
+                    html += `<div style="color: #4ade80;">✅ E = N-1 (剛好)</div>`;
+                    html += `<div>狀態：連通 (這是「樹」)</div>`;
+                    html += `<div>這是達成連通的最少邊數。</div>`;
+                 } else {
+                    html += `<div style="color: #fbbf24;">⚠️ E = N-1 (但未連通)</div>`;
+                    html += `<div>注意：邊數夠不代表一定連通(可能成圈)。</div>`;
+                    html += `<div>但題目問的是「是否可能」，答案是可能。</div>`;
+                 }
+            } else {
+                // E > N-1
+                if (isConnected) {
+                    html += `<div style="color: #4ade80;">✅ E > N-1 (充裕)</div>`;
+                    html += `<div>狀態：連通</div>`;
+                    html += `<div>邊數多於 N-1，通常會形成迴圈。</div>`;
+                } else {
+                    html += `<div style="color: #fbbf24;">⚠️ E > N-1 (但未連通)</div>`;
+                    html += `<div>運氣不好！雖然邊數夠多，但沒連到孤立點。</div>`;
+                }
+            }
+
+            logPanel.innerHTML = html;
+        }
+
+        // --- 互動 UI 輔助 ---
+        function toggleAccordion(header) {
+            const content = header.nextElementSibling;
+            content.classList.toggle('active');
+        }
+
+        function checkAnswer(option, btnElement) {
+            const feedback = document.getElementById('quiz-feedback');
+            const allBtns = document.querySelectorAll('.quiz-option');
+            
+            // 重置樣式
+            allBtns.forEach(b => {
+                b.classList.remove('correct', 'wrong');
+            });
+
+            if (option === 'A') {
+                // 答對
+                btnElement.classList.add('correct');
+                feedback.style.display = 'block';
+                feedback.style.backgroundColor = '#ecfdf5';
+                feedback.style.border = '1px solid #10b981';
+                feedback.innerHTML = `
+                    <h3 style="color: #059669;">🎉 答對了！</h3>
+                    <p>若 N 個點要連通，最少一定要 N-1 條邊。</p>
+                    <p>所以 N-2 條邊<strong>絕對不可能</strong>讓圖連通。</p>
+                `;
+            } else {
+                // 答錯
+                btnElement.classList.add('wrong');
+                feedback.style.display = 'block';
+                feedback.style.backgroundColor = '#fef2f2';
+                feedback.style.border = '1px solid #ef4444';
+                feedback.innerHTML = `
+                    <h3 style="color: #dc2626;">❌ 再想一下...</h3>
+                    <p>邊數是 ${option === 'B' ? 'N-1' : (option === 'C' ? 'N' : 'N+1')} 是「可能」連通的。</p>
+                    <p>題目問的是「<strong>不可能</strong>」。</p>
+                    <a href="#simulation-section" class="goto-simulation-btn" onclick="setPreset('impossible')">
+                        帶我去看 E = N-2 的模擬
+                    </a>
+                `;
+            }
+        }
+
+        // 將 HTML 需要呼叫的函式掛載到 window 上
+        window.setPreset = setPreset;
+        window.toggleAccordion = toggleAccordion;
+        window.checkAnswer = checkAnswer;
+
+    })(); // IIFE 結束
+    </script>
+</body>
+</html>

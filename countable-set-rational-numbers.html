@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>可數與不可數集合教學 - 考試重點攻略</title>
+    <style>
+        /* --- 基礎設定 (Reset & Base) --- */
+        :root {
+            --primary-color: #2563eb;       /* 專業藍 */
+            --secondary-color: #4f46e5;     /* 深藍紫 */
+            --accent-color: #f59e0b;        /* 重點黃 */
+            --success-color: #10b981;       /* 正確綠 */
+            --error-color: #ef4444;         /* 錯誤紅 */
+            --bg-color: #f8fafc;            /* 淺灰底 */
+            --card-bg: #ffffff;             /* 卡片白 */
+            --text-main: #1e293b;           /* 深灰字 */
+            --text-light: #64748b;          /* 淺灰字 */
+            --border-radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            line-height: 1.6;
+            color: var(--text-main);
+            background-color: var(--bg-color);
+            padding-bottom: 50px;
+        }
+
+        /* --- 版面結構 (Layout) --- */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            font-weight: bold;
+        }
+
+        section {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+        }
+
+        h2 {
+            color: var(--secondary-color);
+            border-left: 5px solid var(--accent-color);
+            padding-left: 15px;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+        }
+
+        h3 {
+            margin-top: 15px;
+            margin-bottom: 10px;
+            color: var(--text-main);
+        }
+
+        /* --- 重點標籤樣式 --- */
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        .badge-must { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+        .badge-tip { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+        .highlight { background-color: #fef3c7; padding: 0 4px; border-radius: 2px; font-weight: bold; }
+
+        /* --- 題目區塊 --- */
+        .question-box {
+            background-color: #eff6ff;
+            border: 2px solid #bfdbfe;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+        .options-list {
+            list-style: none;
+            margin-top: 15px;
+        }
+        .options-list li {
+            margin-bottom: 8px;
+            padding-left: 10px;
+        }
+
+        /* --- 必背表格 --- */
+        .table-responsive {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        th {
+            background-color: #f1f5f9;
+            color: var(--secondary-color);
+        }
+        tr.flash-highlight {
+            animation: flashRow 2s ease-in-out infinite;
+        }
+        @keyframes flashRow {
+            0%, 100% { background-color: transparent; }
+            50% { background-color: #fef3c7; }
+        }
+        .row-q {
+            background-color: #ecfdf5; /* 淡淡的綠色強調 Q */
+            font-weight: bold;
+        }
+
+        /* --- 互動示意區 --- */
+        .interactive-container {
+            text-align: center;
+            background: #f8fafc;
+            border-radius: var(--border-radius);
+            padding: 15px;
+            border: 1px dashed #cbd5e1;
+        }
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .btn-set {
+            padding: 10px 20px;
+            border: 1px solid var(--secondary-color);
+            background: white;
+            color: var(--secondary-color);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: bold;
+        }
+        .btn-set.active, .btn-set:hover {
+            background: var(--secondary-color);
+            color: white;
+        }
+        .display-area {
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .visual-elements {
+            font-family: monospace;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+            word-break: break-all;
+        }
+        .visual-desc {
+            font-size: 0.95rem;
+            color: var(--text-light);
+        }
+        .number-tag {
+            display: inline-block;
+            background: #e0f2fe;
+            padding: 4px 8px;
+            margin: 4px;
+            border-radius: 4px;
+            border: 1px solid #bae6fd;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn {
+            from { transform: scale(0); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        /* --- 選項破解 & 常見錯誤 --- */
+        .explanation-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .explanation-item:last-child { border-bottom: none; }
+        .correct-mark { color: var(--success-color); font-weight: bold; }
+        .wrong-mark { color: var(--error-color); font-weight: bold; }
+
+        /* --- 小測驗 --- */
+        .quiz-option {
+            display: block;
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        .quiz-option:hover {
+            border-color: var(--primary-color);
+            background-color: #eff6ff;
+        }
+        .quiz-option input {
+            margin-right: 10px;
+        }
+        #quiz-feedback {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none; /* 預設隱藏 */
+        }
+        .feedback-success {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #34d399;
+        }
+        .feedback-error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #f87171;
+        }
+        .review-btn {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 8px 16px;
+            background-color: #ef4444;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border: none;
+        }
+        .review-btn:hover { background-color: #dc2626; }
+
+        /* --- RWD 調整 --- */
+        @media (max-width: 600px) {
+            header h1 { font-size: 1.5rem; }
+            section { padding: 15px; }
+            .btn-set { width: 48%; padding: 8px; font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- 1. Header -->
+    <header>
+        <h1>集合論基礎：可數與不可數</h1>
+        <p>「能不能一個一個編號，是關鍵」</p>
+    </header>
+
+    <!-- 2. 題目 -->
+    <section>
+        <span class="badge badge-must">本題目標</span>
+        <h2>下列哪個集合是可以數的（countable）？</h2>
+        <div class="question-box">
+            <ul class="options-list">
+                <li>(A) ℚ（有理數）</li>
+                <li>(B) ℝ（實數）</li>
+                <li>(C) ℂ（複數）</li>
+                <li>(D) ℝ − ℚ（無理數）</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- 3. 新手導入 -->
+    <section>
+        <h2><span class="badge badge-tip">觀念導入</span>什麼叫「可以數」？</h2>
+        <p>很多同學看到「無限」就以為「數不完 = 不可數」，這是錯的！</p>
+        <br>
+        <h3>簡單直覺：抽號碼牌</h3>
+        <ul>
+            <li><strong>可數 (Countable)：</strong>就像排隊領號碼牌。雖然隊伍可能無限長，但我可以保證每個人都能領到一張特定的號碼牌（第1號、第2號...）。</li>
+            <li><strong>不可數 (Uncountable)：</strong>人多到連「插隊」都沒辦法。你以為你排好了，結果任何兩個人中間還擠滿了無限多個人，根本沒辦法發號碼牌。</li>
+        </ul>
+        <br>
+        <p class="highlight" style="text-align: center; font-size: 1.1rem; padding: 10px;">
+            【必背白話】：能不能從 1 開始，一個一個數下去，不漏掉，是關鍵。
+        </p>
+    </section>
+
+    <!-- 4. 必背結論表格 (核心) -->
+    <section id="memory-table-section">
+        <h2><span class="badge badge-must">考試必背</span>常見數系可數性總整理</h2>
+        <p style="margin-bottom: 10px; color: var(--text-light); font-size: 0.9rem;">
+            考試時不要現場想證明，請直接記下這個結論表：
+        </p>
+        <div class="table-responsive">
+            <table id="memory-table">
+                <thead>
+                    <tr>
+                        <th>符號</th>
+                        <th>中文名稱</th>
+                        <th>可數性</th>
+                        <th>備註</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>ℕ</td>
+                        <td>自然數</td>
+                        <td><strong>可數</strong></td>
+                        <td>最標準的 1, 2, 3...</td>
+                    </tr>
+                    <tr>
+                        <td>ℤ</td>
+                        <td>整數</td>
+                        <td><strong>可數</strong></td>
+                        <td>包含負數，一樣可以重新編號</td>
+                    </tr>
+                    <tr class="row-q" id="row-q">
+                        <td>ℚ</td>
+                        <td>有理數</td>
+                        <td><span style="color:var(--success-color)">✅ 可數</span></td>
+                        <td><strong>本題重點！</strong>雖然很密，但可以編號</td>
+                    </tr>
+                    <tr>
+                        <td>ℝ</td>
+                        <td>實數</td>
+                        <td><span style="color:var(--error-color)">❌ 不可數</span></td>
+                        <td>連續的，無法列舉</td>
+                    </tr>
+                    <tr>
+                        <td>ℂ</td>
+                        <td>複數</td>
+                        <td><span style="color:var(--error-color)">❌ 不可數</span></td>
+                        <td>含實數，當然不可數</td>
+                    </tr>
+                    <tr>
+                        <td>ℝ − ℚ</td>
+                        <td>無理數</td>
+                        <td><span style="color:var(--error-color)">❌ 不可數</span></td>
+                        <td>實數扣掉可數的，還是不可數</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- 5. 互動示意區 -->
+    <section>
+        <h2><span class="badge badge-tip">互動體驗</span>試試看：能不能編號？</h2>
+        <p style="margin-bottom: 15px;">點擊下方按鈕，觀察看看該集合的元素能不能被「排成一列」。</p>
+        
+        <div class="interactive-container">
+            <div class="btn-group">
+                <!-- 更新：加入 this 以正確傳遞按鈕元素 -->
+                <button class="btn-set active" onclick="updateDemo('Q', this)">ℚ 有理數</button>
+                <button class="btn-set" onclick="updateDemo('R', this)">ℝ 實數</button>
+                <button class="btn-set" onclick="updateDemo('C', this)">ℂ 複數</button>
+                <button class="btn-set" onclick="updateDemo('Ir', this)">ℝ − ℚ 無理數</button>
+            </div>
+
+            <div class="display-area" id="demo-display">
+                <!-- 內容由 JS 動態生成 -->
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. 選項逐一破解 -->
+    <section>
+        <h2>選項逐一解析</h2>
+        <div class="explanation-item">
+            <h3>(A) ℚ（有理數） <span class="correct-mark">✅ 正解</span></h3>
+            <p>雖然有理數在數線上很密（任意兩個有理數中間還有無限多個有理數），但數學家康托爾（Cantor）證明了可以用一種「蛇形走位」的方式，把它們全部抓出來編號 (1, 2, 3...)。既然能編號，就是<strong>可數</strong>。</p>
+        </div>
+        <div class="explanation-item">
+            <h3>(B) ℝ（實數） <span class="wrong-mark">❌ 錯誤</span></h3>
+            <p>實數是「連續」的。無論你怎麼嘗試列出清單，永遠會有無限多個實數（例如小數點後無限不循環的數）被你漏掉。這是最典型的<strong>不可數</strong>集合。</p>
+        </div>
+        <div class="explanation-item">
+            <h3>(C) ℂ（複數） <span class="wrong-mark">❌ 錯誤</span></h3>
+            <p>複數包含了實數。既然實數都已經多到數不完了，包含它的複數當然更數不完。<strong>不可數</strong>。</p>
+        </div>
+        <div class="explanation-item">
+            <h3>(D) ℝ − ℚ（無理數） <span class="wrong-mark">❌ 錯誤</span></h3>
+            <p>實數 = 有理數 + 無理數。因為有理數很少（可數），實數很多（不可數），所以剩下來的無理數一定佔了絕大多數，是<strong>不可數</strong>的。</p>
+        </div>
+    </section>
+
+    <!-- 7. 記憶技巧與常見錯誤 -->
+    <section>
+        <h2><span class="badge badge-must">終極口訣</span>記憶與避坑</h2>
+        
+        <div style="background: #fffbeb; padding: 15px; border-left: 5px solid #f59e0b; margin-bottom: 20px;">
+            <h3>🧠 考試口訣</h3>
+            <p>「自然、整數、有理數，通通都<strong>可數</strong>。」</p>
+            <p>「一碰到實數、無理數、複數，就<strong>不可數</strong>。」</p>
+            <p>「本題重點：<strong>只有 Q 是可數！</strong>」</p>
+        </div>
+
+        <h3>⚠️ 常見錯誤區</h3>
+        <ul>
+            <li>❌ 誤以為「無限多」就是不可數。（錯！自然數也是無限多，但它可數）。</li>
+            <li>❌ 覺得有理數密密麻麻很多，所以不可數。（錯！它還是可以排隊的）。</li>
+            <li>❌ 分不清 ℚ (有理) 和 ℝ − ℚ (無理) 的差別。</li>
+        </ul>
+    </section>
+
+    <!-- 8. 小測驗區 -->
+    <section>
+        <h2><span class="badge badge-tip">自我檢測</span>最後測驗一次</h2>
+        <p>下列哪個集合是可以數的（countable）？</p>
+        <div id="quiz-form" style="margin-top: 15px;">
+            <label class="quiz-option">
+                <input type="radio" name="quiz" value="A"> (A) ℚ
+            </label>
+            <label class="quiz-option">
+                <input type="radio" name="quiz" value="B"> (B) ℝ
+            </label>
+            <label class="quiz-option">
+                <input type="radio" name="quiz" value="C"> (C) ℂ
+            </label>
+            <label class="quiz-option">
+                <input type="radio" name="quiz" value="D"> (D) ℝ − ℚ
+            </label>
+        </div>
+
+        <div id="quiz-feedback"></div>
+    </section>
+
+</div>
+
+<script>
+    // --- 互動示意區邏輯 ---
+    // 更新：加入 btn 參數接收按鈕元素
+    function updateDemo(type, btn) {
+        // 更新按鈕樣式
+        const buttons = document.querySelectorAll('.btn-set');
+        buttons.forEach(b => b.classList.remove('active'));
+        
+        // 修正：直接使用傳入的按鈕元素，避免依賴 undefined 的 event.target
+        if (btn) {
+            btn.classList.add('active');
+        }
+
+        const display = document.getElementById('demo-display');
+        display.innerHTML = ''; // 清空內容
+
+        if (type === 'Q') {
+            // 有理數模式
+            display.innerHTML = `
+                <div class="visual-elements" id="q-animation"></div>
+                <p><strong>狀態：編號進行中...</strong></p>
+                <p class="visual-desc">你看！雖然分數很多，但我可以設計一個規則（例如蛇形排列），把它們一個一個抓出來給號碼牌。</p>
+                <p style="color:var(--success-color); font-weight:bold; margin-top:5px;">結論：可數 (Countable)</p>
+            `;
+            startQAnimation();
+        } else {
+            // 不可數模式 (R, C, Ir)
+            let name = type === 'R' ? '實數' : (type === 'C' ? '複數' : '無理數');
+            let symbol = type === 'R' ? 'ℝ' : (type === 'C' ? 'ℂ' : 'ℝ − ℚ');
+            
+            display.innerHTML = `
+                <div style="width: 100%; height: 40px; background: linear-gradient(90deg, #3b82f6, #9333ea); margin-bottom: 10px; border-radius: 4px; position: relative;">
+                    <span style="position: absolute; left: 10%; color: white; bottom: -25px;">...密密麻麻...</span>
+                </div>
+                <div style="margin-top:20px;">
+                    <p><strong>狀態：無法編號</strong></p>
+                    <p class="visual-desc">${symbol} 是連續的或極度稠密的。無論你怎麼嘗試列出清單，永遠會漏掉無限多個數字。</p>
+                    <p style="color:var(--error-color); font-weight:bold; margin-top:5px;">結論：不可數 (Uncountable)</p>
+                </div>
+            `;
+        }
+    }
+
+    // 有理數的動畫效果
+    function startQAnimation() {
+        const container = document.getElementById('q-animation');
+        const qList = ["0", "1", "-1", "1/2", "-1/2", "2", "-2", "1/3", "-1/3", "3..."];
+        let i = 0;
+        
+        // 清除舊的計時器（如果有的話）
+        if (window.qInterval) clearInterval(window.qInterval);
+
+        window.qInterval = setInterval(() => {
+            if (i < qList.length) {
+                const span = document.createElement('span');
+                span.className = 'number-tag';
+                span.innerHTML = `<small style="color:#666">#${i+1}</small> <strong>${qList[i]}</strong>`;
+                container.appendChild(span);
+                i++;
+            } else {
+                clearInterval(window.qInterval);
+            }
+        }, 400); // 每 0.4 秒出現一個數字
+    }
+
+    // 初始化顯示
+    window.onload = function() {
+        // 修正：不再直接呼叫 updateDemo('Q') 以避免錯誤，
+        // 而是透過模擬點擊第一個按鈕來觸發初始化邏輯。
+        const firstBtn = document.querySelector('.btn-set');
+        if (firstBtn) {
+            firstBtn.click();
+        }
+    };
+
+
+    // --- 小測驗邏輯 ---
+    const quizOptions = document.querySelectorAll('input[name="quiz"]');
+    const feedbackBox = document.getElementById('quiz-feedback');
+    const memoryTableSection = document.getElementById('memory-table-section');
+    const qRow = document.getElementById('row-q');
+
+    quizOptions.forEach(option => {
+        option.addEventListener('change', function() {
+            const val = this.value;
+            
+            if (val === 'A') {
+                // 答對
+                feedbackBox.className = 'feedback-success';
+                feedbackBox.style.display = 'block';
+                feedbackBox.innerHTML = `
+                    <strong>🎉 答對了！</strong><br>
+                    正確答案是 ℚ（有理數）。<br>
+                    記住：它是唯一看起來很多，但其實可以「一個個排隊」的集合。
+                `;
+            } else {
+                // 答錯
+                feedbackBox.className = 'feedback-error';
+                feedbackBox.style.display = 'block';
+                feedbackBox.innerHTML = `
+                    <strong>⚠️ 答錯囉！</strong><br>
+                    ${val === 'B' ? 'ℝ (實數) 是不可數的喔。' : 
+                      val === 'C' ? 'ℂ (複數) 包含實數，當然不可數。' : 
+                      'ℝ − ℚ (無理數) 是不可數的。'}
+                    <br><br>
+                    <button class="review-btn" onclick="scrollToTable()">帶我回去看表格 (必背)</button>
+                `;
+            }
+        });
+    });
+
+    function scrollToTable() {
+        memoryTableSection.scrollIntoView({ behavior: 'smooth' });
+        
+        // 移除動畫 class 再重新加入以觸發動畫
+        qRow.classList.remove('flash-highlight');
+        void qRow.offsetWidth; // trigger reflow
+        qRow.classList.add('flash-highlight');
+        
+        // 2秒後移除動畫 class
+        setTimeout(() => {
+            qRow.classList.remove('flash-highlight');
+        }, 4000);
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>資訊安全金鑰與質數教學 (Crypto Key Generation & Prime Numbers)</title>
+    <style>
+        /* --- 基礎設定 (Reset & Typography) --- */
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --success-color: #27ae60;
+            --danger-color: #c0392b;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "PingFang TC", "Microsoft JhengHei", "Heiti TC", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1, h2, h3 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        /* --- 元件樣式 (Components) --- */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 25px;
+            margin-bottom: 30px;
+            border-left: 5px solid var(--accent-color);
+        }
+
+        .btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 2px solid var(--accent-color);
+            color: var(--accent-color);
+        }
+        
+        .btn-outline:hover {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        select, input {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            font-size: 1rem;
+            margin: 5px;
+        }
+
+        /* --- Header --- */
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 0 0 20px 20px;
+            margin-bottom: 30px;
+        }
+        header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        /* --- 本題區塊 --- */
+        .question-box {
+            background-color: #e8f4fd;
+            padding: 20px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .options-list {
+            list-style: none;
+            padding: 0;
+        }
+        .options-list li {
+            padding: 10px;
+            margin: 5px 0;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        /* --- 互動模擬區 (Simulation) --- */
+        .sim-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .sim-result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #edf7ed;
+            border: 1px solid #c8e6c9;
+            border-radius: 8px;
+            display: none; /* 初始隱藏 */
+        }
+
+        .highlight-text {
+            color: var(--danger-color);
+            font-weight: bold;
+        }
+
+        /* --- 視覺化流程圖 (Flowchart) --- */
+        .flowchart {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px 0;
+            padding: 20px;
+            background: #fff;
+            border: 1px dashed #ccc;
+        }
+
+        .flow-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            gap: 20px;
+        }
+
+        .flow-box {
+            background: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-align: center;
+            min-width: 100px;
+        }
+
+        .flow-arrow {
+            font-size: 2rem;
+            color: var(--accent-color);
+            margin: 10px 0;
+        }
+        
+        .arrow-down { margin: 10px 0; }
+
+        /* 因數分解挑戰區 */
+        .challenge-box {
+            margin-top: 20px;
+            padding: 15px;
+            border: 2px dashed var(--accent-color);
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        /* --- 選項破解區 (Breakdown) --- */
+        .breakdown-item {
+            border: 1px solid #eee;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+        }
+        .breakdown-item.correct {
+            border-left: 5px solid var(--success-color);
+            background-color: #f0fdf4;
+        }
+        .breakdown-item.wrong {
+            border-left: 5px solid var(--danger-color);
+            background-color: #fdf2f2;
+        }
+        .term-en {
+            font-size: 0.85em;
+            color: #666;
+            margin-left: 5px;
+        }
+
+        /* --- 小測驗區 (Quiz) --- */
+        .quiz-option {
+            display: block;
+            width: 100%;
+            text-align: left;
+            margin-bottom: 10px;
+            padding: 15px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .quiz-option:hover {
+            border-color: var(--accent-color);
+            background-color: #f0f8ff;
+        }
+        .quiz-option.correct-answer {
+            background-color: var(--success-color);
+            color: white;
+            border-color: var(--success-color);
+        }
+        .quiz-option.wrong-answer {
+            background-color: var(--danger-color);
+            color: white;
+            border-color: var(--danger-color);
+        }
+
+        #quiz-feedback {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 6px;
+            font-weight: bold;
+            display: none;
+        }
+
+        /* --- 延伸知識 (Accordion) --- */
+        .accordion {
+            background-color: #eee;
+            color: #444;
+            cursor: pointer;
+            padding: 18px;
+            width: 100%;
+            text-align: left;
+            border: none;
+            outline: none;
+            transition: 0.4s;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+        .active, .accordion:hover {
+            background-color: #ccc;
+        }
+        .panel {
+            padding: 0 18px;
+            background-color: white;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.2s ease-out;
+            border-radius: 0 0 8px 8px;
+        }
+
+        /* RWD 調整 */
+        @media (max-width: 600px) {
+            .sim-controls {
+                flex-direction: column;
+            }
+            .flow-row {
+                flex-direction: column;
+            }
+            .flow-arrow {
+                transform: rotate(90deg); /* 手機版箭頭轉向 */
+            }
+            .flow-arrow.arrow-down {
+                 transform: rotate(0deg);
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>資訊安全金鑰製作</h1>
+    <p>金鑰不是亂湊的：核心依靠「質數」的數學難題</p>
+</header>
+
+<div class="container">
+
+    <!-- 1. 題目區 -->
+    <section class="card">
+        <h2><span style="border-bottom: 3px solid var(--accent-color);">本題</span></h2>
+        <div class="question-box">
+            <p>資訊安全的金鑰(Key)製作，跟下列何者技術有關？</p>
+            <ul class="options-list">
+                <li>(A) 遞迴運算（Recursion）</li>
+                <li>(B) 樹狀結構（Tree Structure）</li>
+                <li>(C) AI 的演算法（AI Algorithms）</li>
+                <li>(D) 質數的計算（Prime Number Computation）</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- 2. 概念說明區 -->
+    <section class="card">
+        <h2>為什麼是質數？(Why Prime Numbers?)</h2>
+        <p>在<strong>公開金鑰密碼學（Public-key Cryptography）</strong>中，我們希望製造一把鎖，這把鎖很容易鎖上，但如果沒有鑰匙，卻極難打開。</p>
+        <ul>
+            <li><strong>核心原理：</strong>將兩個很大的<strong>質數（Prime Numbers）</strong>相乘很容易。</li>
+            <li><strong>困難點：</strong>給你乘積後的結果（模數 Modulus），要你反推回原本是哪兩個質數相乘（因數分解 Factorization），在數字很大時是非常困難的。</li>
+        </ul>
+        <p>這個「易進難出」的特性，就是現代加密技術（如 RSA 演算法）的安全基礎。</p>
+    </section>
+
+    <!-- 3. 互動模擬區 (核心) -->
+    <section class="card" id="simulation-area">
+        <h2>互動實驗室：簡易金鑰產生 (Simulation)</h2>
+        <p>讓我們用小一點的數字來模擬這個過程。請選擇兩個不同的質數：</p>
+        
+        <div class="sim-controls">
+            <div>
+                <label for="prime-p">質數 p (Prime p)：</label>
+                <select id="prime-p">
+                    <option value="11">11</option>
+                    <option value="13">13</option>
+                    <option value="17">17</option>
+                    <option value="19">19</option>
+                    <option value="23">23</option>
+                </select>
+            </div>
+            <div>
+                <label for="prime-q">質數 q (Prime q)：</label>
+                <select id="prime-q">
+                    <option value="29">29</option>
+                    <option value="31">31</option>
+                    <option value="37">37</option>
+                    <option value="41">41</option>
+                    <option value="43">43</option>
+                </select>
+            </div>
+            <button class="btn" onclick="generateKey()">產生示範金鑰</button>
+        </div>
+
+        <!-- 計算結果顯示區 -->
+        <div id="sim-result" class="sim-result">
+            <h3>計算結果</h3>
+            <p>1. 模數 (Modulus) <strong>n = p × q</strong> = <span id="val-p"></span> × <span id="val-q"></span> = <span class="highlight-text" style="font-size: 1.5em;" id="val-n"></span></p>
+            <p>2. 歐拉函數 φ(n) = (p-1)(q-1) = <span id="val-phi"></span> <small>(這是製作解密金鑰的關鍵參數)</small></p>
+            
+            <!-- 視覺化流程 -->
+            <div class="flowchart">
+                <div class="flow-row">
+                    <div class="flow-box">質數 p, q<br>(私密)</div>
+                </div>
+                <div class="flow-arrow arrow-down">⬇️ 相乘 (容易)</div>
+                <div class="flow-row">
+                    <div class="flow-box" style="background-color: var(--success-color);">模數 n<br>(公開)</div>
+                </div>
+                <div class="flow-arrow arrow-down" style="color: var(--danger-color);">⬆️ 因數分解 (極度困難)</div>
+                <p style="font-size: 0.9em; color: #666;">若 n 只有幾百位數，超級電腦也要算幾萬年才找得回 p 和 q。</p>
+            </div>
+
+            <!-- 挑戰區 -->
+            <div class="challenge-box">
+                <h4>挑戰：駭客視角</h4>
+                <p>假設你攔截到了模數 <strong>n = <span id="challenge-n"></span></strong>，你能猜出原本的 p 和 q 是多少嗎？</p>
+                <input type="number" id="guess-p" placeholder="猜猜 p" style="width: 100px;">
+                <input type="number" id="guess-q" placeholder="猜猜 q" style="width: 100px;">
+                <button class="btn btn-outline" onclick="verifyGuess()">驗證破解</button>
+                <p id="guess-feedback" style="margin-top: 10px; font-weight: bold;"></p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. 選項逐一破解區 -->
+    <section class="card">
+        <h2>選項詳解 (Breakdown)</h2>
+        
+        <div class="breakdown-item wrong">
+            <strong>(A) 遞迴運算 <span class="term-en">(Recursion)</span></strong>
+            <p>錯。遞迴是一種程式寫法（自己呼叫自己），常用於排序或搜尋資料，但不是產生加密金鑰的數學基礎。</p>
+        </div>
+
+        <div class="breakdown-item wrong">
+            <strong>(B) 樹狀結構 <span class="term-en">(Tree Structure)</span></strong>
+            <p>錯。這是一種資料結構，用來組織資料（如檔案總管目錄），跟加密數學原理無關。</p>
+        </div>
+
+        <div class="breakdown-item wrong">
+            <strong>(C) AI 的演算法 <span class="term-en">(AI Algorithms)</span></strong>
+            <p>錯。雖然 AI 很熱門，但傳統加密金鑰（如 RSA、ECC）是建立在數論（Number Theory）上，而非類神經網路或機器學習。</p>
+        </div>
+
+        <div class="breakdown-item correct">
+            <strong>(D) 質數的計算 <span class="term-en">(Prime Number Computation)</span></strong>
+            <p><strong>正解！</strong>現代公開金鑰系統（RSA）依賴「大質數相乘容易，分解卻很難」的特性來保護資訊安全。</p>
+        </div>
+    </section>
+
+    <!-- 5. 小測驗區 -->
+    <section class="card" id="quiz-section">
+        <h2>隨堂小測驗 (Quiz)</h2>
+        <p>再試一次，這次你一定會！</p>
+        <p style="font-weight: bold;">題目：資訊安全的金鑰製作，主要依賴哪種數學特性？</p>
+        
+        <button class="quiz-option" onclick="checkQuiz(this, 'A')">(A) 遞迴運算（Recursion）</button>
+        <button class="quiz-option" onclick="checkQuiz(this, 'B')">(B) 樹狀結構（Tree Structure）</button>
+        <button class="quiz-option" onclick="checkQuiz(this, 'C')">(C) AI 的演算法（AI Algorithms）</button>
+        <button class="quiz-option" onclick="checkQuiz(this, 'D')">(D) 質數的計算（Prime Number Computation）</button>
+
+        <div id="quiz-feedback"></div>
+        <button id="retry-btn" class="btn" style="display:none; margin-top:10px;" onclick="scrollToSim()">帶我回互動區複習</button>
+    </section>
+
+    <!-- 6. 延伸知識區 -->
+    <section class="container" style="padding: 0 0 40px 0;">
+        <button class="accordion">＋ 延伸知識：還有哪些加密技術？</button>
+        <div class="panel">
+            <p>除了 RSA 利用質數因數分解外，常見的還有：</p>
+            <ul>
+                <li><strong>Diffie-Hellman：</strong>利用「離散對數問題」 (Discrete Logarithm Problem)。</li>
+                <li><strong>橢圓曲線密碼學 (ECC)：</strong>利用橢圓曲線上的點運算難題，金鑰長度更短但同樣安全，現在比特幣和手機通訊常使用此技術。</li>
+            </ul>
+            <p>它們的共同點都是：<strong>數學上不可逆（或極難逆推）的運算</strong>。</p>
+        </div>
+    </section>
+
+</div>
+
+<script>
+    /* --- 互動模擬區邏輯 --- */
+    let currentN = 0;
+    let currentP = 0;
+    let currentQ = 0;
+
+    function generateKey() {
+        // 1. 取得使用者選擇
+        const pSelect = document.getElementById('prime-p');
+        const qSelect = document.getElementById('prime-q');
+        const p = parseInt(pSelect.value);
+        const q = parseInt(qSelect.value);
+
+        // 2. 檢查 p, q 是否相同
+        if (p === q) {
+            alert("安全性警告：在真實密碼學中，p 和 q 必須是不同的質數！請重新選擇。");
+            return;
+        }
+
+        // 3. 計算
+        currentP = p;
+        currentQ = q;
+        currentN = p * q;
+        const phi = (p - 1) * (q - 1);
+
+        // 4. 更新 UI
+        document.getElementById('val-p').textContent = p;
+        document.getElementById('val-q').textContent = q;
+        document.getElementById('val-n').textContent = currentN;
+        document.getElementById('val-phi').textContent = phi;
+        
+        // 更新挑戰區數字
+        document.getElementById('challenge-n').textContent = currentN;
+        document.getElementById('guess-feedback').textContent = "";
+        document.getElementById('guess-p').value = "";
+        document.getElementById('guess-q').value = "";
+
+        // 顯示結果區塊
+        document.getElementById('sim-result').style.display = 'block';
+        
+        // 平滑捲動
+        document.getElementById('sim-result').scrollIntoView({behavior: "smooth"});
+    }
+
+    function verifyGuess() {
+        const guessP = parseInt(document.getElementById('guess-p').value);
+        const guessQ = parseInt(document.getElementById('guess-q').value);
+        const feedback = document.getElementById('guess-feedback');
+
+        if (!guessP || !guessQ) {
+            feedback.style.color = "var(--danger-color)";
+            feedback.textContent = "請輸入兩個數字！";
+            return;
+        }
+
+        // 驗證邏輯：乘積必須等於 n，且必須是原本的 p 或 q (順序不拘)
+        const isCorrectProduct = (guessP * guessQ === currentN);
+        // 嚴謹一點，確保不是輸入 1 和 n
+        const isNotTrivial = (guessP !== 1 && guessQ !== 1);
+
+        if (isCorrectProduct && isNotTrivial) {
+            feedback.style.color = "var(--success-color)";
+            feedback.innerHTML = "🎉 破解成功！<br>但在真實世界 n 是幾百位數，你不可能這樣猜出來喔！";
+        } else {
+            feedback.style.color = "var(--danger-color)";
+            feedback.innerHTML = "❌ 破解失敗！<br>這兩個數乘起來不是 " + currentN + "，或者你輸入了無效因數。再試試？";
+        }
+    }
+
+    /* --- 小測驗邏輯 --- */
+    function checkQuiz(btnElement, answer) {
+        const feedback = document.getElementById('quiz-feedback');
+        const retryBtn = document.getElementById('retry-btn');
+        
+        // 重置所有按鈕樣式
+        const allBtns = document.querySelectorAll('.quiz-option');
+        allBtns.forEach(btn => {
+            btn.classList.remove('correct-answer', 'wrong-answer');
+            btn.disabled = true; // 鎖定
+        });
+
+        if (answer === 'D') {
+            btnElement.classList.add('correct-answer');
+            feedback.style.color = "var(--success-color)";
+            feedback.style.display = "block";
+            feedback.textContent = "✅ 正確！金鑰產生高度依賴質數與因數分解的困難度。";
+            retryBtn.style.display = "none";
+        } else {
+            btnElement.classList.add('wrong-answer');
+            feedback.style.color = "var(--danger-color)";
+            feedback.style.display = "block";
+            feedback.textContent = "❌ 答錯囉！回想一下剛剛的模擬實驗。";
+            retryBtn.style.display = "inline-block";
+        }
+    }
+
+    function scrollToSim() {
+        // 解鎖按鈕
+        const allBtns = document.querySelectorAll('.quiz-option');
+        allBtns.forEach(btn => btn.disabled = false);
+        document.getElementById('quiz-feedback').style.display = 'none';
+        document.getElementById('retry-btn').style.display = 'none';
+
+        // 捲動
+        const simArea = document.getElementById('simulation-area');
+        simArea.scrollIntoView({behavior: "smooth"});
+        
+        // 高亮提示效果
+        simArea.style.border = "2px solid var(--accent-color)";
+        setTimeout(() => {
+            simArea.style.border = "none";
+        }, 2000);
+    }
+
+    /* --- Accordion 邏輯 --- */
+    var acc = document.getElementsByClassName("accordion");
+    var i;
+
+    for (i = 0; i < acc.length; i++) {
+        acc[i].addEventListener("click", function() {
+            this.classList.toggle("active");
+            var panel = this.nextElementSibling;
+            if (panel.style.maxHeight) {
+                panel.style.maxHeight = null;
+            } else {
+                panel.style.maxHeight = panel.scrollHeight + "px";
+            } 
+        });
+    }
+</script>
+
+</body>
+</html>

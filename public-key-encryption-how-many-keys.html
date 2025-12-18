@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>公開金鑰加密互動教學：到底需要幾把鑰匙？</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #10b981;
+            --accent-color: #f59e0b;
+            --danger-color: #ef4444;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-color: #1f2937;
+            --border-radius: 8px;
+            --transition-speed: 0.3s;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans TC", sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding-bottom: 50px;
+        }
+
+        /* 版面結構 */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        section {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        h1, h2, h3 {
+            margin-bottom: 15px;
+            color: #111827;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 1.4rem;
+            border-left: 5px solid var(--primary-color);
+            padding-left: 10px;
+            margin-top: 10px;
+        }
+
+        p {
+            margin-bottom: 10px;
+        }
+
+        .highlight {
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .term {
+            background-color: #e5e7eb;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #374151;
+        }
+
+        /* 頁首 */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px 0;
+        }
+
+        .summary-box {
+            background-color: #dbeafe;
+            border: 1px solid #bfdbfe;
+            color: #1e40af;
+            padding: 10px 20px;
+            border-radius: 50px;
+            display: inline-block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        /* 互動模擬區樣式 */
+        .sim-container {
+            position: relative;
+            background-color: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            min-height: 350px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            overflow: hidden; /* 確保動畫不出界 */
+        }
+
+        .computer-node {
+            flex: 1;
+            min-width: 250px;
+            background: white;
+            border: 2px solid #cbd5e1;
+            border-radius: var(--border-radius);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .computer-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .key-ring {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .key {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            border: 1px solid #ddd;
+            transition: all 0.3s ease;
+        }
+
+        .key-icon {
+            font-size: 1.2rem;
+            margin-right: 5px;
+        }
+
+        .key.public {
+            background-color: #fffbeb;
+            border-color: #fcd34d;
+            color: #b45309;
+        }
+
+        .key.private {
+            background-color: #fef2f2;
+            border-color: #fca5a5;
+            color: #b91c1c;
+        }
+
+        .key.active {
+            transform: scale(1.05);
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+            border-width: 2px;
+        }
+
+        /* 傳輸動畫物件 */
+        .packet {
+            position: absolute;
+            top: 40%;
+            left: 20%; /* 初始位置 A */
+            width: 60px;
+            height: 60px;
+            background: #fff;
+            border: 2px solid var(--text-color);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            z-index: 10;
+            opacity: 0; /* 初始隱藏 */
+            transition: left 1.5s ease-in-out, opacity 0.3s;
+        }
+
+        .packet.encrypted {
+            background: #1f2937;
+            color: #fff;
+            border-color: #000;
+        }
+
+        /* 控制按鈕與Log區 */
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: background 0.2s;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        .btn-primary:hover { background-color: #1d4ed8; }
+
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        .btn-secondary:hover { background-color: #059669; }
+
+        .btn-reset {
+            background-color: #9ca3af;
+            color: white;
+        }
+        .btn-reset:hover { background-color: #6b7280; }
+
+        .log-panel {
+            margin-top: 15px;
+            background: #1f2937;
+            color: #10b981; /* Terminal green */
+            padding: 15px;
+            border-radius: 6px;
+            font-family: monospace;
+            min-height: 100px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            border-bottom: 1px solid #374151;
+            padding-bottom: 2px;
+        }
+        .log-entry:last-child { border-bottom: none; }
+
+        .instruction-banner {
+            text-align: center;
+            color: var(--primary-color);
+            font-weight: bold;
+            margin: 10px 0;
+            min-height: 1.6em;
+        }
+
+        /* 表格樣式 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f3f4f6;
+            color: #374151;
+        }
+        .exam-tip {
+            margin-top: 15px;
+            background-color: #fff7ed;
+            border-left: 4px solid #f97316;
+            padding: 10px;
+            color: #9a3412;
+            font-weight: bold;
+        }
+
+        /* 小測驗樣式 */
+        .quiz-option {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: all 0.2s;
+        }
+
+        .quiz-option:hover {
+            border-color: var(--primary-color);
+            background-color: #eff6ff;
+        }
+
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .quiz-feedback.correct {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #34d399;
+        }
+
+        .quiz-feedback.wrong {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #f87171;
+        }
+
+        /* Accordion (延伸知識) */
+        .accordion {
+            background-color: #f9fafb;
+            color: #444;
+            cursor: pointer;
+            padding: 18px;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: 0.4s;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .active, .accordion:hover {
+            background-color: #e5e7eb;
+        }
+
+        .accordion:after {
+            content: '\002B';
+            color: #777;
+            font-weight: bold;
+            float: right;
+            margin-left: 5px;
+        }
+
+        .active:after {
+            content: "\2212";
+        }
+
+        .panel {
+            padding: 0 18px;
+            background-color: white;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.2s ease-out;
+        }
+
+        /* 手機版調整 */
+        @media (max-width: 600px) {
+            .sim-container {
+                flex-direction: column;
+            }
+            .packet {
+                display: none; /* 手機版簡化動畫，避免位置計算複雜 */
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>公開金鑰加密 (Public Key Encryption)</h1>
+        <div class="summary-box">重點摘要：兩台電腦通訊，各有一對鑰匙，總共 4 把！</div>
+    </header>
+
+    <!-- 1. 概念速讀 -->
+    <section id="concepts">
+        <h2>🔑 概念速讀</h2>
+        <ul>
+            <li><strong>一人一對鑰匙：</strong> 每個使用者（或電腦）都擁有自己的一對鑰匙：一把<span class="highlight">公開金鑰 (Public Key)</span> 和 一把<span class="highlight">私密金鑰 (Private Key)</span>。</li>
+            <li><strong>非對稱式 (Asymmetric)：</strong> 因為加密和解密使用的是「不同」的鑰匙，所以稱為非對稱式加密。</li>
+            <li><strong>規則：</strong> 公開金鑰可以給任何人，私密金鑰必須自己保管好。</li>
+        </ul>
+    </section>
+
+    <!-- 2. 互動模擬區 -->
+    <section id="simulation">
+        <h2>🎮 互動模擬：A 傳送秘密訊息給 B</h2>
+        <p>請觀察下方的兩台電腦。每台電腦都固定持有兩把鑰匙。</p>
+        
+        <div class="instruction-banner" id="sim-instruction">準備就緒，請點擊「開始示範」或「下一步」</div>
+
+        <div class="sim-container">
+            <!-- 電腦 A -->
+            <div class="computer-node" id="node-a">
+                <div class="computer-icon">💻 A</div>
+                <div class="key-ring">
+                    <div class="key public" id="key-a-pub"><span class="key-icon">🔑</span>A-Public (A 的公鑰)</div>
+                    <div class="key private" id="key-a-priv"><span class="key-icon">🗝️</span>A-Private (A 的私鑰)</div>
+                </div>
+            </div>
+
+            <!-- 動畫傳輸封包 -->
+            <div class="packet" id="packet">📄</div>
+
+            <!-- 電腦 B -->
+            <div class="computer-node" id="node-b">
+                <div class="computer-icon">💻 B</div>
+                <div class="key-ring">
+                    <div class="key public" id="key-b-pub"><span class="key-icon">🔑</span>B-Public (B 的公鑰)</div>
+                    <div class="key private" id="key-b-priv"><span class="key-icon">🗝️</span>B-Private (B 的私鑰)</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn-primary" onclick="autoPlay()">▶ 開始示範</button>
+            <button class="btn-secondary" onclick="nextStep()">⏭ 下一步</button>
+            <button class="btn-reset" onclick="resetSim()">↺ 重置</button>
+        </div>
+
+        <div class="log-panel" id="log-panel">
+            <div class="log-entry">> 系統就緒...等待指令。</div>
+        </div>
+    </section>
+
+    <!-- 3. 對照比較區 -->
+    <section id="comparison">
+        <h2>⚖️ 對照比較：對稱 vs 非對稱</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>特性</th>
+                    <th>對稱式加密 (Symmetric)</th>
+                    <th>非對稱式加密 (Asymmetric)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>鑰匙數量</strong></td>
+                    <td>雙方共用 <strong>1</strong> 把</td>
+                    <td>雙方各 2 把，共 <strong>4</strong> 把</td>
+                </tr>
+                <tr>
+                    <td><strong>鑰匙功能</strong></td>
+                    <td>加密解密用同一把</td>
+                    <td>加密用公鑰，解密用私鑰</td>
+                </tr>
+                <tr>
+                    <td><strong>安全性</strong></td>
+                    <td>傳輸鑰匙有風險</td>
+                    <td>無需傳輸私鑰，較安全</td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="exam-tip">
+            💡 考試必考題型：<br>
+            問：「兩部電腦使用公開金鑰加密進行雙向傳輸，共需產生幾把鑰匙？」<br>
+            答：A 有 (公+私)，B 有 (公+私) → <strong>共 4 把</strong>。
+        </div>
+    </section>
+
+    <!-- 4. 小測驗區 -->
+    <section id="quiz">
+        <h2>📝 小測驗</h2>
+        <p><strong>題目：</strong> 兩部電腦（A 與 B）使用公開金鑰加密傳輸時，為了確保雙方都能接收加密訊息，系統中總共需要產生幾把鑰匙？</p>
+        
+        <div id="quiz-options">
+            <button class="quiz-option" onclick="checkAnswer(2)">(A) 2 把</button>
+            <button class="quiz-option" onclick="checkAnswer(3)">(B) 3 把</button>
+            <button class="quiz-option" onclick="checkAnswer(4)">(C) 4 把</button>
+            <button class="quiz-option" onclick="checkAnswer(5)">(D) 5 把</button>
+        </div>
+
+        <div id="feedback" class="quiz-feedback"></div>
+    </section>
+
+    <!-- 5. 常見錯誤與提醒 -->
+    <section id="mistakes">
+        <h2>⚠️ 常見混淆點</h2>
+        <ul>
+            <li><strong>誤解 1：</strong> 以為加密和解密用同一把鑰匙（那是對稱式加密）。</li>
+            <li><strong>誤解 2：</strong> 以為私密金鑰也需要傳送給對方（絕對不行！私鑰永遠不離開自己的電腦）。</li>
+            <li><strong>誤解 3：</strong> 混淆「公鑰加密」與「數位簽章」。加密是用對方的公鑰，簽章是用自己的私鑰。</li>
+        </ul>
+    </section>
+
+    <!-- 6. 延伸知識 -->
+    <section id="extended">
+        <h2>📚 延伸知識</h2>
+        
+        <button class="accordion">HTTPS / TLS 是什麼？</button>
+        <div class="panel">
+            <p style="padding-top:10px;">我們每天上的網站（HTTPS）其實是混合使用。剛連線握手（Handshake）時使用<strong>非對稱加密</strong>來安全地交換鑰匙，之後為了速度，改用<strong>對稱式加密</strong>傳輸大量資料。</p>
+        </div>
+
+        <button class="accordion">什麼是數位簽章 (Digital Signature)？</button>
+        <div class="panel">
+            <p style="padding-top:10px;">數位簽章的原理剛好跟加密相反：<br>
+            <strong>加密：</strong>用對方的公鑰鎖上，對方用私鑰開（保密性）。<br>
+            <strong>簽章：</strong>用自己的私鑰簽署，對方用公鑰驗證（確認發送者身分）。</p>
+        </div>
+    </section>
+</div>
+
+<script>
+    // --- 模擬區邏輯 ---
+    let currentStep = 0;
+    const maxSteps = 4;
+    let autoPlayTimer = null;
+
+    // 取得 DOM 元素
+    const elPacket = document.getElementById('packet');
+    const elInstruction = document.getElementById('sim-instruction');
+    const elLogPanel = document.getElementById('log-panel');
+    const elKeyBPub = document.getElementById('key-b-pub');
+    const elKeyBPriv = document.getElementById('key-b-priv');
+    const elKeyAPub = document.getElementById('key-a-pub'); // 雖然此次流程沒用到，但為了完整性
+    
+    // 定義步驟資料
+    const steps = [
+        {
+            text: "準備就緒。A 想要傳訊息給 B。",
+            action: () => {
+                resetVisuals();
+                log("初始化完成。A 有一對鑰匙，B 有一對鑰匙。");
+            }
+        },
+        {
+            text: "步驟 1：A 取得 B 的公開金鑰 (B-Public)",
+            action: () => {
+                // 視覺效果：高亮 B 的公鑰
+                elKeyBPub.classList.add('active');
+                // 將封包顯示在 A 處
+                elPacket.style.opacity = '1';
+                elPacket.style.left = '10%'; // 靠近 A
+                elPacket.innerHTML = '📄'; // 明文
+                elPacket.classList.remove('encrypted');
+                log("A 從公開目錄取得 B-Public。");
+            }
+        },
+        {
+            text: "步驟 2：A 使用 B-Public 進行「加密」",
+            action: () => {
+                // 視覺效果：封包變鎖頭
+                elPacket.innerHTML = '🔒';
+                elPacket.classList.add('encrypted');
+                log("A 使用 B-Public 將明文加密成密文。");
+                log("注意：現在只有擁有 B-Private 的人能解開它。");
+            }
+        },
+        {
+            text: "步驟 3：密文透過網路傳輸到 B",
+            action: () => {
+                // 視覺效果：移動封包
+                // 檢查是否為寬螢幕 (簡單判斷)
+                if(window.innerWidth > 600) {
+                    elPacket.style.left = '70%'; // 移動到 B 附近
+                } else {
+                    log("（手機版視圖）密文已傳送至 B。");
+                }
+                elKeyBPub.classList.remove('active'); // 取消公鑰高亮
+                log("密文正在網路上傳輸... 駭客攔截也打不開。");
+            }
+        },
+        {
+            text: "步驟 4：B 使用自己的 B-Private 進行「解密」",
+            action: () => {
+                // 視覺效果：高亮 B 的私鑰，封包變回文件
+                elKeyBPriv.classList.add('active');
+                setTimeout(() => {
+                    elPacket.innerHTML = '📄';
+                    elPacket.classList.remove('encrypted');
+                }, 500);
+                log("B 使用 B-Private 成功解密！");
+                log("流程結束。");
+            }
+        }
+    ];
+
+    function log(msg) {
+        const entry = document.createElement('div');
+        entry.className = 'log-entry';
+        entry.textContent = `> ${msg}`;
+        elLogPanel.appendChild(entry);
+        elLogPanel.scrollTop = elLogPanel.scrollHeight;
+    }
+
+    function resetVisuals() {
+        elPacket.style.opacity = '0';
+        elPacket.style.left = '20%';
+        elPacket.innerHTML = '📄';
+        elPacket.classList.remove('encrypted');
+        
+        document.querySelectorAll('.key').forEach(k => k.classList.remove('active'));
+    }
+
+    function resetSim() {
+        if(autoPlayTimer) clearInterval(autoPlayTimer);
+        currentStep = 0;
+        elLogPanel.innerHTML = '';
+        log("重置系統...");
+        steps[0].action();
+        elInstruction.textContent = steps[0].text;
+    }
+
+    function nextStep() {
+        if (currentStep < maxSteps) {
+            currentStep++;
+            updateSimState();
+        } else {
+            // 已經結束，詢問是否重置
+            if(confirm("演示已結束，要重新開始嗎？")) {
+                resetSim();
+            }
+        }
+    }
+
+    function updateSimState() {
+        const stepData = steps[currentStep];
+        elInstruction.textContent = stepData.text;
+        stepData.action();
+    }
+
+    function autoPlay() {
+        resetSim();
+        // 立即執行第1步
+        setTimeout(() => nextStep(), 500);
+        
+        autoPlayTimer = setInterval(() => {
+            if (currentStep < maxSteps) {
+                nextStep();
+            } else {
+                clearInterval(autoPlayTimer);
+            }
+        }, 2000); // 每2秒一步
+    }
+
+    // 初始化
+    resetSim();
+
+    // --- 測驗區邏輯 ---
+    function checkAnswer(ans) {
+        const feedback = document.getElementById('feedback');
+        feedback.style.display = 'block';
+        
+        if (ans === 4) {
+            feedback.className = 'quiz-feedback correct';
+            feedback.innerHTML = `
+                <h3>✅ 答對了！</h3>
+                <p>理由：每一台電腦都需要產生一對鑰匙（1 公鑰 + 1 私鑰）。<br>
+                既然有 A 與 B 兩台電腦，就是 2 對，總共 <strong>4 把鑰匙</strong>。</p>
+            `;
+        } else {
+            feedback.className = 'quiz-feedback wrong';
+            feedback.innerHTML = `
+                <h3>❌ 答錯了</h3>
+                <p>提示：非對稱加密不是共用鑰匙喔！<br>
+                電腦 A 有一對（公+私），電腦 B 也有一對（公+私）。<br>
+                再算算看總共幾把？</p>
+                <button style="margin-top:10px; font-size:0.9rem;" onclick="scrollToSim()">帶我回去看模擬圖</button>
+            `;
+        }
+    }
+
+    function scrollToSim() {
+        document.getElementById('simulation').scrollIntoView({ behavior: 'smooth' });
+        // 高亮提示
+        document.getElementById('simulation').style.borderColor = "#f59e0b";
+        setTimeout(() => {
+            document.getElementById('simulation').style.borderColor = "#e2e8f0";
+        }, 2000);
+    }
+
+    // --- Accordion 邏輯 ---
+    var acc = document.getElementsByClassName("accordion");
+    for (var i = 0; i < acc.length; i++) {
+        acc[i].addEventListener("click", function() {
+            this.classList.toggle("active");
+            var panel = this.nextElementSibling;
+            if (panel.style.maxHeight) {
+                panel.style.maxHeight = null;
+            } else {
+                panel.style.maxHeight = panel.scrollHeight + "px";
+            } 
+        });
+    }
+</script>
+
+</body>
+</html>

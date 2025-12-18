@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>互動教學：二進位 OR 運算 (1100 vs 0101)</title>
+    <style>
+        /* --- 基礎設定 (Reset & Base) --- */
+        :root {
+            --primary-color: #2563eb; /* 藍色主調 */
+            --accent-color: #f59e0b;  /* 橘黃色強調 */
+            --success-color: #10b981; /* 綠色成功 */
+            --error-color: #ef4444;   /* 紅色錯誤 */
+            --bg-color: #f3f4f6;      /* 淺灰背景 */
+            --text-color: #1f2937;    /* 深灰文字 */
+            --card-bg: #ffffff;
+            --bit-on: #3b82f6;        /* 位元 1 的顏色 */
+            --bit-off: #e5e7eb;       /* 位元 0 的顏色 */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding-bottom: 50px;
+        }
+
+        /* --- 版面結構 (Layout) --- */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px 0;
+            background: linear-gradient(135deg, var(--primary-color), #1e40af);
+            color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        h2 {
+            border-left: 5px solid var(--primary-color);
+            padding-left: 15px;
+            margin-bottom: 20px;
+            color: #111827;
+        }
+
+        h3 {
+            margin: 15px 0 10px;
+            color: #374151;
+        }
+
+        /* --- 題目區塊 --- */
+        .question-box {
+            background-color: #eff6ff;
+            border: 2px solid #bfdbfe;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+
+        .code-display {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.5rem;
+            background: #1f2937;
+            color: #fbbf24;
+            padding: 10px 20px;
+            border-radius: 6px;
+            display: inline-block;
+            margin: 10px 0;
+        }
+
+        /* --- 真值表與規則 (Rules) --- */
+        .truth-table-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .truth-table {
+            border-collapse: collapse;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .truth-table th, .truth-table td {
+            border: 1px solid #d1d5db;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .truth-table th {
+            background-color: #f9fafb;
+        }
+
+        .truth-table .highlight-row {
+            background-color: #d1fae5; /* 只要有1就是1的行 */
+            font-weight: bold;
+        }
+
+        .rule-card {
+            background: #fffbeb;
+            border: 2px solid #fcd34d;
+            padding: 15px;
+            border-radius: 8px;
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .rule-highlight {
+            color: #b45309;
+            font-weight: bold;
+            font-size: 1.2rem;
+            display: block;
+            margin: 10px 0;
+            text-align: center;
+        }
+
+        /* --- 互動演示區 (Interactive Demo) --- */
+        .demo-area {
+            background-color: #fafafa;
+            border: 1px solid #e5e7eb;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .bit-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+            margin: 20px 0;
+            font-family: monospace;
+        }
+
+        .bit-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .bit-label {
+            width: 80px;
+            text-align: right;
+            font-weight: bold;
+            color: #6b7280;
+        }
+
+        .bit-box {
+            width: 50px;
+            height: 50px;
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            background-color: white;
+            transition: all 0.3s ease;
+        }
+
+        .bit-box.active {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+            transform: scale(1.1);
+        }
+
+        .bit-box.is-one {
+            background-color: #dbeafe; /* 淺藍背景 */
+            color: #1e40af;
+        }
+
+        .bit-box.is-zero {
+            background-color: #f3f4f6;
+            color: #9ca3af;
+        }
+
+        .bit-box.result-box {
+            border-color: var(--primary-color);
+        }
+
+        .bit-box.result-box.filled {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        .btn-next { background-color: var(--primary-color); color: white; }
+        .btn-auto { background-color: var(--accent-color); color: white; }
+        .btn-reset { background-color: #9ca3af; color: white; }
+        .btn-answer { background-color: var(--success-color); color: white; margin-top: 5px;}
+
+        .step-explanation {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #fff;
+            border-left: 4px solid var(--accent-color);
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+        }
+
+        /* --- 十進位對照 (Decimal Toggle) --- */
+        .decimal-comparison {
+            margin-top: 20px;
+            padding: 15px;
+            background: #eef2ff;
+            border-radius: 8px;
+            display: none; /* 預設隱藏 */
+            animation: fadeIn 0.5s;
+        }
+
+        .decimal-toggle-btn {
+            background: none;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .decimal-toggle-btn:hover {
+            background: #eff6ff;
+        }
+
+        /* --- 選項卡片 --- */
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .option-card {
+            border: 1px solid #e5e7eb;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: default;
+        }
+
+        .option-card.correct {
+            border-color: var(--success-color);
+            background-color: #ecfdf5;
+        }
+        
+        .option-card.wrong {
+            opacity: 0.7;
+            background-color: #fef2f2;
+        }
+
+        .option-card h4 {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+
+        .option-status {
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .correct .option-status { color: var(--success-color); }
+        .wrong .option-status { color: var(--error-color); }
+
+        /* --- 測驗區 --- */
+        .quiz-options button {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+            text-align: left;
+            background: white;
+            border: 2px solid #e5e7eb;
+            color: var(--text-color);
+            padding: 15px;
+        }
+
+        .quiz-options button:hover {
+            border-color: var(--primary-color);
+        }
+
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .quiz-feedback.success { background-color: #d1fae5; color: #065f46; }
+        .quiz-feedback.error { background-color: #fee2e2; color: #991b1b; }
+
+        /* --- 延伸練習 --- */
+        .practice-item {
+            background: #f9fafb;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #9ca3af;
+        }
+
+        .practice-answer {
+            margin-top: 10px;
+            font-weight: bold;
+            color: var(--primary-color);
+            display: none;
+        }
+
+        /* --- 輔助類 --- */
+        .hidden { display: none; }
+        .badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            background: #e5e7eb;
+            margin-left: 5px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 手機版優化 */
+        @media (max-width: 600px) {
+            .bit-box { width: 35px; height: 35px; font-size: 1.2rem; }
+            .bit-label { width: 50px; font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- 1. Header -->
+    <header>
+        <h1>互動教學：二進位 OR 運算</h1>
+        <p>OR：只要有 1 就是 1</p>
+    </header>
+
+    <!-- 2. 本題 -->
+    <section>
+        <h2><span style="border-bottom: 3px solid var(--accent-color);">本題</span></h2>
+        <div class="question-box">
+            <p>二進位系統中，請計算：</p>
+            <div class="code-display">1100 OR 0101 = ?</div>
+            <p style="margin-top: 10px; font-size: 0.9rem; color: #666;">
+                請選擇正確答案：
+            </p>
+            <div style="display: flex; justify-content: center; gap: 15px; margin-top: 10px; font-weight: normal;">
+                <span>(A) 0010</span>
+                <span>(B) 1101</span>
+                <span>(C) 1100</span>
+                <span>(D) 1001</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. 新手引導與規則 -->
+    <section id="rules-section">
+        <h2>觀念建立：什麼是 OR (邏輯或)？</h2>
+        
+        <p>想像這是一個「並聯電路」或是家裡的雙開關走廊燈。</p>
+        <p style="margin: 10px 0; font-weight: bold; color: var(--primary-color);">
+            生活比喻：有兩個開關控制同一盞燈，<br>
+            只要「任何一個開關是開的 (1)」，燈就會亮 (1)。<br>
+            只有當「兩個開關都關掉 (0)」，燈才會滅 (0)。
+        </p>
+
+        <div class="truth-table-container">
+            <!-- 真值表 -->
+            <table class="truth-table">
+                <thead>
+                    <tr>
+                        <th>輸入 A</th>
+                        <th>輸入 B</th>
+                        <th>A OR B</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                    </tr>
+                    <tr class="highlight-row">
+                        <td>0</td>
+                        <td>1</td>
+                        <td>1</td>
+                    </tr>
+                    <tr class="highlight-row">
+                        <td>1</td>
+                        <td>0</td>
+                        <td>1</td>
+                    </tr>
+                    <tr class="highlight-row">
+                        <td>1</td>
+                        <td>1</td>
+                        <td>1</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- 必背規則 -->
+            <div class="rule-card">
+                <h3>⭐ 必背口訣</h3>
+                <span class="rule-highlight">「只要有 1，就是 1」</span>
+                <p>補充記憶：兩個都 0，才是 0。</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. 互動演示區 -->
+    <section id="demo-section">
+        <h2>互動演示：逐位元計算</h2>
+        <p>電腦在做 OR 運算時，是「一個位置對一個位置」比較 (Bitwise Operation)。讓我們從左到右算算看。</p>
+
+        <div class="demo-area">
+            <div class="bit-container">
+                <!-- Row 1: 1100 -->
+                <div class="bit-row">
+                    <div class="bit-label">1100 <span class="badge">Bin</span></div>
+                    <div class="bit-box is-one" id="a3">1</div>
+                    <div class="bit-box is-one" id="a2">1</div>
+                    <div class="bit-box is-zero" id="a1">0</div>
+                    <div class="bit-box is-zero" id="a0">0</div>
+                </div>
+
+                <!-- Operator -->
+                <div class="bit-row" style="justify-content: center; color: var(--accent-color); font-weight: bold;">
+                    OR
+                </div>
+
+                <!-- Row 2: 0101 -->
+                <div class="bit-row">
+                    <div class="bit-label">0101 <span class="badge">Bin</span></div>
+                    <div class="bit-box is-zero" id="b3">0</div>
+                    <div class="bit-box is-one" id="b2">1</div>
+                    <div class="bit-box is-zero" id="b1">0</div>
+                    <div class="bit-box is-one" id="b0">1</div>
+                </div>
+
+                <!-- Divider -->
+                <div style="width: 100%; border-bottom: 2px solid #d1d5db; margin: 10px 0;"></div>
+
+                <!-- Row 3: Result -->
+                <div class="bit-row">
+                    <div class="bit-label">結果</div>
+                    <div class="bit-box result-box" id="r3">?</div>
+                    <div class="bit-box result-box" id="r2">?</div>
+                    <div class="bit-box result-box" id="r1">?</div>
+                    <div class="bit-box result-box" id="r0">?</div>
+                </div>
+            </div>
+
+            <!-- 解說區 -->
+            <div class="step-explanation" id="step-text">
+                請點擊「下一步」開始計算...
+            </div>
+
+            <!-- 控制按鈕 -->
+            <div class="controls">
+                <button class="btn-next" onclick="nextStep()">下一步 ▶</button>
+                <button class="btn-auto" onclick="autoPlay()">自動完成 ⏩</button>
+                <button class="btn-reset" onclick="resetDemo()">重置 ↺</button>
+            </div>
+        </div>
+
+        <!-- 5. 十進位對照 (Toggle) -->
+        <button class="decimal-toggle-btn" onclick="toggleDecimal()">
+            🧐 對照十進位 (Decimal) 看看？(點我展開)
+        </button>
+        <div id="decimal-panel" class="decimal-comparison">
+            <p><strong>注意：</strong>OR 運算不是單純的十進位加法！</p>
+            <ul>
+                <li><strong>1100</strong> (二進位) = <strong>12</strong> (十進位)</li>
+                <li><strong>0101</strong> (二進位) = <strong>5</strong> (十進位)</li>
+                <li style="margin-top: 10px; border-top: 1px dashed #999; padding-top: 5px;">
+                    <strong>結果 1101</strong> (二進位) = <strong>13</strong> (十進位)
+                </li>
+            </ul>
+            <p style="font-size: 0.9rem; color: #666; margin-top: 5px;">
+                如果是加法，12+5=17 (10001)，但在 OR 運算中，結果是 13。這證明了位元運算與算術加法不同。
+            </p>
+        </div>
+    </section>
+
+    <!-- 6. 選項破解 -->
+    <section id="analysis-section" class="hidden">
+        <h2>選項破解</h2>
+        <p>根據剛剛的計算，結果是 <strong>1101</strong>。</p>
+        
+        <div class="options-grid">
+            <!-- Option A -->
+            <div class="option-card wrong">
+                <div class="option-status">❌ (A) 0010 - 錯誤</div>
+                <p>這看起來比較像 XOR 或是亂猜的。記得口訣：只要有 1 就是 1。</p>
+            </div>
+
+            <!-- Option B -->
+            <div class="option-card correct">
+                <div class="option-status">✅ (B) 1101 - 正確！</div>
+                <p>完全符合每一位的計算：<br>1 OR 0 = 1<br>1 OR 1 = 1<br>0 OR 0 = 0<br>0 OR 1 = 1</p>
+            </div>
+
+            <!-- Option C -->
+            <div class="option-card wrong">
+                <div class="option-status">❌ (C) 1100 - 錯誤</div>
+                <p>你忽略了最後一位！<br>0 OR 1 應該是 1，不是 0。</p>
+            </div>
+
+            <!-- Option D -->
+            <div class="option-card wrong">
+                <div class="option-status">❌ (D) 1001 - 錯誤</div>
+                <p>中間算錯了。<br>第二位的 1 OR 1 仍然是 1，不是 0。</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 7. 常見錯誤 -->
+    <section>
+        <h2>⚠️ 初學者常見錯誤</h2>
+        <ul>
+            <li style="margin-bottom: 10px;">
+                <strong>誤以為是加法進位：</strong> 看到 1 OR 1，以為要進位變成 10。
+                <br><span style="color: var(--error-color);">正解：</span> OR 不會進位，1 OR 1 還是 1。
+            </li>
+            <li style="margin-bottom: 10px;">
+                <strong>誤以為是 AND：</strong> 看到 1 和 0，以為這兩個都要有才行。
+                <br><span style="color: var(--error-color);">正解：</span> 那是 AND。OR 是「只要有一個 1 就算數」。
+            </li>
+            <li>
+                <strong>對齊錯誤：</strong> 計算時沒有把位元上下對齊好（例如把 4 位數對到 3 位數）。
+            </li>
+        </ul>
+    </section>
+
+    <!-- 8. 小測驗 -->
+    <section id="quiz-section">
+        <h2>📝 小測驗：再挑戰一次</h2>
+        <p>回到本題：1100 OR 0101 = ?</p>
+        
+        <div class="quiz-options">
+            <button onclick="checkQuiz('A')">(A) 0010</button>
+            <button onclick="checkQuiz('B')">(B) 1101</button>
+            <button onclick="checkQuiz('C')">(C) 1100</button>
+            <button onclick="checkQuiz('D')">(D) 1001</button>
+        </div>
+
+        <div id="quiz-feedback" class="quiz-feedback"></div>
+        <button id="back-to-demo" class="hidden" style="margin-top: 10px; background-color: var(--primary-color); color: white;" onclick="scrollToDemo()">
+            ⬅️ 答錯了？帶我看逐步演示
+        </button>
+    </section>
+
+    <!-- 9. 延伸練習 -->
+    <section>
+        <h2>💪 延伸練習</h2>
+        <p>試試看這兩題，確保你真的懂了！(心中默算後再看答案)</p>
+
+        <div class="practice-item">
+            <p><strong>練習 1：</strong> 1010 OR 0011 = ?</p>
+            <button class="btn-answer" onclick="toggleAnswer('p1')">顯示答案</button>
+            <div id="p1" class="practice-answer">
+                答案：1011 <br>
+                <small>理由：只要有 1 就是 1。</small>
+            </div>
+        </div>
+
+        <div class="practice-item">
+            <p><strong>練習 2：</strong> 0110 OR 0101 = ?</p>
+            <button class="btn-answer" onclick="toggleAnswer('p2')">顯示答案</button>
+            <div id="p2" class="practice-answer">
+                答案：0111 <br>
+                <small>理由：第一位 0|0=0，其他位都有 1 所以是 1。</small>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>© 2025 互動式二進位教學 | 專為初學者設計</p>
+    </footer>
+
+</div>
+
+<script>
+    // --- 資料設定 ---
+    // 題目：1100 OR 0101
+    // 陣列順序：[bit3, bit2, bit1, bit0] (從左到右)
+    const opA = [1, 1, 0, 0];
+    const opB = [0, 1, 0, 1];
+    const result = [1, 1, 0, 1]; // 正確答案
+
+    let currentStep = 0; // 0, 1, 2, 3 分別代表處理第幾位
+    let isAutoPlaying = false;
+    let timer = null;
+
+    // DOM 元素
+    const stepText = document.getElementById('step-text');
+    const analysisSection = document.getElementById('analysis-section');
+
+    // --- 互動演示邏輯 ---
+
+    function updateUI() {
+        // 重置所有邊框
+        document.querySelectorAll('.bit-box').forEach(el => el.classList.remove('active'));
+
+        if (currentStep < 4) {
+            // 高亮當前位元
+            const idx = currentStep; 
+            // 因為 ID 是從 a3 到 a0 (對應 bit3 到 bit0)
+            // 但我們的 loop 是從 0 到 3 (對應 index 0 到 3)
+            // 所以要轉換一下: index 0 -> bit 3, index 1 -> bit 2...
+            const bitIndex = 3 - currentStep; 
+            
+            const elA = document.getElementById(`a${bitIndex}`);
+            const elB = document.getElementById(`b${bitIndex}`);
+            const elR = document.getElementById(`r${bitIndex}`);
+
+            elA.classList.add('active');
+            elB.classList.add('active');
+            elR.classList.add('active');
+
+            const valA = opA[currentStep];
+            const valB = opB[currentStep];
+            const resVal = result[currentStep];
+
+            // 顯示邏輯文字
+            let logicText = `<strong style="color: var(--primary-color)">第 ${currentStep + 1} 步 (左數第 ${currentStep + 1} 位)：</strong><br>`;
+            logicText += `${valA} OR ${valB} = <span style="font-size: 1.2rem; font-weight: bold; color: var(--accent-color)">${resVal}</span>`;
+            
+            if (resVal === 1) {
+                logicText += ` (因為有 1，所以是 1)`;
+            } else {
+                logicText += ` (因為兩個都是 0，所以是 0)`;
+            }
+            stepText.innerHTML = logicText;
+
+            // 填入結果
+            elR.textContent = resVal;
+            elR.classList.add('filled');
+        } else {
+            // 完成
+            stepText.innerHTML = `<strong>計算完成！</strong> 結果為 <span style="color: var(--success-color); font-size: 1.2rem; font-weight: bold;">1101</span>。<br>對應選項 (B)。`;
+            analysisSection.classList.remove('hidden');
+            // 平滑捲動到解析區
+            if(isAutoPlaying) {
+               // 自動播放結束不一定捲動，避免干擾
+            }
+        }
+    }
+
+    function nextStep() {
+        if (currentStep >= 4) return;
+        
+        updateUI();
+        currentStep++;
+    }
+
+    function autoPlay() {
+        if (isAutoPlaying) return;
+        isAutoPlaying = true;
+        resetDemo();
+        
+        // 立即執行第一步
+        nextStep();
+
+        timer = setInterval(() => {
+            if (currentStep >= 4) {
+                clearInterval(timer);
+                isAutoPlaying = false;
+            } else {
+                nextStep();
+            }
+        }, 800); // 800ms 延遲方便閱讀
+    }
+
+    function resetDemo() {
+        clearInterval(timer);
+        isAutoPlaying = false;
+        currentStep = 0;
+        
+        // 清空結果格
+        for(let i=0; i<4; i++) {
+            const el = document.getElementById(`r${i}`);
+            el.textContent = '?';
+            el.classList.remove('filled');
+            el.classList.remove('active');
+        }
+        document.querySelectorAll('.bit-box').forEach(el => el.classList.remove('active'));
+        
+        stepText.innerHTML = "請點擊「下一步」開始計算...";
+        analysisSection.classList.add('hidden');
+    }
+
+    // --- 十進位切換 ---
+    function toggleDecimal() {
+        const panel = document.getElementById('decimal-panel');
+        if (panel.style.display === 'block') {
+            panel.style.display = 'none';
+        } else {
+            panel.style.display = 'block';
+        }
+    }
+
+    // --- 測驗邏輯 ---
+    function checkQuiz(answer) {
+        const feedback = document.getElementById('quiz-feedback');
+        const backBtn = document.getElementById('back-to-demo');
+
+        feedback.style.display = 'block';
+        feedback.className = 'quiz-feedback'; // reset class
+
+        if (answer === 'B') {
+            feedback.classList.add('success');
+            feedback.innerHTML = `<strong>🎉 答對了！</strong><br>答案就是 1101。<br>你已經掌握「只要有 1 就是 1」的規則了！`;
+            backBtn.classList.add('hidden');
+        } else {
+            feedback.classList.add('error');
+            feedback.innerHTML = `<strong>⚠️ 答錯囉</strong><br>選項 (${answer}) 是不對的。<br>記得口訣：OR 運算中，只要看到 1，結果就是 1。`;
+            backBtn.classList.remove('hidden');
+        }
+    }
+
+    function scrollToDemo() {
+        const demoSection = document.getElementById('demo-section');
+        const rulesSection = document.getElementById('rules-section');
+        
+        // 先重置演示
+        resetDemo();
+        
+        // 滾動到上面
+        demoSection.scrollIntoView({ behavior: 'smooth' });
+        
+        // 短暫高亮規則
+        rulesSection.style.transition = "background-color 0.5s";
+        rulesSection.style.backgroundColor = "#fffbeb"; // 淡淡黃色
+        setTimeout(() => {
+            rulesSection.style.backgroundColor = "#ffffff";
+        }, 1500);
+    }
+
+    // --- 延伸練習答案切換 ---
+    function toggleAnswer(id) {
+        const el = document.getElementById(id);
+        if (el.style.display === 'block') {
+            el.style.display = 'none';
+        } else {
+            el.style.display = 'block';
+        }
+    }
+</script>
+
+</body>
+</html>

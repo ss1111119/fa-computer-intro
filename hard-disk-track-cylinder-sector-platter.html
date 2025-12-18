@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>硬碟結構互動教學：磁軌、磁區、磁柱與磁片</title>
+    <style>
+        :root {
+            --primary-color: #2563eb; /* 藍色 */
+            --secondary-color: #4f46e5; /* 深藍 */
+            --accent-color: #f59e0b; /* 橙色 - 用於高亮 */
+            --bg-color: #f8fafc;
+            --text-color: #1e293b;
+            --light-gray: #e2e8f0;
+            --success-color: #16a34a;
+            --error-color: #dc2626;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        /* Container */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        header {
+            background: white;
+            padding: 2rem 1rem;
+            text-align: center;
+            border-bottom: 4px solid var(--primary-color);
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        header h1 {
+            margin: 0;
+            color: var(--secondary-color);
+            font-size: 1.8rem;
+        }
+
+        header p {
+            color: #64748b;
+            font-size: 1.1rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Common Section Styles */
+        section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        h2 {
+            border-left: 5px solid var(--accent-color);
+            padding-left: 15px;
+            color: var(--secondary-color);
+            margin-top: 0;
+        }
+
+        /* Question Box */
+        .question-box {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+        }
+
+        .options-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .options-list li {
+            background: white;
+            margin: 8px 0;
+            padding: 10px 15px;
+            border-radius: 6px;
+            border: 1px solid var(--light-gray);
+        }
+
+        /* Core Concepts */
+        .concept-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        @media (max-width: 600px) {
+            .concept-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .concept-item {
+            background: #f1f5f9;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .concept-item strong {
+            color: var(--primary-color);
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        /* Interactive Area */
+        .interactive-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .btn-mode {
+            padding: 10px 20px;
+            border: 2px solid var(--light-gray);
+            background: white;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+            color: #64748b;
+        }
+
+        .btn-mode:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .btn-mode.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
+        }
+
+        /* Animation highlighting class */
+        .highlight-btn {
+            animation: pulse-orange 1.5s infinite;
+        }
+
+        @keyframes pulse-orange {
+            0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); border-color: var(--accent-color); }
+            70% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); border-color: var(--accent-color); }
+            100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); border-color: var(--accent-color); }
+        }
+
+        #hdd-canvas {
+            border: 1px solid var(--light-gray);
+            border-radius: 50%; /* Make canvas container circular style optional, keeping square for drawing space */
+            border-radius: 12px;
+            background: #fff;
+            max-width: 100%;
+            cursor: crosshair;
+        }
+
+        .info-panel {
+            width: 100%;
+            background: #fffbeb; /* 淺黃底 */
+            border-left: 5px solid var(--accent-color);
+            padding: 15px;
+            border-radius: 4px;
+        }
+
+        .info-title {
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #92400e;
+            margin-bottom: 5px;
+        }
+
+        .exam-tip {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #b45309;
+            font-style: italic;
+        }
+
+        /* Slider */
+        .slider-container {
+            width: 100%;
+            max-width: 300px;
+            text-align: center;
+            margin-top: 10px;
+        }
+        
+        /* Breakdown Cards */
+        .breakdown-card {
+            border: 1px solid var(--light-gray);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+
+        .breakdown-header {
+            background: #f8fafc;
+            padding: 15px;
+            font-weight: bold;
+            cursor: pointer; /* Not interactive here, just static display style */
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .breakdown-content {
+            padding: 15px;
+            background: white;
+            color: #475569;
+        }
+
+        .correct-answer {
+            border: 2px solid var(--success-color);
+        }
+        .correct-answer .breakdown-header {
+            background: #dcfce7;
+            color: var(--success-color);
+        }
+
+        /* Quiz Section */
+        .quiz-options button {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: 2px solid var(--light-gray);
+            border-radius: 8px;
+            background: white;
+            text-align: left;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .quiz-options button:hover {
+            border-color: var(--primary-color);
+            background: #eff6ff;
+        }
+
+        .quiz-result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none; /* Hidden by default */
+        }
+
+        .quiz-result.correct {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #86efac;
+            display: block;
+        }
+
+        .quiz-result.wrong {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+            display: block;
+        }
+
+        .review-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        /* Accordion for Extra Knowledge */
+        .accordion {
+            background-color: #eee;
+            color: #444;
+            cursor: pointer;
+            padding: 18px;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-size: 15px;
+            transition: 0.4s;
+            border-radius: 8px;
+            margin-bottom: 5px;
+        }
+
+        .active-acc, .accordion:hover {
+            background-color: #ccc;
+        }
+
+        .panel {
+            padding: 0 18px;
+            background-color: white;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.2s ease-out;
+            border-radius: 0 0 8px 8px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="container">
+            <h1>硬碟結構大解密</h1>
+            <p>圓圈跑一圈叫磁軌 (Track)，切片叫磁區 (Sector)</p>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <!-- 1. 題目區 -->
+        <section class="question-box">
+            <h2>本題</h2>
+            <p style="font-size: 1.1rem; font-weight: bold;">
+                當磁碟旋轉時，一個讀寫頭在磁碟表面走過的圓形軌跡，稱之為？
+            </p>
+            <ul class="options-list">
+                <li>(A) 磁柱（Cylinder）</li>
+                <li>(B) 磁區（Sector）</li>
+                <li>(C) 磁軌（Track）</li>
+                <li>(D) 磁片（Platter）</li>
+            </ul>
+        </section>
+
+        <!-- 2. 核心觀念區 -->
+        <section id="core-concepts">
+            <h2>核心觀念速記</h2>
+            <div class="concept-grid">
+                <div class="concept-item">
+                    <strong>磁片 (Platter)</strong>
+                    硬碟裡面那片圓圓的盤子，資料就存在上面。
+                </div>
+                <div class="concept-item">
+                    <strong>磁軌 (Track)</strong>
+                    像操場跑道一樣的同心圓。讀寫頭不動、盤片旋轉時畫出的「圓圈」。
+                </div>
+                <div class="concept-item">
+                    <strong>磁區 (Sector)</strong>
+                    像切披薩一樣，把磁軌再切成一小段一小段，是資料儲存的最小單位。
+                </div>
+                <div class="concept-item">
+                    <strong>磁柱 (Cylinder)</strong>
+                    想像硬碟有很多片盤子疊在一起，所有盤子上「半徑相同」的磁軌集合起來，像一個空心圓柱。
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. 互動示意區 -->
+        <section id="interactive-area">
+            <h2>互動圖解 (點擊下方按鈕切換)</h2>
+            
+            <div class="interactive-container">
+                <!-- 控制按鈕 -->
+                <div class="controls">
+                    <button class="btn-mode" onclick="setMode('platter')" id="btn-platter">磁片 Platter</button>
+                    <button class="btn-mode active" onclick="setMode('track')" id="btn-track">磁軌 Track</button>
+                    <button class="btn-mode" onclick="setMode('sector')" id="btn-sector">磁區 Sector</button>
+                    <button class="btn-mode" onclick="setMode('cylinder')" id="btn-cylinder">磁柱 Cylinder</button>
+                </div>
+
+                <!-- 畫布 -->
+                <canvas id="hdd-canvas" width="400" height="300"></canvas>
+                
+                <!-- 讀寫頭滑動控制 (僅在某些模式顯示有效) -->
+                <div class="slider-container">
+                    <label for="headSlider">讀寫頭位置 (半徑)：</label>
+                    <input type="range" id="headSlider" min="1" max="4" value="2" step="1">
+                </div>
+
+                <!-- 說明面板 -->
+                <div class="info-panel" id="info-panel">
+                    <div class="info-title" id="info-title">磁軌 (Track)</div>
+                    <div id="info-desc">這是磁碟表面上的一圈同心圓。</div>
+                    <div class="exam-tip" id="exam-tip">👉 考試提示：看到「圓形軌跡」就要想到它！</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. 選項逐一破解 -->
+        <section id="breakdown">
+            <h2>選項逐一解析</h2>
+            
+            <div class="breakdown-card">
+                <div class="breakdown-header">
+                    (A) 磁柱 (Cylinder) ❌
+                </div>
+                <div class="breakdown-content">
+                    <strong>錯誤原因：</strong>磁柱是「多個盤面」上相同半徑磁軌的集合（垂直概念）。題目問的是「單一表面」的軌跡。
+                </div>
+            </div>
+
+            <div class="breakdown-card">
+                <div class="breakdown-header">
+                    (B) 磁區 (Sector) ❌
+                </div>
+                <div class="breakdown-content">
+                    <strong>錯誤原因：</strong>磁區是磁軌被切割後的「扇形/弧形片段」，不是完整的圓形軌跡。它是資料讀寫的基本單位（通常是 512 bytes 或 4KB）。
+                </div>
+            </div>
+
+            <div class="breakdown-card correct-answer">
+                <div class="breakdown-header">
+                    (C) 磁軌 (Track) ✅ 正解
+                </div>
+                <div class="breakdown-content">
+                    <strong>正確原因：</strong>讀寫頭固定在某個半徑位置，當磁碟旋轉一圈時，頭在盤面上畫出來的路徑就是一個完整的「圓形軌跡」。
+                </div>
+            </div>
+
+            <div class="breakdown-card">
+                <div class="breakdown-header">
+                    (D) 磁片 (Platter) ❌
+                </div>
+                <div class="breakdown-content">
+                    <strong>錯誤原因：</strong>磁片是硬體實體（那張圓盤），不是上面的軌跡名稱。
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. 小測驗區 -->
+        <section id="quiz-area">
+            <h2>自我檢測</h2>
+            <p>當磁碟旋轉時，一個讀寫頭在磁碟表面走過的圓形軌跡，稱之為？</p>
+            
+            <div class="quiz-options">
+                <button onclick="checkAnswer('A')">(A) 磁柱 (Cylinder)</button>
+                <button onclick="checkAnswer('B')">(B) 磁區 (Sector)</button>
+                <button onclick="checkAnswer('C')">(C) 磁軌 (Track)</button>
+                <button onclick="checkAnswer('D')">(D) 磁片 (Platter)</button>
+            </div>
+
+            <div id="quiz-result" class="quiz-result">
+                <!-- 結果將顯示於此 -->
+            </div>
+        </section>
+
+        <!-- 6. 延伸知識 -->
+        <section id="extended-knowledge">
+            <button class="accordion">📚 延伸閱讀：硬碟定址與 LBA (點擊展開)</button>
+            <div class="panel">
+                <p><strong>早期：CHS 定址法</strong><br>
+                以前電腦要讀取硬碟資料時，必須告訴硬碟三個座標：<br>
+                1. 第幾層磁柱 (<strong>C</strong>ylinder)<br>
+                2. 第幾個讀寫頭/盤面 (<strong>H</strong>ead)<br>
+                3. 第幾個磁區 (<strong>S</strong>ector)<br>
+                這就是所謂的 CHS 模式。</p>
+                <hr style="border: 0; border-top: 1px dashed #ccc;">
+                <p><strong>現代：LBA 邏輯區塊定址</strong><br>
+                現代硬碟容量太大，CHS 不夠用也不方便。現在改用 <strong>LBA (Logical Block Addressing)</strong>，就像把所有磁區編號成 0, 1, 2, 3... 的流水號。電腦只要跟硬碟說「我要第 1000 號磁區」，硬碟內部的晶片會自己換算它在哪個磁軌上。這樣作業系統就不需要知道硬碟內部的物理構造了。</p>
+            </div>
+        </section>
+
+    </div>
+
+    <footer>
+        <p>互動式教學網頁 | Designed for Learning HDD Concepts</p>
+    </footer>
+
+    <script>
+        /**
+         * 互動繪圖區邏輯
+         */
+        const canvas = document.getElementById('hdd-canvas');
+        const ctx = canvas.getContext('2d');
+        const slider = document.getElementById('headSlider');
+        
+        // 狀態變數
+        let mode = 'track'; // 預設模式
+        let animationFrameId;
+        let rotationAngle = 0; // 用於模擬旋轉動畫
+
+        // 定義硬碟幾何參數
+        const center = { x: 150, y: 150 }; // 畫布左側放俯視圖
+        const maxRadius = 120;
+        const tracks = [40, 65, 90, 115]; // 四個磁軌的半徑
+        const numSectors = 8; // 扇區數量
+
+        // 初始化
+        window.onload = function() {
+            setMode('track'); // 初始繪製
+            animate();
+            setupAccordion();
+        };
+
+        // 監聽滑桿
+        slider.addEventListener('input', function() {
+            draw();
+        });
+
+        // 設定模式
+        function setMode(newMode) {
+            mode = newMode;
+            
+            // 更新按鈕樣式
+            document.querySelectorAll('.btn-mode').forEach(btn => {
+                btn.classList.remove('active', 'highlight-btn');
+            });
+            document.getElementById('btn-' + newMode).classList.add('active');
+
+            // 更新文字說明
+            updateInfoPanel(newMode);
+            
+            // 重繪
+            draw();
+        }
+
+        // 更新文字說明邏輯
+        function updateInfoPanel(currentMode) {
+            const titleEl = document.getElementById('info-title');
+            const descEl = document.getElementById('info-desc');
+            const tipEl = document.getElementById('exam-tip');
+
+            switch(currentMode) {
+                case 'platter':
+                    titleEl.textContent = '磁片 (Platter)';
+                    descEl.textContent = '硬碟內部的圓形盤片，表面塗有磁性物質來記錄資料。硬碟可能有一片或多片 Platter。';
+                    tipEl.textContent = '👉 提示：這是整個「物理圓盤」實體。';
+                    break;
+                case 'track':
+                    titleEl.textContent = '磁軌 (Track)';
+                    descEl.textContent = '讀寫頭不動，盤片旋轉時形成的同心圓軌跡。就像操場的跑道一樣。';
+                    tipEl.textContent = '👉 考試提示：題目關鍵字「圓形軌跡」就是指這裡！';
+                    break;
+                case 'sector':
+                    titleEl.textContent = '磁區 (Sector)';
+                    descEl.textContent = '磁軌再被切割成許多小段的圓弧（或扇形區域）。通常是資料讀寫的最小物理單位 (512 Bytes)。';
+                    tipEl.textContent = '👉 提示：想像披薩切片，或者跑道上的一小格。';
+                    break;
+                case 'cylinder':
+                    titleEl.textContent = '磁柱 (Cylinder)';
+                    descEl.textContent = '假設有多個盤片堆疊，所有盤面上「相同半徑」的磁軌垂直集合起來，形成一個空心圓柱體。';
+                    tipEl.textContent = '👉 提示：關鍵字是「多盤面」或「垂直堆疊」。';
+                    break;
+            }
+        }
+
+        // 主繪圖循環
+        function animate() {
+            rotationAngle += 0.02; // 旋轉速度
+            draw();
+            animationFrameId = requestAnimationFrame(animate);
+        }
+
+        // 核心繪圖函數
+        function draw() {
+            // 清除畫布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 判斷是否為 Cylinder 模式，如果是，我們需要調整佈局畫側視圖
+            if (mode === 'cylinder') {
+                drawCylinderMode();
+            } else {
+                drawTopDownView(center.x, center.y, true);
+            }
+        }
+
+        // 繪製俯視圖 (Top-Down View)
+        function drawTopDownView(cx, cy, showHead) {
+            // 1. 畫磁片底色 (Platter)
+            ctx.beginPath();
+            ctx.arc(cx, cy, maxRadius + 10, 0, Math.PI * 2);
+            ctx.fillStyle = (mode === 'platter') ? '#bfdbfe' : '#f1f5f9'; // Platter 模式高亮藍色
+            ctx.fill();
+            ctx.strokeStyle = '#94a3b8';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // 2. 畫磁軌 (Tracks)
+            // 讀寫頭所在的 Track Index (0-3)
+            let activeTrackIndex = parseInt(slider.value) - 1; 
+
+            tracks.forEach((radius, index) => {
+                ctx.beginPath();
+                ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+                
+                // 樣式判斷
+                if (mode === 'track' && index === activeTrackIndex) {
+                    ctx.lineWidth = 6;
+                    ctx.strokeStyle = '#f59e0b'; // Orange highlight
+                } else if (mode === 'sector' && index === activeTrackIndex) {
+                     ctx.lineWidth = 2;
+                     ctx.strokeStyle = '#cbd5e1';
+                } else {
+                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = '#cbd5e1';
+                }
+                ctx.stroke();
+            });
+
+            // 3. 畫 Sector 分隔線 (模擬旋轉)
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.rotate(rotationAngle); // 讓扇區線旋轉
+
+            for (let i = 0; i < numSectors; i++) {
+                let angle = (Math.PI * 2 / numSectors) * i;
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(Math.cos(angle) * maxRadius, Math.sin(angle) * maxRadius);
+                ctx.strokeStyle = '#e2e8f0';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+
+            // 4. 特殊高亮 Sector
+            if (mode === 'sector') {
+                // 高亮其中一個 Sector 在目前選定的 Track 上
+                let highlightAngleStart = 0;
+                let highlightAngleEnd = Math.PI * 2 / numSectors;
+                let r = tracks[activeTrackIndex];
+                
+                // 為了視覺清楚，我們畫一個弧形色塊
+                // 計算內徑與外徑 (模擬 Track 的寬度)
+                let trackWidth = 20; 
+                let innerR = r - trackWidth/2;
+                let outerR = r + trackWidth/2;
+
+                ctx.beginPath();
+                ctx.arc(0, 0, outerR, highlightAngleStart, highlightAngleEnd);
+                ctx.arc(0, 0, innerR, highlightAngleEnd, highlightAngleStart, true);
+                ctx.fillStyle = '#f59e0b';
+                ctx.fill();
+            }
+
+            ctx.restore(); // 恢復旋轉前的狀態
+
+            // 5. 畫讀寫頭 (Read/Write Head)
+            if (showHead) {
+                let headR = tracks[activeTrackIndex];
+                // 讀寫頭是固定的，不隨盤片旋轉
+                let headX = cx + headR; 
+                let headY = cy;
+
+                // 畫讀寫臂
+                ctx.beginPath();
+                ctx.moveTo(cx + maxRadius + 40, cy + 80); // 轉軸大致位置
+                ctx.lineTo(headX, headY);
+                ctx.lineWidth = 4;
+                ctx.strokeStyle = '#64748b';
+                ctx.stroke();
+
+                // 畫頭
+                ctx.fillStyle = '#dc2626'; // 紅色頭
+                ctx.fillRect(headX - 6, headY - 6, 12, 12);
+                
+                // 文字標示
+                ctx.fillStyle = '#333';
+                ctx.font = '12px sans-serif';
+                ctx.fillText("讀寫頭", headX - 20, headY - 15);
+            }
+            
+            // 中心軸
+            ctx.beginPath();
+            ctx.arc(cx, cy, 10, 0, Math.PI*2);
+            ctx.fillStyle = '#94a3b8';
+            ctx.fill();
+        }
+
+        // 繪製磁柱模式 (顯示堆疊概念)
+        function drawCylinderMode() {
+            // 左邊畫小一點的俯視圖
+            drawTopDownView(100, 150, false);
+            
+            // 右邊畫側面堆疊圖
+            const stackX = 280;
+            const stackY = 150;
+            const diskHeight = 150;
+            const diskWidth = 20; // 橢圓高度
+            
+            // 畫三片碟片側面
+            for(let i=0; i<3; i++) {
+                let y = 100 + i * 40;
+                
+                // 碟片本體
+                ctx.beginPath();
+                ctx.ellipse(stackX, y, 60, 10, 0, 0, Math.PI*2);
+                ctx.fillStyle = '#cbd5e1';
+                ctx.fill();
+                ctx.stroke();
+                
+                // 高亮選中的磁軌 (用紅色線條表示該層的 Track)
+                let activeTrackIndex = parseInt(slider.value) - 1; 
+                // 將半徑映射到橢圓寬度 (40~115 -> 10~50)
+                let visualR = (tracks[activeTrackIndex] / maxRadius) * 60;
+
+                ctx.beginPath();
+                ctx.ellipse(stackX, y, visualR, 3, 0, 0, Math.PI*2);
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#dc2626'; // 紅色表示 Cylinder 貫穿
+                ctx.stroke();
+            }
+
+            // 畫虛線連接表示 "圓柱" 概念
+            let activeTrackIndex = parseInt(slider.value) - 1; 
+            let visualR = (tracks[activeTrackIndex] / maxRadius) * 60;
+            
+            ctx.beginPath();
+            ctx.moveTo(stackX - visualR, 100);
+            ctx.lineTo(stackX - visualR, 180);
+            ctx.moveTo(stackX + visualR, 100);
+            ctx.lineTo(stackX + visualR, 180);
+            ctx.setLineDash([5, 5]);
+            ctx.strokeStyle = '#f59e0b';
+            ctx.stroke();
+            ctx.setLineDash([]); // Reset
+
+            // 文字
+            ctx.fillStyle = '#333';
+            ctx.font = '14px sans-serif';
+            ctx.fillText("側面圖 (Side View)", 220, 230);
+            ctx.fillText("相同的 Track 垂直對齊", 210, 250);
+            ctx.fillStyle = '#f59e0b';
+            ctx.fillText("= 磁柱 Cylinder", 230, 270);
+            
+            // 在左邊圖上標示現在選的是哪一圈
+            let cx = 100;
+            let cy = 150;
+            let r = tracks[activeTrackIndex];
+            ctx.beginPath();
+            ctx.arc(cx, cy, r, 0, Math.PI*2);
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#dc2626';
+            ctx.stroke();
+        }
+
+        /**
+         * 測驗邏輯
+         */
+        function checkAnswer(answer) {
+            const resultDiv = document.getElementById('quiz-result');
+            resultDiv.className = 'quiz-result'; // 重置
+            
+            if (answer === 'C') {
+                // 正確
+                resultDiv.innerHTML = `
+                    <h3>✅ 答對了！</h3>
+                    <p>就是「磁軌 (Track)」。讀寫頭不動，盤子轉，就像圓規畫圓一樣，畫出來的就是磁軌。</p>
+                `;
+                resultDiv.classList.add('correct');
+            } else {
+                // 錯誤
+                let feedback = "";
+                if(answer === 'A') feedback = "磁柱是多層堆疊的概念喔！";
+                if(answer === 'B') feedback = "磁區是扇形的一小塊，不是整圈軌跡。";
+                if(answer === 'D') feedback = "磁片是整個盤子啦！";
+
+                resultDiv.innerHTML = `
+                    <h3>❌ 答錯囉</h3>
+                    <p>${feedback} 題目問的是「圓形軌跡」。</p>
+                    <button class="review-btn" onclick="goToReview()">帶我回上面看動畫</button>
+                `;
+                resultDiv.classList.add('wrong');
+            }
+        }
+
+        function goToReview() {
+            // 捲動到互動區
+            document.getElementById('interactive-area').scrollIntoView({ behavior: 'smooth' });
+            
+            // 強制切換到 Track 模式並給予視覺提示
+            setMode('track');
+            
+            // 按鈕閃爍提示
+            const trackBtn = document.getElementById('btn-track');
+            trackBtn.classList.add('highlight-btn');
+            
+            // 3秒後移除閃爍
+            setTimeout(() => {
+                trackBtn.classList.remove('highlight-btn');
+            }, 3000);
+        }
+
+        /**
+         * Accordion 邏輯
+         */
+        function setupAccordion() {
+            var acc = document.getElementsByClassName("accordion");
+            for (var i = 0; i < acc.length; i++) {
+                acc[i].addEventListener("click", function() {
+                    this.classList.toggle("active-acc");
+                    var panel = this.nextElementSibling;
+                    if (panel.style.maxHeight) {
+                        panel.style.maxHeight = null;
+                    } else {
+                        panel.style.maxHeight = panel.scrollHeight + "px";
+                    }
+                });
+            }
+        }
+
+    </script>
+</body>
+</html>

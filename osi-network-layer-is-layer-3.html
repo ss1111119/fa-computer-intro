@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSI 網路層教學 - 互動式學習</title>
+    <style>
+        :root {
+            --primary-color: #3b82f6; /* Blue 500 */
+            --primary-dark: #1d4ed8;
+            --secondary-color: #10b981; /* Emerald 500 - for Layer 3 focus */
+            --accent-color: #f59e0b; /* Amber 500 */
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --border-radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', 'Microsoft JhengHei', system-ui, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding-bottom: 50px;
+        }
+
+        /* Utility Classes */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow);
+            border: 1px solid #e5e7eb;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            border-left: 4px solid var(--primary-color);
+            padding-left: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        h1, h2, h3 { color: var(--text-main); }
+        
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background-color: #e5e7eb;
+            color: #374151;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        header h1 { color: white; margin-bottom: 10px; font-size: 2rem; }
+        header p { opacity: 0.9; font-size: 1.1rem; }
+
+        /* Question Section */
+        .question-box {
+            background-color: #eff6ff;
+            border: 1px solid #bfdbfe;
+        }
+        .question-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        .options-list {
+            list-style: none;
+        }
+        .options-list li {
+            padding: 8px 12px;
+            margin-bottom: 6px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+
+        /* Concept Quick Read */
+        .concept-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        .concept-item {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid #cbd5e1;
+        }
+        .concept-item.highlight {
+            border-left-color: var(--secondary-color);
+            background: #ecfdf5;
+        }
+
+        /* Interactive OSI Stack */
+        .osi-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        @media (min-width: 768px) {
+            .osi-container {
+                flex-direction: row;
+                align-items: flex-start;
+            }
+        }
+
+        .osi-stack {
+            flex: 1;
+            display: flex;
+            flex-direction: column-reverse; /* Layer 1 at bottom */
+            gap: 4px;
+        }
+
+        .osi-layer {
+            padding: 12px 16px;
+            background: #f3f4f6;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 500;
+        }
+
+        .osi-layer:hover {
+            transform: translateX(5px);
+            background: #e2e8f0;
+        }
+
+        .osi-layer.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-dark);
+            transform: scale(1.02);
+        }
+
+        /* Layer 3 Specific Style */
+        .osi-layer[data-layer="3"].active {
+            background: var(--secondary-color);
+            border-color: #059669;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+        }
+
+        .osi-info-panel {
+            flex: 1;
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #e5e7eb;
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .info-title { font-size: 1.5rem; color: var(--primary-color); margin-bottom: 10px; }
+        .info-detail strong { color: #374151; }
+        .info-detail { margin-bottom: 8px; font-size: 1.05rem; }
+
+        /* Simulation Area */
+        .sim-stage {
+            background: #1e293b;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            position: relative;
+            height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            overflow: hidden;
+        }
+
+        .sim-device {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 2;
+        }
+        .sim-icon { font-size: 2.5rem; margin-bottom: 5px; }
+        .sim-label { font-size: 0.85rem; color: #cbd5e1; }
+
+        .packet {
+            position: absolute;
+            left: 10%;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--accent-color);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            transition: left 0.5s ease-in-out, background-color 0.3s;
+            z-index: 1;
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .packet-layer-tag {
+            background: rgba(0,0,0,0.2);
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-size: 0.7em;
+        }
+
+        .sim-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        .btn-primary { background: var(--primary-color); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-reset { background: #9ca3af; color: white; }
+        .btn-reset:hover { background: #6b7280; }
+
+        .sim-log {
+            background: #fff;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: monospace;
+            color: #333;
+            min-height: 50px;
+        }
+        
+        .highlight-text { color: var(--secondary-color); font-weight: bold; }
+
+        /* Options Breakdown */
+        .option-card {
+            border: 1px solid #eee;
+            border-left: 4px solid #ddd;
+            padding: 12px;
+            margin-bottom: 10px;
+            background: #fff;
+        }
+        .option-card.correct { border-left-color: var(--secondary-color); background: #f0fdf4; }
+        .option-card.wrong { border-left-color: #ef4444; }
+        .option-header { font-weight: bold; margin-bottom: 4px; display: block; }
+
+        /* Quiz Section */
+        .quiz-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .quiz-btn {
+            padding: 15px;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            text-align: left;
+            transition: all 0.2s;
+        }
+        
+        .quiz-btn:hover { border-color: var(--primary-color); background: #f0f9ff; }
+        
+        .quiz-btn.correct { background: var(--secondary-color); color: white; border-color: var(--secondary-color); }
+        .quiz-btn.incorrect { background: #ef4444; color: white; border-color: #ef4444; }
+
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+        .quiz-feedback.show { display: block; animation: fadeIn 0.3s; }
+        .feedback-success { background: #d1fae5; color: #065f46; border: 1px solid #34d399; }
+        .feedback-error { background: #fee2e2; color: #991b1b; border: 1px solid #f87171; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Accordion */
+        .accordion-item { border-bottom: 1px solid #e5e7eb; }
+        .accordion-btn {
+            width: 100%;
+            text-align: left;
+            padding: 15px 10px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            padding: 0 10px;
+        }
+        .accordion-content.open { max-height: 200px; padding-bottom: 15px; }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="container">
+        <h1>Network Layer = Layer 3</h1>
+        <p>負責 IP 位址與路由選擇 (Routing) 的關鍵層級</p>
+    </div>
+</header>
+
+<main class="container">
+
+    <!-- 1. 題目區塊 -->
+    <section class="card question-box">
+        <div class="section-title">本題</div>
+        <p class="question-text">OSI 網路模式中，網路層（Network Layer）屬於第幾層的通訊協定？</p>
+        <ul class="options-list">
+            <li>(A) 2</li>
+            <li>(B) 3</li>
+            <li>(C) 4</li>
+            <li>(D) 5</li>
+        </ul>
+    </section>
+
+    <!-- 2. 概念速讀 -->
+    <section class="card" id="concept-section">
+        <div class="section-title">概念速讀：重點分層比較</div>
+        <div class="concept-grid">
+            <div class="concept-item">
+                <h3>Layer 2: 資料連結層</h3>
+                <p>Data Link Layer</p>
+                <hr style="margin:8px 0; border:0; border-top:1px solid #ddd;">
+                <p>📍 <strong>單位：</strong>Frame (訊框)</p>
+                <p>📍 <strong>設備：</strong>Switch (交換器)</p>
+                <p>📍 <strong>位址：</strong>MAC Address</p>
+            </div>
+            <div class="concept-item highlight">
+                <h3>Layer 3: 網路層</h3>
+                <p>Network Layer</p>
+                <hr style="margin:8px 0; border:0; border-top:1px solid #a7f3d0;">
+                <p>📍 <strong>單位：</strong>Packet (封包)</p>
+                <p>📍 <strong>設備：</strong>Router (路由器)</p>
+                <p>📍 <strong>關鍵：</strong>IP, Routing (路由)</p>
+            </div>
+            <div class="concept-item">
+                <h3>Layer 4: 傳輸層</h3>
+                <p>Transport Layer</p>
+                <hr style="margin:8px 0; border:0; border-top:1px solid #ddd;">
+                <p>📍 <strong>單位：</strong>Segment (區段)</p>
+                <p>📍 <strong>協定：</strong>TCP, UDP</p>
+                <p>📍 <strong>功能：</strong>端對端傳輸、Port</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. 互動學習區 (核心) -->
+    <section class="card" id="osi-interactive">
+        <div class="section-title">
+            互動圖解：點選每一層查看細節
+            <span class="badge">必學重點</span>
+        </div>
+        
+        <div class="osi-container">
+            <!-- OSI Stack Visual -->
+            <div class="osi-stack" id="stack-container">
+                <!-- Javascript will populate this -->
+            </div>
+
+            <!-- Info Panel -->
+            <div class="osi-info-panel" id="info-panel">
+                <h3 class="info-title">請點選左側層級</h3>
+                <p class="text-muted">點擊 OSI 模型的每一層，了解其功能、資料單位與常見設備。</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 情境模擬 -->
+    <section class="card">
+        <div class="section-title">迷你情境模擬：資料傳輸之旅</div>
+        <p style="margin-bottom: 15px;">觀察資料如何從 A 電腦傳送到 B 電腦（跨網段）：</p>
+        
+        <div class="sim-stage">
+            <div class="sim-device">
+                <div class="sim-icon">💻</div>
+                <div class="sim-label">PC A<br>(192.168.1.10)</div>
+            </div>
+            
+            <!-- Router in the middle -->
+            <div class="sim-device">
+                <div class="sim-icon">📡</div>
+                <div class="sim-label" style="color: #6ee7b7; font-weight:bold;">Router<br>(Layer 3)</div>
+            </div>
+
+            <div class="sim-device">
+                <div class="sim-icon">🖥️</div>
+                <div class="sim-label">PC B<br>(10.0.0.5)</div>
+            </div>
+
+            <!-- Moving Packet -->
+            <div id="sim-packet" class="packet" style="display: none;">
+                <span id="packet-icon">📦</span> 
+                <span id="packet-text">Data</span>
+            </div>
+        </div>
+
+        <div class="sim-controls">
+            <button class="btn btn-primary" onclick="nextStep()" id="btn-next">開始傳輸</button>
+            <button class="btn btn-reset" onclick="resetSim()">重置</button>
+        </div>
+        <div class="sim-log" id="sim-log">
+            準備就緒... 請按「開始傳輸」
+        </div>
+    </section>
+
+    <!-- 4. 選項逐一破解 -->
+    <section class="card" id="breakdown-section">
+        <div class="section-title">選項逐一破解</div>
+        
+        <div class="option-card wrong">
+            <span class="option-header">(A) 2 - 資料連結層 (Data Link Layer)</span>
+            <p>這是交換器 (Switch) 運作的層級，使用 MAC 位址傳輸 <strong>Frame (訊框)</strong>，通常只在同一個區域網路內溝通。</p>
+        </div>
+
+        <div class="option-card correct">
+            <span class="option-header">(B) 3 - 網路層 (Network Layer) ✅ 正解</span>
+            <p>負責邏輯定址 (IP Address) 與 <strong>路由選擇 (Routing)</strong>。資料單位稱為 <strong>Packet (封包)</strong>。路由器 (Router) 是本層最重要的設備。</p>
+        </div>
+
+        <div class="option-card wrong">
+            <span class="option-header">(C) 4 - 傳輸層 (Transport Layer)</span>
+            <p>負責端對端 (End-to-End) 的可靠度與流量控制，常見協定為 <strong>TCP/UDP</strong>，資料單位為 Segment。</p>
+        </div>
+
+        <div class="option-card wrong">
+            <span class="option-header">(D) 5 - 會談層 (Session Layer)</span>
+            <p>負責建立、管理和終止應用程式之間的會談 (Session)，與本題的網路路由無關。</p>
+        </div>
+    </section>
+
+    <!-- 5. 小測驗區 -->
+    <section class="card" id="quiz-section">
+        <div class="section-title">
+            隨堂小測驗
+            <span class="badge" style="background:var(--accent-color); color:white;">Challenge</span>
+        </div>
+        <p class="question-text" style="margin-bottom: 20px;">OSI 網路模式中，網路層（Network Layer）屬於第幾層？</p>
+        
+        <div class="quiz-options">
+            <button class="quiz-btn" onclick="checkAnswer('A')">(A) 2</button>
+            <button class="quiz-btn" onclick="checkAnswer('B')">(B) 3</button>
+            <button class="quiz-btn" onclick="checkAnswer('C')">(C) 4</button>
+            <button class="quiz-btn" onclick="checkAnswer('D')">(D) 5</button>
+        </div>
+
+        <div id="quiz-feedback" class="quiz-feedback">
+            <h3 id="feedback-title"></h3>
+            <p id="feedback-msg"></p>
+            <button id="retry-btn" class="btn btn-reset" style="margin-top:10px; display:none;" onclick="scrollToStack()">帶我回七層圖複習</button>
+        </div>
+    </section>
+
+    <!-- 6. 延伸知識 (Accordion) -->
+    <section class="card">
+        <div class="section-title">延伸知識補給站</div>
+        
+        <div class="accordion-item">
+            <button class="accordion-btn" onclick="toggleAccordion(this)">
+                <span>封包在每一層的名字叫什麼？ (PDU)</span>
+                <span>+</span>
+            </button>
+            <div class="accordion-content">
+                <ul style="padding-left: 20px; line-height: 2;">
+                    <li>L4 傳輸層：<strong>Segment (區段)</strong> / Datagram</li>
+                    <li>L3 網路層：<strong>Packet (封包)</strong> <span style="color:var(--secondary-color); font-weight:bold;">← 重點！</span></li>
+                    <li>L2 資料連結層：<strong>Frame (訊框)</strong></li>
+                    <li>L1 實體層：<strong>Bit (位元)</strong></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <button class="accordion-btn" onclick="toggleAccordion(this)">
+                <span>常見設備對應層級</span>
+                <span>+</span>
+            </button>
+            <div class="accordion-content">
+                <ul style="padding-left: 20px; line-height: 2;">
+                    <li>L3 Router (路由器)、Layer 3 Switch</li>
+                    <li>L2 Switch (交換器)、Bridge (橋接器)</li>
+                    <li>L1 Hub (集線器)、Repeater (中繼器)</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<footer>
+    <p>Computer Science Networking Education &copy; 2025</p>
+    <p>Designed for learning: OSI Model Network Layer</p>
+</footer>
+
+<script>
+    // --- Data: OSI 7 Layers ---
+    const osiData = [
+        { 
+            id: 7, name_en: "Application", name_zh: "應用層", 
+            desc: "提供使用者介面與網路服務 (HTTP, FTP, DNS)", unit: "Data", device: "PC / Server" 
+        },
+        { 
+            id: 6, name_en: "Presentation", name_zh: "表現層", 
+            desc: "資料格式轉換、加密與解密 (JPEG, ASCII)", unit: "Data", device: "PC / Gateway" 
+        },
+        { 
+            id: 5, name_en: "Session", name_zh: "會談層", 
+            desc: "建立、管理與終止連線會談 (RPC, SQL)", unit: "Data", device: "PC / Gateway" 
+        },
+        { 
+            id: 4, name_en: "Transport", name_zh: "傳輸層", 
+            desc: "端對端可靠傳輸與流量控制 (TCP, UDP, Port)", unit: "Segment", device: "Firewall" 
+        },
+        { 
+            id: 3, name_en: "Network", name_zh: "網路層", 
+            desc: "IP 定址與最佳路徑選擇 (Routing)", unit: "Packet", device: "Router", 
+            highlight: true // Special flag for Layer 3
+        },
+        { 
+            id: 2, name_en: "Data Link", name_zh: "資料連結層", 
+            desc: "實體位址 (MAC) 與錯誤偵測 (Ethernet, WiFi)", unit: "Frame", device: "Switch / Bridge" 
+        },
+        { 
+            id: 1, name_en: "Physical", name_zh: "實體層", 
+            desc: "傳輸原始位元訊號 (電壓, 光訊號, 線材)", unit: "Bit", device: "Hub / Cable" 
+        }
+    ];
+
+    // --- Interactive Stack Logic ---
+    const stackContainer = document.getElementById('stack-container');
+    const infoPanel = document.getElementById('info-panel');
+
+    function renderStack() {
+        stackContainer.innerHTML = '';
+        osiData.forEach(layer => {
+            const div = document.createElement('div');
+            div.className = 'osi-layer';
+            div.dataset.layer = layer.id;
+            div.innerHTML = `<span>Layer ${layer.id}</span> <span>${layer.name_zh} <small class="text-muted">(${layer.name_en})</small></span>`;
+            
+            div.onclick = () => showLayerInfo(layer, div);
+            stackContainer.appendChild(div);
+        });
+    }
+
+    function showLayerInfo(layer, element) {
+        // Remove active class from all
+        document.querySelectorAll('.osi-layer').forEach(el => el.classList.remove('active'));
+        // Add active to clicked
+        element.classList.add('active');
+
+        // Special visual effect for Layer 3
+        const isL3 = layer.id === 3;
+        const titleColor = isL3 ? 'var(--secondary-color)' : 'var(--primary-color)';
+
+        infoPanel.innerHTML = `
+            <h3 class="info-title" style="color:${titleColor}">Layer ${layer.id}: ${layer.name_zh}</h3>
+            <h4 style="color:#666; margin-bottom:15px;">${layer.name_en} Layer</h4>
+            
+            <div class="info-detail">
+                <strong>💡 主要功能：</strong> ${layer.desc}
+            </div>
+            <div class="info-detail">
+                <strong>📦 資料單位 (PDU)：</strong> <span class="badge">${layer.unit}</span>
+            </div>
+            <div class="info-detail">
+                <strong>⚙️ 常見協定/設備：</strong> ${layer.device}
+            </div>
+            ${isL3 ? '<div style="margin-top:15px; padding:10px; background:#ecfdf5; border-left:4px solid #10b981; color:#065f46;">⭐ <strong>本題重點：</strong> 網路層負責處理 <strong>IP 位址</strong>，並透過路由器 (Router) 決定資料傳輸的路徑 (Routing)。</div>' : ''}
+        `;
+    }
+
+    // Initialize Stack
+    renderStack();
+
+    // --- Simulation Logic ---
+    let simStep = 0;
+    const packet = document.getElementById('sim-packet');
+    const simLog = document.getElementById('sim-log');
+    const btnNext = document.getElementById('btn-next');
+    const packetText = document.getElementById('packet-text');
+
+    function nextStep() {
+        simStep++;
+        packet.style.display = 'flex';
+        
+        switch(simStep) {
+            case 1:
+                // Step 1: PC A
+                packet.style.left = '10%';
+                packet.style.backgroundColor = '#9ca3af'; // Neutral
+                packetText.innerHTML = "Data";
+                simLog.innerHTML = `[Step 1] PC A 產生資料 (L4-L7)。`;
+                btnNext.innerText = "下一步：封裝 IP";
+                break;
+            case 2:
+                // Step 2: Encapsulation L3
+                packet.style.backgroundColor = 'var(--secondary-color)'; // Green for L3
+                packetText.innerHTML = "<span class='packet-layer-tag'>IP</span> Packet";
+                simLog.innerHTML = `[Step 2] <span class="highlight-text">Layer 3 (Network)</span> 加入來源與目的 IP 位址，變成「Packet (封包)」。`;
+                btnNext.innerText = "下一步：傳送至 Router";
+                break;
+            case 3:
+                // Step 3: Move to Router
+                packet.style.left = '50%';
+                simLog.innerHTML = `[Step 3] 封包傳送到路由器 (Router)。`;
+                btnNext.innerText = "下一步：路由判斷";
+                break;
+            case 4:
+                // Step 4: Routing Decision
+                packet.style.transform = 'translate(-50%, -50%) scale(1.2)'; // Pulse effect
+                setTimeout(() => packet.style.transform = 'translate(-50%, -50%) scale(1)', 300);
+                simLog.innerHTML = `[Step 4] <span class="highlight-text">Router (Layer 3)</span> 讀取 IP 標頭，查表決定路徑 (Routing)。`;
+                btnNext.innerText = "下一步：送達 PC B";
+                break;
+            case 5:
+                // Step 5: Move to PC B
+                packet.style.left = '85%';
+                simLog.innerHTML = `[Step 5] 根據路由結果，封包成功送達 PC B。`;
+                btnNext.innerText = "完成 (重置)";
+                break;
+            default:
+                resetSim();
+        }
+    }
+
+    function resetSim() {
+        simStep = 0;
+        packet.style.display = 'none';
+        packet.style.left = '10%';
+        packet.style.transform = 'translateY(-50%)';
+        simLog.innerHTML = "準備就緒... 請按「開始傳輸」";
+        btnNext.innerText = "開始傳輸";
+    }
+
+    // --- Quiz Logic ---
+    function checkAnswer(answer) {
+        const feedbackBox = document.getElementById('quiz-feedback');
+        const title = document.getElementById('feedback-title');
+        const msg = document.getElementById('feedback-msg');
+        const retryBtn = document.getElementById('retry-btn');
+        const buttons = document.querySelectorAll('.quiz-btn');
+
+        // Reset Styles
+        feedbackBox.className = 'quiz-feedback show';
+        buttons.forEach(btn => btn.className = 'quiz-btn');
+
+        if (answer === 'B') {
+            // Correct
+            feedbackBox.classList.add('feedback-success');
+            feedbackBox.classList.remove('feedback-error');
+            title.innerText = "🎉 答對了！";
+            msg.innerText = "沒錯！Network Layer 就是第 3 層，負責處理 IP 與路由 (Routing)。";
+            retryBtn.style.display = 'none';
+            
+            // Highlight correct button
+            buttons[1].classList.add('correct');
+        } else {
+            // Incorrect
+            feedbackBox.classList.add('feedback-error');
+            feedbackBox.classList.remove('feedback-success');
+            title.innerText = "❌ 答錯囉";
+            msg.innerText = "提示：第 2 層是資料連結層，第 4 層是傳輸層。Network Layer 夾在中間。";
+            retryBtn.style.display = 'inline-block';
+
+            // Highlight wrong button
+            const index = answer.charCodeAt(0) - 65;
+            buttons[index].classList.add('incorrect');
+        }
+    }
+
+    function scrollToStack() {
+        const el = document.getElementById('osi-interactive');
+        el.scrollIntoView({ behavior: 'smooth' });
+        
+        // Auto click Layer 3 after scroll
+        setTimeout(() => {
+            const layer3 = document.querySelector('.osi-layer[data-layer="3"]');
+            if(layer3) layer3.click();
+        }, 800);
+    }
+
+    // --- Accordion Logic ---
+    function toggleAccordion(btn) {
+        const content = btn.nextElementSibling;
+        const isOpen = content.classList.contains('open');
+        
+        // Close all first (optional, for accordion style)
+        // document.querySelectorAll('.accordion-content').forEach(c => c.classList.remove('open'));
+
+        if (!isOpen) {
+            content.classList.add('open');
+            btn.querySelector('span:last-child').innerText = '-';
+        } else {
+            content.classList.remove('open');
+            btn.querySelector('span:last-child').innerText = '+';
+        }
+    }
+
+</script>
+
+</body>
+</html>

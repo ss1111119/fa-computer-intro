@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>演算法與虛擬碼入門教學</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #1e40af;
+            --accent-color: #f59e0b;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-secondary: #4b5563;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px 0;
+        }
+
+        header h1 {
+            color: var(--primary-color);
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        /* Card Style */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            color: var(--secondary-color);
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        /* Content Styling */
+        h3 {
+            color: var(--text-main);
+            margin: 15px 0 10px;
+            font-size: 1.2rem;
+        }
+
+        p {
+            margin-bottom: 15px;
+        }
+
+        ul {
+            list-style-type: none;
+            padding-left: 10px;
+        }
+
+        ul li {
+            margin-bottom: 10px;
+            position: relative;
+            padding-left: 20px;
+        }
+
+        ul li::before {
+            content: "•";
+            color: var(--primary-color);
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        /* Code Block */
+        .code-block {
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: "Consolas", "Monaco", monospace;
+            overflow-x: auto;
+            border-left: 5px solid var(--accent-color);
+            margin: 15px 0;
+            font-size: 0.95rem;
+        }
+
+        .keyword { color: #569cd6; }
+        .control { color: #c586c0; }
+        .comment { color: #6a9955; }
+
+        /* Analogy Box */
+        .analogy-box {
+            background-color: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        .analogy-title {
+            color: var(--primary-color);
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        /* Quiz Section */
+        .quiz-container {
+            text-align: center;
+        }
+
+        .question {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .options {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.95);
+        }
+
+        .btn-reset {
+            background-color: #6b7280;
+            color: white;
+            font-size: 1rem;
+            padding: 8px 20px;
+            margin-top: 15px;
+            display: none; /* Hidden initially */
+        }
+
+        .quiz-result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            display: none;
+        }
+
+        .result-correct {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #34d399;
+        }
+
+        .result-wrong {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #f87171;
+        }
+
+        /* Memory Card */
+        .memory-card {
+            background-color: #fffbeb;
+            border: 2px dashed var(--accent-color);
+        }
+        
+        .memory-highlight {
+            background-color: var(--accent-color);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .mnemonic {
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--secondary-color);
+            margin-top: 20px;
+            padding: 10px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 8px;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            header h1 { font-size: 1.8rem; }
+            .card { padding: 15px; }
+            .options { flex-direction: column; }
+            .btn { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>演算法與虛擬碼入門</h1>
+        <p>給高中生的 AI 邏輯先修課</p>
+    </header>
+
+    <!-- Part 1: What is Algorithm -->
+    <section class="card">
+        <h2 class="card-title">一、什麼是演算法（Algorithm）？</h2>
+        <p>簡單來說，演算法就是一組**「解決問題的步驟與邏輯」**。</p>
+        <p>它的重點在於**「怎麼做（How）」**，而不是「用哪一種語言（如 Python 或 C++）寫」。</p>
+        <ul>
+            <li>不管是現代的 AI 人工智慧演算法</li>
+            <li>Google 的搜尋演算法</li>
+            <li>或是把資料從大排到小的排序演算法</li>
+        </ul>
+        <p>它們的本質通通都是演算法。</p>
+        
+        <div class="analogy-box">
+            <span class="analogy-title">🍳 生活小比喻：食譜</span>
+            <p><strong>食譜就是一種演算法！</strong></p>
+            <p>如果你的目標是「做出好吃的蛋炒飯」，食譜會告訴你：<br>
+            1. 先熱油鍋 <br>
+            2. 放入蛋液 <br>
+            3. 加入隔夜飯翻炒...</p>
+            <p>這套步驟不論你是用高級瓦斯爐（超級電腦）還是簡易卡式爐（手機），步驟邏輯都是不變的。</p>
+        </div>
+    </section>
+
+    <!-- Part 2: What is Pseudo Code -->
+    <section class="card">
+        <h2 class="card-title">二、什麼是虛擬碼（Pseudo Code）？</h2>
+        <p>虛擬碼不是一種電腦能直接執行的「正式程式語言」。</p>
+        <p>它是一種介於**「人類自然語言（中文/英文）」**與**「程式碼」**之間的表達方式。</p>
+        
+        <h3>虛擬碼的特點：</h3>
+        <ul>
+            <li><strong>目的：</strong> 用來清楚描述演算法的流程。</li>
+            <li><strong>自由：</strong> 不需要像寫 Code 一樣在意分號 `;`、括號 `{}` 或變數型別宣告。</li>
+            <li><strong>易懂：</strong> 只要邏輯通順，大家都能看懂。</li>
+        </ul>
+
+        <h3>📝 虛擬碼範例（以燒開水為例）：</h3>
+        <div class="code-block">
+<span class="control">If</span> (temperature > 100) <span class="control">Then</span>:
+    <span class="keyword">Stop</span> heating  <span class="comment">// 溫度夠了，停止加熱</span>
+<span class="control">Else</span>:
+    <span class="keyword">Keep</span> heating  <span class="comment">// 溫度不夠，繼續加熱</span>
+<span class="control">End If</span>
+        </div>
+        <p><strong>說明：</strong> 你不需要學過程式設計，光看這段文字，是不是也能理解它的邏輯？這就是虛擬碼的威力！</p>
+    </section>
+
+    <!-- Part 3: Why Use Pseudo Code -->
+    <section class="card">
+        <h2 class="card-title">三、為什麼演算法（含 AI）要用虛擬碼？</h2>
+        <p>這是最核心的概念。為什麼不直接寫程式碼就好？</p>
+        <ul>
+            <li><strong>專注邏輯流程：</strong> 在設計階段，我們只想確認「邏輯對不對」，不想被複雜的語法細節干擾。</li>
+            <li><strong>跨語言通用：</strong> 一個用虛擬碼寫好的 AI 演算法，工程師 A 可以把它寫成 Python，工程師 B 可以把它寫成 C++。</li>
+            <li><strong>溝通標準：</strong> 在教學、考試、學術論文中，虛擬碼是全世界通用的語言。</li>
+        </ul>
+
+        <p>許多著名的 AI 演算法（例如用來導航找路徑的 A* 演算法，或是機器學習的訓練步驟），在教科書上都是先用虛擬碼來教學的。</p>
+        
+        <h3>🤖 AI 搜尋資料的虛擬碼概念：</h3>
+        <div class="code-block">
+<span class="keyword">Function</span> AI_Search(Data):
+    <span class="control">For</span> item <span class="control">in</span> Data:
+        <span class="control">If</span> item == "Target":
+            <span class="keyword">Return</span> "Found It!"
+    <span class="keyword">Return</span> "Not Found"
+        </div>
+    </section>
+
+    <!-- Part 4: Exam Analysis -->
+    <section class="card">
+        <h2 class="card-title">四、本題解析（重點考題）</h2>
+        <div style="background: #e5e7eb; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
+            <p><strong>題目：</strong><br>
+            「演算法的提出，如 AI 演算法，可以用虛擬碼（pseudo code）來表示。」</p>
+            <p style="margin-top: 10px;">(A) O &nbsp;&nbsp;&nbsp; (B) X</p>
+        </div>
+
+        <h3>✅ 正確答案：(A) O</h3>
+        <p><strong>理由說明：</strong></p>
+        <ul>
+            <li>演算法本質是邏輯，虛擬碼正是描述邏輯的最佳工具。</li>
+            <li>演算法絕對可以、也經常使用虛擬碼來表達。</li>
+            <li>選項 (B) 是錯的，因為演算法<strong>不一定</strong>要直接寫成可執行的程式碼（Source Code），特別是在設計或討論階段。</li>
+        </ul>
+    </section>
+
+    <!-- Part 5: Interactive Quiz -->
+    <section class="card quiz-container">
+        <h2 class="card-title">五、互動小測驗</h2>
+        <p>請點擊下方選項來測試你的觀念：</p>
+        
+        <div class="question">
+            「演算法（包含 AI 演算法）可以用虛擬碼來表示。」
+        </div>
+
+        <div class="options">
+            <button class="btn btn-primary" onclick="checkAnswer('O')" id="btn-O">(A) O</button>
+            <button class="btn btn-primary" onclick="checkAnswer('X')" id="btn-X">(B) X</button>
+        </div>
+
+        <div id="quiz-result" class="quiz-result">
+            <!-- 結果將顯示於此 -->
+        </div>
+
+        <button class="btn btn-reset" onclick="resetQuiz()" id="btn-reset">↺ 重新作答</button>
+    </section>
+
+    <!-- Part 6: Summary -->
+    <section class="card memory-card">
+        <h2 class="card-title" style="color: #b45309;">六、記憶小卡（板書重點）</h2>
+        <ul>
+            <li><span class="memory-highlight">演算法</span> = 解決問題的流程與步驟（像食譜）。</li>
+            <li><span class="memory-highlight">虛擬碼</span> = 描述流程的工具（像草稿）。</li>
+            <li>虛擬碼<strong>介於</strong>自然語言與程式碼之間。</li>
+            <li>虛擬碼<strong>不依賴</strong>任何特定程式語言（Python、C++ 都能通用）。</li>
+            <li>AI 演算法與一般演算法，都<strong>能用</strong>虛擬碼表示。</li>
+        </ul>
+
+        <div class="mnemonic">
+            💡 補教口訣：<br>
+            「演算法講邏輯，虛擬碼最好用。」
+        </div>
+    </section>
+
+    <footer style="text-align: center; margin-top: 40px; color: #6b7280; font-size: 0.9rem;">
+        &copy; 2025 高中演算法教學專區
+    </footer>
+</div>
+
+<script>
+    function checkAnswer(answer) {
+        const resultDiv = document.getElementById('quiz-result');
+        const btnO = document.getElementById('btn-O');
+        const btnX = document.getElementById('btn-X');
+        const btnReset = document.getElementById('btn-reset');
+
+        // 鎖定按鈕，防止重複點擊
+        btnO.disabled = true;
+        btnX.disabled = true;
+
+        // 降低未選按鈕的透明度，突出選擇
+        if(answer === 'O') {
+            btnX.style.opacity = '0.5';
+        } else {
+            btnO.style.opacity = '0.5';
+        }
+
+        resultDiv.style.display = 'block';
+
+        if (answer === 'O') {
+            resultDiv.className = 'quiz-result result-correct';
+            resultDiv.innerHTML = '<strong>🎉 正確！</strong><br>虛擬碼是描述演算法邏輯的常用方式，AI 演算法也不例外。';
+        } else {
+            resultDiv.className = 'quiz-result result-wrong';
+            resultDiv.innerHTML = '<strong>❌ 錯誤！</strong><br>演算法不一定要用正式程式語言表示，虛擬碼是非常常見的表達方式。';
+        }
+
+        // 顯示重置按鈕
+        btnReset.style.display = 'inline-block';
+    }
+
+    function resetQuiz() {
+        const resultDiv = document.getElementById('quiz-result');
+        const btnO = document.getElementById('btn-O');
+        const btnX = document.getElementById('btn-X');
+        const btnReset = document.getElementById('btn-reset');
+
+        // 隱藏結果與重置按鈕
+        resultDiv.style.display = 'none';
+        btnReset.style.display = 'none';
+
+        // 恢復按鈕狀態
+        btnO.disabled = false;
+        btnX.disabled = false;
+        btnO.style.opacity = '1';
+        btnX.style.opacity = '1';
+    }
+</script>
+
+</body>
+</html>

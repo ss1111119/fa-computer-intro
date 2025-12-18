@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>分時系統互動教學：Time Sharing</title>
+    <style>
+        /* * =========================================
+         * CSS 樣式表 (Styles)
+         * =========================================
+         */
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --error-color: #c0392b;
+            --bg-light: #f8f9fa;
+            --text-dark: #333;
+            --p1-color: #e74c3c; /* 紅色 - P1 */
+            --p2-color: #2ecc71; /* 綠色 - P2 */
+            --p3-color: #9b59b6; /* 紫色 - P3 */
+            --cpu-color: #f1c40f; /* 黃色 - CPU */
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            color: var(--text-dark);
+            background-color: #f0f2f5;
+        }
+
+        /* 版面結構 */
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+            padding: 1.5rem 1rem;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+
+        header p {
+            margin: 0.5rem 0 0;
+            font-weight: 300;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        /* 左側教學區與右側模擬區的佈局 */
+        .section-split {
+            display: flex;
+            width: 100%;
+            gap: 20px;
+        }
+
+        .left-panel {
+            flex: 1;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            min-width: 300px;
+        }
+
+        .right-panel {
+            flex: 1.5;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            min-width: 300px;
+        }
+
+        /* 響應式調整：小螢幕變垂直排列 */
+        @media (max-width: 768px) {
+            .section-split {
+                flex-direction: column;
+            }
+        }
+
+        h2 {
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 10px;
+            color: var(--primary-color);
+            margin-top: 0;
+        }
+
+        /* 專有名詞列表 */
+        .term-list dt {
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-top: 10px;
+        }
+        .term-list dd {
+            margin-left: 0;
+            margin-bottom: 10px;
+            padding-left: 15px;
+            border-left: 3px solid var(--accent-color);
+        }
+        .en-term {
+            font-size: 0.9em;
+            color: #666;
+            font-weight: normal;
+        }
+
+        /* --- 模擬區樣式 --- */
+        .controls {
+            background: var(--bg-light);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .control-group {
+            margin-bottom: 10px;
+        }
+        
+        .control-group label {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        button {
+            cursor: pointer;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .btn-start { background-color: var(--success-color); color: white; }
+        .btn-pause { background-color: var(--warning-color); color: white; }
+        .btn-reset { background-color: var(--error-color); color: white; }
+        button:hover { opacity: 0.9; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+
+        .simulation-display {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        /* CPU 樣式 */
+        .cpu-unit {
+            width: 80px;
+            height: 80px;
+            background-color: #333;
+            color: var(--cpu-color);
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            box-shadow: 0 4px 0 #000;
+            z-index: 2;
+            transition: transform 0.1s;
+        }
+        .cpu-unit.active {
+            box-shadow: 0 0 15px var(--cpu-color);
+            background-color: #444;
+        }
+
+        /* 程序列表 */
+        .process-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .process-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 5px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .process-row.active {
+            background-color: rgba(0,0,0,0.05);
+            font-weight: bold;
+        }
+
+        .process-label {
+            width: 40px;
+            text-align: center;
+            font-weight: bold;
+            color: white;
+            padding: 2px 5px;
+            border-radius: 4px;
+        }
+
+        .p1-lbl { background-color: var(--p1-color); }
+        .p2-lbl { background-color: var(--p2-color); }
+        .p3-lbl { background-color: var(--p3-color); }
+
+        .progress-track {
+            flex-grow: 1;
+            height: 20px;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            transition: width 0.2s ease-out; /* 這裡的 transition 會影響流暢度視覺 */
+        }
+
+        .status-text {
+            width: 50px;
+            text-align: right;
+            font-size: 0.8rem;
+        }
+
+        /* 事件紀錄 Log */
+        .log-panel {
+            margin-top: 15px;
+            height: 100px;
+            overflow-y: auto;
+            background: #222;
+            color: #0f0;
+            font-family: monospace;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+        .log-entry { margin-bottom: 2px; border-bottom: 1px solid #333; }
+
+        .illusion-summary {
+            margin-top: 10px;
+            text-align: center;
+            font-weight: bold;
+            padding: 10px;
+            background-color: #e8f6f3;
+            border-radius: 5px;
+            color: var(--primary-color);
+        }
+
+        /* --- 對照解惑與測驗區 --- */
+        .bottom-section {
+            width: 100%;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* Accordion (手風琴) */
+        details {
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        details summary {
+            padding: 10px;
+            background-color: var(--bg-light);
+            cursor: pointer;
+            font-weight: bold;
+            list-style: none; /* 移除預設箭頭，可選 */
+        }
+        details summary:hover {
+            background-color: #e9ecef;
+        }
+        details[open] summary {
+            border-bottom: 1px solid #ddd;
+        }
+        .details-content {
+            padding: 15px;
+            color: #555;
+        }
+
+        /* 小測驗 */
+        .quiz-options {
+            list-style: none;
+            padding: 0;
+        }
+        .quiz-options li {
+            margin-bottom: 10px;
+        }
+        .quiz-options label {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        .quiz-options label:hover {
+            background-color: var(--bg-light);
+        }
+        .quiz-options input {
+            margin-right: 10px;
+        }
+        
+        .feedback {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none; /* 預設隱藏 */
+            font-weight: bold;
+        }
+        .feedback.correct {
+            background-color: #d4edda;
+            color: #155724;
+            display: block;
+        }
+        .feedback.wrong {
+            background-color: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            padding: 20px;
+            color: #777;
+            font-size: 0.9rem;
+        }
+
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>分時系統 (Time Sharing)</h1>
+    <p>用「切時間」做出「像同時」的錯覺：CPU 的多工魔法</p>
+</header>
+
+<div class="container">
+    
+    <!-- 左側：概念說明 -->
+    <div class="section-split">
+        <section class="left-panel">
+            <h2>概念說明</h2>
+            <p>
+                你的電腦只有一顆 CPU，為什麼可以「一邊聽音樂、一邊打報告、一邊下載檔案」？<br>
+                這就是 **分時系統** 的魔法：它讓 CPU 輪流服務不同的程式，因為切換速度太快，人類感覺就像是「同時」在運作。
+            </p>
+            <dl class="term-list">
+                <dt>分時系統 <span class="en-term">(Time Sharing)</span></dt>
+                <dd>讓多個使用者或程式輪流使用 CPU 的技術。</dd>
+
+                <dt>時間片 <span class="en-term">(Time Slice / Quantum)</span></dt>
+                <dd>CPU 分配給每個程式執行的極短時間單位（例如 10ms ~ 100ms）。</dd>
+
+                <dt>排程 <span class="en-term">(Scheduling)</span></dt>
+                <dd>決定「下一個輪到誰執行」的機制。</dd>
+
+                <dt>行程 / 程序 <span class="en-term">(Process)</span></dt>
+                <dd>正在執行中的程式實體。</dd>
+
+                <dt>多工 <span class="en-term">(Multitasking)</span></dt>
+                <dd>透過快速切換，讓單一 CPU 處理多項任務的能力。</dd>
+            </dl>
+        </section>
+
+        <!-- 右側：互動模擬 -->
+        <section class="right-panel">
+            <h2>互動模擬區：單 CPU 排程</h2>
+            
+            <div class="controls">
+                <div class="control-group">
+                    <label>設定時間片長度 (Time Slice)：</label>
+                    <select id="timeSliceSelect" onchange="updateSettings()">
+                        <option value="50">50ms (極短 - 像同時)</option>
+                        <option value="200" selected>200ms (中等)</option>
+                        <option value="800">800ms (很長 - 像排隊)</option>
+                    </select>
+                </div>
+                <div>
+                    <button class="btn-start" id="startBtn" onclick="startSimulation()">開始模擬</button>
+                    <button class="btn-pause" id="pauseBtn" onclick="pauseSimulation()" disabled>暫停</button>
+                    <button class="btn-reset" id="resetBtn" onclick="resetSimulation()">重置</button>
+                </div>
+            </div>
+
+            <div class="simulation-display">
+                <!-- CPU -->
+                <div class="cpu-unit" id="cpuUnit">CPU</div>
+
+                <!-- Processes -->
+                <div class="process-container">
+                    <div class="process-row" id="row-p1">
+                        <div class="process-label p1-lbl">P1</div>
+                        <div class="progress-track">
+                            <div class="progress-bar" id="bar-p1" style="background-color: var(--p1-color);"></div>
+                        </div>
+                        <div class="status-text" id="text-p1">0%</div>
+                    </div>
+
+                    <div class="process-row" id="row-p2">
+                        <div class="process-label p2-lbl">P2</div>
+                        <div class="progress-track">
+                            <div class="progress-bar" id="bar-p2" style="background-color: var(--p2-color);"></div>
+                        </div>
+                        <div class="status-text" id="text-p2">0%</div>
+                    </div>
+
+                    <div class="process-row" id="row-p3">
+                        <div class="process-label p3-lbl">P3</div>
+                        <div class="progress-track">
+                            <div class="progress-bar" id="bar-p3" style="background-color: var(--p3-color);"></div>
+                        </div>
+                        <div class="status-text" id="text-p3">0%</div>
+                    </div>
+                </div>
+
+                <!-- 結論動態文字 -->
+                <div class="illusion-summary" id="illusionText">
+                    請按下「開始」觀察
+                </div>
+            </div>
+
+            <!-- 事件紀錄 -->
+            <div class="log-panel" id="logPanel">
+                <div class="log-entry">> 系統就緒...</div>
+            </div>
+        </section>
+    </div>
+
+    <!-- 對照解惑區 -->
+    <section class="bottom-section" id="confusion-matrix">
+        <h2>對照解惑：為什麼其他選項不對？</h2>
+        <p>在理解「誰造成了同時運作的錯覺」時，常會混淆以下名詞：</p>
+        
+        <details>
+            <summary>為什麼不是 (A) Virtual Memory (虛擬記憶體)？</summary>
+            <div class="details-content">
+                <p><strong>虛擬記憶體</strong> 是為了解決「記憶體 (RAM) 不夠用」的問題，它將硬碟空間模擬成記憶體使用。它讓你可以開啟比實體記憶體更大的程式，但它不負責 CPU 的切換與排程。</p>
+            </div>
+        </details>
+
+        <details>
+            <summary>為什麼不是 (B) Networking (網路)？</summary>
+            <div class="details-content">
+                <p><strong>網路</strong> 技術負責電腦之間的資料傳輸與溝通，與單機 CPU 如何處理多個程式無關。</p>
+            </div>
+        </details>
+
+        <details>
+            <summary>為什麼不是 (D) Buffering (緩衝)？</summary>
+            <div class="details-content">
+                <p><strong>緩衝</strong> 是為了解決「速度不匹配」的問題（例如 CPU 很快，印表機很慢，資料先存在 buffer）。它能讓 I/O 更順暢，但不是創造「多工錯覺」的核心機制。</p>
+            </div>
+        </details>
+    </section>
+
+    <!-- 小測驗區 -->
+    <section class="bottom-section" id="quiz">
+        <h2>小測驗：觀念驗收</h2>
+        <p>題目：「下列何種技術讓電腦執行程序時，猶如同時有多個 CPU 在運作？」</p>
+        
+        <ul class="quiz-options">
+            <li>
+                <label>
+                    <input type="radio" name="q1" value="A" onclick="checkAnswer(this)">
+                    (A) Virtual Memory（虛擬記憶體）
+                </label>
+            </li>
+            <li>
+                <label>
+                    <input type="radio" name="q1" value="B" onclick="checkAnswer(this)">
+                    (B) Networking（網路）
+                </label>
+            </li>
+            <li>
+                <label>
+                    <input type="radio" name="q1" value="C" onclick="checkAnswer(this)">
+                    (C) Time Sharing（分時系統）
+                </label>
+            </li>
+            <li>
+                <label>
+                    <input type="radio" name="q1" value="D" onclick="checkAnswer(this)">
+                    (D) Buffering（緩衝）
+                </label>
+            </li>
+        </ul>
+
+        <div id="quizFeedback" class="feedback"></div>
+    </section>
+
+</div>
+
+<footer>
+    <p>Time Sharing Interactive Demo &copy; 2025</p>
+</footer>
+
+<script>
+    /* * =========================================
+     * JavaScript 邏輯 (Logic)
+     * =========================================
+     */
+
+    // --- 變數設定 ---
+    let intervalId = null;
+    let isRunning = false;
+    let currentProcessIdx = 0; // 0: P1, 1: P2, 2: P3
+    let timeSlice = 200; // 預設 200ms
+    
+    // 程序資料結構
+    const processes = [
+        { id: 'p1', name: 'P1', progress: 0, color: 'var(--p1-color)' },
+        { id: 'p2', name: 'P2', progress: 0, color: 'var(--p2-color)' },
+        { id: 'p3', name: 'P3', progress: 0, color: 'var(--p3-color)' }
+    ];
+
+    // DOM 元素快取
+    const cpuUnit = document.getElementById('cpuUnit');
+    const logPanel = document.getElementById('logPanel');
+    const illusionText = document.getElementById('illusionText');
+    const startBtn = document.getElementById('startBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const timeSliceSelect = document.getElementById('timeSliceSelect');
+
+    // --- 核心模擬功能 ---
+
+    // 更新設定 (當下拉選單改變時)
+    function updateSettings() {
+        timeSlice = parseInt(timeSliceSelect.value);
+        
+        // 更新錯覺提示文字
+        updateIllusionText();
+
+        // 如果正在執行，需要重啟 Timer 以應用新速度
+        if (isRunning) {
+            clearInterval(intervalId);
+            runSimulationLoop();
+        }
+    }
+
+    function updateIllusionText() {
+        if (timeSlice <= 100) {
+            illusionText.textContent = `當前時間片：${timeSlice}ms (切換極快，像同時執行)`;
+            illusionText.style.color = "#27ae60";
+        } else if (timeSlice >= 500) {
+            illusionText.textContent = `當前時間片：${timeSlice}ms (切換明顯，像輪流排隊)`;
+            illusionText.style.color = "#c0392b";
+        } else {
+            illusionText.textContent = `當前時間片：${timeSlice}ms (標準分時)`;
+            illusionText.style.color = "#2c3e50";
+        }
+    }
+
+    // 開始模擬
+    function startSimulation() {
+        if (isRunning) return;
+        isRunning = true;
+        
+        startBtn.disabled = true;
+        pauseBtn.disabled = false;
+        timeSliceSelect.disabled = false; // 允許動態調整
+
+        updateIllusionText();
+        addLog(`系統啟動，時間片設定為 ${timeSlice}ms`);
+        
+        runSimulationLoop();
+    }
+
+    // 暫停模擬
+    function pauseSimulation() {
+        isRunning = false;
+        clearInterval(intervalId);
+        
+        startBtn.disabled = false;
+        pauseBtn.disabled = true;
+        
+        // 清除 CPU 高亮
+        cpuUnit.style.backgroundColor = "#333";
+        cpuUnit.style.color = "var(--cpu-color)";
+        cpuUnit.textContent = "CPU";
+        
+        // 清除列表高亮
+        processes.forEach(p => {
+            document.getElementById(`row-${p.id}`).classList.remove('active');
+        });
+
+        addLog("系統暫停");
+    }
+
+    // 重置模擬
+    function resetSimulation() {
+        pauseSimulation(); // 先暫停
+        
+        // 重置資料
+        processes.forEach(p => {
+            p.progress = 0;
+            updateProcessUI(p);
+        });
+        currentProcessIdx = 0;
+        
+        // 清除 Log
+        logPanel.innerHTML = '<div class="log-entry">> 系統已重置</div>';
+        illusionText.textContent = "請按下「開始」觀察";
+        illusionText.style.color = "#333";
+        
+        // 重置按鈕狀態
+        startBtn.disabled = false;
+        pauseBtn.disabled = true;
+    }
+
+    // 模擬主迴圈 (Tick)
+    function runSimulationLoop() {
+        // 使用 setInterval 模擬 "Time Slice" 的週期
+        // 注意：這裡的 timeSlice 直接對應視覺上的延遲時間
+        intervalId = setInterval(() => {
+            
+            // 1. 切換到下一個程序 (Round Robin)
+            const p = processes[currentProcessIdx];
+            
+            // 2. 執行該程序 (增加進度)
+            // 為了視覺效果，如果時間片短(50ms)，每次增加少一點(2%)，這樣跑比較久
+            // 如果時間片長(800ms)，每次增加多一點(10%)，避免看太久
+            // 但為了統一比較 "流暢度"，這裡固定增加量，只改變切換頻率
+            p.progress += 5; 
+            
+            // 循環邏輯：如果滿了就歸零，讓模擬可以一直跑
+            if (p.progress > 100) {
+                p.progress = 0;
+                addLog(`[${p.name}] 執行完畢，重新排入佇列`);
+            }
+
+            // 3. 更新 UI
+            updateProcessUI(p);
+            highlightActiveProcess(p);
+            addLog(`CPU 切換 -> ${p.name} (執行中...)`);
+
+            // 4. 準備下一個
+            currentProcessIdx = (currentProcessIdx + 1) % processes.length;
+
+        }, timeSlice);
+    }
+
+    // 更新單一程序的 UI (進度條)
+    function updateProcessUI(process) {
+        const bar = document.getElementById(`bar-${process.id}`);
+        const text = document.getElementById(`text-${process.id}`);
+        
+        bar.style.width = `${process.progress}%`;
+        text.textContent = `${process.progress}%`;
+    }
+
+    // 高亮顯示目前的 CPU 狀態與列表
+    function highlightActiveProcess(process) {
+        // CPU 顯示
+        cpuUnit.style.backgroundColor = process.color;
+        cpuUnit.style.color = "#fff";
+        cpuUnit.textContent = `Exec: ${process.name}`;
+        
+        // 列表高亮
+        processes.forEach(p => {
+            const row = document.getElementById(`row-${p.id}`);
+            if (p.id === process.id) {
+                row.classList.add('active');
+            } else {
+                row.classList.remove('active');
+            }
+        });
+    }
+
+    // 寫入 Log
+    function addLog(message) {
+        const entry = document.createElement('div');
+        entry.className = 'log-entry';
+        
+        // 取得當前時間字串 HH:MM:SS
+        const now = new Date();
+        const timeStr = now.toTimeString().split(' ')[0];
+        
+        entry.textContent = `[${timeStr}] ${message}`;
+        logPanel.appendChild(entry);
+        
+        // 自動捲動到底部
+        logPanel.scrollTop = logPanel.scrollHeight;
+    }
+
+    // --- 測驗功能 ---
+
+    function checkAnswer(input) {
+        const feedback = document.getElementById('quizFeedback');
+        const val = input.value;
+        
+        if (val === 'C') {
+            // 答對
+            feedback.className = 'feedback correct';
+            feedback.innerHTML = '✅ 答對了！<br>分時系統 (Time Sharing) 透過快速切換時間片，創造了多工的錯覺。';
+        } else {
+            // 答錯
+            let reason = "";
+            if (val === 'A') reason = "虛擬記憶體是管理儲存空間的技術。";
+            if (val === 'B') reason = "網路是負責資料傳輸的技術。";
+            if (val === 'D') reason = "緩衝是處理 I/O 速度差異的技術。";
+
+            feedback.className = 'feedback wrong';
+            feedback.innerHTML = `❌ 答錯了！<br>${reason}<br>提示：請回去看模擬區，觀察「時間片切換」造成的假同時效果。`;
+        }
+    }
+</script>
+
+</body>
+</html>

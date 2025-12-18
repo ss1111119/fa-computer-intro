@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>時間複雜度 O(1) 教學 - 為什麼不是一小時？</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --accent-color: #e67e22;
+            --success-color: #27ae60;
+            --error-color: #c0392b;
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Noto Sans TC", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* 標題區 */
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2em;
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+            margin-top: 10px;
+        }
+
+        /* 卡片通用樣式 */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--primary-color);
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+        .card h2 {
+            color: var(--secondary-color);
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        /* 重點標記 */
+        .highlight {
+            background-color: #fff3cd;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: #856404;
+        }
+
+        .tag-o1 {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-weight: bold;
+        }
+
+        /* 圖表模擬區 */
+        .chart-container {
+            display: flex;
+            align-items: flex-end;
+            height: 200px;
+            border-left: 2px solid #333;
+            border-bottom: 2px solid #333;
+            margin: 20px auto;
+            position: relative;
+            width: 80%;
+            padding: 10px;
+            background: #fafafa;
+        }
+
+        .chart-line {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background-color: var(--accent-color);
+        }
+
+        .axis-label {
+            position: absolute;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .y-axis { top: -25px; left: -10px; }
+        .x-axis { bottom: -30px; right: 0; }
+        
+        .chart-caption {
+            text-align: center;
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 30px;
+        }
+
+        /* 範例區塊 */
+        .example-box {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 10px;
+            border-radius: 6px;
+            font-family: "Consolas", monospace;
+            margin: 5px 0;
+            overflow-x: auto;
+        }
+
+        /* 考題區 */
+        .exam-question {
+            background-color: #eef2f7;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1.1em;
+            border: 2px solid #d1d8e0;
+        }
+
+        .answer-reveal {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            border-radius: 6px;
+        }
+
+        /* 互動測驗按鈕 */
+        .quiz-options {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn-option {
+            padding: 10px 20px;
+            border: 2px solid var(--primary-color);
+            background: white;
+            color: var(--primary-color);
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.2s;
+            font-weight: bold;
+            flex: 1;
+            min-width: 120px;
+            text-align: center;
+        }
+
+        .btn-option:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-option.active {
+            background: var(--primary-color);
+            color: white;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .feedback {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 6px;
+            display: none;
+            font-weight: bold;
+        }
+
+        .feedback.correct {
+            display: block;
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .feedback.wrong {
+            display: block;
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .reset-btn {
+            background-color: #95a5a6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            display: block;
+            width: 100%;
+            font-size: 1em;
+        }
+        .reset-btn:hover { background-color: #7f8c8d; }
+
+        /* 記憶小卡 */
+        .memory-card {
+            background: linear-gradient(to right bottom, #f1c40f, #f39c12);
+            color: #2c3e50;
+            transform: rotate(-1deg);
+            border: none;
+        }
+        .memory-card h2 {
+            border-bottom: 2px solid rgba(0,0,0,0.1);
+            color: #2c3e50;
+        }
+        .mnemonic {
+            font-size: 1.2em;
+            text-align: center;
+            font-weight: bold;
+            background: rgba(255,255,255,0.3);
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+
+        /* RWD */
+        @media (max-width: 600px) {
+            header h1 { font-size: 1.5em; }
+            .card { padding: 15px; }
+            .quiz-options { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>時間複雜度 O(1) 解析</h1>
+        <p>給高中生的演算法入門：為什麼不是「一小時內完成」？</p>
+    </header>
+
+    <!-- 一、暖身觀念 -->
+    <div class="card">
+        <h2>一、暖身：複雜度在看什麼？</h2>
+        <p>在開始之前，我們先建立一個重要觀念：</p>
+        <p>Big-O 複雜度描述的是<span class="highlight">「當資料量 n 變大時，程式執行步驟如何成長」</span>。</p>
+        <ul>
+            <li>❌ <strong>不是</strong>在講程式實際跑了幾秒鐘或幾小時。</li>
+            <li>❌ <strong>不是</strong>在測量你的電腦配備有多好。</li>
+        </ul>
+        <div class="example-box">
+            <strong>🚗 生活比喻：油耗趨勢</strong>
+            <p>Big-O 就像是在看車子的「油耗表現」。</p>
+            <p>我們關心的是「開越遠（資料越多），油耗增加得快不快？」而不是「今天去便利商店花了幾分鐘」。</p>
+        </div>
+    </div>
+
+    <!-- 二、O(1) 的真正意義 -->
+    <div class="card">
+        <h2>二、O(1) 的真正意義</h2>
+        <p><span class="tag-o1">O(1)</span> 被稱為 <strong>常數時間 (Constant Time)</strong>。</p>
+        <p>它的意思是：<strong>不論輸入資料量 n 多大，執行步驟的數量都大致固定。</strong></p>
+        
+        <div class="chart-container">
+            <div class="y-axis">時間/步驟 (T)</div>
+            <div class="x-axis">資料量 (n)</div>
+            <div class="chart-line"></div>
+            <div style="position: absolute; top: 40%; right: 10px; color: var(--accent-color); font-weight: bold;">O(1)</div>
+        </div>
+        <p class="chart-caption">▲ 即使資料量 (n) 從 10 增加到 100 萬，所需的時間 (高度) 幾乎不變。</p>
+
+        <p>這<strong>不代表</strong>它一定跑得很快（例如只需 0.0001 秒），它只代表「時間長短與 n 無關」。</p>
+    </div>
+
+    <!-- 三、常見例子 -->
+    <div class="card">
+        <h2>三、常見 O(1) 例子</h2>
+        <p>以下這些操作，通常都被視為 O(1)：</p>
+        
+        <div class="example-box">
+            <h3>1. 讀取陣列 (Array) 的特定位置</h3>
+            <p>不管陣列裡有 10 個還是 100 萬個資料，電腦只要知道索引值 (Index)，就能直接跳到記憶體位置抓資料。</p>
+            <div class="code-block">
+                int n = arr[5];  // 就在這裡！不用從頭找
+            </div>
+        </div>
+
+        <div class="example-box">
+            <h3>2. 基本算術運算與變數讀取</h3>
+            <p>簡單的加減乘除或讀取變數值。</p>
+            <div class="code-block">
+                x = y + z;
+                print(x);
+            </div>
+        </div>
+
+        <div class="example-box">
+            <h3>3. Hash Table (雜湊表) 查詢</h3>
+            <p>在理想狀況下，查詢 Hash Table（例如 Python 的 Dictionary）就像查字典知道頁數一樣快，不需要一頁一頁翻。</p>
+        </div>
+    </div>
+
+    <!-- 四、錯誤觀念澄清 -->
+    <div class="card" style="border-left-color: var(--error-color);">
+        <h2>四、錯誤觀念：為什麼不是「一小時內完成」？</h2>
+        <p>這是一個非常常見的考試陷阱！</p>
+        <p><strong>迷思：</strong>「O(1) 只有 1，所以很快，一定可以在一小時內跑完？」</p>
+        <p><strong>真相：</strong> <span class="highlight">大錯特錯！</span></p>
+        <ul>
+            <li><strong>「一小時」</strong>是實際時間單位。</li>
+            <li><strong>O(1)</strong> 是成長趨勢。</li>
+        </ul>
+        <p>如果有一個程式，它的步驟是「固定等待 100 年再印出 Hello World」，它的複雜度依然是 <span class="tag-o1">O(1)</span>，因為就算資料量變大，它還是只等 100 年（固定常數）。但它顯然無法在一小時內完成。</p>
+    </div>
+
+    <!-- 五、題目解析 -->
+    <div class="card">
+        <h2>五、試題解析</h2>
+        <div class="exam-question">
+            題目：<br>
+            「O(1) 複雜度的演算法，表示可以在一小時內完成計算的方法。」<br><br>
+            (A) O<br>
+            (B) X
+        </div>
+        
+        <div class="answer-reveal">
+            <strong>正確答案：(B) X</strong>
+            <hr style="border-color: #c3e6cb; margin: 10px 0;">
+            <p><strong>解析：</strong><br>
+            O(1) 的定義是「執行時間不隨資料量 n 增長而變動」，也就是與 n 無關。<br>
+            它並沒有限制實際執行時間的長短。一個 O(1) 的演算法可能只需 1 奈秒，也可能需要 10 年（只要這個 10 年是固定的）。<br>
+            因此，將其解釋為「一小時內」是混淆了「複雜度」與「實際時間」的概念。
+            </p>
+        </div>
+    </div>
+
+    <!-- 六、互動小測驗 -->
+    <div class="card">
+        <h2>六、觀念挑戰賽</h2>
+        <p>點選你覺得正確的答案：</p>
+
+        <!-- Q1 -->
+        <div class="quiz-item" id="q1">
+            <p><strong>題目 1 (是非題)：</strong><br>「O(1) 的意思是：資料量變大，執行步驟仍大致固定。」</p>
+            <div class="quiz-options">
+                <button class="btn-option" onclick="checkAnswer('q1', 'A')">(A) O</button>
+                <button class="btn-option" onclick="checkAnswer('q1', 'B')">(B) X</button>
+            </div>
+            <div id="feedback-q1" class="feedback"></div>
+        </div>
+
+        <hr style="margin: 20px 0; border: 0; border-top: 1px dashed #ccc;">
+
+        <!-- Q2 -->
+        <div class="quiz-item" id="q2">
+            <p><strong>題目 2 (單選題)：</strong><br>「下列何者最能描述 O(1)？」</p>
+            <div class="quiz-options">
+                <button class="btn-option" onclick="checkAnswer('q2', 'A')">(A) 一小時內完成</button>
+                <button class="btn-option" onclick="checkAnswer('q2', 'B')">(B) 與資料量 n 無關</button>
+                <button class="btn-option" onclick="checkAnswer('q2', 'C')">(C) 資料越多越慢</button>
+            </div>
+            <div id="feedback-q2" class="feedback"></div>
+        </div>
+
+        <button class="reset-btn" onclick="resetQuiz()">🔄 重新作答</button>
+    </div>
+
+    <!-- 七、記憶小卡 -->
+    <div class="card memory-card">
+        <h2>七、記憶小卡 (Takeaway)</h2>
+        <p>考試前記得這張卡片就對了！</p>
+        <ul>
+            <li>Big-O 看的是<strong>「成長趨勢」</strong>，不是實際秒數。</li>
+            <li>O(1) ＝ <strong>常數時間</strong> ＝ 步驟數固定，不隨 n 變動。</li>
+        </ul>
+        <div class="mnemonic">
+            口訣：<br>
+            「O(1) 看資料量，不看鐘錶。」<br>
+            「複雜度談成長，不談幾秒。」
+        </div>
+    </div>
+
+    <footer>
+        <p>Created for High School Algorithms Class | Time Complexity O(1)</p>
+    </footer>
+</div>
+
+<script>
+    // 正確答案設定
+    const answers = {
+        'q1': {
+            correct: 'A',
+            explanation: '正確！這正是 O(1) 常數時間的定義。'
+        },
+        'q2': {
+            correct: 'B',
+            explanation: 'Bingo！O(1) 代表執行步驟數量是固定的常數，不受 n 大小影響。'
+        }
+    };
+
+    // 錯誤時的解釋
+    const wrongExplanations = {
+        'q1': '答錯囉！O(1) 確實代表步驟固定，與資料量增長無關。',
+        'q2': '不對喔！(A) 是常見迷思 (實際時間)，(C) 是 O(n) 或其他的特徵。'
+    };
+
+    function checkAnswer(questionId, selectedOption) {
+        const feedbackEl = document.getElementById(`feedback-${questionId}`);
+        const buttons = document.querySelectorAll(`#${questionId} .btn-option`);
+        
+        // 清除舊狀態
+        buttons.forEach(btn => btn.classList.remove('active'));
+        
+        // 標記選中按鈕
+        // 這裡簡單遍歷找到點擊的按鈕並加上 active (或是直接透過 event target，但此處簡易實作)
+        event.target.classList.add('active');
+
+        // 判斷對錯
+        if (selectedOption === answers[questionId].correct) {
+            feedbackEl.className = 'feedback correct';
+            feedbackEl.innerHTML = `✅ ${answers[questionId].explanation}`;
+        } else {
+            feedbackEl.className = 'feedback wrong';
+            feedbackEl.innerHTML = `❌ ${wrongExplanations[questionId]}`;
+        }
+    }
+
+    function resetQuiz() {
+        // 清空回饋文字
+        document.querySelectorAll('.feedback').forEach(el => {
+            el.className = 'feedback';
+            el.innerHTML = '';
+            el.style.display = 'none';
+        });
+
+        // 移除按鈕選中狀態
+        document.querySelectorAll('.btn-option').forEach(btn => {
+            btn.classList.remove('active');
+        });
+    }
+</script>
+
+</body>
+</html>

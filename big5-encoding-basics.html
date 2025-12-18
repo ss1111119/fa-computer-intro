@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>資訊概論：Big5 中文碼系統教學</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --success-color: #27ae60;
+            --error-color: #c0392b;
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px 0;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            color: var(--accent-color);
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            border-left: 5px solid var(--accent-color);
+            padding-left: 10px;
+        }
+
+        h3 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+
+        .subtitle {
+            color: #666;
+            font-weight: normal;
+        }
+
+        /* Card Style */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 25px;
+            margin-bottom: 25px;
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        /* List Styles */
+        ul {
+            list-style-position: inside;
+            margin-left: 10px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        /* Metaphor Box */
+        .metaphor-box {
+            background-color: #e8f4fc;
+            border-left: 4px solid var(--accent-color);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        /* Byte Visual Diagram */
+        .byte-visual-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .byte-box {
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            overflow: hidden;
+            text-align: center;
+            width: 220px;
+            background: white;
+        }
+
+        .byte-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 5px;
+            font-weight: bold;
+        }
+
+        .byte-content {
+            display: flex;
+            padding: 10px;
+            justify-content: center;
+        }
+
+        .bit-block {
+            border: 1px dashed #999;
+            padding: 10px;
+            margin: 0 2px;
+            flex: 1;
+            background: #f9f9f9;
+            font-size: 0.9rem;
+        }
+
+        .plus-sign {
+            font-size: 2rem;
+            color: #666;
+            font-weight: bold;
+        }
+
+        /* Exam Analysis Box */
+        .exam-box {
+            background-color: #fff8e1;
+            border: 1px solid #ffe0b2;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .option {
+            display: block;
+            margin: 5px 0;
+            padding: 5px 10px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 4px;
+        }
+
+        .correct-answer {
+            color: var(--success-color);
+            font-weight: bold;
+        }
+
+        /* Quiz Section */
+        .quiz-container {
+            text-align: center;
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .btn {
+            padding: 12px 40px;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.1);
+        }
+
+        .btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 rgba(0,0,0,0.1);
+        }
+
+        .btn-yes {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .btn-yes:hover {
+            background-color: #219150;
+        }
+
+        .btn-no {
+            background-color: var(--error-color);
+            color: white;
+        }
+
+        .btn-no:hover {
+            background-color: #a93226;
+        }
+
+        .btn-reset {
+            background-color: var(--accent-color);
+            color: white;
+            padding: 10px 25px;
+            font-size: 1rem;
+            margin-top: 15px;
+            display: none; /* Hidden by default */
+        }
+        
+        .btn-reset:hover {
+            background-color: #2980b9;
+        }
+
+        .feedback-area {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none; /* Hidden by default */
+            font-weight: bold;
+        }
+
+        .feedback-correct {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .feedback-wrong {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* Cheat Sheet */
+        .cheat-sheet {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+        }
+        
+        .cheat-sheet h2 {
+            color: white;
+            border-left-color: white;
+        }
+
+        .highlight-text {
+            font-size: 1.5rem;
+            background: rgba(255,255,255,0.2);
+            padding: 10px;
+            text-align: center;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-weight: bold;
+            border: 2px dashed rgba(255,255,255,0.5);
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            h1 { font-size: 1.5rem; }
+            .byte-box { width: 100%; }
+            .btn { width: 100%; margin-bottom: 10px; }
+            .btn-group { flex-direction: column; gap: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Big5 中文碼系統教學</h1>
+        <p class="subtitle">為什麼一個中文字是 2 個 Bytes？｜高中資訊概論</p>
+    </header>
+
+    <!-- Section 1: Introduction -->
+    <section class="card">
+        <h2>一、什麼是 Big5 中文碼？（暖身區）</h2>
+        <p><strong>Big5 (大五碼)</strong> 是一種專為<strong>繁體中文</strong>設計的電腦編碼系統。</p>
+        <br>
+        <ul>
+            <li><strong>起源：</strong> 1984 年由台灣資訊工業策進會與五大中文系統廠商共同制定。</li>
+            <li><strong>用途：</strong> 主要用於<strong>台灣、香港</strong>早期的電腦系統（現在 Windows 的記事本若存成 ANSI 格式，在繁體中文系統下其實就是 Big5）。</li>
+            <li><strong>目的：</strong> 為了解決當時 ASCII (美國標準) 無法顯示大量中文字的問題。</li>
+        </ul>
+
+        <div class="metaphor-box">
+            <h3>🏫 生活化比喻：置物櫃</h3>
+            <p>想像電腦記憶體像是一排排的置物櫃：</p>
+            <ul>
+                <li><strong>ASCII (英文字母)：</strong> 體積很小，只需要租用 <strong>1 個櫃子 (1 Byte)</strong> 就放得下。</li>
+                <li><strong>Big5 (繁體中文)：</strong> 筆畫結構複雜，體積龐大，必須租用 <strong>2 個櫃子 (2 Bytes)</strong> 才放得下。</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- Section 2: Core Characteristics -->
+    <section class="card">
+        <h2>二、Big5 編碼的核心特性</h2>
+        <p>這是考試最愛考的重點，請務必記住：</p>
+        <br>
+        <ul>
+            <li>一個 Big5 中文字由 <strong>2 個 Bytes (雙位元組)</strong> 組成。</li>
+            <li>2 Bytes = 16 bits (因為 1 Byte = 8 bits)。</li>
+            <li>藉由兩個 Byte 的組合，可以表示一萬多個繁體中文字（2<sup>16</sup> = 65,536 種變化，扣除部分保留區後仍足夠使用）。</li>
+        </ul>
+
+        <div class="byte-visual-container">
+            <!-- Visual Representation -->
+            <div class="byte-box">
+                <div class="byte-header">中文字 (Big5)</div>
+                <div class="byte-content">
+                    <div class="bit-block">高位元組<br>(Byte 1)</div>
+                    <div class="bit-block">低位元組<br>(Byte 2)</div>
+                </div>
+                <div style="padding: 5px; font-size: 0.9rem; color: #666;">總共 16 bits</div>
+            </div>
+        </div>
+        <p style="text-align: center; color: #555; font-size: 0.9rem;">▲ Big5 透過兩個 Byte 的排列組合來鎖定一個中文字。</p>
+    </section>
+
+    <!-- Section 3: Big5 vs ASCII -->
+    <section class="card">
+        <h2>三、Big5 與 ASCII 的關係</h2>
+        <p>很多學生會在這裡搞混，以為用了 Big5 之後，英文字也變成 2 Bytes，這是<strong>錯誤</strong>的！</p>
+        <br>
+        <p>Big5 系統採用了一種「混用」策略：</p>
+        <ul>
+            <li>遇到<strong>英文字母、數字</strong> (如 A, B, 1, 2)：沿用 ASCII 標準，佔用 <strong>1 Byte</strong>。</li>
+            <li>遇到<strong>中文字符</strong> (如 中, 文)：使用 Big5 編碼，佔用 <strong>2 Bytes</strong>。</li>
+        </ul>
+        
+        <div class="metaphor-box" style="background-color: #fff3cd; border-left-color: #f1c40f;">
+            <h3>⚠️ 考試陷阱注意</h3>
+            <p>雖然 Big5 系統可以顯示英文，但在考試題目中，如果題目問：<br>
+            <strong>「Big5 中文碼」</strong>或<strong>「Big5 字符」</strong><br>
+            通常專指<strong>「那個中文字」</strong>，所以標準答案一律選 <strong>2 Bytes</strong>。</p>
+        </div>
+    </section>
+
+    <!-- Section 4: Exam Analysis -->
+    <section class="card">
+        <h2>四、本題解析（對應考題）</h2>
+        <div class="exam-box">
+            <h3>📝 經典考題</h3>
+            <p>題目：「在 Big5 中文碼系統中，每個文字都是由兩個 Bytes 組成。」</p>
+            <span class="option">(A) O</span>
+            <span class="option">(B) X</span>
+            <hr style="margin: 15px 0; border: 0; border-top: 1px dashed #ccc;">
+            <p><strong>正確答案：</strong> <span class="correct-answer">(A) O</span></p>
+            <br>
+            <p><strong>解析：</strong></p>
+            <p>這題是觀念題。Big5 的設計初衷就是「雙位元組編碼集 (DBCS)」。雖然在電腦檔案中可能夾雜英文(1 Byte)，但就「Big5 編碼定義的文字」而言，其基本單位就是 <strong>2 個 Bytes</strong>。</p>
+            <p><strong>為何不選 (B)？</strong> 除非題目特別刁鑽地問「Big5 檔案中的英文字」，否則在資訊概論的定義中，Big5 就是 2 Bytes 的代名詞。</p>
+        </div>
+    </section>
+
+    <!-- Section 5: Interactive Quiz -->
+    <section class="card quiz-container">
+        <h2>五、互動小測驗</h2>
+        <p style="font-size: 1.1rem; margin: 15px 0;">題目：「在 Big5 中文碼系統中，一個中文字使用 2 個 Bytes 表示。」</p>
+        
+        <div class="btn-group" id="quiz-buttons">
+            <button class="btn btn-yes" onclick="checkAnswer(true)">(A) O</button>
+            <button class="btn btn-no" onclick="checkAnswer(false)">(B) X</button>
+        </div>
+
+        <div id="feedback" class="feedback-area"></div>
+        <button class="btn btn-reset" id="reset-btn" onclick="resetQuiz()">重新作答</button>
+    </section>
+
+    <!-- Section 6: Memory Card -->
+    <section class="card cheat-sheet">
+        <h2>六、記憶小卡（考前速記）</h2>
+        <ul>
+            <li>✅ <strong>Big5</strong> = 繁體中文編碼 (台港澳)。</li>
+            <li>✅ <strong>中文字</strong> = 佔用 <strong>2 Bytes</strong> (16 bits)。</li>
+            <li>✅ <strong>ASCII 英數</strong> = 佔用 <strong>1 Byte</strong> (8 bits)。</li>
+            <li>✅ <strong>UTF-8</strong> (補充) = 中文字通常佔 3 Bytes (容易搞混，要分清楚！)。</li>
+        </ul>
+
+        <div class="highlight-text">
+            考試口訣：<br>
+            「Big5 問中文，一律兩個 Bytes。」
+        </div>
+    </section>
+</div>
+
+<script>
+    // 互動測驗邏輯
+    function checkAnswer(isYes) {
+        const feedbackEl = document.getElementById('feedback');
+        const buttonsDiv = document.getElementById('quiz-buttons');
+        const resetBtn = document.getElementById('reset-btn');
+
+        // 隱藏選項按鈕，避免重複點擊
+        buttonsDiv.style.display = 'none';
+        feedbackEl.style.display = 'block';
+
+        if (isYes) {
+            // 答對了
+            feedbackEl.className = 'feedback-area feedback-correct';
+            feedbackEl.innerHTML = `
+                🎉 答對了！觀念完全正確！<br>
+                Big5 的中文字確實是由高位元組與低位元組，共 2 個 Bytes 組成。
+            `;
+        } else {
+            // 答錯了
+            feedbackEl.className = 'feedback-area feedback-wrong';
+            feedbackEl.innerHTML = `
+                ❌ 答錯囉！<br>
+                請記住：Big5 是雙位元組系統，一個中文字需要 2 個 Bytes 才能存得下。<br>
+                (只有 ASCII 英文才是 1 Byte)
+            `;
+        }
+
+        // 顯示重新作答按鈕
+        resetBtn.style.display = 'inline-block';
+    }
+
+    function resetQuiz() {
+        const feedbackEl = document.getElementById('feedback');
+        const buttonsDiv = document.getElementById('quiz-buttons');
+        const resetBtn = document.getElementById('reset-btn');
+
+        // 重置狀態
+        feedbackEl.style.display = 'none';
+        resetBtn.style.display = 'none';
+        buttonsDiv.style.display = 'flex';
+    }
+</script>
+
+</body>
+</html>

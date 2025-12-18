@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電腦時間單位換算：毫微奈皮懶人包</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #475569;
+            --accent-color: #f59e0b;
+            --success-color: #16a34a;
+            --error-color: #dc2626;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, "Microsoft JhengHei", "微軟正黑體", sans-serif;
+            line-height: 1.6;
+            color: #1e293b;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1, h2, h3 {
+            color: #0f172a;
+        }
+
+        h1 {
+            text-align: center;
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+
+        .section-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .highlight-box {
+            background-color: #eff6ff;
+            border: 2px dashed var(--primary-color);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        /* Table Styles */
+        .unit-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 1.1em;
+        }
+
+        .unit-table th, .unit-table td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .unit-table th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .unit-table tr:hover {
+            background-color: #f1f5f9;
+        }
+
+        /* Mnemonic Styles */
+        .mnemonic {
+            font-size: 2em;
+            font-weight: bold;
+            color: var(--error-color);
+            text-align: center;
+            margin: 10px 0;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .mnemonic-desc {
+            text-align: center;
+            font-size: 1.1em;
+            color: var(--secondary-color);
+        }
+
+        /* Quiz Styles */
+        .quiz-container {
+            margin-top: 10px;
+        }
+
+        .question-block {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .options {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #e2e8f0;
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn.correct {
+            background-color: var(--success-color);
+            color: white;
+            border-color: var(--success-color);
+        }
+
+        .btn.wrong {
+            background-color: var(--error-color);
+            color: white;
+            border-color: var(--error-color);
+        }
+
+        .feedback {
+            margin-top: 10px;
+            font-weight: bold;
+            min-height: 1.5em;
+        }
+
+        .feedback.success { color: var(--success-color); }
+        .feedback.error { color: var(--error-color); }
+
+        .reset-btn {
+            display: block;
+            width: 100%;
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        
+        .reset-btn:hover {
+            background-color: #334155;
+        }
+
+        /* Cheatsheet Footer */
+        .cheatsheet {
+            background-color: #1e293b;
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+        }
+        
+        .cheatsheet ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        
+        .cheatsheet li {
+            margin-bottom: 10px;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 5px;
+        }
+
+        .tag {
+            display: inline-block;
+            background: var(--accent-color);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            margin-right: 5px;
+        }
+
+        @media (max-width: 600px) {
+            .unit-table { font-size: 0.9em; }
+            .mnemonic { font-size: 1.5em; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>電腦時間單位換算：毫微奈皮懶人包</h1>
+
+    <!-- 1. 暖身 -->
+    <div class="section-card">
+        <h2>🚀 為什麼需要學這個？</h2>
+        <p>電腦的世界運作速度非常快！</p>
+        <ul>
+            <li>CPU 每秒可執行數十億次指令。</li>
+            <li>記憶體存取資料只需要幾奈秒。</li>
+            <li>網路封包從台灣傳到美國也只需要幾百毫秒。</li>
+        </ul>
+        <p>因此，我們不能只用「秒 (s)」來計算，必須使用更小的單位：<strong>ms、μs、ns、ps</strong>。</p>
+    </div>
+
+    <!-- 2. 標準定義 -->
+    <div class="section-card">
+        <h2>📏 四種單位標準定義</h2>
+        <table class="unit-table">
+            <thead>
+                <tr>
+                    <th>中文</th>
+                    <th>符號</th>
+                    <th>秒的倍率</th>
+                    <th>直覺意義</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>毫秒</td>
+                    <td>ms</td>
+                    <td>10<sup>-3</sup> s</td>
+                    <td>千分之一秒</td>
+                </tr>
+                <tr>
+                    <td>微秒</td>
+                    <td>μs</td>
+                    <td>10<sup>-6</sup> s</td>
+                    <td>百萬分之一秒</td>
+                </tr>
+                <tr>
+                    <td>奈秒</td>
+                    <td>ns</td>
+                    <td>10<sup>-9</sup> s</td>
+                    <td>十億分之一秒</td>
+                </tr>
+                <tr>
+                    <td>皮秒</td>
+                    <td>ps</td>
+                    <td>10<sup>-12</sup> s</td>
+                    <td>兆分之一秒</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 3. 換算示例 -->
+    <div class="section-card">
+        <h2>🧮 換算示例 (小單位 = 大單位 × 1000)</h2>
+        <p>相鄰的單位之間，都是 <strong>1000 倍</strong> 的關係。</p>
+        <div class="highlight-box">
+            <ul>
+                <li>1 s = 1000 ms</li>
+                <li>1 ms = 1000 μs</li>
+                <li>1 μs = 1000 ns</li>
+                <li>1 ns = 1000 ps</li>
+            </ul>
+        </div>
+        <p><strong>範例：</strong></p>
+        <p>2 ms = 2 × 1000 = <strong>2000 μs</strong></p>
+        <p>0.5 μs = 0.5 × 1000 = <strong>500 ns</strong></p>
+    </div>
+
+    <!-- 4. 記憶技巧 -->
+    <div class="section-card" style="border-left-color: var(--error-color);">
+        <h2>🧠 終極記憶口訣</h2>
+        <p>考試怕忘記順序？記住這一句就夠了：</p>
+        <div class="mnemonic">「毫 微 奈 皮，一路除三」</div>
+        <div class="mnemonic-desc">
+            毫 (ms) ➜ 微 (μs) ➜ 奈 (ns) ➜ 皮 (ps)<br>
+            指數分別是：-3 ➜ -6 ➜ -9 ➜ -12
+        </div>
+    </div>
+
+    <!-- 5. 互動小測驗 -->
+    <div class="section-card">
+        <h2>✍️ 互動小測驗</h2>
+        <p>點選答案，立即檢查觀念！</p>
+        <div class="quiz-container" id="quiz-area">
+            
+            <!-- Q1 -->
+            <div class="question-block" data-id="1">
+                <p><strong>1. 是非題：</strong> 「1 ns = 10<sup>-9</sup> 秒」</p>
+                <div class="options">
+                    <button class="btn" onclick="checkAnswer(1, true, 'O')">O (正確)</button>
+                    <button class="btn" onclick="checkAnswer(1, false, 'X')">X (錯誤)</button>
+                </div>
+                <div class="feedback" id="feedback-1"></div>
+            </div>
+
+            <!-- Q2 -->
+            <div class="question-block" data-id="2">
+                <p><strong>2. 單選題：</strong> 1 μs (微秒) 等於多少 ns (奈秒)？</p>
+                <div class="options">
+                    <button class="btn" onclick="checkAnswer(2, false, 'A')">(A) 10</button>
+                    <button class="btn" onclick="checkAnswer(2, false, 'B')">(B) 100</button>
+                    <button class="btn" onclick="checkAnswer(2, true, 'C')">(C) 1000</button>
+                </div>
+                <div class="feedback" id="feedback-2"></div>
+            </div>
+
+            <!-- Q3 -->
+            <div class="question-block" data-id="3">
+                <p><strong>3. 應用題：</strong> 把 3 ms 換算成 μs，答案是多少？</p>
+                <div class="options">
+                    <button class="btn" onclick="checkAnswer(3, false, 'A')">300 μs</button>
+                    <button class="btn" onclick="checkAnswer(3, true, 'B')">3000 μs</button>
+                    <button class="btn" onclick="checkAnswer(3, false, 'C')">30000 μs</button>
+                </div>
+                <div class="feedback" id="feedback-3"></div>
+            </div>
+
+        </div>
+        <button class="reset-btn" onclick="resetQuiz()">🔄 清除重做</button>
+    </div>
+
+    <!-- 6. 考前速記卡 -->
+    <div class="cheatsheet">
+        <h3 style="color:white; margin-top:0;">⚡ 考前速記卡</h3>
+        <ul>
+            <li><span class="tag">順序</span> ms ➜ μs ➜ ns ➜ ps</li>
+            <li><span class="tag">倍率</span> -3 ➜ -6 ➜ -9 ➜ -12</li>
+            <li><span class="tag">關係</span> 相鄰單位差 1000 倍</li>
+            <li><span class="tag">口訣</span> 毫微奈皮，一路除三</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+    function checkAnswer(questionId, isCorrect, selectionText) {
+        const feedbackEl = document.getElementById(`feedback-${questionId}`);
+        const buttons = document.querySelectorAll(`.question-block[data-id="${questionId}"] .btn`);
+        
+        // Disable buttons after selection
+        buttons.forEach(btn => {
+            btn.disabled = true;
+            if (btn.innerText.includes(selectionText) || btn.innerText === selectionText) {
+                if (isCorrect) {
+                    btn.classList.add('correct');
+                } else {
+                    btn.classList.add('wrong');
+                }
+            }
+        });
+
+        if (isCorrect) {
+            feedbackEl.textContent = "✅ 正確！觀念很清楚喔！";
+            feedbackEl.className = "feedback success";
+        } else {
+            let explanation = "";
+            if(questionId === 1) explanation = "奈秒 (Nano) 是 10 的負 9 次方。";
+            if(questionId === 2) explanation = "1 μs = 1000 ns (大換小要乘 1000)。";
+            if(questionId === 3) explanation = "3 ms = 3 × 1000 = 3000 μs。";
+            
+            feedbackEl.textContent = "❌ 答錯了。" + explanation;
+            feedbackEl.className = "feedback error";
+        }
+    }
+
+    function resetQuiz() {
+        const feedbacks = document.querySelectorAll('.feedback');
+        feedbacks.forEach(f => {
+            f.textContent = '';
+            f.className = 'feedback';
+        });
+
+        const buttons = document.querySelectorAll('.btn');
+        buttons.forEach(b => {
+            b.disabled = false;
+            b.classList.remove('correct', 'wrong');
+        });
+    }
+</script>
+
+</body>
+</html>

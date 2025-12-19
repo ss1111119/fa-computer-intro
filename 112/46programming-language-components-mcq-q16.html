@@ -1,0 +1,520 @@
+<!-- programming-language-components-mcq-q16.html -->
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電腦概論名師講堂：程式語言的組成部分</title>
+    <style>
+        /* CSS reset & basic styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #f0f2f5;
+            color: #333;
+            padding: 20px;
+        }
+
+        /* Container Layout */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #2c3e50, #4ca1af);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        /* Card Component */
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border-left: 5px solid #4ca1af;
+            transition: transform 0.2s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+
+        .card h2 {
+            color: #2c3e50;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+        }
+
+        /* Question Section */
+        .question-text {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            background-color: #e8f4f8;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .option-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+
+        .option-label:hover {
+            background-color: #f9f9f9;
+        }
+
+        .option-label input[type="checkbox"] {
+            margin-right: 12px;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        /* Buttons */
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: opacity 0.2s;
+        }
+
+        .btn-submit { background-color: #2ecc71; color: white; }
+        .btn-explain { background-color: #3498db; color: white; }
+        .btn-reset { background-color: #95a5a6; color: white; }
+        .btn:hover { opacity: 0.9; }
+
+        /* Feedback Area */
+        #feedback-area {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 6px;
+            display: none;
+            font-weight: bold;
+        }
+        .feedback-correct { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .feedback-wrong { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+        /* Glossary Section */
+        .glossary-item {
+            border-bottom: 1px solid #eee;
+            padding: 12px 0;
+        }
+
+        .glossary-term {
+            color: #2980b9;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .glossary-term:hover {
+            color: #1a5276;
+        }
+
+        .glossary-desc {
+            margin-top: 8px;
+            color: #555;
+            font-size: 0.95rem;
+            display: none; /* Hidden by default */
+            background-color: #fafafa;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        .glossary-arrow {
+            font-size: 0.8rem;
+            transition: transform 0.3s;
+        }
+
+        .glossary-active .glossary-desc { display: block; }
+        .glossary-active .glossary-arrow { transform: rotate(180deg); }
+
+        /* Comparison Table Logic in CSS Grid/Flex for mobile friendliness */
+        .concept-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+        
+        @media (min-width: 600px) {
+            .concept-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .concept-box {
+            background: #fff;
+            padding: 15px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+        }
+
+        .concept-title {
+            font-weight: bold;
+            color: #e67e22;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .mnemonic {
+            background-color: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 4px;
+        }
+
+        /* Mini Quiz */
+        .quiz-item {
+            margin-bottom: 15px;
+            border-bottom: 1px dashed #ccc;
+            padding-bottom: 15px;
+        }
+        .quiz-question { margin-bottom: 8px; font-weight: 500;}
+        .quiz-feedback { margin-top: 8px; font-size: 0.9rem; font-weight: bold; }
+        .text-success { color: #27ae60; }
+        .text-error { color: #c0392b; }
+
+        /* Analysis items */
+        .analysis-item {
+            margin-bottom: 10px;
+            padding: 8px;
+            border-radius: 4px;
+        }
+        .correct-opt { border-left: 4px solid #2ecc71; background-color: #f0fff4; }
+        .wrong-opt { border-left: 4px solid #e74c3c; background-color: #fff5f5; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <header>
+        <h1>名師講堂：程式語言基本結構</h1>
+        <p>釐清「語法」與「工具」的差異，輕鬆破解考試陷阱題！</p>
+    </header>
+
+    <!-- 1. 題目卡 -->
+    <section class="card" id="question-card">
+        <h2>📝 觀念挑戰：複選題 Q16</h2>
+        <div class="question-text">
+            複選題 16. 下列何種屬於一個程式語言的組成部分?
+        </div>
+        
+        <div class="option-group">
+            <label class="option-label">
+                <input type="checkbox" name="q16" value="A"> (A) 宣告陳述 (Declaration Statement)
+            </label>
+            <label class="option-label">
+                <input type="checkbox" name="q16" value="B"> (B) 控制陳述 (Control Statement)
+            </label>
+            <label class="option-label">
+                <input type="checkbox" name="q16" value="C"> (C) 指定陳述 (Assignment Statement)
+            </label>
+            <label class="option-label">
+                <input type="checkbox" name="q16" value="D"> (D) 註解 (Comment)
+            </label>
+            <label class="option-label">
+                <input type="checkbox" name="q16" value="E"> (E) 檢查點 (Checkpoint / Breakpoint)
+            </label>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn btn-submit" onclick="submitAnswer()">送出答案</button>
+            <button class="btn btn-explain" onclick="showAnalysis()">顯示解析</button>
+            <button class="btn btn-reset" onclick="resetQuiz()">重作一次</button>
+        </div>
+
+        <div id="feedback-area"></div>
+    </section>
+
+    <!-- 2. 觀念卡 -->
+    <section class="card">
+        <h2>💡 重點觀念整理</h2>
+        
+        <div class="concept-grid">
+            <div class="concept-box">
+                <span class="concept-title">什麼是「程式語言的組成」？</span>
+                <p>指的是語言本身定義的語法規則，用來告訴電腦該做什麼。</p>
+                <ul style="padding-left: 20px; margin-top: 5px;">
+                    <li><strong>宣告</strong>：定義變數</li>
+                    <li><strong>控制</strong>：決定跑哪一段程式 (if/loop)</li>
+                    <li><strong>指定</strong>：給變數數值 (=)</li>
+                    <li><strong>註解</strong>：寫給人看的筆記</li>
+                </ul>
+            </div>
+            
+            <div class="concept-box">
+                <span class="concept-title">什麼是「開發工具 (IDE)」？</span>
+                <p>指的是幫助我們寫程式的軟體功能，不是語言語法。</p>
+                <ul style="padding-left: 20px; margin-top: 5px;">
+                    <li><strong>檢查點 (Breakpoint)</strong>：讓程式暫停，方便檢查錯誤。</li>
+                    <li><strong>編輯器配色</strong>：讓程式碼變漂亮。</li>
+                    <li><strong>自動補全</strong>：幫你打字的輔助。</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="mnemonic">
+            <strong>🔥 快速記憶口訣：</strong><br>
+            「宣告、指定、控制、註解」 → 寫在程式碼裡的，都是<strong>語言</strong>。<br>
+            「檢查點、除錯」 → 操作軟體介面的，屬於<strong>工具</strong>。
+        </div>
+    </section>
+
+    <!-- 3. 名詞速查卡 -->
+    <section class="card">
+        <h2>📚 名詞速查 (點擊展開)</h2>
+        <div id="glossary-list">
+            <!-- Items injected by HTML, handled by CSS/JS for toggle -->
+            <div class="glossary-item">
+                <div class="glossary-term" onclick="toggleGlossary(this)">
+                    宣告陳述 (Declaration Statement)
+                    <span class="glossary-arrow">▼</span>
+                </div>
+                <div class="glossary-desc">
+                    告訴電腦「我要產生一個變數」，例如：<code>int score;</code> 或 <code>var name;</code>。這是語言的基礎，一定要有。
+                </div>
+            </div>
+
+            <div class="glossary-item">
+                <div class="glossary-term" onclick="toggleGlossary(this)">
+                    控制陳述 (Control Statement)
+                    <span class="glossary-arrow">▼</span>
+                </div>
+                <div class="glossary-desc">
+                    控制程式執行的流向，決定「如果...就...」或是「重複執行」。例如：<code>if-else</code>, <code>for loop</code>, <code>switch</code>。
+                </div>
+            </div>
+
+            <div class="glossary-item">
+                <div class="glossary-term" onclick="toggleGlossary(this)">
+                    指定陳述 (Assignment Statement)
+                    <span class="glossary-arrow">▼</span>
+                </div>
+                <div class="glossary-desc">
+                    又稱賦值，把一個資料放進變數箱子裡。例如：<code>x = 10;</code> 或 <code>count = count + 1;</code>。
+                </div>
+            </div>
+
+            <div class="glossary-item">
+                <div class="glossary-term" onclick="toggleGlossary(this)">
+                    註解 (Comment)
+                    <span class="glossary-arrow">▼</span>
+                </div>
+                <div class="glossary-desc">
+                    給程式設計師看的筆記，編譯器或直譯器會直接忽略它，不影響程式執行，但它確實寫在程式碼檔案裡，所以屬於語言的一部分。
+                </div>
+            </div>
+
+            <div class="glossary-item">
+                <div class="glossary-term" onclick="toggleGlossary(this)">
+                    檢查點 (Breakpoint / Checkpoint)
+                    <span class="glossary-arrow">▼</span>
+                </div>
+                <div class="glossary-desc">
+                    這是除錯工具（Debugger）的功能。你在 IDE 軟體上設定一個紅點，程式跑到這會「暫停」，這不是寫在程式碼裡的語法。
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. 解析卡 -->
+    <section class="card" id="analysis-card">
+        <h2>🧐 詳細解析</h2>
+        <div class="analysis-item correct-opt">
+            <strong>(A) 宣告陳述：正確</strong><br>
+            它是定義資料型態與變數名稱的語法，屬於語言核心。
+        </div>
+        <div class="analysis-item correct-opt">
+            <strong>(B) 控制陳述：正確</strong><br>
+            它是邏輯判斷與迴圈的基礎，沒有它程式只能跑直線，屬於語言核心。
+        </div>
+        <div class="analysis-item correct-opt">
+            <strong>(C) 指定陳述：正確</strong><br>
+            它是改變變數內容的唯一手段，屬於語言核心。
+        </div>
+        <div class="analysis-item correct-opt">
+            <strong>(D) 註解：正確</strong><br>
+            雖然電腦不執行，但許多語言都有定義註解的專用符號（如 // 或 #），它是原始碼的一部分。
+        </div>
+        <div class="analysis-item wrong-opt">
+            <strong>(E) 檢查點：錯誤 ❌</strong><br>
+            這是開發環境（IDE）提供的除錯功能。你把程式碼複製到純文字筆記本裡，檢查點就消失了，所以它不是語言本身。
+        </div>
+    </section>
+
+    <!-- 5. 延伸練習卡 -->
+    <section class="card">
+        <h2>🚀 立即回饋小測驗</h2>
+        
+        <div class="quiz-item">
+            <div class="quiz-question">1. 註解雖然不被執行，但它屬於程式語言語法的一部分。</div>
+            <button class="btn" style="padding: 5px 15px; font-size:0.9rem; background:#eee;" onclick="checkMiniQuiz(this, true, '沒錯！每一種語言都有規定怎麼寫註解（例如 // 或 /* */）。')">⭕ 是</button>
+            <button class="btn" style="padding: 5px 15px; font-size:0.9rem; background:#eee;" onclick="checkMiniQuiz(this, false, '不對喔！註解確實是語言定義的一部分，只是被編譯器忽略而已。')">❌ 否</button>
+            <div class="quiz-feedback"></div>
+        </div>
+
+        <div class="quiz-item">
+            <div class="quiz-question">2. 「檢查點 (Breakpoint)」是為了讓程式設計師除錯方便，寫在程式碼裡的指令。</div>
+            <button class="btn" style="padding: 5px 15px; font-size:0.9rem; background:#eee;" onclick="checkMiniQuiz(this, false, '錯！檢查點是 IDE 工具標記的，通常不會寫死在程式碼文字檔裡。')">⭕ 是</button>
+            <button class="btn" style="padding: 5px 15px; font-size:0.9rem; background:#eee;" onclick="checkMiniQuiz(this, true, '正確！檢查點是除錯工具的外部功能，不是程式碼語法。')">❌ 否</button>
+            <div class="quiz-feedback"></div>
+        </div>
+
+        <div class="quiz-item">
+            <div class="quiz-question">3. if-else 與 while 迴圈屬於「控制陳述」。</div>
+            <button class="btn" style="padding: 5px 15px; font-size:0.9rem; background:#eee;" onclick="checkMiniQuiz(this, true, '完全正確！用來控制流程的都算控制陳述。')">⭕ 是</button>
+            <button class="btn" style="padding: 5px 15px; font-size:0.9rem; background:#eee;" onclick="checkMiniQuiz(this, false, '錯囉！if-else 正是控制程式要走哪條路的語法。')">❌ 否</button>
+            <div class="quiz-feedback"></div>
+        </div>
+    </section>
+
+</div>
+
+<script>
+    // --- 題目互動邏輯 ---
+    function submitAnswer() {
+        const checkboxes = document.querySelectorAll('input[name="q16"]');
+        let selectedValues = [];
+        
+        checkboxes.forEach((cb) => {
+            if (cb.checked) {
+                selectedValues.push(cb.value);
+            }
+        });
+
+        // 題目正確答案: A, B, C, D
+        const correctAnswers = ["A", "B", "C", "D"];
+        const wrongOption = "E";
+
+        // 判斷邏輯
+        // 1. 是否選了 E (絕對錯誤)
+        // 2. 是否漏選了 A, B, C, D
+
+        const hasWrongOption = selectedValues.includes(wrongOption);
+        const missedOptions = correctAnswers.filter(ans => !selectedValues.includes(ans));
+        
+        const feedbackEl = document.getElementById("feedback-area");
+        feedbackEl.style.display = "block";
+        feedbackEl.className = ""; // reset classes
+
+        if (!hasWrongOption && missedOptions.length === 0) {
+            // 全對
+            feedbackEl.innerHTML = "🎉 恭喜答對！<br>觀念正確：程式語言 = 語法組成，不包含 IDE 工具功能。";
+            feedbackEl.classList.add("feedback-correct");
+        } else {
+            // 有錯
+            let msg = "⚠️ 答案不完全正確喔！<br>";
+            
+            if (hasWrongOption) {
+                msg += "❌ <strong>(E) 檢查點</strong> 是除錯工具的功能，不是程式語言語法。<br>";
+            }
+            
+            if (missedOptions.length > 0) {
+                msg += `❓ 你漏選了：<strong>${missedOptions.join("、")}</strong>，這些都是程式語法的一部分。<br>`;
+            }
+
+            msg += "<br>👉 請點擊「顯示解析」查看詳細說明。";
+            
+            feedbackEl.innerHTML = msg;
+            feedbackEl.classList.add("feedback-wrong");
+        }
+    }
+
+    function showAnalysis() {
+        // 捲動到解析卡
+        const analysisCard = document.getElementById("analysis-card");
+        analysisCard.scrollIntoView({ behavior: "smooth" });
+        
+        // 稍微閃爍一下提示
+        analysisCard.style.backgroundColor = "#fffde7";
+        setTimeout(() => {
+            analysisCard.style.backgroundColor = "white";
+        }, 1000);
+    }
+
+    function resetQuiz() {
+        // 清空 Checkbox
+        const checkboxes = document.querySelectorAll('input[name="q16"]');
+        checkboxes.forEach(cb => cb.checked = false);
+        
+        // 隱藏回饋區
+        const feedbackEl = document.getElementById("feedback-area");
+        feedbackEl.style.display = "none";
+        feedbackEl.innerHTML = "";
+        
+        // 捲動回頂端
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // --- 名詞速查互動邏輯 ---
+    function toggleGlossary(element) {
+        const parent = element.parentElement;
+        parent.classList.toggle("glossary-active");
+    }
+
+    // --- 延伸測驗互動邏輯 ---
+    function checkMiniQuiz(btn, isCorrect, message) {
+        const feedbackDiv = btn.parentElement.querySelector(".quiz-feedback");
+        
+        if (isCorrect) {
+            feedbackDiv.innerHTML = `<span class="text-success">✅ ${message}</span>`;
+        } else {
+            feedbackDiv.innerHTML = `<span class="text-error">⚠️ ${message}</span>`;
+        }
+    }
+</script>
+
+</body>
+</html>

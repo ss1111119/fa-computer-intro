@@ -1,0 +1,549 @@
+<!-- 
+檔名建議：hexadecimal-symbols-mcq-q11.html 
+適用對象：高中電腦概論初學者
+主題：十六進位符號判斷 (Hexadecimal Symbols)
+-->
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電腦概論互動教學：十六進位系統</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --success-color: #27ae60;
+            --error-color: #c0392b;
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-main: #333;
+            --text-secondary: #666;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+        }
+
+        header p {
+            color: var(--text-secondary);
+        }
+
+        /* Card Styles */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--accent-color);
+            transition: transform 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            color: var(--primary-color);
+            margin-top: 0;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .card-title::before {
+            content: '📚';
+            margin-right: 10px;
+        }
+
+        /* Question Specific Styles */
+        .question-text {
+            font-size: 1.15rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            background-color: #e8f4fc;
+            padding: 15px;
+            border-radius: 8px;
+            color: #2c3e50;
+        }
+
+        .options-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-label:hover {
+            background-color: #f8f9fa;
+            border-color: var(--accent-color);
+        }
+
+        .option-label input[type="checkbox"] {
+            margin-right: 15px;
+            transform: scale(1.5);
+        }
+
+        /* Buttons */
+        .btn-group {
+            margin-top: 25px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .btn-submit { background-color: var(--accent-color); color: white; }
+        .btn-submit:hover { background-color: #2980b9; }
+
+        .btn-explain { background-color: #f39c12; color: white; }
+        .btn-explain:hover { background-color: #d35400; }
+
+        .btn-reset { background-color: #95a5a6; color: white; }
+        .btn-reset:hover { background-color: #7f8c8d; }
+
+        /* Feedback Area */
+        #feedback-area {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+            font-weight: bold;
+        }
+
+        .feedback-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .feedback-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* Glossary Section */
+        details {
+            margin-bottom: 10px;
+            border: 1px solid #eee;
+            border-radius: 6px;
+        }
+
+        summary {
+            padding: 10px;
+            cursor: pointer;
+            background-color: #fafafa;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        details[open] summary {
+            background-color: #eef;
+        }
+
+        .definition {
+            padding: 10px 15px;
+            font-size: 0.95rem;
+            color: #555;
+            background-color: white;
+            border-top: 1px solid #eee;
+        }
+
+        /* Table */
+        .hex-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .hex-table th, .hex-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .hex-table th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .highlight-hex {
+            color: #e74c3c;
+            font-weight: bold;
+            background-color: #fff5f5;
+        }
+
+        /* Mnemonic Box */
+        .mnemonic {
+            background-color: #fff9c4;
+            border-left: 5px solid #fbc02d;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .mnemonic h4 { margin-top: 0; color: #f57f17; }
+
+        /* Mini Quiz */
+        .quiz-item {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #ddd;
+        }
+        .quiz-feedback {
+            margin-left: 10px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        .correct-text { color: var(--success-color); }
+        .wrong-text { color: var(--error-color); }
+
+        /* Hidden Analysis */
+        #analysis-card { display: none; }
+
+        /* Mobile Adjustments */
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            .btn { width: 100%; margin-bottom: 5px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>電腦概論：資料表示法</h1>
+        <p>👨‍🏫 補教名師教室 — 單元：十六進位 (Hexadecimal)</p>
+    </header>
+
+    <!-- 1. 觀念卡 -->
+    <div class="card">
+        <h2 class="card-title">觀念重點整理</h2>
+        
+        <p>各位同學好！在進入題目之前，我們先複習三個最重要的觀念：</p>
+        
+        <div class="mnemonic">
+            <h4>🚀 考試必背口訣</h4>
+            <p>1. 「十六進位只到 F，不會看到 G」</p>
+            <p>2. 「A 到 F，沒有例外，分別代表 10 到 15」</p>
+        </div>
+
+        <h3>1) 符號範圍</h3>
+        <p>十六進位 (Base-16) 顧名思義需要 <strong>16 個符號</strong> 來表示數字。</p>
+        <ul>
+            <li><strong>數字部分：</strong>0, 1, 2, 3, 4, 5, 6, 7, 8, 9 (共10個)</li>
+            <li><strong>字母部分：</strong>A, B, C, D, E, F (共6個)</li>
+        </ul>
+
+        <h3>2) 為什麼只用到 A~F？</h3>
+        <p>因為我們只需要表示 0 到 15 的數值。9 之後不夠用，所以借用英文字母：</p>
+        <p>A=10, B=11, C=12, D=13, E=14, F=15。</p>
+        <p style="color: var(--error-color);">⚠️ 超過 F 的字母（如 G, H, P, Q...）在標準十六進位中是不存在的！</p>
+    </div>
+
+    <!-- 2. 名詞速查區 -->
+    <div class="card">
+        <h2 class="card-title">名詞速查區 (點擊展開)</h2>
+        <details>
+            <summary>十六進位 Hexadecimal (Base-16)</summary>
+            <div class="definition">
+                逢 16 進位。電腦記憶體位址、色碼(如 #FFFFFF)常用的表示法。使用 0-9 及 A-F。
+            </div>
+        </details>
+        <details>
+            <summary>十進位 Decimal (Base-10)</summary>
+            <div class="definition">
+                我們日常生活使用的數字系統，逢 10 進位。使用符號 0-9。
+            </div>
+        </details>
+        <details>
+            <summary>二進位 Binary (Base-2)</summary>
+            <div class="definition">
+                電腦最底層的語言，只有 0 與 1，逢 2 進位。
+            </div>
+        </details>
+        <details>
+            <summary>位元 Bit</summary>
+            <div class="definition">
+                電腦資料最小單位，只能存 0 或 1。
+            </div>
+        </details>
+        <details>
+            <summary>位元組 Byte</summary>
+            <div class="definition">
+                資料存取的基本單位。1 Byte = 8 Bits，通常可以用 2 個十六進位符號來表示一個 Byte。
+            </div>
+        </details>
+    </div>
+
+    <!-- 3. 符號對照表 -->
+    <div class="card">
+        <h2 class="card-title">符號對照表 (0-15)</h2>
+        <table class="hex-table">
+            <thead>
+                <tr>
+                    <th>十進位 (Dec)</th>
+                    <th>十六進位 (Hex)</th>
+                    <th>十進位 (Dec)</th>
+                    <th>十六進位 (Hex)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>0</td><td>0</td><td>8</td><td>8</td></tr>
+                <tr><td>1</td><td>1</td><td>9</td><td>9</td></tr>
+                <tr><td>2</td><td>2</td><td class="highlight-hex">10</td><td class="highlight-hex">A</td></tr>
+                <tr><td>3</td><td>3</td><td class="highlight-hex">11</td><td class="highlight-hex">B</td></tr>
+                <tr><td>4</td><td>4</td><td class="highlight-hex">12</td><td class="highlight-hex">C</td></tr>
+                <tr><td>5</td><td>5</td><td class="highlight-hex">13</td><td class="highlight-hex">D</td></tr>
+                <tr><td>6</td><td>6</td><td class="highlight-hex">14</td><td class="highlight-hex">E</td></tr>
+                <tr><td>7</td><td>7</td><td class="highlight-hex">15</td><td class="highlight-hex">F</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 4. 題目卡 -->
+    <div class="card" id="question-card">
+        <h2 class="card-title">隨堂測驗：複選題 11</h2>
+        <div class="question-text">
+            複選題 11. 下列哪個英文字母不是用在十六進位系統表示的符號?
+        </div>
+        
+        <div class="options-group">
+            <label class="option-label">
+                <input type="checkbox" id="optA" value="A">
+                (A) P
+            </label>
+            <label class="option-label">
+                <input type="checkbox" id="optB" value="B">
+                (B) C
+            </label>
+            <label class="option-label">
+                <input type="checkbox" id="optC" value="C">
+                (C) Q
+            </label>
+            <label class="option-label">
+                <input type="checkbox" id="optD" value="D">
+                (D) F
+            </label>
+            <label class="option-label">
+                <input type="checkbox" id="optE" value="E">
+                (E) G
+            </label>
+        </div>
+
+        <div id="feedback-area"></div>
+
+        <div class="btn-group">
+            <button class="btn btn-submit" onclick="submitAnswer()">送出答案</button>
+            <button class="btn btn-explain" onclick="showAnalysis()">顯示解析</button>
+            <button class="btn btn-reset" onclick="resetQuiz()">重作一次</button>
+        </div>
+    </div>
+
+    <!-- 5. 解析卡 (預設隱藏) -->
+    <div class="card" id="analysis-card">
+        <h2 class="card-title">名師解析</h2>
+        <p><strong>題目問的是「不是」用在十六進位的符號，所以我們要選出「超出 F 範圍」的字母。</strong></p>
+        
+        <div style="background: #f9f9f9; padding: 15px; border-radius: 8px;">
+            <p><strong>(A) P：✅ 選它 (不屬於)</strong><br>
+            <span style="color:#666; font-size:0.9em;">因為 P 已經遠遠超過 F，不在 0-9, A-F 的範圍內。</span></p>
+            
+            <p><strong>(B) C：❌ 不選 (屬於)</strong><br>
+            <span style="color:#666; font-size:0.9em;">C 是標準符號，代表十進位的 12。</span></p>
+            
+            <p><strong>(C) Q：✅ 選它 (不屬於)</strong><br>
+            <span style="color:#666; font-size:0.9em;">非 A–F 範圍，屬於無效符號。</span></p>
+            
+            <p><strong>(D) F：❌ 不選 (屬於)</strong><br>
+            <span style="color:#666; font-size:0.9em;">F 是十六進位中最大的符號，代表十進位的 15。</span></p>
+            
+            <p><strong>(E) G：✅ 選它 (不屬於)</strong><br>
+            <span style="color:#666; font-size:0.9em;">G 排在 F 的後面，剛好超出範圍，所以不屬於。</span></p>
+        </div>
+        
+        <div style="margin-top: 15px; padding: 10px; background: #e8f4fc; border-radius: 5px;">
+            <strong>正確選項：A、C、E</strong><br>
+            （P、Q、G 皆不屬於十六進位符號）
+        </div>
+    </div>
+
+    <!-- 6. 延伸練習卡 -->
+    <div class="card">
+        <h2 class="card-title">延伸互動小測驗 (立即回饋)</h2>
+        
+        <div class="quiz-item">
+            <p>1. 十六進位可以使用字母 A 到 F 嗎？</p>
+            <button class="btn btn-submit" style="padding: 5px 15px;" onclick="checkMiniQuiz(1, true)">O (是)</button>
+            <button class="btn btn-reset" style="padding: 5px 15px;" onclick="checkMiniQuiz(1, false)">X (否)</button>
+            <span id="mini-fb-1" class="quiz-feedback"></span>
+        </div>
+
+        <div class="quiz-item">
+            <p>2. 十六進位中，F 代表十進位的 15 嗎？</p>
+            <button class="btn btn-submit" style="padding: 5px 15px;" onclick="checkMiniQuiz(2, true)">O (是)</button>
+            <button class="btn btn-reset" style="padding: 5px 15px;" onclick="checkMiniQuiz(2, false)">X (否)</button>
+            <span id="mini-fb-2" class="quiz-feedback"></span>
+        </div>
+
+        <div class="quiz-item">
+            <p>3. 十六進位中可以使用 G 來表示 16 嗎？</p>
+            <button class="btn btn-submit" style="padding: 5px 15px;" onclick="checkMiniQuiz(3, true)">O (是)</button>
+            <button class="btn btn-reset" style="padding: 5px 15px;" onclick="checkMiniQuiz(3, false)">X (否)</button>
+            <span id="mini-fb-3" class="quiz-feedback"></span>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 主要複選題互動邏輯
+    function submitAnswer() {
+        // 題目問的是「不是」用在十六進位的符號
+        // 所以正確答案是那些「無效」的符號：P(A), Q(C), G(E)
+        
+        const optA = document.getElementById('optA').checked; // P (Should be Checked)
+        const optB = document.getElementById('optB').checked; // C (Should be Unchecked)
+        const optC = document.getElementById('optC').checked; // Q (Should be Checked)
+        const optD = document.getElementById('optD').checked; // F (Should be Unchecked)
+        const optE = document.getElementById('optE').checked; // G (Should be Checked)
+
+        const feedbackDiv = document.getElementById('feedback-area');
+        feedbackDiv.style.display = 'block';
+
+        // 判斷是否全對 (A, C, E 選取，且 B, D 未選取)
+        const isCorrect = optA && !optB && optC && !optD && optE;
+
+        if (isCorrect) {
+            feedbackDiv.className = 'feedback-success';
+            feedbackDiv.innerHTML = `
+                🎉 答對了！太棒了！<br>
+                補充觀念：十六進位只使用 0–9 與 A–F，其餘字母皆不使用。
+            `;
+            // 自動顯示解析
+            setTimeout(() => {
+                showAnalysis();
+                document.getElementById('analysis-card').scrollIntoView({behavior: 'smooth'});
+            }, 1000);
+        } else {
+            feedbackDiv.className = 'feedback-error';
+            let msg = '😓 哎呀，有點可惜！<br>';
+            
+            // 簡單的錯誤診斷
+            let wrongSelections = [];
+            let missedSelections = [];
+
+            if(optB) wrongSelections.push("(B) C");
+            if(optD) wrongSelections.push("(D) F");
+            
+            if(!optA) missedSelections.push("(A) P");
+            if(!optC) missedSelections.push("(C) Q");
+            if(!optE) missedSelections.push("(E) G");
+
+            if (wrongSelections.length > 0) msg += `你多選了：${wrongSelections.join(', ')} (這些是合法的十六進位符號喔！)<br>`;
+            if (missedSelections.length > 0) msg += `你漏選了：${missedSelections.join(', ')} (這些都不是十六進位符號！)<br>`;
+            
+            msg += `<br>👉 請點擊「顯示解析」來看看為什麼。`;
+            feedbackDiv.innerHTML = msg;
+        }
+    }
+
+    function showAnalysis() {
+        const analysisCard = document.getElementById('analysis-card');
+        analysisCard.style.display = 'block';
+        analysisCard.style.animation = 'fadeIn 0.5s';
+        
+        // 簡單的淡入動畫
+        analysisCard.scrollIntoView({behavior: 'smooth'});
+    }
+
+    function resetQuiz() {
+        // 清空 Checkbox
+        document.querySelectorAll('input[type="checkbox"]').forEach(el => el.checked = false);
+        
+        // 隱藏回饋與解析
+        const feedbackDiv = document.getElementById('feedback-area');
+        feedbackDiv.style.display = 'none';
+        feedbackDiv.className = '';
+        feedbackDiv.innerHTML = '';
+
+        document.getElementById('analysis-card').style.display = 'none';
+        
+        // 滾動回題目
+        document.getElementById('question-card').scrollIntoView({behavior: 'smooth'});
+    }
+
+    // 延伸練習互動邏輯
+    function checkMiniQuiz(qIndex, userChoice) {
+        const feedbackEl = document.getElementById(`mini-fb-${qIndex}`);
+        let isCorrect = false;
+        let msg = "";
+
+        if (qIndex === 1) {
+            // Q: 十六進位可以使用字母 A 到 F (O)
+            isCorrect = (userChoice === true);
+            msg = isCorrect ? "正確！範圍就是 A-F。" : "錯誤。十六進位確實使用 A-F 代表 10-15。";
+        } else if (qIndex === 2) {
+            // Q: F 代表十進位的 15 (O)
+            isCorrect = (userChoice === true);
+            msg = isCorrect ? "正確！F 是最大數，等於 15。" : "錯誤。F 確實等於 15 喔！";
+        } else if (qIndex === 3) {
+            // Q: 可以使用 G 來表示 16 (X)
+            isCorrect = (userChoice === false); // 答案是 X
+            msg = isCorrect ? "正確！看到 G 絕對不是十六進位。" : "錯誤。十六進位沒有 G，16 會進位變成 10。";
+        }
+
+        feedbackEl.className = `quiz-feedback ${isCorrect ? 'correct-text' : 'wrong-text'}`;
+        feedbackEl.innerHTML = (isCorrect ? "⭕ " : "❌ ") + msg;
+    }
+</script>
+
+</body>
+</html>

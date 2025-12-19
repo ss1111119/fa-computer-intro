@@ -1,0 +1,694 @@
+<!-- main-memory-cell-size-mcq-q12.html -->
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電腦概論互動教室：記憶體單元與單位解析</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #3b82f6;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-light: #6b7280;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "PingFang TC", system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        /* 版面配置 */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 30px 20px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        /* 格線系統 */
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .grid-layout {
+                grid-template-columns: 1fr 1fr;
+            }
+            .full-width {
+                grid-column: span 2;
+            }
+        }
+
+        /* 卡片樣式 */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 10px;
+        }
+
+        .card-icon {
+            font-size: 1.5rem;
+            margin-right: 10px;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        /* 題目區塊 */
+        .question-box {
+            background-color: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .options-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-label:hover {
+            background-color: #eff6ff;
+            border-color: var(--secondary-color);
+        }
+
+        .option-label input {
+            margin-right: 12px;
+            width: 20px;
+            height: 20px;
+        }
+
+        /* 按鈕群組 */
+        .btn-group {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: bold;
+            transition: filter 0.2s;
+        }
+
+        .btn-submit {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-explain {
+            background-color: #8b5cf6;
+            color: white;
+        }
+
+        .btn-reset {
+            background-color: #9ca3af;
+            color: white;
+        }
+
+        button:hover {
+            filter: brightness(1.1);
+        }
+
+        /* 回饋訊息 */
+        .feedback {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .feedback.success {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+
+        .feedback.error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #ef4444;
+        }
+
+        /* 視覺化區塊 */
+        .byte-visualizer {
+            display: flex;
+            gap: 4px;
+            justify-content: center;
+            margin: 20px 0;
+            background: #e0e7ff;
+            padding: 20px;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .bit-box {
+            width: 30px;
+            height: 40px;
+            background: white;
+            border: 2px solid var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            border-radius: 4px;
+        }
+
+        .visual-label {
+            text-align: center;
+            font-weight: bold;
+            margin-top: 5px;
+            color: var(--text-light);
+        }
+
+        .conversion-arrow {
+            text-align: center;
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            margin: 10px 0;
+        }
+
+        /* 名詞速查 */
+        .glossary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 10px;
+        }
+
+        .glossary-item {
+            background: #f0f9ff;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+            cursor: pointer;
+            border: 1px solid #bae6fd;
+            transition: all 0.2s;
+        }
+
+        .glossary-item:hover {
+            background: #e0f2fe;
+            transform: scale(1.05);
+        }
+
+        .glossary-title {
+            font-weight: bold;
+            color: var(--primary-color);
+            display: block;
+        }
+
+        .glossary-en {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            display: block;
+        }
+
+        .glossary-detail {
+            grid-column: 1 / -1;
+            background: #fff;
+            padding: 10px;
+            border-left: 4px solid #f59e0b;
+            display: none;
+            margin-top: 5px;
+            animation: fadeIn 0.3s;
+        }
+
+        /* 解析區塊 */
+        .explanation-list {
+            list-style: none;
+        }
+
+        .explanation-item {
+            margin-bottom: 12px;
+            padding: 10px;
+            border-radius: 6px;
+            border-left: 4px solid transparent;
+        }
+
+        .explanation-item.correct {
+            background-color: #ecfdf5;
+            border-left-color: var(--success-color);
+        }
+
+        .explanation-item.wrong {
+            background-color: #fef2f2;
+            border-left-color: var(--error-color);
+            opacity: 0.7;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            color: white;
+            margin-right: 8px;
+            font-weight: bold;
+        }
+
+        .badge.bg-green { background-color: var(--success-color); }
+        .badge.bg-red { background-color: var(--error-color); }
+
+        /* 延伸測驗 */
+        .mini-quiz-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px dashed #e5e7eb;
+        }
+
+        .mini-quiz-options button {
+            margin-top: 5px;
+            margin-right: 5px;
+            background: white;
+            border: 1px solid #d1d5db;
+            color: var(--text-main);
+            font-size: 0.9rem;
+        }
+
+        .mini-quiz-options button:hover {
+            background: #f3f4f6;
+        }
+
+        .mini-feedback {
+            margin-top: 5px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>電腦概論互動教室</h1>
+    <div class="subtitle">單元：主記憶體管理單位與 Bit/Byte 的關係</div>
+</header>
+
+<div class="container">
+    <!-- 題目卡 -->
+    <div class="card grid-layout full-width">
+        <div class="card-header">
+            <span class="card-icon">📝</span>
+            <span class="card-title">隨堂練習</span>
+        </div>
+        
+        <div>
+            <div class="question-box">
+                <p><strong>複選題 12.</strong> 在電腦內主記憶體以基本單元(cell)管理，一個單元的大小為：</p>
+            </div>
+
+            <div class="options-group">
+                <label class="option-label">
+                    <input type="checkbox" name="quiz" value="A">
+                    (A) 一個位元 (1-bit)
+                </label>
+                <label class="option-label">
+                    <input type="checkbox" name="quiz" value="B">
+                    (B) 一個位元組 (1-byte)
+                </label>
+                <label class="option-label">
+                    <input type="checkbox" name="quiz" value="C">
+                    (C) 二個位元組 (2-byte)
+                </label>
+                <label class="option-label">
+                    <input type="checkbox" name="quiz" value="D">
+                    (D) 八個位元 (8-bit)
+                </label>
+                <label class="option-label">
+                    <input type="checkbox" name="quiz" value="E">
+                    (E) 十六個位元 (16-bit)
+                </label>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn-submit" onclick="checkAnswer()">送出答案</button>
+                <button class="btn-explain" onclick="showExplanation()">顯示解析</button>
+                <button class="btn-reset" onclick="resetQuiz()">重作一次</button>
+            </div>
+
+            <div id="mainFeedback" class="feedback"></div>
+        </div>
+    </div>
+
+    <!-- 觀念卡 -->
+    <div class="card">
+        <div class="card-header">
+            <span class="card-icon">💡</span>
+            <span class="card-title">重點觀念整理</span>
+        </div>
+        
+        <p><strong>1. 什麼是記憶體的基本單元 (Cell)？</strong></p>
+        <p style="margin-bottom: 10px;">請想像主記憶體是一個巨大的「郵局信箱牆」。牆上的每一個小格子就是一個 <strong>Cell</strong>。每一個格子都有專屬的號碼，我們稱為<strong>位址 (Address)</strong>。</p>
+        
+        <p><strong>2. Cell 的大小是多少？(考試關鍵)</strong></p>
+        <p style="margin-bottom: 10px; color: var(--primary-color); font-weight: bold;">1 個 Cell = 1 Byte = 8 Bits</p>
+        <p>這是現代電腦的標準設計。電腦抓取資料時，最小一次就是抓取「一個格子 (1 Byte)」，沒辦法只抓取格子裡的某一個位元。</p>
+
+        <p><strong>3. 常見混淆陷阱</strong></p>
+        <p>題目常會把「1 Byte」和「8 Bits」分開成兩個選項。因為 <strong>1 Byte 確實等於 8 Bits</strong>，所以這兩個描述都是對的，<strong>複選題時兩個都要選！</strong></p>
+    </div>
+
+    <!-- 單位對照卡 -->
+    <div class="card">
+        <div class="card-header">
+            <span class="card-icon">📐</span>
+            <span class="card-title">Bit 與 Byte 視覺化</span>
+        </div>
+        
+        <div style="text-align: center;">
+            <p>這是一個 Cell (記憶體單元)</p>
+            <p>也是一個 Byte (位元組)</p>
+        </div>
+
+        <div class="byte-visualizer">
+            <div class="bit-box">1</div>
+            <div class="bit-box">0</div>
+            <div class="bit-box">1</div>
+            <div class="bit-box">1</div>
+            <div class="bit-box">0</div>
+            <div class="bit-box">0</div>
+            <div class="bit-box">1</div>
+            <div class="bit-box">0</div>
+            
+            <div style="position: absolute; bottom: -25px; width: 100%; text-align: center; color: var(--text-light); font-size: 0.8rem;">
+                內含 8 個小位元 (Bits)
+            </div>
+        </div>
+
+        <div class="conversion-arrow">⇅</div>
+
+        <div style="text-align: center; background: #fff; border: 2px dashed var(--primary-color); padding: 10px; border-radius: 8px;">
+            <strong style="color: var(--primary-color); font-size: 1.2rem;">1 Byte = 8 Bits</strong>
+        </div>
+        <p style="margin-top: 15px; font-size: 0.9rem; color: #666;">
+            <small>* Bit (位元) 是資料最小單位 (0 或 1)<br>
+            * Byte (位元組) 是記憶體<strong>定址</strong>的最小單位</small>
+        </p>
+    </div>
+
+    <!-- 解析卡 -->
+    <div id="explanationCard" class="card full-width hidden">
+        <div class="card-header">
+            <span class="card-icon">🔍</span>
+            <span class="card-title">詳細解析</span>
+        </div>
+        
+        <ul class="explanation-list">
+            <li class="explanation-item wrong">
+                <span class="badge bg-red">錯誤</span> <strong>(A) 一個位元 (1-bit)</strong><br>
+                Bit 是資料的最小單位（0 或 1），但太小了，無法單獨作為記憶體的「地址」管理單位。
+            </li>
+            <li class="explanation-item correct">
+                <span class="badge bg-green">正確</span> <strong>(B) 一個位元組 (1-byte)</strong><br>
+                這是標準答案。電腦主記憶體的基本儲存單元 (Cell) 標準大小就是 1 Byte。
+            </li>
+            <li class="explanation-item wrong">
+                <span class="badge bg-red">錯誤</span> <strong>(C) 二個位元組 (2-byte)</strong><br>
+                這通常稱為一個「字組 (Word)」的一半或特定架構，並非最基本的單元 (Cell)。
+            </li>
+            <li class="explanation-item correct">
+                <span class="badge bg-green">正確</span> <strong>(D) 八個位元 (8-bit)</strong><br>
+                因為 1 Byte = 8 Bits。選項 B 是對的，代表這個選項描述的大小一模一樣，所以也是對的！
+            </li>
+            <li class="explanation-item wrong">
+                <span class="badge bg-red">錯誤</span> <strong>(E) 十六個位元 (16-bit)</strong><br>
+                這等於 2 Bytes，顯然不是單一個 Cell 的大小。
+            </li>
+        </ul>
+    </div>
+
+    <!-- 名詞速查 -->
+    <div class="card full-width">
+        <div class="card-header">
+            <span class="card-icon">📚</span>
+            <span class="card-title">名詞速查 (點擊查看解釋)</span>
+        </div>
+        
+        <div class="glossary-grid">
+            <div class="glossary-item" onclick="toggleGlossary('term1')">
+                <span class="glossary-title">主記憶體</span>
+                <span class="glossary-en">Main Memory</span>
+            </div>
+            <div id="term1" class="glossary-detail">
+                電腦執行程式時暫存資料的地方，斷電後資料會消失 (RAM)。
+            </div>
+
+            <div class="glossary-item" onclick="toggleGlossary('term2')">
+                <span class="glossary-title">記憶體單元</span>
+                <span class="glossary-en">Cell</span>
+            </div>
+            <div id="term2" class="glossary-detail">
+                記憶體組成的基本格子，每個格子都有一個地址，通常大小為 8 bits (1 byte)。
+            </div>
+
+            <div class="glossary-item" onclick="toggleGlossary('term3')">
+                <span class="glossary-title">位元</span>
+                <span class="glossary-en">Bit</span>
+            </div>
+            <div id="term3" class="glossary-detail">
+                電腦最小的資料單位，只能是 0 或 1。就像電燈開關一樣。
+            </div>
+
+            <div class="glossary-item" onclick="toggleGlossary('term4')">
+                <span class="glossary-title">位元組</span>
+                <span class="glossary-en">Byte</span>
+            </div>
+            <div id="term4" class="glossary-detail">
+                由 8 個 bits 組成。是電腦儲存字元或管理記憶體的基本單位。
+            </div>
+
+            <div class="glossary-item" onclick="toggleGlossary('term5')">
+                <span class="glossary-title">定址</span>
+                <span class="glossary-en">Addressing</span>
+            </div>
+            <div id="term5" class="glossary-detail">
+                給每一個記憶體單元 (Cell) 一個獨一無二的編號，讓 CPU 找得到資料在哪裡。
+            </div>
+        </div>
+    </div>
+
+    <!-- 延伸練習 -->
+    <div class="card full-width">
+        <div class="card-header">
+            <span class="card-icon">🎯</span>
+            <span class="card-title">延伸小測驗 (立即回饋)</span>
+        </div>
+        
+        <div class="mini-quiz-item">
+            <p>1. 主記憶體中，一個 Cell (單元) 的標準大小等於 1 Byte？</p>
+            <div class="mini-quiz-options">
+                <button onclick="checkMiniQuiz(this, true, '沒錯！這是基本定義。')">O (正確)</button>
+                <button onclick="checkMiniQuiz(this, false, '錯囉！標準定義就是 1 Byte。')">X (錯誤)</button>
+            </div>
+            <div class="mini-feedback"></div>
+        </div>
+
+        <div class="mini-quiz-item">
+            <p>2. 8 bits 與 1 byte 是相同的大小嗎？</p>
+            <div class="mini-quiz-options">
+                <button onclick="checkMiniQuiz(this, true, '答對了！1 Byte 內部就是由 8 個 bits 組成的。')">O (正確)</button>
+                <button onclick="checkMiniQuiz(this, false, '不對喔，它們是相等的！')">X (錯誤)</button>
+            </div>
+            <div class="mini-feedback"></div>
+        </div>
+
+        <div class="mini-quiz-item" style="border-bottom: none;">
+            <p>3. 一個 Cell 等於 16 bits？</p>
+            <div class="mini-quiz-options">
+                <button onclick="checkMiniQuiz(this, false, '錯！16 bits 是 2 bytes，那是兩個 cell 的大小。')">O (正確)</button>
+                <button onclick="checkMiniQuiz(this, true, '答對了！一個 cell 只有 8 bits。')">X (錯誤)</button>
+            </div>
+            <div class="mini-feedback"></div>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <p>© 2024 電腦概論教學資源 | 高中職資訊科技教材</p>
+</footer>
+
+<script>
+    // 正確答案設定
+    const CORRECT_ANSWERS = ['B', 'D'];
+
+    function checkAnswer() {
+        // 取得所有被勾選的選項
+        const checkboxes = document.querySelectorAll('input[name="quiz"]:checked');
+        const userAnswers = Array.from(checkboxes).map(cb => cb.value).sort();
+        const feedbackEl = document.getElementById('mainFeedback');
+        
+        // 判斷邏輯
+        const isCorrect = JSON.stringify(userAnswers) === JSON.stringify(CORRECT_ANSWERS);
+        
+        feedbackEl.style.display = 'block';
+        feedbackEl.className = 'feedback'; // reset class
+
+        if (isCorrect) {
+            feedbackEl.classList.add('success');
+            feedbackEl.innerHTML = `
+                <h3>🎉 完全正確！</h3>
+                <p>觀念很清楚喔！記住口訣：「記憶體 cell = 1 byte = 8 bits」。</p>
+                <p>因為這兩個選項描述的是同一個大小，所以都要選。</p>
+            `;
+            // 自動顯示解析讓學生再次確認
+            document.getElementById('explanationCard').classList.remove('hidden');
+        } else {
+            feedbackEl.classList.add('error');
+            let msg = '<h3>⚠️ 答案不完全正確</h3>';
+            
+            if (userAnswers.length === 0) {
+                msg += '<p>你還沒有選擇任何選項喔！</p>';
+            } else {
+                // 分析錯誤
+                const missing = CORRECT_ANSWERS.filter(x => !userAnswers.includes(x));
+                const extra = userAnswers.filter(x => !CORRECT_ANSWERS.includes(x));
+                
+                if (missing.length > 0) msg += `<p>漏選了：${missing.join('、')} (注意大小換算)</p>`;
+                if (extra.length > 0) msg += `<p>多選了：${extra.join('、')} (這些不是基本單元大小)</p>`;
+                
+                msg += '<p style="margin-top:10px">💡 提示：1 Byte 等於幾個 bits？這兩者是否相等？<br>點擊「顯示解析」看詳細說明。</p>';
+            }
+            feedbackEl.innerHTML = msg;
+        }
+    }
+
+    function showExplanation() {
+        const expCard = document.getElementById('explanationCard');
+        expCard.classList.remove('hidden');
+        // 平滑捲動到解析區
+        expCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function resetQuiz() {
+        // 清空 checkbox
+        const checkboxes = document.querySelectorAll('input[name="quiz"]');
+        checkboxes.forEach(cb => cb.checked = false);
+        
+        // 隱藏回饋與解析
+        document.getElementById('mainFeedback').style.display = 'none';
+        document.getElementById('explanationCard').classList.add('hidden');
+        
+        // 捲動回頂部
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function toggleGlossary(id) {
+        // 先關閉其他開啟的解釋 (Accordion效果)
+        const allDetails = document.querySelectorAll('.glossary-detail');
+        allDetails.forEach(el => {
+            if (el.id !== id) el.style.display = 'none';
+        });
+
+        const el = document.getElementById(id);
+        if (el.style.display === 'block') {
+            el.style.display = 'none';
+        } else {
+            el.style.display = 'block';
+        }
+    }
+
+    function checkMiniQuiz(btn, isCorrect, msg) {
+        const parent = btn.parentElement;
+        const feedbackDiv = parent.nextElementSibling;
+        
+        // 重置該題按鈕樣式
+        const buttons = parent.querySelectorAll('button');
+        buttons.forEach(b => {
+            b.style.backgroundColor = 'white';
+            b.style.color = 'var(--text-main)';
+        });
+
+        if (isCorrect) {
+            btn.style.backgroundColor = 'var(--success-color)';
+            btn.style.color = 'white';
+            feedbackDiv.style.color = 'var(--success-color)';
+            feedbackDiv.innerHTML = `✅ ${msg}`;
+        } else {
+            btn.style.backgroundColor = 'var(--error-color)';
+            btn.style.color = 'white';
+            feedbackDiv.style.color = 'var(--error-color)';
+            feedbackDiv.innerHTML = `❌ ${msg}`;
+        }
+    }
+</script>
+
+</body>
+</html>

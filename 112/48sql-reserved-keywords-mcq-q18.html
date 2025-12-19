@@ -1,0 +1,546 @@
+<!-- Filename: sql-reserved-keywords-mcq-q18.html -->
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL 基礎教室 - 保留關鍵字互動教學</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #1e40af;
+            --accent-color: #f59e0b;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-sub: #4b5563;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Header Style */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: var(--text-sub);
+            font-size: 1.1em;
+        }
+
+        /* Card System */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: 24px;
+            margin-bottom: 24px;
+            border-top: 4px solid var(--primary-color);
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: var(--secondary-color);
+            margin-bottom: 16px;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+
+        .card-title::before {
+            content: '📌';
+            margin-right: 8px;
+        }
+
+        /* Question Section */
+        .question-text {
+            font-size: 1.15rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .options-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-label:hover {
+            background-color: #eff6ff;
+            border-color: var(--primary-color);
+        }
+
+        .option-label input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+        }
+
+        /* Buttons */
+        .btn-group {
+            margin-top: 24px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .btn-outline {
+            background-color: white;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .btn-outline:hover {
+            background-color: #eff6ff;
+        }
+
+        .btn-secondary {
+            background-color: var(--text-sub);
+            color: white;
+        }
+
+        /* Feedback Area */
+        #feedback-area {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+            font-weight: bold;
+        }
+
+        .feedback-correct {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #34d399;
+        }
+
+        .feedback-wrong {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #f87171;
+        }
+
+        /* Concept Visuals */
+        .sql-box {
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+
+        .keyword { color: #569cd6; font-weight: bold; }
+        .table-name { color: #ce9178; }
+        .col-name { color: #9cdcfe; }
+
+        .tips-box {
+            background-color: #fffbeb;
+            border-left: 4px solid var(--accent-color);
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        /* Glossary (Accordion) */
+        details {
+            margin-bottom: 10px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        details summary {
+            padding: 12px;
+            background-color: #f9fafb;
+            cursor: pointer;
+            font-weight: bold;
+            list-style: none; /* Hide default triangle */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        details summary::after {
+            content: '+';
+            font-size: 1.2em;
+        }
+
+        details[open] summary::after {
+            content: '-';
+        }
+
+        details p {
+            padding: 15px;
+            margin: 0;
+            background-color: white;
+            border-top: 1px solid #e5e7eb;
+            color: var(--text-sub);
+        }
+
+        /* Mini Quiz */
+        .mini-quiz-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px dashed #e5e7eb;
+        }
+
+        .mini-quiz-options button {
+            margin-right: 10px;
+            padding: 5px 15px;
+            border: 1px solid #d1d5db;
+            background: white;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        .mini-quiz-options button:hover {
+            background: #f3f4f6;
+        }
+
+        .answer-reveal {
+            margin-left: 10px;
+            font-weight: bold;
+            display: none;
+        }
+
+        .answer-reveal.correct { color: var(--success-color); }
+        .answer-reveal.wrong { color: var(--error-color); }
+
+        /* Highlight text */
+        .highlight {
+            background-color: #fef3c7;
+            padding: 0 4px;
+            border-radius: 4px;
+        }
+
+        /* Analysis section hidden initially */
+        #analysis-card {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .btn { width: 100%; margin-bottom: 5px; }
+            .btn-group { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>🎓 電腦概論：資料庫 SQL 基礎</h1>
+        <p>單元：保留關鍵字 (Reserved Keywords) 測驗與解析</p>
+    </header>
+
+    <!-- 1. 題目卡 -->
+    <div class="card">
+        <div class="card-title">隨堂測驗 (複選題)</div>
+        <div class="question-text">
+            複選題 18. SQL 資料庫語言中，下列何者屬於保留的關鍵字?
+        </div>
+        <div class="options-group">
+            <label class="option-label">
+                <input type="checkbox" name="q18" value="A"> (A) SELECT
+            </label>
+            <label class="option-label">
+                <input type="checkbox" name="q18" value="B"> (B) FROM
+            </label>
+            <label class="option-label">
+                <input type="checkbox" name="q18" value="C"> (C) WHERE
+            </label>
+            <label class="option-label">
+                <input type="checkbox" name="q18" value="D"> (D) ORDER BY
+            </label>
+            <label class="option-label">
+                <input type="checkbox" name="q18" value="E"> (E) GROUP BY
+            </label>
+        </div>
+
+        <div id="feedback-area"></div>
+
+        <div class="btn-group">
+            <button class="btn btn-primary" onclick="checkAnswer()">📝 送出答案</button>
+            <button class="btn btn-outline" onclick="showAnalysis()">🔍 顯示解析</button>
+            <button class="btn btn-secondary" onclick="resetQuiz()">🔄 重作一次</button>
+        </div>
+    </div>
+
+    <!-- 2. 觀念卡 -->
+    <div class="card">
+        <div class="card-title">💡 重點觀念整理</div>
+        <h3>1) 什麼是 SQL 的「保留關鍵字」？</h3>
+        <ul>
+            <li>SQL 語言中已經<strong>定義好用途</strong>的專用單字。</li>
+            <li>用來告訴資料庫系統「你現在想要執行什麼動作」（例如：查詢、排序、篩選）。</li>
+            <li>⚠️ 規則：不能隨便拿來當作欄位名稱或資料表名稱（除非用特殊符號包起來）。</li>
+        </ul>
+
+        <h3>2) SQL 查詢的標準骨架</h3>
+        <p>一個完整的查詢語句通常長這樣：</p>
+        <div class="sql-box">
+<span class="keyword">SELECT</span> <span class="col-name">欄位名稱</span>
+<span class="keyword">FROM</span> <span class="table-name">資料表名稱</span>
+<span class="keyword">WHERE</span> 條件
+<span class="keyword">GROUP BY</span> 欄位
+<span class="keyword">ORDER BY</span> 欄位;
+        </div>
+        <p>👉 上面出現的每一個 <span class="keyword">藍色粗體字</span>，都是保留關鍵字！</p>
+
+        <div class="tips-box">
+            <h4>🚀 考試快速判斷法（必考）</h4>
+            <p><strong>口訣：「查詢五兄弟：選、從、條、分、排 → 全是關鍵字」</strong></p>
+            <ul>
+                <li>只要是 SQL 語法骨架上的字 → <strong>一定是關鍵字</strong>。</li>
+                <li><strong>常見陷阱：</strong> <code>ORDER BY</code> 和 <code>GROUP BY</code> 雖然中間有空白，但在考試觀念中視為一個完整的指令組合，所以也是關鍵字。</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 3. 解析卡 (預設隱藏，點擊顯示) -->
+    <div class="card" id="analysis-card">
+        <div class="card-title">📖 詳細解析</div>
+        <p><strong>正確選項：A、B、C、D、E（全選）</strong></p>
+        <hr>
+        <ul>
+            <li><strong>(A) SELECT：</strong><span style="color:var(--success-color)">✅ 正確</span><br>用來「指定要查詢哪些欄位」。就像去飲料店點餐說「我要...」。</li>
+            
+            <li><strong>(B) FROM：</strong><span style="color:var(--success-color)">✅ 正確</span><br>用來「指定資料來源的資料表」。就像告訴店員「我要從哪一張菜單點」。</li>
+            
+            <li><strong>(C) WHERE：</strong><span style="color:var(--success-color)">✅ 正確</span><br>用來「設定篩選條件」。例如：只要找「價格 > 50元」的資料。</li>
+            
+            <li><strong>(D) ORDER BY：</strong><span style="color:var(--success-color)">✅ 正確</span><br>用來「設定排序方式」。例如：依照分數由高到低排列。</li>
+            
+            <li><strong>(E) GROUP BY：</strong><span style="color:var(--success-color)">✅ 正確</span><br>用來「設定分組依據」。例如：把全班依照「居住地」分組統計人數。</li>
+        </ul>
+        <p>✨ 結論：這五個選項構成了 SQL 查詢最核心的語法結構，缺一不可，全都是保留關鍵字。</p>
+    </div>
+
+    <!-- 4. 名詞速查 -->
+    <div class="card">
+        <div class="card-title">📚 名詞速查 (中英對照)</div>
+        <div class="glossary-list">
+            <details>
+                <summary>SQL (Structured Query Language)</summary>
+                <p>結構化查詢語言。一種專門用來跟資料庫溝通的語言。</p>
+            </details>
+            <details>
+                <summary>資料表 (Table)</summary>
+                <p>資料庫存資料的地方，長得像 Excel 表格，有直行跟橫列。</p>
+            </details>
+            <details>
+                <summary>欄位 (Column)</summary>
+                <p>資料表中的直行，代表資料的屬性（例如：姓名、學號、成績）。</p>
+            </details>
+            <details>
+                <summary>查詢 (Query)</summary>
+                <p>對資料庫發出的請求，就像是在問資料庫問題。</p>
+            </details>
+            <details>
+                <summary>保留關鍵字 (Reserved Keyword)</summary>
+                <p>系統已經預訂好的單字（如 SELECT），不能隨便拿來當作名字使用。</p>
+            </details>
+            <details>
+                <summary>排序 (Order)</summary>
+                <p>將資料依照順序排列，通常搭配 BY 使用。</p>
+            </details>
+            <details>
+                <summary>分組 (Group)</summary>
+                <p>將資料依照特定欄位歸類，通常搭配 BY 使用。</p>
+            </details>
+        </div>
+    </div>
+
+    <!-- 5. 延伸練習 -->
+    <div class="card">
+        <div class="card-title">🎯 延伸互動小測驗</div>
+        <p>點擊選項看看你是否真的懂了！</p>
+        
+        <div class="mini-quiz-item">
+            <p>1. <code>SELECT</code> 是 SQL 的保留關鍵字嗎？</p>
+            <div class="mini-quiz-options">
+                <button onclick="checkMiniQuiz(this, true, '沒錯！它是查詢語句的開頭。')">O (是)</button>
+                <button onclick="checkMiniQuiz(this, false, '不對喔，SELECT 是最重要的關鍵字！')">X (否)</button>
+                <span class="answer-reveal"></span>
+            </div>
+        </div>
+
+        <div class="mini-quiz-item">
+            <p>2. <code>ORDER BY</code> 可以隨意當作欄位名稱使用嗎？</p>
+            <div class="mini-quiz-options">
+                <button onclick="checkMiniQuiz(this, false, '危險！它是關鍵字，當欄位名會報錯。')">O (可以)</button>
+                <button onclick="checkMiniQuiz(this, true, '正確！關鍵字不能當欄位名。')">X (不可以)</button>
+                <span class="answer-reveal"></span>
+            </div>
+        </div>
+
+        <div class="mini-quiz-item">
+            <p>3. 簡單的 SQL 查詢一定至少會用到 <code>SELECT</code> 與 <code>FROM</code> 嗎？</p>
+            <div class="mini-quiz-options">
+                <button onclick="checkMiniQuiz(this, true, '標準答案！選欄位(SELECT)和選來源(FROM)是基本。')">O (是)</button>
+                <button onclick="checkMiniQuiz(this, false, '錯囉，最少要有這兩個才能查資料。')">X (否)</button>
+                <span class="answer-reveal"></span>
+            </div>
+        </div>
+    </div>
+
+    <footer style="text-align: center; color: var(--text-sub); margin-top: 40px; font-size: 0.9em;">
+        &copy; SQL 基礎教學教材 | 專為高中生設計的資料庫入門
+    </footer>
+</div>
+
+<script>
+    // 正確答案設定
+    const CORRECT_ANSWERS = ['A', 'B', 'C', 'D', 'E'];
+
+    // 檢查主測驗答案
+    function checkAnswer() {
+        const feedbackArea = document.getElementById('feedback-area');
+        const checkboxes = document.querySelectorAll('input[name="q18"]:checked');
+        const selectedValues = Array.from(checkboxes).map(cb => cb.value).sort();
+        
+        // 顯示解析區塊
+        document.getElementById('analysis-card').style.display = 'block';
+
+        // 判斷邏輯
+        const isAllSelected = CORRECT_ANSWERS.every(val => selectedValues.includes(val));
+        const isCountMatch = selectedValues.length === CORRECT_ANSWERS.length;
+
+        if (isAllSelected && isCountMatch) {
+            // 全對
+            feedbackArea.className = 'feedback-correct';
+            feedbackArea.style.display = 'block';
+            feedbackArea.innerHTML = `
+                <h3>🎉 答對了！太棒了！</h3>
+                <p>正確答案就是全選 (A, B, C, D, E)。</p>
+                <p>💡 提示：SELECT / FROM / WHERE / GROUP BY / ORDER BY 都是 SQL 查詢的骨架，缺一不可！</p>
+            `;
+        } else {
+            // 有錯
+            feedbackArea.className = 'feedback-wrong';
+            feedbackArea.style.display = 'block';
+            
+            let msg = '<h3>⚠️ 還差一點點！</h3>';
+            if (selectedValues.length === 0) {
+                msg += '<p>你還沒有選擇任何選項喔。</p>';
+            } else {
+                msg += '<p>這題是複選題，選項 A ~ E 全部都是 SQL 的核心語法。</p>';
+                msg += '<p>請往下滑看「解析卡」與「觀念整理」！👇</p>';
+            }
+            feedbackArea.innerHTML = msg;
+        }
+
+        // 捲動到回饋區
+        feedbackArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    // 顯示解析
+    function showAnalysis() {
+        const analysisCard = document.getElementById('analysis-card');
+        analysisCard.style.display = 'block';
+        analysisCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // 重置測驗
+    function resetQuiz() {
+        // 清空 Checkbox
+        const checkboxes = document.querySelectorAll('input[name="q18"]');
+        checkboxes.forEach(cb => cb.checked = false);
+        
+        // 隱藏回饋區
+        const feedbackArea = document.getElementById('feedback-area');
+        feedbackArea.style.display = 'none';
+        feedbackArea.className = '';
+        feedbackArea.innerHTML = '';
+
+        // 隱藏解析卡 (或是選擇保留也可，這裡依需求重置)
+        // document.getElementById('analysis-card').style.display = 'none';
+        
+        // 捲動回題目
+        document.querySelector('.question-text').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // 小測驗檢查邏輯
+    function checkMiniQuiz(btn, isCorrect, message) {
+        const parent = btn.parentElement;
+        const revealSpan = parent.querySelector('.answer-reveal');
+        
+        // 重置該題按鈕樣式
+        const btns = parent.querySelectorAll('button');
+        btns.forEach(b => b.style.background = 'white');
+
+        // 設定當前按鈕樣式
+        btn.style.background = isCorrect ? '#d1fae5' : '#fee2e2';
+        
+        // 顯示文字
+        revealSpan.style.display = 'inline-block';
+        revealSpan.className = 'answer-reveal ' + (isCorrect ? 'correct' : 'wrong');
+        revealSpan.innerHTML = (isCorrect ? '⭕ ' : '❌ ') + message;
+    }
+</script>
+
+</body>
+</html>

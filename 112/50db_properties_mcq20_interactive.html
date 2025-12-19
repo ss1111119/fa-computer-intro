@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高中資料庫觀念互動教學：資料庫的特性</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #3b82f6;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+            --warning-color: #f59e0b;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-color: #1f2937;
+        }
+
+        body {
+            font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+        }
+
+        /* 頂部檔案建議 */
+        .file-suggestion {
+            background-color: #1f2937;
+            color: #9ca3af;
+            font-size: 0.8rem;
+            text-align: center;
+            padding: 5px;
+            font-family: monospace;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 0 15px;
+        }
+
+        /* 標題區 */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: #6b7280;
+        }
+
+        /* 卡片通用樣式 */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            margin-bottom: 25px;
+            border-left: 5px solid var(--secondary-color);
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        /* 概念區 */
+        .concept-highlight {
+            background-color: #eff6ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .concept-icon {
+            font-size: 2rem;
+            display: block;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        /* 作答區 */
+        .question-box {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .options-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-label:hover {
+            background-color: #f9fafb;
+            border-color: var(--secondary-color);
+        }
+
+        .option-label input[type="checkbox"] {
+            margin-right: 15px;
+            width: 20px;
+            height: 20px;
+            accent-color: var(--primary-color);
+        }
+
+        /* 按鈕群組 */
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .btn-submit {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-submit:hover {
+            background-color: #1d4ed8;
+        }
+
+        .btn-hint {
+            background-color: var(--warning-color);
+            color: white;
+        }
+
+        .btn-hint:hover {
+            background-color: #d97706;
+        }
+
+        .btn-reset {
+            background-color: #6b7280;
+            color: white;
+            display: none; /* 初始隱藏 */
+        }
+
+        /* 提示框 */
+        #hint-box {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #fffbeb;
+            border: 1px solid #fcd34d;
+            border-radius: 6px;
+            color: #92400e;
+            display: none;
+        }
+
+        /* 回饋區 */
+        #feedback-area {
+            display: none;
+            margin-top: 25px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .result-header {
+            font-size: 1.25rem;
+            font-weight: bold;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .result-correct {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .result-wrong {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        .explanation-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        .exp-card {
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            background: #fff;
+        }
+
+        .exp-card.correct-prop {
+            border-left: 4px solid var(--success-color);
+        }
+
+        .exp-card.not-prop {
+            border-left: 4px solid var(--error-color); /* 這是我們要找的答案 */
+            background-color: #fff5f5;
+        }
+
+        .exp-title {
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .tag {
+            font-size: 0.8rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+
+        .tag-yes { background: #d1fae5; color: #065f46; }
+        .tag-no { background: #fee2e2; color: #991b1b; }
+
+        /* 小測驗區 */
+        .quiz-item {
+            border-bottom: 1px solid #e5e7eb;
+            padding: 15px 0;
+        }
+        .quiz-item:last-child { border-bottom: none; }
+        .quiz-question { font-weight: bold; margin-bottom: 10px; }
+        .quiz-feedback { margin-top: 10px; font-size: 0.9rem; padding: 5px; display: none; }
+
+        /* 記憶口訣 Accordion */
+        .accordion {
+            background-color: #eee;
+            color: #444;
+            cursor: pointer;
+            padding: 18px;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-size: 1.1rem;
+            transition: 0.4s;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .active, .accordion:hover {
+            background-color: #ccc;
+        }
+
+        .accordion:after {
+            content: '\002B';
+            color: #777;
+            font-weight: bold;
+            float: right;
+            margin-left: 5px;
+        }
+
+        .active:after {
+            content: "\2212";
+        }
+
+        .panel {
+            padding: 0 18px;
+            background-color: white;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.2s ease-out;
+            border-radius: 0 0 8px 8px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 600px) {
+            .btn-group { flex-direction: column; }
+            .explanation-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="file-suggestion">檔名建議：db_properties_mcq20_interactive.html</div>
+
+    <div class="container">
+        <header>
+            <h1>資料庫觀念衝刺</h1>
+            <p>互動式教學：釐清資料庫的核心特性</p>
+        </header>
+
+        <!-- 第一區：觀念導入 -->
+        <section class="card">
+            <h2>1. 資料庫是什麼？(觀念暖身)</h2>
+            <div class="concept-highlight">
+                <span class="concept-icon">📚</span>
+                <p><strong>想像資料庫就像一個「現代化圖書館」：</strong></p>
+                <ul>
+                    <li>書本（資料）不能隨便亂丟 → <strong>要有結構</strong>。</li>
+                    <li>目錄系統要統一，不能這台電腦查得到，那台查不到 → <strong>一致性</strong>。</li>
+                    <li>借書要有借閱證，不是誰都能拿走 → <strong>安全性</strong>。</li>
+                    <li>大家都在這個系統裡查書 → <strong>共享與集中管理</strong>。</li>
+                </ul>
+            </div>
+            <p>傳統檔案系統（File System）因為每個人各自存檔，容易造成資料重複（冗餘）。而資料庫系統（DBMS）的設計初衷，就是要解決這些問題。</p>
+        </section>
+
+        <!-- 第二區：互動題目 -->
+        <section class="card">
+            <h2>2. 挑戰題</h2>
+            <p class="question-box">題目：下列何種性質 <span style="color: var(--error-color); text-decoration: underline;">不是</span> 資料庫的特性？（複選題）</p>
+            
+            <div class="options-group" id="options-container">
+                <label class="option-label">
+                    <input type="checkbox" name="db_prop" value="A">
+                    (A) 集中性（Centralization）
+                </label>
+                <label class="option-label">
+                    <input type="checkbox" name="db_prop" value="B">
+                    (B) 隨機性（Randomness）
+                </label>
+                <label class="option-label">
+                    <input type="checkbox" name="db_prop" value="C">
+                    (C) 一致性（Consistency）
+                </label>
+                <label class="option-label">
+                    <input type="checkbox" name="db_prop" value="D">
+                    (D) 分散性（Distribution / Decentralization）
+                </label>
+                <label class="option-label">
+                    <input type="checkbox" name="db_prop" value="E">
+                    (E) 安全性（Security）
+                </label>
+            </div>
+
+            <div id="hint-box"></div>
+
+            <div class="btn-group">
+                <button class="btn-submit" onclick="checkAnswer()">送出答案</button>
+                <button class="btn-hint" onclick="showHint()">💡 看提示</button>
+                <button class="btn-reset" onclick="resetQuiz()">🔄 重作一次</button>
+            </div>
+        </section>
+
+        <!-- 第三區：回饋與解析 -->
+        <section id="feedback-area">
+            <div id="result-header" class="result-header"></div>
+            
+            <div class="card" style="border-left-color: var(--primary-color);">
+                <h3>📊 選項逐一破解</h3>
+                <p style="margin-bottom: 20px; font-size: 0.9rem; color: #666;">紅色標示為「本題正確答案」（即它不是資料庫特性）。</p>
+                <div class="explanation-grid">
+                    
+                    <div class="exp-card correct-prop">
+                        <div class="exp-title">
+                            (A) 集中性 <span class="tag tag-yes">是特性</span>
+                        </div>
+                        <p><strong>Centralization</strong><br>傳統資料庫強調「集中管理」，避免資料散落在不同部門，才能減少資料重複（Redundancy）。</p>
+                    </div>
+
+                    <div class="exp-card not-prop">
+                        <div class="exp-title">
+                            (B) 隨機性 <span class="tag tag-no">不是特性</span>
+                        </div>
+                        <p><strong>Randomness</strong><br>資料庫講求「結構化」與「邏輯」，資料是有組織的存放，絕非隨機亂放。</p>
+                    </div>
+
+                    <div class="exp-card correct-prop">
+                        <div class="exp-title">
+                            (C) 一致性 <span class="tag tag-yes">是特性</span>
+                        </div>
+                        <p><strong>Consistency</strong><br>資料庫必須確保資料前後矛盾不會發生。例如：轉帳後，A帳戶扣款，B帳戶一定要增加。</p>
+                    </div>
+
+                    <div class="exp-card not-prop">
+                        <div class="exp-title">
+                            (D) 分散性 <span class="tag tag-no">不是特性</span>
+                        </div>
+                        <p><strong>Distribution</strong><br>這是一個陷阱！「分散式資料庫」是一種架構選擇，並非所有資料庫的本質特性。大多數基礎資料庫是集中式的。</p>
+                    </div>
+
+                    <div class="exp-card correct-prop">
+                        <div class="exp-title">
+                            (E) 安全性 <span class="tag tag-yes">是特性</span>
+                        </div>
+                        <p><strong>Security</strong><br>透過權限設定（Authorization），限制誰可以讀取或修改資料，是資料庫的重要功能。</p>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- 第四區：小測驗 -->
+        <section class="card">
+            <h2>3. 觀念小測驗</h2>
+            <p>剛剛學會了嗎？試試看這三題！</p>
+            <div id="mini-quiz-container">
+                <!-- JS 動態生成題目 -->
+            </div>
+        </section>
+
+        <!-- 第五區：記憶技巧 -->
+        <section class="card" style="border-left: 5px solid #8b5cf6;">
+            <h2>4. 考前記憶包</h2>
+            <button class="accordion">🧠 記憶口訣與陷阱 (點擊展開)</button>
+            <div class="panel">
+                <div style="padding: 15px 0;">
+                    <p><strong>口訣：</strong>「<strong>共用、一、完、安</strong>」</p>
+                    <ul>
+                        <li><strong>共用</strong>：資料共享 (Sharing)</li>
+                        <li><strong>一</strong>：一致性 (Consistency)</li>
+                        <li><strong>完</strong>：完整性 (Integrity)</li>
+                        <li><strong>安</strong>：安全性 (Security)</li>
+                    </ul>
+                    <hr>
+                    <p><strong>⚠️ 常見考試陷阱：</strong></p>
+                    <ol>
+                        <li><strong>分散性 (Distribution)</strong>：這是「選配」，不是「標配」。</li>
+                        <li><strong>獨立性 (Independence)</strong>：這是特性！指「程式與資料獨立」，改資料結構不用改程式，是好事。</li>
+                        <li><strong>隨機性 (Randomness)</strong>：資料庫最討厭隨機，資料庫喜歡秩序。</li>
+                    </ol>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <p style="text-align: center; color: #9ca3af; font-size: 0.8rem; margin-top: 50px;">
+                Designed for High School Database Education
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        // 1. 互動題邏輯
+        let hintLevel = 0;
+        const correctAnswers = ['B', 'D'];
+        
+        function showHint() {
+            const hintBox = document.getElementById('hint-box');
+            hintBox.style.display = 'block';
+            
+            hintLevel++;
+            let hintText = "";
+            
+            if (hintLevel === 1) {
+                hintText = "<strong>提示 1：</strong> 先想想看，資料庫就像倉庫，一定要求「安全」和資料「一致」。把這些選項剔除。";
+            } else if (hintLevel === 2) {
+                hintText = "<strong>提示 2：</strong> 資料庫講求「結構化」，所以「隨機」肯定不對。另外，「分散式資料庫」是一種特殊的系統，不是所有資料庫都長那樣。";
+            } else {
+                hintText = "<strong>終極提示：</strong> 答案有兩個。一個是完全相反的概念（亂），一個是架構選項（非必備）。";
+            }
+            
+            hintBox.innerHTML = hintText;
+        }
+
+        function checkAnswer() {
+            // 取得使用者選取的選項
+            const checkboxes = document.querySelectorAll('input[name="db_prop"]:checked');
+            const selectedValues = Array.from(checkboxes).map(cb => cb.value).sort();
+            
+            // 顯示結果區
+            const feedbackArea = document.getElementById('feedback-area');
+            const resultHeader = document.getElementById('result-header');
+            const resetButton = document.querySelector('.btn-reset');
+            const submitButton = document.querySelector('.btn-submit');
+            
+            feedbackArea.style.display = 'block';
+            resetButton.style.display = 'inline-block';
+            submitButton.disabled = true;
+            submitButton.style.backgroundColor = '#ccc';
+            submitButton.style.cursor = 'not-allowed';
+
+            // 判斷對錯
+            const isExactMatch = JSON.stringify(selectedValues) === JSON.stringify(correctAnswers);
+            
+            if (isExactMatch) {
+                resultHeader.className = "result-header result-correct";
+                resultHeader.innerHTML = "🎉 答對了！<br>「隨機性」與「分散性」確實不是資料庫的基本特性。";
+            } else {
+                resultHeader.className = "result-header result-wrong";
+                
+                // 分析錯誤
+                let msg = "❌ 答案不完全正確。<br>";
+                
+                // 檢查漏選
+                let missed = correctAnswers.filter(x => !selectedValues.includes(x));
+                // 檢查多選
+                let extra = selectedValues.filter(x => !correctAnswers.includes(x));
+                
+                if (missed.length > 0) msg += `<small>你漏選了：${missed.join(', ')}</small><br>`;
+                if (extra.length > 0) msg += `<small>你多選了（這些其實是特性）：${extra.join(', ')}</small><br>`;
+                if (selectedValues.length === 0) msg += "<small>你沒有選擇任何選項。</small>";
+                
+                resultHeader.innerHTML = msg;
+            }
+
+            // 捲動到回饋區
+            feedbackArea.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function resetQuiz() {
+            // 清除勾選
+            document.querySelectorAll('input[name="db_prop"]').forEach(cb => cb.checked = false);
+            // 隱藏區域
+            document.getElementById('feedback-area').style.display = 'none';
+            document.getElementById('hint-box').style.display = 'none';
+            // 重置按鈕
+            const submitButton = document.querySelector('.btn-submit');
+            submitButton.disabled = false;
+            submitButton.style.backgroundColor = 'var(--primary-color)';
+            submitButton.style.cursor = 'pointer';
+            document.querySelector('.btn-reset').style.display = 'none';
+            // 重置提示等級
+            hintLevel = 0;
+            // 捲動回題目
+            document.querySelector('.question-box').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // 2. 小測驗資料與邏輯
+        const miniQuizData = [
+            {
+                q: "關於「一致性 (Consistency)」的描述，下列何者正確？",
+                options: ["A. 指資料庫必須分散在各地", "B. 指資料在任何時刻都不會發生矛盾", "C. 指資料必須隨機存取"],
+                ans: 1, // B
+                exp: "一致性確保當資料更新後，所有使用者看到的結果都是同步且正確的，不會發生A看到舊資料、B看到新資料的矛盾。"
+            },
+            {
+                q: "為什麼「分散性」不是資料庫的必要特性？",
+                options: ["A. 因為分散式資料庫不存在", "B. 因為分散式架構不安全", "C. 因為許多資料庫採集中式管理，分散只是架構選擇"],
+                ans: 2, // C
+                exp: "沒錯！傳統資料庫多為集中式（Centralized）。分散式（Distributed）是為了處理巨量資料或異地備援才採用的架構，並非「定義資料庫」的必要條件。"
+            },
+            {
+                q: "下列哪一項屬於資料庫的「安全性 (Security)」機制？",
+                options: ["A. 設定使用者帳號密碼與權限", "B. 減少資料重複", "C. 確保資料格式統一"],
+                ans: 0, // A
+                exp: "安全性主要透過身分驗證（帳號密碼）與授權（權限設定）來防止未經授權的存取。"
+            }
+        ];
+
+        function renderMiniQuiz() {
+            const container = document.getElementById('mini-quiz-container');
+            let html = '';
+            
+            miniQuizData.forEach((item, index) => {
+                html += `
+                <div class="quiz-item">
+                    <div class="quiz-question">Q${index+1}. ${item.q}</div>
+                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                        ${item.options.map((opt, i) => `
+                            <button onclick="checkMiniQuiz(${index}, ${i}, this)" 
+                                    style="background:#f3f4f6; color:#333; font-size:0.9rem; font-weight:normal; border:1px solid #ddd;">
+                                ${opt}
+                            </button>
+                        `).join('')}
+                    </div>
+                    <div id="mini-feedback-${index}" class="quiz-feedback"></div>
+                </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function checkMiniQuiz(qIndex, userAns, btnElement) {
+            const question = miniQuizData[qIndex];
+            const feedbackEl = document.getElementById(`mini-feedback-${qIndex}`);
+            
+            // 重置該題所有按鈕樣式
+            const buttons = btnElement.parentElement.querySelectorAll('button');
+            buttons.forEach(b => {
+                b.style.background = '#f3f4f6';
+                b.style.color = '#333';
+                b.disabled = true; // 鎖定不給改
+            });
+
+            feedbackEl.style.display = 'block';
+
+            if (userAns === question.ans) {
+                btnElement.style.background = '#d1fae5'; // Green
+                btnElement.style.color = '#065f46';
+                feedbackEl.style.color = '#065f46';
+                feedbackEl.innerHTML = `✅ <strong>正解！</strong> ${question.exp}`;
+            } else {
+                btnElement.style.background = '#fee2e2'; // Red
+                btnElement.style.color = '#991b1b';
+                feedbackEl.style.color = '#991b1b';
+                // 標示正確答案
+                buttons[question.ans].style.background = '#d1fae5';
+                feedbackEl.innerHTML = `❌ <strong>答錯囉。</strong> ${question.exp}`;
+            }
+        }
+
+        // 3. Accordion 邏輯
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMiniQuiz(); // 初始化小測驗
+
+            const acc = document.getElementsByClassName("accordion");
+            for (let i = 0; i < acc.length; i++) {
+                acc[i].addEventListener("click", function() {
+                    this.classList.toggle("active");
+                    const panel = this.nextElementSibling;
+                    if (panel.style.maxHeight) {
+                        panel.style.maxHeight = null;
+                    } else {
+                        panel.style.maxHeight = panel.scrollHeight + "px";
+                    } 
+                });
+            }
+        });
+
+    </script>
+</body>
+</html>

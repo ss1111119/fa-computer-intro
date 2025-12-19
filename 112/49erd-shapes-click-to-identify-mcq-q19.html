@@ -1,0 +1,628 @@
+<!-- erd-shapes-click-to-identify-mcq-q19.html -->
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ERD 形狀語言大解密 - 高中電腦概論互動教學</title>
+    <style>
+        :root {
+            --primary-color: #4361ee; /* 補習班專業藍 */
+            --accent-color: #f72585; /* 重點強調粉 */
+            --success-color: #4cc9f0; /* 正確綠/藍 */
+            --warning-color: #fca311; /* 提示橘 */
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-main: #2b2d42;
+            --text-light: #6c757d;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: var(--text-light);
+            font-size: 1.1em;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* 卡片通用樣式 */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--primary-color);
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            color: var(--primary-color);
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            font-size: 1.4em;
+        }
+
+        /* 題目區塊 */
+        .question-text {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+        }
+
+        .options label {
+            display: block;
+            margin: 10px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .options label:hover {
+            background: #e9ecef;
+        }
+
+        input[type="checkbox"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+
+        /* 按鈕樣式 */
+        .btn-group {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .btn-primary { background: var(--primary-color); color: white; }
+        .btn-primary:hover { background: #3046b5; }
+        
+        .btn-secondary { background: var(--text-light); color: white; }
+        .btn-info { background: var(--success-color); color: white; }
+        .btn-outline { background: transparent; border: 2px solid var(--primary-color); color: var(--primary-color); }
+        .btn-danger { background: var(--accent-color); color: white; }
+
+        /* 回饋區塊 */
+        .feedback {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+            font-weight: bold;
+        }
+        .feedback.correct { background: #d1e7dd; color: #0f5132; display: block; }
+        .feedback.wrong { background: #f8d7da; color: #842029; display: block; }
+
+        /* 重點強調卡 */
+        .highlight-text {
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        /* 名詞速查 */
+        .glossary-item {
+            border-bottom: 1px solid #eee;
+        }
+        .glossary-title {
+            padding: 10px;
+            cursor: pointer;
+            background: #f8f9fa;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .glossary-title:hover { background: #e2e6ea; }
+        .glossary-content {
+            padding: 10px;
+            display: none;
+            background: #fff;
+            color: #555;
+            font-size: 0.95em;
+        }
+        .glossary-content.show { display: block; }
+
+        /* 核心互動 SVG 區 */
+        .shapes-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .shape-wrapper {
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+            position: relative;
+        }
+
+        .shape-wrapper:hover {
+            transform: scale(1.1);
+        }
+
+        .shape-wrapper svg {
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.1));
+            fill: white;
+            stroke: #333;
+            stroke-width: 2;
+        }
+
+        /* 選中狀態 */
+        .shape-wrapper.active svg {
+            stroke: var(--accent-color);
+            stroke-width: 4;
+            filter: drop-shadow(0 0 8px rgba(247, 37, 133, 0.5));
+        }
+
+        .interaction-panel {
+            background: #eef2f7;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border: 1px dashed var(--primary-color);
+        }
+
+        .interaction-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        select {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            font-size: 1em;
+        }
+
+        /* 解析卡樣式 */
+        .analysis-item {
+            margin-bottom: 10px;
+            padding-left: 10px;
+            border-left: 3px solid #ddd;
+        }
+        .analysis-item.correct-opt { border-left-color: var(--success-color); }
+        .analysis-item.wrong-opt { border-left-color: var(--text-light); opacity: 0.8; }
+
+        /* 延伸練習 */
+        .quiz-item {
+            background: #fff;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 10px;
+        }
+        .quiz-feedback {
+            margin-top: 5px;
+            font-size: 0.9em;
+            font-style: italic;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>資料庫概論 (ERD) 形狀特訓班</h1>
+        <div class="subtitle">高中電腦概論 - 符號語言篇 (Q19)</div>
+    </header>
+
+    <div class="container">
+
+        <!-- 1. 名詞速查 (可展開) -->
+        <div class="card" style="border-left-color: var(--warning-color);">
+            <h2 style="cursor: pointer;" onclick="toggleAllGlossary()">📖 ERD 名詞速查 (點我展開)</h2>
+            <div id="glossary-area">
+                <div class="glossary-item">
+                    <div class="glossary-title" onclick="toggleGlossary(this)">實體 (Entity) <span>▼</span></div>
+                    <div class="glossary-content">現實世界中可明確辨識的物件，如：學生、訂單、書本。</div>
+                </div>
+                <div class="glossary-item">
+                    <div class="glossary-title" onclick="toggleGlossary(this)">關係 (Relationship) <span>▼</span></div>
+                    <div class="glossary-content">實體與實體之間的互動或關聯，如：學生「選修」課程。</div>
+                </div>
+                <div class="glossary-item">
+                    <div class="glossary-title" onclick="toggleGlossary(this)">屬性 (Attribute) <span>▼</span></div>
+                    <div class="glossary-content">描述實體特徵的詳細資料，如：學生的「姓名」、書本的「價格」。</div>
+                </div>
+                <div class="glossary-item">
+                    <div class="glossary-title" onclick="toggleGlossary(this)">實體關係圖 (ERD) <span>▼</span></div>
+                    <div class="glossary-content">Entity-Relationship Diagram，用來規劃資料庫結構的藍圖。</div>
+                </div>
+                <div class="glossary-item">
+                    <div class="glossary-title" onclick="toggleGlossary(this)">表示法 (Notation) <span>▼</span></div>
+                    <div class="glossary-content">這是一套「約定」，就像紅綠燈一樣，大家講好什麼形狀代表什麼意思。</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. 題目卡 -->
+        <div class="card" id="q19-card">
+            <h2>📝 課堂隨堂考 (Q19)</h2>
+            <div class="question-text">
+                19. 描述資料式的實體關係圖 (Entity Relationship Diagram) 中，用到下列哪些圖形? (複選)
+            </div>
+            <div class="options" id="q19-options">
+                <label><input type="checkbox" name="q19" value="A"> (A) 正方形 (Square)</label>
+                <label><input type="checkbox" name="q19" value="B"> (B) 菱形 (Diamond)</label>
+                <label><input type="checkbox" name="q19" value="C"> (橢圓形 (Oval)</label>
+                <label><input type="checkbox" name="q19" value="D"> (D) 樹狀形 (Tree)</label>
+                <label><input type="checkbox" name="q19" value="E"> (E) 長方形 (Rectangle)</label>
+            </div>
+            
+            <div id="q19-feedback" class="feedback"></div>
+
+            <div class="btn-group">
+                <button class="btn-primary" onclick="submitQ19()">送出答案</button>
+                <button class="btn-secondary" onclick="resetQ19()">重作一次</button>
+                <button class="btn-info" onclick="showSolution()">顯示詳細解析</button>
+            </div>
+        </div>
+
+        <!-- 3. 符號為什麼長這樣卡 (教學) -->
+        <div class="card">
+            <h2>💡 老師的直覺記憶法</h2>
+            <p>同學不要死背，ERD 是一種「圖形語言」，設計者當初是有邏輯的：</p>
+            <ul>
+                <li><strong>長方形 (Rectangle)</strong>：像一個箱子、盒子。是用來<b>裝東西</b>的，所以代表 <span class="highlight-text">實體 (Entity)</span>。</li>
+                <li><strong>菱形 (Diamond)</strong>：看起來像一個連結點、轉運站。是用來<b>連接</b>兩個箱子的，所以代表 <span class="highlight-text">關係 (Relationship)</span>。</li>
+                <li><strong>橢圓形 (Oval)</strong>：像是一張小貼紙或標籤。是貼在箱子旁邊做說明的，所以代表 <span class="highlight-text">屬性 (Attribute)</span>。</li>
+            </ul>
+        </div>
+
+        <!-- 4. 可點圖辨識卡 (核心互動) -->
+        <div class="card">
+            <h2>👆 點點看：這是什麼符號？</h2>
+            <p>請點擊下方的圖形，告訴我它在標準 ERD 中代表什麼？</p>
+            
+            <div class="btn-group" style="margin-bottom: 15px;">
+                <button class="btn-outline" onclick="randomSelectShape()">🎲 隨機出一題</button>
+                <span style="align-self: center; margin-left: auto; font-weight: bold;">得分：<span id="score-val">0</span></span>
+            </div>
+
+            <!-- SVG 繪圖區 -->
+            <div class="shapes-container">
+                <!-- 長方形 -->
+                <div class="shape-wrapper" id="shape-rect" onclick="selectShape('rect')">
+                    <svg width="100" height="80" viewBox="0 0 120 80">
+                        <rect x="10" y="20" width="100" height="40" rx="0" />
+                    </svg>
+                    <div style="font-size: 12px; margin-top: 5px;">圖形 1</div>
+                </div>
+
+                <!-- 菱形 -->
+                <div class="shape-wrapper" id="shape-diamond" onclick="selectShape('diamond')">
+                    <svg width="100" height="80" viewBox="0 0 120 80">
+                        <polygon points="60,10 110,40 60,70 10,40" />
+                    </svg>
+                    <div style="font-size: 12px; margin-top: 5px;">圖形 2</div>
+                </div>
+
+                <!-- 橢圓形 -->
+                <div class="shape-wrapper" id="shape-oval" onclick="selectShape('oval')">
+                    <svg width="100" height="80" viewBox="0 0 120 80">
+                        <ellipse cx="60" cy="40" rx="50" ry="25" />
+                    </svg>
+                    <div style="font-size: 12px; margin-top: 5px;">圖形 3</div>
+                </div>
+
+                <!-- 正方形 (干擾) -->
+                <div class="shape-wrapper" id="shape-square" onclick="selectShape('square')">
+                    <svg width="80" height="80" viewBox="0 0 100 100">
+                        <rect x="20" y="20" width="60" height="60" />
+                    </svg>
+                    <div style="font-size: 12px; margin-top: 5px;">圖形 4</div>
+                </div>
+
+                <!-- 樹狀圖 (干擾) -->
+                <div class="shape-wrapper" id="shape-tree" onclick="selectShape('tree')">
+                    <svg width="100" height="80" viewBox="0 0 120 80">
+                        <!-- Root -->
+                        <circle cx="60" cy="15" r="5" fill="black"/>
+                        <!-- Lines -->
+                        <line x1="60" y1="15" x2="40" y2="45" stroke="black" stroke-width="2"/>
+                        <line x1="60" y1="15" x2="80" y2="45" stroke="black" stroke-width="2"/>
+                        <!-- Children -->
+                        <circle cx="40" cy="45" r="5" fill="black"/>
+                        <circle cx="80" cy="45" r="5" fill="black"/>
+                        <!-- More Lines -->
+                        <line x1="40" y1="45" x2="30" y2="70" stroke="black" stroke-width="2"/>
+                        <line x1="40" y1="45" x2="50" y2="70" stroke="black" stroke-width="2"/>
+                    </svg>
+                    <div style="font-size: 12px; margin-top: 5px;">圖形 5</div>
+                </div>
+            </div>
+
+            <!-- 互動控制面板 -->
+            <div class="interaction-panel" id="interaction-area" style="display:none;">
+                <p id="selected-msg" style="margin: 0 0 10px 0; font-weight: bold; color: var(--primary-color);">請選擇一個圖形...</p>
+                <div class="interaction-controls">
+                    <label>這是什麼？</label>
+                    <select id="shape-guess">
+                        <option value="">-- 請選擇 --</option>
+                        <option value="entity">實體 (Entity)</option>
+                        <option value="relationship">關係 (Relationship)</option>
+                        <option value="attribute">屬性 (Attribute)</option>
+                        <option value="distractor">不是 ERD 核心符號 (干擾項)</option>
+                    </select>
+                    <button class="btn-primary" onclick="checkShapeAnswer()">判定</button>
+                </div>
+                <div id="shape-feedback" class="feedback"></div>
+            </div>
+        </div>
+
+        <!-- 5. 解析卡 (預設隱藏，點擊顯示後展開) -->
+        <div class="card" id="solution-card" style="display: none; border-left-color: var(--success-color);">
+            <h2>🧐 題目詳細解析</h2>
+            
+            <div class="analysis-item wrong-opt">
+                <strong>(A) 正方形：</strong><span style="color:red">錯誤</span>。正方形不是標準 ERD 符號。它常被拿來跟「長方形」混淆，是一個典型的干擾選項。
+            </div>
+            
+            <div class="analysis-item correct-opt">
+                <strong>(B) 菱形：</strong><span style="color:green">正確</span>。這就是 ERD 的核心！用來表示實體與實體之間的互動「關係」。
+            </div>
+
+            <div class="analysis-item correct-opt">
+                <strong>(C) 橢圓形：</strong><span style="color:green">正確</span>。用來存放資料的細節，也就是「屬性」。
+            </div>
+
+            <div class="analysis-item wrong-opt">
+                <strong>(D) 樹狀形：</strong><span style="color:red">錯誤</span>。樹狀結構常見於資料結構（如二元樹）或階層式資料模型，但不是 ERD 的構成元件。
+            </div>
+
+            <div class="analysis-item correct-opt">
+                <strong>(E) 長方形：</strong><span style="color:green">正確</span>。這是最基礎的符號，代表資料庫中的主角「實體」。
+            </div>
+
+            <div style="margin-top: 15px; padding: 10px; background: #fff3cd; border-radius: 5px; font-size: 0.9em;">
+                👨‍🏫 <strong>老師補充：</strong> 不同教材可能會看到「烏鴉腳 (Crow's Foot)」表示法，但在這一題考的是最傳統的 Chen's Notation (陳氏表示法) 喔！
+            </div>
+        </div>
+
+        <!-- 6. 延伸練習卡 -->
+        <div class="card">
+            <h2>🚀 延伸練習 (是非題)</h2>
+            <div class="quiz-item">
+                <p>1. ERD 的形狀是領域內約定的符號語言，不能隨便亂畫。</p>
+                <button class="btn-outline" onclick="checkQuiz(this, true, '沒錯！符號就是一種共同語言 (Notation)。')">O</button>
+                <button class="btn-outline" onclick="checkQuiz(this, false, '不對喔，如果大家隨便畫，工程師就看不懂設計圖了。')">X</button>
+                <div class="quiz-feedback"></div>
+            </div>
+            <div class="quiz-item">
+                <p>2. 「菱形」在 ERD 中通常代表屬性 (Attribute)。</p>
+                <button class="btn-outline" onclick="checkQuiz(this, false, '答錯了！菱形代表「關係」，橢圓形才是屬性。')">O</button>
+                <button class="btn-outline" onclick="checkQuiz(this, true, '正確！菱形是「關係」，不要被騙了。')">X</button>
+                <div class="quiz-feedback"></div>
+            </div>
+            <div class="quiz-item">
+                <p>3. 「長方形」在 ERD 中通常代表實體 (Entity)。</p>
+                <button class="btn-outline" onclick="checkQuiz(this, true, 'BINGO! 實體用長方形裝起來，記住箱子理論。')">O</button>
+                <button class="btn-outline" onclick="checkQuiz(this, false, '哎呀！長方形確實是代表實體喔。')">X</button>
+                <div class="quiz-feedback"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- 名詞速查 ---
+        function toggleGlossary(element) {
+            const content = element.nextElementSibling;
+            content.classList.toggle('show');
+            const arrow = element.querySelector('span');
+            arrow.textContent = content.classList.contains('show') ? '▲' : '▼';
+        }
+        function toggleAllGlossary() {
+            const contents = document.querySelectorAll('.glossary-content');
+            contents.forEach(c => c.classList.toggle('show'));
+        }
+
+        // --- 題目 Q19 邏輯 ---
+        function submitQ19() {
+            const checkboxes = document.querySelectorAll('input[name="q19"]:checked');
+            const selected = Array.from(checkboxes).map(cb => cb.value);
+            const correct = ['B', 'C', 'E'];
+            const feedbackEl = document.getElementById('q19-feedback');
+            
+            // 排序比對
+            selected.sort();
+            correct.sort();
+            const isCorrect = JSON.stringify(selected) === JSON.stringify(correct);
+
+            feedbackEl.className = 'feedback ' + (isCorrect ? 'correct' : 'wrong');
+            
+            if (isCorrect) {
+                feedbackEl.innerHTML = `✅ 完全正確！<br>口訣記好：實體(長方)、關係(菱形)、屬性(橢圓)。`;
+            } else {
+                // 分析錯誤
+                const missed = correct.filter(x => !selected.includes(x));
+                const extra = selected.filter(x => !correct.includes(x));
+                let msg = '❌ 還有進步空間喔！<br>';
+                if (missed.length > 0) msg += `👉 你漏選了：${missed.join(', ')}<br>`;
+                if (extra.length > 0) msg += `👉 你多選了：${extra.join(', ')} (這不是標準符號)<br>`;
+                msg += '請參考下方的形狀直覺教學。';
+                feedbackEl.innerHTML = msg;
+            }
+        }
+
+        function resetQ19() {
+            document.querySelectorAll('input[name="q19"]').forEach(cb => cb.checked = false);
+            const feedbackEl = document.getElementById('q19-feedback');
+            feedbackEl.style.display = 'none';
+            feedbackEl.innerHTML = '';
+            document.getElementById('solution-card').style.display = 'none';
+        }
+
+        function showSolution() {
+            const solutionCard = document.getElementById('solution-card');
+            solutionCard.style.display = 'block';
+            solutionCard.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // --- 核心互動：形狀辨識 ---
+        let currentShapeId = null;
+        let score = 0;
+        
+        // 定義正確答案與提示
+        const shapeData = {
+            'rect': { 
+                name: '長方形 (Rectangle)', 
+                answer: 'entity', 
+                hint: 'Correct! 就像個盒子用來裝東西 (Entity)。' 
+            },
+            'diamond': { 
+                name: '菱形 (Diamond)', 
+                answer: 'relationship', 
+                hint: 'Correct! 就像連結結點，代表關係 (Relationship)。' 
+            },
+            'oval': { 
+                name: '橢圓形 (Oval)', 
+                answer: 'attribute', 
+                hint: 'Correct! 就像附加的小標籤，代表屬性 (Attribute)。' 
+            },
+            'square': { 
+                name: '正方形 (Square)', 
+                answer: 'distractor', 
+                hint: 'Correct! 它長得很像長方形，但在 ERD 中不常用，是常見的干擾項。' 
+            },
+            'tree': { 
+                name: '樹狀形 (Tree)', 
+                answer: 'distractor', 
+                hint: 'Correct! 這是階層結構，不是 ERD 的基本元件。' 
+            }
+        };
+
+        function selectShape(id) {
+            // 清除之前的選取
+            document.querySelectorAll('.shape-wrapper').forEach(el => el.classList.remove('active'));
+            
+            // 設定當前選取
+            const currentEl = document.getElementById('shape-' + id);
+            currentEl.classList.add('active');
+            currentShapeId = id;
+
+            // 顯示互動面板
+            const panel = document.getElementById('interaction-area');
+            panel.style.display = 'block';
+            
+            // 重置面板狀態
+            document.getElementById('selected-msg').textContent = `你選擇了：圖形 (點擊上方圖形可切換)`;
+            document.getElementById('shape-guess').value = "";
+            const feedback = document.getElementById('shape-feedback');
+            feedback.style.display = 'none';
+            feedback.className = 'feedback';
+
+            // 滾動到操作區 (手機版體驗較好)
+            // panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function checkShapeAnswer() {
+            if (!currentShapeId) return;
+            
+            const userGuess = document.getElementById('shape-guess').value;
+            const data = shapeData[currentShapeId];
+            const feedback = document.getElementById('shape-feedback');
+            
+            if (userGuess === "") {
+                alert("請先選擇一個選項！");
+                return;
+            }
+
+            if (userGuess === data.answer) {
+                feedback.className = 'feedback correct';
+                feedback.innerHTML = `✅ 答對了！<br>${data.name}：${data.hint}`;
+                score++;
+                document.getElementById('score-val').textContent = score;
+            } else {
+                feedback.className = 'feedback wrong';
+                let hintMsg = "";
+                // 給予錯誤提示
+                switch(data.answer) {
+                    case 'entity': hintMsg = "提示：像個盒子裝東西..."; break;
+                    case 'relationship': hintMsg = "提示：用來連接兩個實體的..."; break;
+                    case 'attribute': hintMsg = "提示：像是貼在旁邊的標籤..."; break;
+                    case 'distractor': hintMsg = "提示：這不是 ERD 的三大核心符號喔..."; break;
+                }
+                feedback.innerHTML = `❌ 答錯囉！<br>${hintMsg}`;
+            }
+        }
+
+        function randomSelectShape() {
+            const keys = Object.keys(shapeData);
+            const randomKey = keys[Math.floor(Math.random() * keys.length)];
+            selectShape(randomKey);
+        }
+
+        // --- 延伸練習 ---
+        function checkQuiz(btn, isCorrectAnswer, explanation) {
+            const feedbackDiv = btn.parentElement.querySelector('.quiz-feedback');
+            const btns = btn.parentElement.querySelectorAll('button');
+            
+            // 停用按鈕
+            btns.forEach(b => b.disabled = true);
+
+            if (isCorrectAnswer) {
+                btn.style.background = 'var(--success-color)';
+                btn.style.color = 'white';
+                feedbackDiv.style.color = 'green';
+                feedbackDiv.innerHTML = `✅ ${explanation}`;
+            } else {
+                btn.style.background = 'var(--accent-color)';
+                btn.style.color = 'white';
+                feedbackDiv.style.color = 'red';
+                feedbackDiv.innerHTML = `❌ ${explanation}`;
+            }
+        }
+
+    </script>
+</body>
+</html>

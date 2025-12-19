@@ -1,0 +1,574 @@
+<!-- 
+Filename: propositional-logic-implication-equivalence-mcq-q13.html 
+Description: Discrete Math / Propositional Logic Interactive Tutorial
+Target: High School Students (Beginners)
+-->
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>【名師教學】命題邏輯：蘊涵與等價關係完全攻略</title>
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --accent-color: #f72585;
+            --success-color: #4cc9f0;
+            --success-dark: #0096c7;
+            --error-color: #e63946;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-main: #2b2d42;
+            --text-light: #8d99ae;
+            --border-radius: 12px;
+            --box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Noto Sans TC", "Microsoft JhengHei", -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        /* Grid Layout */
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .grid-layout {
+                grid-template-columns: 2fr 1fr; /* Main content left, glossary right/bottom */
+            }
+            .sidebar {
+                grid-row: span 2;
+            }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: var(--box-shadow);
+            border-left: 5px solid var(--primary-color);
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+        .card h2 {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .card h3 {
+            font-size: 1.1rem;
+            margin: 15px 0 10px;
+            color: var(--secondary-color);
+        }
+
+        /* Question Section */
+        .question-box {
+            background-color: #eef4ff;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+
+        .options-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            background: #fff;
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-item:hover {
+            border-color: var(--primary-color);
+            background-color: #f0f7ff;
+        }
+
+        .option-item input[type="checkbox"] {
+            transform: scale(1.5);
+            margin-right: 15px;
+            cursor: pointer;
+        }
+
+        .btn-group {
+            margin-top: 25px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .btn-submit { background-color: var(--primary-color); color: white; }
+        .btn-submit:hover { background-color: var(--secondary-color); }
+
+        .btn-explain { background-color: var(--success-color); color: white; }
+        .btn-explain:hover { background-color: var(--success-dark); }
+
+        .btn-reset { background-color: #6c757d; color: white; }
+        .btn-reset:hover { background-color: #5a6268; }
+
+        #feedback-area {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .feedback-success { background-color: #d1e7dd; color: #0f5132; border: 1px solid #badbcc; }
+        .feedback-error { background-color: #f8d7da; color: #842029; border: 1px solid #f5c2c7; }
+
+        /* Logic Symbols & Formulas */
+        .formula {
+            font-family: 'Courier New', monospace;
+            background: #f1f3f5;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: #d63384;
+            display: inline-block;
+        }
+
+        .mnemonic-box {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        /* Accordion / Glossary */
+        details {
+            margin-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        summary {
+            cursor: pointer;
+            padding: 10px;
+            font-weight: bold;
+            color: var(--text-main);
+            list-style: none; /* Hide default triangle */
+            position: relative;
+        }
+        
+        summary::after {
+            content: '+'; 
+            position: absolute;
+            right: 10px;
+            font-weight: bold;
+        }
+
+        details[open] summary::after {
+            content: '-';
+        }
+
+        details p {
+            padding: 10px 15px;
+            color: #555;
+            font-size: 0.95rem;
+            background-color: #fafafa;
+        }
+
+        /* Analysis Section */
+        #analysis-card {
+            display: none; /* Hidden by default */
+            border-left-color: var(--success-color);
+        }
+
+        .analysis-item {
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px dotted #ccc;
+        }
+        .tag-correct { color: var(--success-dark); font-weight: bold; }
+        .tag-wrong { color: var(--error-color); font-weight: bold; }
+
+        /* Mini Quiz */
+        .quiz-item {
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .quiz-btn-group { margin-top: 10px; }
+        .quiz-btn {
+            padding: 5px 15px;
+            font-size: 0.9rem;
+            margin-right: 5px;
+            background: white;
+            border: 1px solid #ccc;
+        }
+        .quiz-btn:hover { background: #eee; }
+        .quiz-feedback { margin-top: 5px; font-weight: bold; min-height: 1.5em;}
+        .text-green { color: var(--success-dark); }
+        .text-red { color: var(--error-color); }
+
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>電腦概論／離散數學：命題邏輯特訓</h1>
+    <p>高一也能懂的 P → Q 邏輯與等價命題轉換</p>
+</header>
+
+<div class="container grid-layout">
+    
+    <!-- LEFT COLUMN -->
+    <main>
+        <!-- 題目卡 -->
+        <div class="card" id="question-card">
+            <h2>🎯 隨堂練習 (複選題)</h2>
+            <div class="question-box">
+                複選題 13. 在命題的邏輯中，P → Q 跟下列何者命題有等價的關係?
+            </div>
+            
+            <form id="quiz-form">
+                <div class="options-group">
+                    <label class="option-item">
+                        <input type="checkbox" name="option" value="A">
+                        <span>(A) ¬Q → ¬P</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="checkbox" name="option" value="B">
+                        <span>(B) ¬(Q → P)</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="checkbox" name="option" value="C">
+                        <span>(C) ¬P ∨ Q</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="checkbox" name="option" value="D">
+                        <span>(D) P ∧ ¬Q</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="checkbox" name="option" value="E">
+                        <span>(E) P ∨ ¬Q</span>
+                    </label>
+                </div>
+
+                <div class="btn-group">
+                    <button type="button" class="btn-submit" onclick="checkAnswer()">送出答案</button>
+                    <button type="button" class="btn-explain" onclick="showAnalysis()">顯示解析</button>
+                    <button type="button" class="btn-reset" onclick="resetQuiz()">重作一次</button>
+                </div>
+            </form>
+
+            <div id="feedback-area"></div>
+        </div>
+
+        <!-- 觀念卡 -->
+        <div class="card">
+            <h2>📚 名師觀念整理</h2>
+            
+            <h3>1. P → Q 是什麼意思？</h3>
+            <p><strong>白話翻譯：</strong>「如果 P 成立，那麼 Q 一定成立」。</p>
+            <p style="margin-top:5px; color: var(--error-color);">⚠️ 只有一種情況是錯的：P 為真 (True)、Q 為假 (False)。</p>
+            <p style="font-size: 0.9rem; color: #666;">(像是承諾：「如果你考一百分(P)，我就給你獎金(Q)」。如果你考一百分卻沒拿到獎金，那就是我說謊/邏輯為假。)</p>
+
+            <h3>2. 考試必背三個公式</h3>
+            <ul>
+                <li><span class="formula">P → Q ≡ ¬P ∨ Q</span> (最重要的轉換！)</li>
+                <li><span class="formula">P → Q ≡ ¬Q → ¬P</span> (逆否命題，完全等價)</li>
+                <li>注意：原命題 <span style="color:red">≠</span> 逆命題 (Q → P)</li>
+            </ul>
+
+            <div class="mnemonic-box">
+                <strong>⚡ 快速記憶口訣 (秒殺解題)</strong><br>
+                將箭頭變成 OR (∨)：<br>
+                <span style="font-size:1.1em; color:#d63384;">「箭頭右邊保留，左邊否定，中間用 OR 連」</span><br>
+                P → Q  變身為  <span class="formula">¬P ∨ Q</span>
+            </div>
+        </div>
+
+        <!-- 解析卡 (預設隱藏) -->
+        <div class="card" id="analysis-card">
+            <h2>💡 詳細解析</h2>
+            <div class="analysis-item">
+                <span class="tag-correct">(A) ¬Q → ¬P：正確</span><br>
+                這是「逆否命題」。在邏輯上，原命題與其逆否命題永遠等價。
+            </div>
+            <div class="analysis-item">
+                <span class="tag-wrong">(B) ¬(Q → P)：錯誤</span><br>
+                這是對 (Q → P) 取否定，邏輯完全不同。
+            </div>
+            <div class="analysis-item">
+                <span class="tag-correct">(C) ¬P ∨ Q：正確</span><br>
+                這是 P → Q 的標準等價形式（請參考口訣：左邊否定，右邊保留，用 OR 連接）。
+            </div>
+            <div class="analysis-item">
+                <span class="tag-wrong">(D) P ∧ ¬Q：錯誤</span><br>
+                這是 P → Q 為「假」的唯一情況（前真後假），它是 P → Q 的否定，而非等價。
+            </div>
+            <div class="analysis-item">
+                <span class="tag-wrong">(E) P ∨ ¬Q：錯誤</span><br>
+                這裡只否定了後件，沒有任何標準邏輯關係符合此式。
+            </div>
+        </div>
+        
+        <!-- 延伸練習卡 -->
+        <div class="card">
+            <h2>✍️ 30秒 觀念小測驗</h2>
+            
+            <div class="quiz-item">
+                <p>1. P → Q 與 ¬P ∨ Q 是等價的。</p>
+                <div class="quiz-btn-group">
+                    <button class="quiz-btn" onclick="checkMiniQuiz(this, true, '沒錯！這是必考的轉換公式。')">O (是)</button>
+                    <button class="quiz-btn" onclick="checkMiniQuiz(this, false, '錯囉！請看上面的口訣：左否定、右保留。')">X (非)</button>
+                </div>
+                <div class="quiz-feedback"></div>
+            </div>
+
+            <div class="quiz-item">
+                <p>2. P → Q 與 Q → P (逆命題) 是等價的。</p>
+                <div class="quiz-btn-group">
+                    <button class="quiz-btn" onclick="checkMiniQuiz(this, false, '大錯特錯！若P是下雨，Q是地濕。地濕(Q)不代表一定下雨(P)，可能是灑水。')">O (是)</button>
+                    <button class="quiz-btn" onclick="checkMiniQuiz(this, true, '正確！原命題與逆命題不等價。')">X (非)</button>
+                </div>
+                <div class="quiz-feedback"></div>
+            </div>
+
+            <div class="quiz-item">
+                <p>3. 當 P 為真，Q 為假時，P → Q 的結果為假。</p>
+                <div class="quiz-btn-group">
+                    <button class="quiz-btn" onclick="checkMiniQuiz(this, true, '正確！這是蘊涵命題唯一為 False 的情況。')">O (是)</button>
+                    <button class="quiz-btn" onclick="checkMiniQuiz(this, false, '不對喔，前真後假是蘊涵唯一的破綻，結果為假。')">X (非)</button>
+                </div>
+                <div class="quiz-feedback"></div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- RIGHT COLUMN (Sidebar) -->
+    <aside class="sidebar">
+        <!-- 名詞速查 -->
+        <div class="card">
+            <h2>📖 名詞速查 (點擊展開)</h2>
+            
+            <details>
+                <summary>命題 Proposition</summary>
+                <p>一個可以判斷真(True)或假(False)的語句。例如「今天是星期五」是命題，「請坐下」不是。</p>
+            </details>
+
+            <details>
+                <summary>蘊涵 Implication (→)</summary>
+                <p>讀作「如果...那麼...」。例如 P→Q 代表「如果P發生，則Q也會發生」。</p>
+            </details>
+
+            <details>
+                <summary>否定 Negation (¬)</summary>
+                <p>就是 NOT。¬P 代表「P 的相反」。如果 P 是真，¬P 就是假。</p>
+            </details>
+
+            <details>
+                <summary>合取 AND (∧)</summary>
+                <p>兩者都必須成立才算成立。P ∧ Q 代表「P 且 Q」。</p>
+            </details>
+
+            <details>
+                <summary>析取 OR (∨)</summary>
+                <p>只要有一個成立就算成立。P ∨ Q 代表「P 或 Q」。</p>
+            </details>
+
+            <details>
+                <summary>等價 Equivalence (≡)</summary>
+                <p>兩個命題的真值表結果完全一樣，就像數學的「等於」。</p>
+            </details>
+        </div>
+
+        <!-- 等價轉換卡 -->
+        <div class="card" style="border-left-color: var(--accent-color);">
+            <h2>🔄 等價轉換對照表</h2>
+            <table style="width:100%; border-collapse: collapse; font-size: 0.9rem;">
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <th style="text-align:left; padding:8px;">名稱</th>
+                    <th style="text-align:left; padding:8px;">形式</th>
+                    <th style="text-align:left; padding:8px;">等價?</th>
+                </tr>
+                <tr style="background-color: #f1f3f5;">
+                    <td style="padding:8px;">原命題</td>
+                    <td style="padding:8px; font-family:monospace;">P → Q</td>
+                    <td style="padding:8px;">-</td>
+                </tr>
+                <tr>
+                    <td style="padding:8px;">逆命題</td>
+                    <td style="padding:8px; font-family:monospace;">Q → P</td>
+                    <td style="padding:8px; color:var(--error-color);">否</td>
+                </tr>
+                <tr style="background-color: #f1f3f5;">
+                    <td style="padding:8px;">否命題</td>
+                    <td style="padding:8px; font-family:monospace;">¬P → ¬Q</td>
+                    <td style="padding:8px; color:var(--error-color);">否</td>
+                </tr>
+                <tr>
+                    <td style="padding:8px;">逆否命題</td>
+                    <td style="padding:8px; font-family:monospace;">¬Q → ¬P</td>
+                    <td style="padding:8px; color:var(--success-dark); font-weight:bold;">是</td>
+                </tr>
+            </table>
+        </div>
+    </aside>
+
+</div>
+
+<script>
+    // 正確答案定義 (A 與 C)
+    const CORRECT_ANSWERS = ['A', 'C'];
+
+    function checkAnswer() {
+        // 1. 獲取使用者選取的選項
+        const checkboxes = document.querySelectorAll('input[name="option"]:checked');
+        const userSelection = Array.from(checkboxes).map(cb => cb.value).sort();
+        
+        // 2. 準備回饋區域
+        const feedbackArea = document.getElementById('feedback-area');
+        feedbackArea.style.display = 'block';
+        feedbackArea.className = ''; // 清除舊樣式
+
+        // 3. 判斷邏輯
+        // 比較兩個陣列是否完全相同 (長度相同 且 內容相同)
+        const isCorrect = JSON.stringify(userSelection) === JSON.stringify(CORRECT_ANSWERS);
+
+        if (isCorrect) {
+            // 完全正確
+            feedbackArea.classList.add('feedback-success');
+            feedbackArea.innerHTML = `
+                <h3>🎉 答對了！太棒了！</h3>
+                <p>記住核心觀念：「P → Q 的等價命題只有<strong>逆否命題 (¬Q → ¬P)</strong> 與 <strong>(¬P ∨ Q)</strong>」</p>
+                <p>現在你可以點擊「顯示解析」來複習每個選項為什麼對或錯。</p>
+            `;
+            // 自動顯示解析
+            showAnalysis();
+        } else {
+            // 有錯誤，分析具體錯在哪
+            feedbackArea.classList.add('feedback-error');
+            
+            // 找出漏選的 (在正確答案裡，但使用者沒選)
+            const missing = CORRECT_ANSWERS.filter(x => !userSelection.includes(x));
+            // 找出多選的 (使用者選了，但不在正確答案裡)
+            const extras = userSelection.filter(x => !CORRECT_ANSWERS.includes(x));
+
+            let msg = `<h3>😅 差一點點喔！</h3>`;
+            
+            if (userSelection.length === 0) {
+                msg += `<p>你還沒有選擇任何答案喔！請試著選選看。</p>`;
+            } else {
+                if (missing.length > 0) msg += `<p>👉 你漏選了選項：<strong>${missing.join(', ')}</strong></p>`;
+                if (extras.length > 0) msg += `<p>👉 你多選了不該選的：<strong>${extras.join(', ')}</strong></p>`;
+                msg += `<hr style="margin:10px 0; border:0; border-top:1px solid #f5c2c7;"><p>建議先複習一下上方的「名師觀念整理」，或點擊「顯示解析」查看詳解。</p>`;
+            }
+            
+            feedbackArea.innerHTML = msg;
+        }
+    }
+
+    function showAnalysis() {
+        const analysisCard = document.getElementById('analysis-card');
+        analysisCard.style.display = 'block';
+        // 平滑滾動到解析卡
+        analysisCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function resetQuiz() {
+        // 清空 Checkbox
+        const checkboxes = document.querySelectorAll('input[name="option"]');
+        checkboxes.forEach(cb => cb.checked = false);
+        
+        // 隱藏回饋與解析
+        document.getElementById('feedback-area').style.display = 'none';
+        document.getElementById('analysis-card').style.display = 'none';
+        
+        // 滾動回題目
+        document.getElementById('question-card').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // 小測驗功能
+    function checkMiniQuiz(btn, isCorrectAnswer, explanation) {
+        const parent = btn.parentElement.parentElement;
+        const feedbackDiv = parent.querySelector('.quiz-feedback');
+        
+        // 重置該題按鈕樣式
+        parent.querySelectorAll('.quiz-btn').forEach(b => {
+            b.style.backgroundColor = 'white';
+            b.style.color = 'black';
+        });
+
+        if (isCorrectAnswer) {
+            btn.style.backgroundColor = '#d1e7dd';
+            feedbackDiv.innerHTML = `<span class="text-green">⭕ ${explanation}</span>`;
+        } else {
+            btn.style.backgroundColor = '#f8d7da';
+            feedbackDiv.innerHTML = `<span class="text-red">❌ ${explanation}</span>`;
+        }
+    }
+</script>
+
+</body>
+</html>

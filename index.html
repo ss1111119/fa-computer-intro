@@ -3,54 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>112 農會電腦概論筆記目錄</title>
+    <title>農會電腦概論 - 歷年筆記彙整</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; line-height: 1.6; max-width: 800px; margin: 40px auto; padding: 0 20px; color: #333; }
-        h1 { border-bottom: 2px solid #0366d6; padding-bottom: 10px; color: #0366d6; }
-        ul { list-style: none; padding: 0; }
-        li { background: #f6f8fa; margin: 8px 0; padding: 12px; border-radius: 6px; border: 1px solid #d1d5da; transition: 0.2s; }
-        li:hover { background: #ebf0f4; border-color: #0366d6; }
-        a { text-decoration: none; color: #0366d6; font-weight: bold; display: block; }
+        body { font-family: system-ui, sans-serif; background: #f4f7f9; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { background: white; padding: 2rem; border-radius: 12px; shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; width: 90%; max-width: 500px; }
+        h1 { color: #0366d6; margin-bottom: 1.5rem; }
+        .year-btn { display: block; background: #0366d6; color: white; text-decoration: none; padding: 15px; margin: 10px 0; border-radius: 8px; font-weight: bold; transition: 0.3s; }
+        .year-btn:hover { background: #024ea3; transform: scale(1.02); }
+        .year-btn.disabled { background: #ccc; cursor: not-allowed; }
     </style>
 </head>
 <body>
-    <h1>📂 112 農會電腦概論筆記目錄</h1>
-    <p>點擊下方連結查看各章節詳細筆記：</p>
-    <ul>
-        <li><a href="algorithm-and-pseudocode-intro.html">演算法與虛擬碼簡介</a></li>
-        <li><a href="big-o-constant-time-o1.html">Big O 時間複雜度 (O(1))</a></li>
-        <li><a href="big5-encoding-basics.html">Big5 編碼基礎</a></li>
-        <li><a href="binary-or-operation-1100-or-0101.html">二進位 OR 運算實作</a></li>
-        <li><a href="byte-combinations-start-1-end-0.html">Byte 組合計算 (1開頭0結尾)</a></li>
-        <li><a href="c-language-third-generation.html">C 語言與第三代程式語言</a></li>
-        <li><a href="countable-set-rational-numbers.html">可數集與有理數</a></li>
-        <li><a href="crypto-key-generation-prime-numbers.html">加密密鑰生成與質數</a></li>
-        <li><a href="fcs-frame-check-sequence-link-layer.html">FCS 幀檢查序列 (鏈結層)</a></li>
-        <li><a href="hard-disk-track-cylinder-sector-platter.html">硬碟結構：磁軌、柱面、磁區</a></li>
-        <li><a href="high-level-vs-low-level-language-difference.html">高階語言 vs 低階語言差異</a></li>
-        <li><a href="ipv6-address-length-16-bytes.html">IPv6 位址長度 (16 Bytes)</a></li>
-        <li><a href="linear-vs-binary-search-visualization.html">線性搜尋 vs 二分搜尋視覺化</a></li>
-        <li><a href="osi-network-layer-is-layer-3.html">OSI 網路層 (Layer 3) 說明</a></li>
-        <li><a href="power-set-count-empty-set-element.html">冪集數量計算與空集</a></li>
-        <li><a href="public-key-encryption-how-many-keys.html">公開金鑰加密：需要多少把鑰匙？</a></li>
-        <li><a href="storage-units-kb-mb-gb-bits-exam-traps.html">儲存單位換算與考試陷阱</a></li>
-        <li><a href="time-sharing-multi-cpu-illusion.html">分時系統與多 CPU 錯覺</a></li>
-        <li><a href="time-units-ms-us-ns-ps-cheatsheet.html">時間單位換算表 (ms, us, ns, ps)</a></li>
-        <li><a href="undirected-connected-graph-impossible-edges.html">無向連通圖的邊數計算</a></li>
-        <li><a href="utp-cable-categories-and-ethernet-speeds.html">雙絞線類別與乙太網路速度</a></li>
-        <li><a href="virtual-memory-run-programs-larger-than-ram.html">虛擬記憶體：執行大於 RAM 的程式</a></li>
-        <li><a href="virtual-memory-vs-ram-basics.html">虛擬記憶體 vs 記憶體基礎</a></li>
-        <li><a href="wifi-vs-cellular-connection-basics.html">Wi-Fi vs 行動網路連線基礎</a></li>
-        <li><a href="ai-algorithms-mcq-q4.html">人工智慧（AI）相關演算法：複選題練習</a></li>
-        <li><a href="application-layer-protocols-mcq-q6.html">網路通訊協定分層：應用層（Application Layer）複選題</a></li>
-        <li><a href="crypto-encryption-techniques-mcq-q5.html">資訊加解密技術：複選題練習（對稱式 vs 非對稱式）</a></li>
-        <li><a href="ipv4-address-characteristics-mcq-q10.html">IPv4 位址特性辨識：複選題練習</a></li>
-        <li><a href="ipv6-header-fields-mcq-q8.html">IPv6 資料報標頭欄位辨識：複選題</a></li>
-        <li><a href="os-kernel-components-mcq-q3.html">作業系統核心（Kernel）組成元件：複選題練習</a></li>
-        <li><a href="os-process-scheduling-algorithms.html">作業系統排程演算法 - 互動式考前衝刺教學</a></li>
-        <li><a href="time-sharing-vs-multitasking-os-illusion.html">作業系統觀念：分時 vs 多工 (Time Sharing vs Multitasking)</a></li>
-        <li><a href="network-topologies-click-to-identify-q9.html">【電概名師開講】網路拓樸大解析 - 互動特訓班</a></li>
-        <li><a href="ipv4-address-properties-mcq-q10.html">【高中電腦概論：IPv4 位址特性完全解析</a></li>
-    </ul>
+    <div class="container">
+        <h1>📂 農會電腦概論筆記</h1>
+        <p>請選擇考試年度：</p>
+        <a href="112/index.html" class="year-btn">📅 112 年度筆記</a>
+        <a href="#" class="year-btn disabled">📅 111 年度 (資料整理中)</a>
+        <a href="#" class="year-btn disabled">📅 110 年度 (資料整理中)</a>
+    </div>
 </body>
 </html>

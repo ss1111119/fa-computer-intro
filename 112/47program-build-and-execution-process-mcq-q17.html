@@ -1,0 +1,553 @@
+<!-- 檔名：program-build-and-execution-process-mcq-q17.html -->
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>【名師教學】電腦概論：程式翻譯與執行流程 (Q17)</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #475569;
+            --success-color: #16a34a;
+            --error-color: #dc2626;
+            --warning-color: #d97706;
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            background-color: var(--bg-color);
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* 標題區 */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+        }
+
+        p.subtitle {
+            color: var(--secondary-color);
+            font-size: 1.1rem;
+        }
+
+        /* 卡片通用樣式 */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            margin-bottom: 25px;
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            color: #1e293b;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+            font-size: 1.4rem;
+        }
+
+        /* 題目區樣式 */
+        .question-box {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            background-color: #eff6ff;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .options-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+
+        .option-label:hover {
+            background-color: #f8fafc;
+        }
+
+        .option-label input {
+            margin-right: 12px;
+            transform: scale(1.2);
+        }
+
+        /* 按鈕區 */
+        .btn-group {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            font-family: inherit;
+            font-weight: bold;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .btn-submit { background-color: var(--primary-color); color: white; }
+        .btn-explain { background-color: var(--warning-color); color: white; }
+        .btn-reset { background-color: var(--secondary-color); color: white; }
+
+        /* 回饋區 */
+        #feedback-area {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .feedback-correct { background-color: #dcfce7; color: #166534; border: 1px solid #86efac; }
+        .feedback-wrong { background-color: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+        /* 流程圖樣式 */
+        .flow-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 20px 0;
+            padding: 10px;
+            background: #f8fafc;
+            border-radius: 8px;
+        }
+
+        .flow-step {
+            background: white;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            text-align: center;
+            flex: 1;
+            min-width: 80px;
+            position: relative;
+        }
+
+        .flow-step.major {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .flow-arrow {
+            color: #94a3b8;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        /* 比較表與陷阱 */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .concept-box {
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .must-have {
+            background-color: #ecfdf5;
+            border: 1px solid #6ee7b7;
+        }
+
+        .nice-to-have {
+            background-color: #fffbeb;
+            border: 1px solid #fcd34d;
+        }
+
+        .mnemonic {
+            margin-top: 20px;
+            background: #1e293b;
+            color: #fbbf24;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        /* 名詞解釋與解析 */
+        details {
+            margin-bottom: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+        }
+
+        summary {
+            padding: 12px;
+            cursor: pointer;
+            background-color: #f8fafc;
+            font-weight: bold;
+            color: #475569;
+        }
+
+        details[open] summary {
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .details-content {
+            padding: 15px;
+            color: #334155;
+            background: white;
+        }
+
+        .analysis-item {
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #cbd5e1;
+        }
+        .analysis-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            margin-right: 8px;
+            color: white;
+            font-weight: bold;
+        }
+        .tag-correct { background-color: var(--success-color); }
+        .tag-wrong { background-color: var(--error-color); }
+
+        /* 小測驗 */
+        .quiz-item {
+            margin-bottom: 15px;
+            background: #f1f5f9;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .quiz-feedback {
+            margin-left: 10px;
+            font-weight: bold;
+        }
+
+        /* 隱藏解析卡，直到點擊按鈕 */
+        #analysis-card {
+            display: none;
+        }
+
+        @media (max-width: 600px) {
+            .flow-container {
+                flex-direction: column;
+            }
+            .flow-arrow {
+                transform: rotate(90deg);
+                margin: 5px 0;
+            }
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>👨‍🏫 電腦概論：程式翻譯與執行流程</h1>
+        <p class="subtitle">高中職資訊科技／APCS 觀念先修</p>
+    </header>
+
+    <!-- 1. 題目卡 -->
+    <div class="card" id="question-card">
+        <h2>📝 隨堂練習 (Q17)</h2>
+        <div class="question-box">
+            複選題 17. 完整的電腦程式，從原始程式到可執行程式，包含哪些部分?
+        </div>
+        <form id="quiz-form">
+            <div class="options-group">
+                <label class="option-label">
+                    <input type="checkbox" name="option" value="A"> (A) 編譯 (compiler)
+                </label>
+                <label class="option-label">
+                    <input type="checkbox" name="option" value="B"> (B) 除錯 (debugger)
+                </label>
+                <label class="option-label">
+                    <input type="checkbox" name="option" value="C"> (C) 連結 (linker)
+                </label>
+                <label class="option-label">
+                    <input type="checkbox" name="option" value="D"> (D) 安全檢查 (securer)
+                </label>
+                <label class="option-label">
+                    <input type="checkbox" name="option" value="E"> (E) 載入 (loader)
+                </label>
+            </div>
+            
+            <div id="feedback-area"></div>
+
+            <div class="btn-group">
+                <button type="button" class="btn-submit" onclick="submitAnswer()">送出答案</button>
+                <button type="button" class="btn-explain" onclick="showAnalysis()">顯示解析</button>
+                <button type="button" class="btn-reset" onclick="resetQuiz()">重作一次</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- 2. 流程卡 -->
+    <div class="card">
+        <h2>🚀 完整流程圖解 (必考重點)</h2>
+        <p>這是一條單行道，順序不能顛倒！請記住這張圖：</p>
+        
+        <div class="flow-container">
+            <div class="flow-step">原始程式<br><small>Source</small></div>
+            <div class="flow-arrow">➜</div>
+            <div class="flow-step major">編譯<br><small>Compiler</small></div>
+            <div class="flow-arrow">➜</div>
+            <div class="flow-step">目的檔<br><small>Object</small></div>
+            <div class="flow-arrow">➜</div>
+            <div class="flow-step major">連結<br><small>Linker</small></div>
+            <div class="flow-arrow">➜</div>
+            <div class="flow-step">可執行檔<br><small>Exe</small></div>
+            <div class="flow-arrow">➜</div>
+            <div class="flow-step major">載入<br><small>Loader</small></div>
+            <div class="flow-arrow">➜</div>
+            <div class="flow-step">執行<br><small>Run</small></div>
+        </div>
+    </div>
+
+    <!-- 3. 觀念卡 -->
+    <div class="card">
+        <h2>💡 必要流程 vs 輔助工具</h2>
+        <div class="comparison-grid">
+            <div class="concept-box must-have">
+                <h3 style="color: #059669; margin-top:0;">✅ 必要三要素</h3>
+                <p>沒做這些，電腦看不懂，程式跑不動：</p>
+                <ul>
+                    <li><strong>編譯 (Compiler)</strong>：翻譯官</li>
+                    <li><strong>連結 (Linker)</strong>：組裝工</li>
+                    <li><strong>載入 (Loader)</strong>：搬運工</li>
+                </ul>
+            </div>
+            <div class="concept-box nice-to-have">
+                <h3 style="color: #d97706; margin-top:0;">⚠️ 常見陷阱 (輔助)</h3>
+                <p>雖然很重要，但不是「產生執行檔」的必要步驟：</p>
+                <ul>
+                    <li><strong>除錯 (Debugger)</strong>：那是寫程式的人在用的工具，寫得完美就不需要它。</li>
+                    <li><strong>安全檢查 (Securer)</strong>：這是資安軟體的事，不是程式語言翻譯的事。</li>
+                </ul>
+            </div>
+        </div>
+        <div class="mnemonic">
+            🔥 老師口訣：「編、連、載」 ➜ 一定要！<br>
+            <span style="font-size: 0.9rem; font-weight: normal; color: #e2e8f0;">(除錯、安全不一定有)</span>
+        </div>
+    </div>
+
+    <!-- 4. 解析卡 (預設隱藏) -->
+    <div class="card" id="analysis-card">
+        <h2>🧐 選項詳解</h2>
+        
+        <div class="analysis-item">
+            <p><span class="analysis-tag tag-correct">正確</span> <strong>(A) 編譯 (Compiler)</strong></p>
+            <p>將高階語言（原始程式）翻譯成機器語言（目的碼），是必要步驟。</p>
+        </div>
+
+        <div class="analysis-item">
+            <p><span class="analysis-tag tag-wrong">陷阱</span> <strong>(B) 除錯 (Debugger)</strong></p>
+            <p>這是「開發階段」幫工程師找 Bug 的工具。程式發布給使用者時，通常不包含除錯器。</p>
+        </div>
+
+        <div class="analysis-item">
+            <p><span class="analysis-tag tag-correct">正確</span> <strong>(C) 連結 (Linker)</strong></p>
+            <p>你的程式可能用到別人的功能（函式庫）。連結器負責把你的目的檔和函式庫「連」在一起，變成完整的執行檔。</p>
+        </div>
+
+        <div class="analysis-item">
+            <p><span class="analysis-tag tag-wrong">錯誤</span> <strong>(D) 安全檢查 (Securer)</strong></p>
+            <p>這不是標準程式語言翻譯流程的一部分，通常屬於作業系統或防毒軟體的範疇。</p>
+        </div>
+
+        <div class="analysis-item">
+            <p><span class="analysis-tag tag-correct">正確</span> <strong>(E) 載入 (Loader)</strong></p>
+            <p>程式平常躺在硬碟裡（執行檔）。要執行時，必須由 Loader 把它「載入」到記憶體（RAM）中，CPU 才能跑。</p>
+        </div>
+    </div>
+
+    <!-- 5. 名詞速查 -->
+    <div class="card">
+        <h2>📚 名詞速查 (點擊展開)</h2>
+        <details>
+            <summary>原始程式 (Source Code)</summary>
+            <div class="details-content">
+                人類寫的程式碼 (如 C++, Java, Python)。人類看得懂，但電腦看不懂。
+            </div>
+        </details>
+        <details>
+            <summary>編譯器 (Compiler)</summary>
+            <div class="details-content">
+                負責把「原始程式」整本翻譯成電腦懂的「目的碼」的軟體。
+            </div>
+        </details>
+        <details>
+            <summary>連結器 (Linker)</summary>
+            <div class="details-content">
+                像膠水一樣，把編譯好的目的檔跟其他函式庫（Library）黏在一起，產出最終的 .exe 檔。
+            </div>
+        </details>
+        <details>
+            <summary>可執行程式 (Executable File)</summary>
+            <div class="details-content">
+                就是我們平常看到的 .exe 檔，電腦可以直接執行的二進位檔案。
+            </div>
+        </details>
+        <details>
+            <summary>載入器 (Loader)</summary>
+            <div class="details-content">
+                作業系統的一部分，負責把 .exe 從硬碟搬到記憶體，讓程式開始跑。
+            </div>
+        </details>
+    </div>
+
+    <!-- 6. 延伸練習 -->
+    <div class="card">
+        <h2>🎯 延伸互動小測驗</h2>
+        <p>懂了觀念嗎？來挑戰三題秒殺題！</p>
+
+        <div class="quiz-item">
+            <p>1. Linker (連結器) 的工作是在編譯 (Compiler) 之後？</p>
+            <button onclick="checkMiniQuiz(this, true, '正確！先翻譯(編譯)完，才能組裝(連結)。')">O</button>
+            <button onclick="checkMiniQuiz(this, false, '錯誤！順序是：編譯 -> 連結。')">X</button>
+            <span class="quiz-feedback"></span>
+        </div>
+
+        <div class="quiz-item">
+            <p>2. 程式即使沒有使用 debugger (除錯器) 也能執行？</p>
+            <button onclick="checkMiniQuiz(this, true, '正確！Debugger 只是幫忙找錯的工具，不是執行的必要條件。')">O</button>
+            <button onclick="checkMiniQuiz(this, false, '錯誤！沒有 Debugger 程式照樣能跑，只是有 Bug 比較難找而已。')">X</button>
+            <span class="quiz-feedback"></span>
+        </div>
+
+        <div class="quiz-item">
+            <p>3. Loader (載入器) 負責把程式載入硬碟儲存？</p>
+            <button onclick="checkMiniQuiz(this, false, '錯誤！Loader 是把程式從硬碟載入「記憶體(RAM)」。')">O</button>
+            <button onclick="checkMiniQuiz(this, true, '正確！它是載入到「記憶體」準備執行，不是存回硬碟。')">X</button>
+            <span class="quiz-feedback"></span>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 正確答案設定
+    const CORRECT_ANSWERS = ['A', 'C', 'E'];
+
+    // 送出答案邏輯
+    function submitAnswer() {
+        const checkboxes = document.querySelectorAll('input[name="option"]:checked');
+        const userAnswers = Array.from(checkboxes).map(cb => cb.value).sort();
+        const feedbackArea = document.getElementById('feedback-area');
+        
+        // 判斷是否完全正確
+        const isCorrect = JSON.stringify(userAnswers) === JSON.stringify(CORRECT_ANSWERS);
+        
+        // 找出漏選與多選
+        const missing = CORRECT_ANSWERS.filter(x => !userAnswers.includes(x));
+        const extra = userAnswers.filter(x => !CORRECT_ANSWERS.includes(x));
+
+        feedbackArea.style.display = 'block';
+        feedbackArea.className = isCorrect ? 'feedback-correct' : 'feedback-wrong';
+
+        if (isCorrect) {
+            feedbackArea.innerHTML = `
+                <h3>🎉 完全正確！太強了！</h3>
+                <p>完整流程關鍵就是：<strong>Compiler (編) → Linker (連) → Loader (載)</strong></p>
+            `;
+        } else {
+            let msg = '<h3>❌ 還有進步空間喔！</h3>';
+            if (userAnswers.length === 0) msg += '<p>你還沒選擇任何選項喔！</p>';
+            if (missing.length > 0) msg += `<p>😱 你漏選了必要流程：<strong>${missing.join(', ')}</strong></p>`;
+            if (extra.length > 0) msg += `<p>⚠️ 你多選了非必要工具：<strong>${extra.join(', ')}</strong> (記得看解析！)</p>`;
+            
+            msg += '<p style="margin-top:10px; font-size:0.9rem;">請點擊下方「顯示解析」按鈕來釐清觀念。</p>';
+            feedbackArea.innerHTML = msg;
+        }
+    }
+
+    // 顯示解析邏輯
+    function showAnalysis() {
+        const analysisCard = document.getElementById('analysis-card');
+        analysisCard.style.display = 'block';
+        // 平滑捲動到解析卡
+        analysisCard.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // 重作一次邏輯
+    function resetQuiz() {
+        // 清空 Checkbox
+        const checkboxes = document.querySelectorAll('input[name="option"]');
+        checkboxes.forEach(cb => cb.checked = false);
+        
+        // 隱藏回饋區
+        const feedbackArea = document.getElementById('feedback-area');
+        feedbackArea.style.display = 'none';
+        
+        // 隱藏解析卡 (或是保留開啟，看習慣，這裡設定為隱藏以符合"重作"感覺)
+        const analysisCard = document.getElementById('analysis-card');
+        analysisCard.style.display = 'none';
+        
+        // 捲動回頂端
+        document.getElementById('question-card').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // 延伸測驗邏輯
+    function checkMiniQuiz(btn, isCorrect, explanation) {
+        const parent = btn.parentElement;
+        const feedbackSpan = parent.querySelector('.quiz-feedback');
+        
+        // 重置按鈕樣式 (簡單處理)
+        const buttons = parent.querySelectorAll('button');
+        buttons.forEach(b => b.style.opacity = '0.5');
+        btn.style.opacity = '1';
+
+        if (isCorrect) {
+            feedbackSpan.style.color = '#16a34a';
+            feedbackSpan.innerHTML = `⭕ ${explanation}`;
+        } else {
+            feedbackSpan.style.color = '#dc2626';
+            feedbackSpan.innerHTML = `❌ ${explanation}`;
+        }
+    }
+</script>
+
+</body>
+</html>

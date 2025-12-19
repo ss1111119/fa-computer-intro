@@ -1,0 +1,530 @@
+<!-- 
+    檔名：low-level-programming-languages-mcq-q15.html
+    主題：高中電腦概論 / 程式語言分類 / 低階語言 vs 高階語言
+    設計：互動式單一教學網頁
+-->
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電腦概論互動教學：程式語言分類</title>
+    <style>
+        :root {
+            --primary-color: #2563eb; /* 補習班專業藍 */
+            --secondary-color: #475569;
+            --accent-color: #f59e0b; /* 重點提示黃 */
+            --success-color: #16a34a;
+            --error-color: #dc2626;
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: "Segoe UI", "Microsoft JhengHei", sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg-color);
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* 標題區 */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 5px;
+            font-size: 1.8rem;
+        }
+
+        .subtitle {
+            color: var(--secondary-color);
+            font-size: 1rem;
+        }
+
+        /* 卡片通用樣式 */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: var(--secondary-color);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-title::before {
+            content: '';
+        }
+
+        /* 題目區樣式 */
+        .question-text {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            background: #eef2ff;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .options-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-label:hover {
+            border-color: var(--primary-color);
+            background-color: #f8fafc;
+        }
+
+        .option-label input[type="checkbox"] {
+            margin-right: 15px;
+            transform: scale(1.2);
+        }
+
+        /* 按鈕群組 */
+        .btn-group {
+            margin-top: 25px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            font-size: 1rem;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .btn-submit { background-color: var(--primary-color); color: white; }
+        .btn-reset { background-color: var(--secondary-color); color: white; }
+        .btn-analysis { background-color: var(--accent-color); color: white; }
+
+        /* 回饋區 */
+        #feedback-area {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .feedback-success { background-color: #dcfce7; color: #14532d; border: 1px solid #86efac; }
+        .feedback-error { background-color: #fee2e2; color: #7f1d1d; border: 1px solid #fca5a5; }
+
+        /* 名詞解釋與摺疊 */
+        details {
+            margin-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        
+        summary {
+            font-weight: bold;
+            cursor: pointer;
+            color: var(--primary-color);
+            list-style: none; /* 隱藏預設箭頭 */
+        }
+
+        summary::after {
+            content: "+"; 
+            float: right;
+            font-weight: bold;
+        }
+        
+        details[open] summary::after {
+            content: "-";
+        }
+
+        .term-desc {
+            margin-top: 5px;
+            font-size: 0.95rem;
+            color: #555;
+            padding-left: 10px;
+        }
+
+        /* 表格樣式 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f8fafc;
+            color: var(--secondary-color);
+        }
+
+        /* 重點強調 */
+        .highlight {
+            color: var(--error-color);
+            font-weight: bold;
+        }
+
+        .mnemonic {
+            background-color: #fffbeb;
+            border-left: 4px solid var(--accent-color);
+            padding: 10px;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        /* 延伸測驗 */
+        .mini-quiz-item {
+            margin-bottom: 15px;
+            border-bottom: 1px dashed #cbd5e1;
+            padding-bottom: 15px;
+        }
+
+        .quiz-feedback {
+            margin-top: 5px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        /* 解析卡預設隱藏，點擊按鈕後顯示 */
+        #analysis-card {
+            display: none;
+            border-left-color: var(--accent-color);
+        }
+
+        /* 響應式 */
+        @media (max-width: 600px) {
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>電腦概論：程式語言分類</h1>
+            <div class="subtitle">高中職計概／APCS 觀念先修</div>
+        </header>
+
+        <!-- 名詞速查區 -->
+        <div class="card">
+            <div class="card-title">📚 名詞速查 (點擊展開)</div>
+            <details>
+                <summary>Programming Language (程式語言)</summary>
+                <div class="term-desc">人與電腦溝通的工具。就像你要跟外國人說話需要用英文，跟電腦說話要用程式語言。</div>
+            </details>
+            <details>
+                <summary>Low-level Language (低階語言)</summary>
+                <div class="term-desc">最接近硬體的語言，電腦最容易聽懂，但人類很難讀。特徵是能直接控制記憶體或暫存器。</div>
+            </details>
+            <details>
+                <summary>High-level Language (高階語言)</summary>
+                <div class="term-desc">接近人類自然語言(英文)的程式語言，好讀好寫，但需要翻譯(編譯或直譯)給電腦聽。</div>
+            </details>
+            <details>
+                <summary>Machine Language (機器語言)</summary>
+                <div class="term-desc">由 0 與 1 組成的二進位代碼，是電腦唯一能直接執行的語言。</div>
+            </details>
+            <details>
+                <summary>Assembly Language (組合語言)</summary>
+                <div class="term-desc">用助憶符號(如 ADD, MOV)來代替 0 與 1，比機器語言好讀一點點，但仍屬低階。</div>
+            </details>
+            <details>
+                <summary>Compiler (編譯器) / Interpreter (直譯器)</summary>
+                <div class="term-desc">高階語言的翻譯官。編譯器是整本翻譯後執行(如 C/C++)，直譯器是一句一句翻譯執行(如 Python)。</div>
+            </details>
+        </div>
+
+        <!-- 題目卡 -->
+        <div class="card" id="question-card">
+            <div class="card-title">📝 隨堂練習：Q15</div>
+            <div class="question-text">
+                複選題 15. 下列何種屬於低階的電腦程式語言?<br>
+                (A) Machine Language<br>
+                (B) C Language<br>
+                (C) C++ Language<br>
+                (D) Python Language<br>
+                (E) Assembly Language
+            </div>
+            
+            <div class="options-group">
+                <label class="option-label">
+                    <input type="checkbox" name="q15" value="A"> (A) Machine Language
+                </label>
+                <label class="option-label">
+                    <input type="checkbox" name="q15" value="B"> (B) C Language
+                </label>
+                <label class="option-label">
+                    <input type="checkbox" name="q15" value="C"> (C) C++ Language
+                </label>
+                <label class="option-label">
+                    <input type="checkbox" name="q15" value="D"> (D) Python Language
+                </label>
+                <label class="option-label">
+                    <input type="checkbox" name="q15" value="E"> (E) Assembly Language
+                </label>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn btn-submit" onclick="checkAnswer()">送出答案</button>
+                <button class="btn btn-analysis" onclick="showAnalysis()">顯示解析</button>
+                <button class="btn btn-reset" onclick="resetQuiz()">重作一次</button>
+            </div>
+
+            <div id="feedback-area"></div>
+        </div>
+
+        <!-- 觀念卡 -->
+        <div class="card">
+            <div class="card-title">💡 老師的觀念筆記</div>
+            
+            <h3>1. 什麼是低階語言 (Low-level)?</h3>
+            <p>所謂「低階」，不是指功能很爛，而是指<strong>「距離硬體很近 (Low)」</strong>。它們能直接控制 CPU 的指令與記憶體位址。</p>
+            
+            <h3>2. 典型低階語言只有兩種 (必考!)</h3>
+            <ul>
+                <li><strong>機器語言 (Machine Language)</strong>：只有 0 和 1。</li>
+                <li><strong>組合語言 (Assembly Language)</strong>：用符號代替 0 和 1。</li>
+            </ul>
+
+            <h3>3. 常見誤解 (陷阱題注意)</h3>
+            <p class="highlight">🚫 千萬不要選 C 語言！</p>
+            <p>雖然 C 語言執行速度快、很強大、也能操作硬體，但它仍需要「編譯器」才能執行，且語法接近英文，所以在分類上屬於<strong>高階語言</strong>。</p>
+
+            <div class="mnemonic">
+                🔥 快速記憶口訣：<br>
+                「低階只有兩個兄弟：機器人(Machine)與組合金剛(Assembly)。其他的全是高階！」
+            </div>
+        </div>
+
+        <!-- 對照卡 -->
+        <div class="card">
+            <div class="card-title">⚖️ 超級比一比：低階 vs 高階</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th width="20%">特性</th>
+                        <th width="40%">低階語言</th>
+                        <th width="40%">高階語言</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>代表語言</strong></td>
+                        <td>機器語言、組合語言</td>
+                        <td>C, C++, Java, Python...</td>
+                    </tr>
+                    <tr>
+                        <td><strong>硬體依賴</strong></td>
+                        <td><span class="highlight">高</span> (換顆 CPU 可能就要重寫)</td>
+                        <td>低 (跨平台容易)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>執行速度</strong></td>
+                        <td>極快</td>
+                        <td>較慢 (需翻譯)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>可讀性</strong></td>
+                        <td>差 (天書)</td>
+                        <td>佳 (像讀英文)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 解析卡 (預設隱藏) -->
+        <div class="card" id="analysis-card">
+            <div class="card-title">🔍 選項逐一破解</div>
+            
+            <div style="margin-bottom: 15px;">
+                <strong>(A) Machine Language (機器語言) ✅</strong><br>
+                <span style="color: #666;">解析：最原始的語言，由 0 與 1 組成，CPU 唯一能直接看懂的。絕對是低階。</span>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <strong>(B) C Language ❌</strong><br>
+                <span style="color: #666;">解析：超級大陷阱。雖然它常被用來寫作業系統，但它具有高階語言的結構化特徵，需要編譯器。屬於「高階語言」。</span>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <strong>(C) C++ Language ❌</strong><br>
+                <span style="color: #666;">解析：C 的升級版，加入物件導向(OOP)，離硬體更遠一點。屬於「高階語言」。</span>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <strong>(D) Python Language ❌</strong><br>
+                <span style="color: #666;">解析：語法超級簡潔，像在寫英文句子。透過直譯器執行，離硬體最遠。屬於「高階語言」。</span>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <strong>(E) Assembly Language (組合語言) ✅</strong><br>
+                <span style="color: #666;">解析：它是機器語言的「翻譯蒟蒻」，把 0101 變成 ADD, JMP 等符號。雖然好讀一點，但還是跟硬體架構綁死。屬於低階。</span>
+            </div>
+        </div>
+
+        <!-- 延伸練習卡 -->
+        <div class="card">
+            <div class="card-title">🚀 觀念確認：是非題 3 秒鐘</div>
+            
+            <div class="mini-quiz-item">
+                <p>1. 組合語言 (Assembly) 比 C 語言更接近硬體層面？</p>
+                <button class="btn btn-reset" style="padding: 5px 15px;" onclick="checkMini(1, true)">O 是</button>
+                <button class="btn btn-reset" style="padding: 5px 15px;" onclick="checkMini(1, false)">X 否</button>
+                <div id="mini-fb-1" class="quiz-feedback"></div>
+            </div>
+
+            <div class="mini-quiz-item">
+                <p>2. 因為 Python 寫起來很簡單，所以它是低階語言？</p>
+                <button class="btn btn-reset" style="padding: 5px 15px;" onclick="checkMini(2, false)">O 是</button>
+                <button class="btn btn-reset" style="padding: 5px 15px;" onclick="checkMini(2, true)">X 否</button>
+                <div id="mini-fb-2" class="quiz-feedback"></div>
+            </div>
+
+            <div class="mini-quiz-item">
+                <p>3. 低階語言通常與特定的 CPU 硬體架構高度相關？</p>
+                <button class="btn btn-reset" style="padding: 5px 15px;" onclick="checkMini(3, true)">O 是</button>
+                <button class="btn btn-reset" style="padding: 5px 15px;" onclick="checkMini(3, false)">X 否</button>
+                <div id="mini-fb-3" class="quiz-feedback"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // 主要題目作答邏輯
+        function checkAnswer() {
+            // 取得所有勾選的選項
+            const checkboxes = document.querySelectorAll('input[name="q15"]:checked');
+            const selectedValues = Array.from(checkboxes).map(cb => cb.value);
+            
+            // 正確答案
+            const correctAnswers = ['A', 'E'];
+            
+            // 判斷邏輯
+            const feedbackArea = document.getElementById('feedback-area');
+            feedbackArea.style.display = 'block';
+            
+            // 1. 先排序以便比較
+            selectedValues.sort();
+            correctAnswers.sort();
+            
+            // 2. 比較內容
+            const isCorrect = JSON.stringify(selectedValues) === JSON.stringify(correctAnswers);
+            
+            if (isCorrect) {
+                feedbackArea.className = 'feedback-success';
+                feedbackArea.innerHTML = `
+                    <strong>🎉 完全正確！</strong><br>
+                    觀念很棒喔！記得口訣：「低階只有 Machine 與 Assembly」。<br>
+                    其他任何看起來很厲害的語言(C/C++/Java/Python)都是高階。
+                `;
+            } else {
+                feedbackArea.className = 'feedback-error';
+                
+                // 分析錯誤類型
+                let msg = '<strong>⚠️ 答案不完全正確喔！</strong><br>';
+                
+                // 檢查是否選到高階語言
+                const highLevelSelected = selectedValues.filter(val => ['B', 'C', 'D'].includes(val));
+                if (highLevelSelected.length > 0) {
+                    msg += `❌ 你誤選了高階語言：${highLevelSelected.join(', ')} (C/C++/Python 都是高階)。<br>`;
+                }
+                
+                // 檢查是否漏選
+                const missed = correctAnswers.filter(val => !selectedValues.includes(val));
+                if (missed.length > 0) {
+                    msg += `📝 你漏選了低階語言：${missed.join(', ')}。<br>`;
+                }
+
+                if (selectedValues.length === 0) {
+                    msg = '<strong>⚠️ 請至少選擇一個選項！</strong>';
+                }
+
+                msg += '<br>👉 建議點擊「顯示解析」按鈕來釐清觀念。';
+                feedbackArea.innerHTML = msg;
+            }
+        }
+
+        // 顯示解析
+        function showAnalysis() {
+            const card = document.getElementById('analysis-card');
+            card.style.display = 'block';
+            card.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // 重置
+        function resetQuiz() {
+            // 清空 checkbox
+            const checkboxes = document.querySelectorAll('input[name="q15"]');
+            checkboxes.forEach(cb => cb.checked = false);
+            
+            // 隱藏回饋與解析
+            document.getElementById('feedback-area').style.display = 'none';
+            document.getElementById('analysis-card').style.display = 'none';
+            
+            // 捲動回題目
+            document.getElementById('question-card').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // 延伸測驗邏輯
+        function checkMini(qId, isUserCorrect) {
+            const fbDiv = document.getElementById(`mini-fb-${qId}`);
+            
+            if (isUserCorrect) {
+                fbDiv.style.color = '#16a34a';
+                if(qId === 1) fbDiv.innerText = "⭕ 答對了！Assembly 直接對應機器碼，比 C 更底層。";
+                if(qId === 2) fbDiv.innerText = "⭕ 答對了！簡單通常代表「高階」(封裝良好)，低階語言反而很難寫。";
+                if(qId === 3) fbDiv.innerText = "⭕ 答對了！低階語言缺乏移植性，換了 CPU 架構就不能跑。";
+            } else {
+                fbDiv.style.color = '#dc2626';
+                fbDiv.innerText = "❌ 答錯囉，再想一下定義！";
+            }
+        }
+    </script>
+</body>
+</html>

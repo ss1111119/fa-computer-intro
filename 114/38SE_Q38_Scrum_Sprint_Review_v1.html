@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SE_Q38_Scrum_Sprint_Review_v1</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #f59e0b;
+            --bg-color: #f8fafc;
+            --text-color: #1e293b;
+            --card-bg: #ffffff;
+            --success: #16a34a;
+            --error: #dc2626;
+            --border-radius: 8px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* A. 頁首區 */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: var(--primary);
+            color: white;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        header .subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        header .badge {
+            display: inline-block;
+            background: var(--secondary);
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+
+        /* B. 題目區 */
+        .question-card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+            border-left: 5px solid var(--primary);
+        }
+
+        .question-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .options p {
+            margin-bottom: 10px;
+            padding: 8px;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+        }
+
+        /* 關鍵字高亮樣式 */
+        .highlighted-text {
+            background-color: var(--secondary);
+            color: white;
+            padding: 2px 4px;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        /* C. 關鍵字互動 */
+        .keyword-section {
+            margin-bottom: 30px;
+        }
+
+        .keyword-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .kw-btn {
+            background: white;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .kw-btn:hover, .kw-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .explanation-box {
+            background: #eff6ff;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            border: 1px solid #bfdbfe;
+            min-height: 60px;
+        }
+
+        /* D. 白話翻譯 */
+        details {
+            background: var(--card-bg);
+            margin-bottom: 25px;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        summary {
+            padding: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            background: #e2e8f0;
+            list-style: none; /* Hide default triangle */
+        }
+        
+        summary::after {
+            content: '+'; 
+            float: right;
+            font-weight: bold;
+        }
+        
+        details[open] summary::after {
+            content: '-';
+        }
+
+        .accordion-content {
+            padding: 20px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        /* E. Scrum 事件對照 */
+        .events-section {
+            margin-bottom: 30px;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .events-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .event-btn {
+            padding: 10px;
+            background: #f1f5f9;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .event-btn.selected {
+            background: var(--secondary);
+            color: white;
+            font-weight: bold;
+        }
+
+        .event-detail {
+            padding: 15px;
+            background: #fffbeb;
+            border-left: 4px solid var(--secondary);
+            border-radius: 0 4px 4px 0;
+        }
+
+        /* F. 選項逐一解析 */
+        .analysis-section {
+            margin-bottom: 30px;
+        }
+
+        .option-card {
+            background: var(--card-bg);
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .option-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .toggle-btn {
+            background: var(--text-color);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .analysis-content {
+            display: none;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+            font-size: 0.95rem;
+        }
+
+        .correct-tag { color: var(--success); font-weight: bold; }
+        .wrong-tag { color: var(--error); font-weight: bold; }
+
+        /* G. 快速小測驗 */
+        .quiz-section {
+            background: #f0fdf4;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            border: 1px solid #bbf7d0;
+            margin-bottom: 30px;
+        }
+
+        .quiz-item {
+            margin-bottom: 15px;
+            background: white;
+            padding: 15px;
+            border-radius: 4px;
+        }
+
+        .quiz-options button {
+            margin-right: 10px;
+            margin-top: 5px;
+            padding: 5px 15px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background: white;
+        }
+
+        .quiz-feedback {
+            margin-top: 8px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        /* H. 口訣與陷阱 */
+        .tips-section {
+            background: #fff7ed;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            border: 1px solid #fed7aa;
+            margin-bottom: 30px;
+        }
+
+        .tips-section h3 { color: #c2410c; margin-bottom: 10px; }
+        .tips-section ul { padding-left: 20px; margin-bottom: 15px; }
+
+        /* I. 答案揭曉 */
+        .reveal-section {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .reveal-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);
+            transition: transform 0.1s;
+        }
+
+        .reveal-btn:active { transform: scale(0.98); }
+
+        .final-answer {
+            display: none;
+            margin-top: 20px;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            border: 2px solid var(--success);
+        }
+
+        .section-title {
+            margin-bottom: 15px;
+            padding-left: 10px;
+            border-left: 4px solid var(--primary);
+            color: var(--primary);
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- A. 頁首區 -->
+    <header>
+        <h1>Sprint Review 在做什麼？不是檢討大會</h1>
+        <div class="subtitle">Scrum Events 必考觀念衝刺教學</div>
+        <div class="badge">題號：38</div>
+    </header>
+
+    <!-- B. 題目區 -->
+    <section class="question-card">
+        <div class="question-text" id="questionText">
+            38. <span id="txt-scrum">Scrum</span> 中的 <span id="txt-sprint-review">Sprint Review</span>（短衝檢視）主要目的為何？
+        </div>
+        <div class="options">
+            <p>(A) 討論技術債</p>
+            <p>(B) 評估 <span id="txt-sprint">Sprint</span> 是否達成 <span id="txt-outcome">預期成果</span>並給 <span id="txt-po">產品負責人</span> <span id="txt-feedback">回饋</span></p>
+            <p>(C) 進行程式碼重構</p>
+            <p>(D) 進行個人績效評估</p>
+        </div>
+    </section>
+
+    <!-- C. 關鍵字互動 -->
+    <section class="keyword-section">
+        <h3 class="section-title">點擊關鍵字看白話翻譯</h3>
+        <div class="keyword-buttons">
+            <button class="kw-btn" onclick="highlightKeyword('scrum', 'Scrum：一種敏捷開發框架，用短週期反覆交付成果。')">Scrum</button>
+            <button class="kw-btn" onclick="highlightKeyword('sprint', 'Sprint（短衝）：一段固定時間（通常 1-4 週），團隊要在裡面完成一小段可用的軟體。')">Sprint</button>
+            <button class="kw-btn" onclick="highlightKeyword('sprint-review', 'Sprint Review（短衝檢視）：展示做好的東西給你看，問你滿不滿意，不是關起門來開會。')">Sprint Review</button>
+            <button class="kw-btn" onclick="highlightKeyword('outcome', '預期成果：當初說好要做完並可以用的功能。')">預期成果</button>
+            <button class="kw-btn" onclick="highlightKeyword('po', '產品負責人 (PO)：那個決定要做什麼功能、什麼先做什麼後做的人（代表客戶）。')">產品負責人</button>
+            <button class="kw-btn" onclick="highlightKeyword('feedback', '回饋：好的留著，壞的改進，或是根據看到的成果提出新想法。')">回饋</button>
+        </div>
+        <div class="explanation-box" id="explanationArea">
+            請點擊上方按鈕，這裡會顯示名詞的白話解釋。
+        </div>
+    </section>
+
+    <!-- D. 白話翻譯 -->
+    <section>
+        <h3 class="section-title">題目翻譯機</h3>
+        <details>
+            <summary>【白話翻譯】這題到底在問什麼？</summary>
+            <div class="accordion-content">
+                <p><strong>翻譯：</strong>「一個 Sprint（衝刺週期）做完後，團隊把產品拿出來，要跟產品負責人（PO）一起做什麼？」</p>
+                <hr style="margin: 10px 0; border:0; border-top:1px dashed #ccc;">
+                <p><strong>這題在考什麼：</strong>你是否能分清 Scrum 四大會議（Events）各自的「目的」。不要把「展示成果」跟「自我檢討」搞混了！</p>
+            </div>
+        </details>
+    </section>
+
+    <!-- E. Scrum 事件對照 -->
+    <section class="events-section">
+        <h3 class="section-title">Scrum 事件對照表（點擊查看）</h3>
+        <p style="font-size: 0.9rem; margin-bottom: 10px; color: #666;">試著點擊「Sprint Review」看看它的定位。</p>
+        <div class="events-grid">
+            <button class="event-btn" onclick="showEventInfo(1)">Sprint Planning</button>
+            <button class="event-btn" onclick="showEventInfo(2)">Daily Scrum</button>
+            <button class="event-btn" onclick="showEventInfo(3)">Sprint Review</button>
+            <button class="event-btn" onclick="showEventInfo(4)">Sprint Retrospective</button>
+        </div>
+        <div class="event-detail" id="eventDetail">
+            請點擊上方按鈕查看各會議重點。
+        </div>
+    </section>
+
+    <!-- F. 選項逐一解析 -->
+    <section class="analysis-section">
+        <h3 class="section-title">選項逐一破解</h3>
+        
+        <div class="option-card">
+            <div class="option-header">
+                <strong>(A) 討論技術債</strong>
+                <button class="toggle-btn" onclick="toggleAnalysis('optA')">顯示解析</button>
+            </div>
+            <div id="optA" class="analysis-content">
+                <span class="wrong-tag">錯誤</span>。技術債（程式寫得爛以後要還的債）通常是在 <strong>Sprint Retrospective（回顧會議）</strong> 檢討流程時，或是平日開發與技術會議中討論，不是 Review 的主軸。
+            </div>
+        </div>
+
+        <div class="option-card">
+            <div class="option-header">
+                <strong>(B) 評估 Sprint 是否達成預期成果並給產品負責人回饋</strong>
+                <button class="toggle-btn" onclick="toggleAnalysis('optB')">顯示解析</button>
+            </div>
+            <div id="optB" class="analysis-content">
+                <span class="correct-tag">正確</span>！這就是 Sprint Review 的核心：
+                <ol style="margin-left:20px; margin-top:5px;">
+                    <li>Demo（展示）做好的軟體。</li>
+                    <li>確認是否有達到 Definition of Done (DoD)。</li>
+                    <li>蒐集回饋以調整未來的產品方向。</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="option-card">
+            <div class="option-header">
+                <strong>(C) 進行程式碼重構</strong>
+                <button class="toggle-btn" onclick="toggleAnalysis('optC')">顯示解析</button>
+            </div>
+            <div id="optC" class="analysis-content">
+                <span class="wrong-tag">錯誤</span>。重構（Refactoring）是<strong>開發過程中的活動</strong>（Doing），不是開會的目的（Meeting）。你不應該開一個會來專門寫程式。
+            </div>
+        </div>
+
+        <div class="option-card">
+            <div class="option-header">
+                <strong>(D) 進行個人績效評估</strong>
+                <button class="toggle-btn" onclick="toggleAnalysis('optD')">顯示解析</button>
+            </div>
+            <div id="optD" class="analysis-content">
+                <span class="wrong-tag">大錯特錯</span>。Scrum 強調<strong>團隊當責</strong>（Team Accountability）。Scrum 的會議中絕對沒有「打考績」這件事，這會破壞團隊信任與合作。
+            </div>
+        </div>
+    </section>
+
+    <!-- G. 快速小測驗 -->
+    <section class="quiz-section">
+        <h3 class="section-title" style="color: #166534; border-color: #166534;">隨堂快速小測驗</h3>
+        
+        <div class="quiz-item">
+            <p>1. Sprint Review 主要是在看什麼？</p>
+            <div class="quiz-options">
+                <button onclick="checkQuiz(this, false, '不對喔，那是 Retrospective 做的事。')">看流程哪裡有問題</button>
+                <button onclick="checkQuiz(this, true, '沒錯！Review = 看產品/看成果。')">看產品有沒有做壞掉</button>
+            </div>
+            <div class="quiz-feedback"></div>
+        </div>
+
+        <div class="quiz-item">
+            <p>2. Sprint Review 會議中，產品負責人 (PO) 應該在場嗎？</p>
+            <div class="quiz-options">
+                <button onclick="checkQuiz(this, true, '正確！PO 要負責驗收成果並給方向。')">一定要，他是主角之一</button>
+                <button onclick="checkQuiz(this, false, '錯，沒有 PO 誰來決定產品方向？')">不用，工程師自己看就好</button>
+            </div>
+            <div class="quiz-feedback"></div>
+        </div>
+
+        <div class="quiz-item">
+            <p>3. 下列哪一個會議通常排在 Sprint Review 之後？</p>
+            <div class="quiz-options">
+                <button onclick="checkQuiz(this, false, 'Daily 是每天開的，不是接在 Review 後面。')">Daily Scrum</button>
+                <button onclick="checkQuiz(this, true, '正確！看完產品(Review)後，接著關門檢討流程(Retro)。')">Sprint Retrospective</button>
+            </div>
+            <div class="quiz-feedback"></div>
+        </div>
+    </section>
+
+    <!-- H. 口訣與常見陷阱 -->
+    <section class="tips-section">
+        <h3>【補教名師記憶口訣】</h3>
+        <ul>
+            <li><strong>Review 看成果</strong>（對外、看產品、問客戶開不開心）</li>
+            <li><strong>Retro 改流程</strong>（對內、看做事方法、問團隊爽不爽）</li>
+        </ul>
+
+        <h3>【常見陷阱：千萬別選】</h3>
+        <ul>
+            <li>把 Sprint Review 當成「檢討大會」（這是 Retro）。</li>
+            <li>以為 Review 只是工程師內部的 Code Review（這是開發）。</li>
+            <li>把「績效考核」塞進 Scrum 事件（Scrum 不做這個）。</li>
+        </ul>
+    </section>
+
+    <!-- I. 正確答案揭曉 -->
+    <section class="reveal-section">
+        <button class="reveal-btn" onclick="revealAnswer()">揭曉正確答案</button>
+        <div id="finalAnswer" class="final-answer">
+            <h2>正確答案：(B)</h2>
+            <p style="margin-top: 10px; font-size: 1.1rem;">
+                <strong>一句話理由：</strong> Sprint Review 的目的在於檢視「增量成果」（Increment）並取得產品回饋，調整 Product Backlog。
+            </p>
+        </div>
+    </section>
+
+</div>
+
+<script>
+    // C. 關鍵字互動功能
+    function highlightKeyword(id, text) {
+        // 移除所有高亮
+        document.querySelectorAll('.highlighted-text').forEach(el => {
+            el.classList.remove('highlighted-text');
+        });
+
+        // 加入指定高亮
+        const target = document.getElementById('txt-' + id);
+        if (target) {
+            target.classList.add('highlighted-text');
+        }
+
+        // 顯示解釋
+        const textArea = document.getElementById('explanationArea');
+        textArea.innerHTML = `<strong>${text.split('：')[0]}</strong><br>${text.split('：')[1] || text}`;
+        textArea.style.backgroundColor = '#fffbeb';
+        textArea.style.borderColor = '#f59e0b';
+    }
+
+    // E. Scrum 事件對照功能
+    function showEventInfo(type) {
+        const detail = document.getElementById('eventDetail');
+        const buttons = document.querySelectorAll('.event-btn');
+        
+        // 重置按鈕樣式
+        buttons.forEach(btn => btn.classList.remove('selected'));
+        buttons[type-1].classList.add('selected');
+
+        let title = "";
+        let content = "";
+        let color = "#2563eb";
+
+        switch(type) {
+            case 1:
+                title = "Sprint Planning (規劃)";
+                content = "決定這個 Sprint 「要做什麼」以及「如何做」。";
+                break;
+            case 2:
+                title = "Daily Scrum (每日站立會)";
+                content = "每天 15 分鐘，同步進度，移除障礙。不是向主管報告，是團隊互相協調。";
+                break;
+            case 3:
+                title = "Sprint Review (檢視)";
+                content = "<strong>★ 本題重點 ★</strong><br>展示做好的產品成果，邀請利害關係人（Stakeholders）來看，討論市場變化與下個目標。";
+                color = "#f59e0b";
+                break;
+            case 4:
+                title = "Sprint Retrospective (回顧/自省)";
+                content = "檢討「人、流程、工具」，目的是讓下一個 Sprint 工作更順暢。";
+                break;
+        }
+
+        detail.innerHTML = `<h4 style="color:${color}; margin-bottom:5px;">${title}</h4><p>${content}</p>`;
+    }
+
+    // F. 選項解析開關
+    function toggleAnalysis(id) {
+        const el = document.getElementById(id);
+        if (el.style.display === "block") {
+            el.style.display = "none";
+        } else {
+            el.style.display = "block";
+        }
+    }
+
+    // G. 快速小測驗功能
+    function checkQuiz(btn, isCorrect, msg) {
+        const feedbackDiv = btn.parentElement.nextElementSibling;
+        
+        // 重置該題按鈕
+        const buttons = btn.parentElement.querySelectorAll('button');
+        buttons.forEach(b => {
+            b.style.backgroundColor = 'white';
+            b.style.color = 'black';
+            b.disabled = false;
+        });
+
+        if (isCorrect) {
+            btn.style.backgroundColor = '#16a34a';
+            btn.style.color = 'white';
+            feedbackDiv.style.color = '#16a34a';
+            feedbackDiv.innerHTML = "⭕ " + msg;
+        } else {
+            btn.style.backgroundColor = '#dc2626';
+            btn.style.color = 'white';
+            feedbackDiv.style.color = '#dc2626';
+            feedbackDiv.innerHTML = "❌ " + msg;
+        }
+    }
+
+    // I. 答案揭曉
+    function revealAnswer() {
+        const ans = document.getElementById('finalAnswer');
+        ans.style.display = 'block';
+        // 自動捲動到答案區
+        ans.scrollIntoView({ behavior: 'smooth' });
+    }
+</script>
+
+</body>
+</html>

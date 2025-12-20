@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PL Q42: Garbage Collection Languages</title>
+    <style>
+        :root {
+            --primary-color: #0056b3; /* 補習班專業藍 */
+            --accent-color: #ffcc00;  /* 重點黃 */
+            --text-color: #333333;
+            --light-bg: #f4f7f6;
+            --card-bg: #ffffff;
+            --success-color: #28a745;
+            --error-color: #dc3545;
+            --border-radius: 8px;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: "Noto Sans TC", "Microsoft JhengHei", "PingFang TC", sans-serif;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        /* A. Header */
+        header {
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin: 0;
+            font-size: 1.8rem;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1rem;
+            margin-top: 5px;
+            font-weight: bold;
+        }
+
+        .q-number {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+
+        /* B. Question Card */
+        .question-card {
+            background-color: #eef5ff;
+            padding: 20px;
+            border-left: 5px solid var(--primary-color);
+            border-radius: 4px;
+            margin-bottom: 25px;
+            font-size: 1.1rem;
+        }
+
+        .question-text {
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .options-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .options-list li {
+            margin-bottom: 8px;
+            padding-left: 10px;
+        }
+
+        /* Highlight classes */
+        .highlight-text {
+            background-color: var(--accent-color);
+            padding: 0 4px;
+            border-radius: 2px;
+            transition: background-color 0.3s;
+        }
+
+        /* C. Keyword Interaction */
+        .interaction-section {
+            margin-bottom: 30px;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: var(--border-radius);
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            color: var(--primary-color);
+            border-bottom: 1px dashed #ccc;
+            padding-bottom: 8px;
+            margin-bottom: 15px;
+            margin-top: 0;
+        }
+
+        .keyword-btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .btn-kw {
+            background-color: white;
+            border: 1px solid #aaa;
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .btn-kw:hover {
+            background-color: #f0f0f0;
+            border-color: var(--primary-color);
+        }
+
+        .btn-kw.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .explanation-box {
+            background-color: #fafafa;
+            border: 1px solid #eee;
+            padding: 15px;
+            min-height: 60px;
+            border-radius: 4px;
+            color: #444;
+            font-weight: 500;
+        }
+
+        /* D. Accordion */
+        details {
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        summary {
+            padding: 12px;
+            background-color: #f8f9fa;
+            cursor: pointer;
+            font-weight: bold;
+            list-style: none; /* Hide default triangle */
+        }
+        
+        summary::after {
+            content: "+"; 
+            float: right;
+            font-weight: bold;
+        }
+        
+        details[open] summary::after {
+            content: "-";
+        }
+
+        .details-content {
+            padding: 15px;
+            background-color: white;
+            border-top: 1px solid #ddd;
+        }
+
+        /* E. Comparison */
+        .comparison-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .comp-col {
+            flex: 1;
+            min-width: 250px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .comp-header {
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            color: white;
+        }
+
+        .comp-auto .comp-header { background-color: #28a745; }
+        .comp-manual .comp-header { background-color: #dc3545; }
+
+        .comp-list {
+            padding: 0;
+            margin: 0;
+            list-style: none;
+        }
+
+        .comp-list li {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .comp-list li:last-child { border-bottom: none; }
+        .comp-list li:hover { background-color: #f0f0f0; }
+
+        .comp-result {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            display: none;
+        }
+
+        /* F. Analysis */
+        .analysis-item {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .analysis-item:last-child { border-bottom: none; }
+        .tag {
+            font-size: 0.8rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-right: 8px;
+            color: white;
+        }
+        .tag-correct { background-color: var(--success-color); }
+        .tag-wrong { background-color: var(--error-color); }
+
+        /* G. Check Answer */
+        .quiz-section {
+            background-color: #f1f8ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+
+        .checkbox-group label {
+            display: block;
+            margin-bottom: 10px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .checkbox-group label:hover {
+            background-color: #e2e6ea;
+        }
+
+        .checkbox-group input {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+
+        .btn-check {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .btn-check:hover { background-color: #004494; }
+
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+            font-weight: bold;
+            display: none;
+        }
+
+        .feedback-success { background-color: #d4edda; color: #155724; }
+        .feedback-error { background-color: #f8d7da; color: #721c24; }
+
+        /* H. Mnemonic */
+        .mnemonic-box {
+            background-color: #fff3cd;
+            border: 2px dashed #ffeeba;
+            padding: 20px;
+            margin-top: 30px;
+            border-radius: 8px;
+        }
+
+        .mnemonic-title {
+            color: #856404;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        /* I. Answer Reveal */
+        .reveal-section {
+            margin-top: 20px;
+            padding: 15px;
+            border: 2px solid var(--success-color);
+            border-radius: 8px;
+            display: none;
+        }
+
+        .reveal-btn {
+            background-color: transparent;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 8px 16px;
+            margin-top: 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        /* Utilities */
+        .bold { font-weight: bold; }
+        .red { color: #d9534f; }
+        .blue { color: #0275d8; }
+
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            h1 { font-size: 1.5rem; }
+            .keyword-btn-group { flex-direction: column; }
+            .btn-kw { text-align: center; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- A. 頁首區 -->
+    <header>
+        <h1>哪些語言「不用自己清記憶體」？</h1>
+        <div class="subtitle">Garbage Collection 必考觀念</div>
+        <div class="q-number">題號：42（複選題）</div>
+    </header>
+
+    <!-- B. 題目區 -->
+    <div class="question-card">
+        <div class="question-text">
+            42. 哪些語言主要依賴「<span id="txt-gc">垃圾回收</span>（<span id="txt-gc-en">Garbage Collection</span>）」？（複選）
+        </div>
+        <ul class="options-list">
+            <li>(A) <span id="txt-java">Java</span></li>
+            <li>(B) <span id="txt-go">Go</span></li>
+            <li>(C) <span id="txt-c">C</span></li>
+            <li>(D) <span id="txt-cpp">C++</span></li>
+            <li>(E) <span id="txt-js">JavaScript</span></li>
+        </ul>
+    </div>
+
+    <!-- C. 關鍵字螢光筆互動 -->
+    <div class="interaction-section">
+        <h3 class="section-title">點擊關鍵字看「白話解釋」</h3>
+        <div class="keyword-btn-group">
+            <button class="btn-kw" onclick="highlight('gc')">垃圾回收 / GC</button>
+            <button class="btn-kw" onclick="highlight('auto')">自動記憶體管理</button>
+            <button class="btn-kw" onclick="highlight('manual')">手動記憶體管理</button>
+            <button class="btn-kw" onclick="highlight('java')">Java</button>
+            <button class="btn-kw" onclick="highlight('go')">Go</button>
+            <button class="btn-kw" onclick="highlight('c')">C</button>
+            <button class="btn-kw" onclick="highlight('cpp')">C++</button>
+            <button class="btn-kw" onclick="highlight('js')">JavaScript</button>
+        </div>
+        <div class="explanation-box" id="explanation-display">
+            請點擊上方按鈕，這裡會顯示老師的「白話翻譯」。
+        </div>
+    </div>
+
+    <!-- D. 白話翻譯 -->
+    <details>
+        <summary>【白話翻譯】這題到底在問什麼？</summary>
+        <div class="details-content">
+            <p><strong>題目翻譯：</strong><br>「哪些程式語言在寫程式時，不需要工程師自己寫程式碼去釋放記憶體，而是交給系統（虛擬機或執行環境）自動在背景處理？」</p>
+            <hr style="border:0; border-top:1px dashed #ddd; margin:10px 0;">
+            <p><strong>這題在考什麼：</strong><br>你是否能分清楚哪些語言屬於「自動記憶體管理（有 GC）」，哪些屬於「手動記憶體管理（無 GC）」。</p>
+        </div>
+    </details>
+
+    <!-- E. 記憶體管理方式對照互動 -->
+    <div class="interaction-section">
+        <h3 class="section-title">記憶體管理大對決（點擊語言看原因）</h3>
+        <div class="comparison-container">
+            <div class="comp-col comp-auto">
+                <div class="comp-header">自動管理 (有 GC)</div>
+                <ul class="comp-list">
+                    <li onclick="showCompInfo('Java 物件由 JVM 自動回收，工程師只要 new 就好。')">Java</li>
+                    <li onclick="showCompInfo('Go 語言核心內建 GC 機制，Google 出品主打現代化。')">Go</li>
+                    <li onclick="showCompInfo('JavaScript 在瀏覽器或 Node.js 中執行時，引擎會自動清掃記憶體。')">JavaScript</li>
+                </ul>
+            </div>
+            <div class="comp-col comp-manual">
+                <div class="comp-header">手動管理 (無 GC)</div>
+                <ul class="comp-list">
+                    <li onclick="showCompInfo('C 語言必須自己寫 malloc 配置，用完必須自己 free，不然會記憶體洩漏！')">C</li>
+                    <li onclick="showCompInfo('C++ 雖然有智慧指標，但核心觀念仍是手動管理 (new/delete)，沒有內建全自動 GC。')">C++</li>
+                </ul>
+            </div>
+        </div>
+        <div id="comp-result-box" class="comp-result"></div>
+    </div>
+
+    <!-- F. 複選題選項解析 -->
+    <details>
+        <summary>【選項詳解】為什麼選這些？</summary>
+        <div class="details-content">
+            <div class="analysis-item">
+                <span class="tag tag-correct">正確</span> <strong>(A) Java</strong><br>
+                JVM (Java 虛擬機) 最著名的功能就是強大的垃圾回收機制。
+            </div>
+            <div class="analysis-item">
+                <span class="tag tag-correct">正確</span> <strong>(B) Go</strong><br>
+                Go 語言是現代語言，Runtime 內建高效能的 GC，減輕開發者負擔。
+            </div>
+            <div class="analysis-item">
+                <span class="tag tag-wrong">錯誤</span> <strong>(C) C</strong><br>
+                C 語言最底層，完全信任工程師，記憶體若不手動 free 掉，就會一直佔用。
+            </div>
+            <div class="analysis-item">
+                <span class="tag tag-wrong">錯誤</span> <strong>(D) C++</strong><br>
+                C++ 為了效能與相容 C，主要依賴解構子 (Destructor) 與手動管理，標準庫無內建全自動 GC。
+            </div>
+            <div class="analysis-item">
+                <span class="tag tag-correct">正確</span> <strong>(E) JavaScript</strong><br>
+                不論是 Chrome (V8 引擎) 還是其他環境，JS 都是自動回收記憶體的。
+            </div>
+        </div>
+    </details>
+
+    <!-- G. 複選題互動檢核 -->
+    <div class="quiz-section">
+        <h3 class="section-title" style="margin-top:0;">現在換你選選看（複選題）</h3>
+        <div class="checkbox-group">
+            <label><input type="checkbox" name="quiz" value="A"> (A) Java</label>
+            <label><input type="checkbox" name="quiz" value="B"> (B) Go</label>
+            <label><input type="checkbox" name="quiz" value="C"> (C) C</label>
+            <label><input type="checkbox" name="quiz" value="D"> (D) C++</label>
+            <label><input type="checkbox" name="quiz" value="E"> (E) JavaScript</label>
+        </div>
+        <button class="btn-check" onclick="checkQuiz()">檢查答案</button>
+        
+        <div id="quiz-msg" class="quiz-feedback"></div>
+
+        <button class="reveal-btn" onclick="toggleAnswer()">偷看正確答案與解析</button>
+        
+        <!-- I. 正確答案揭曉 -->
+        <div id="answer-reveal" class="reveal-section">
+            <h3 style="margin-top:0; color:var(--success-color);">正確答案：A、B、E</h3>
+            <p><strong>一句話總結：</strong><br>
+            「Java、Go、JavaScript 皆由系統自動進行垃圾回收，C/C++ 則需自行管理。」</p>
+        </div>
+    </div>
+
+    <!-- H. 記憶口訣與常見陷阱 -->
+    <div class="mnemonic-box">
+        <div class="mnemonic-title">★ 補教名師口訣 ★</div>
+        <p style="font-size: 1.2rem; font-weight:bold; margin: 10px 0;">「J G J，有 GC」</p>
+        <p>（<span class="blue">J</span>ava、<span class="blue">G</span>o、<span class="blue">J</span>avaScript）</p>
+        
+        <hr style="border:0; border-top:1px dashed #c6a666; margin:15px 0;">
+        
+        <div class="mnemonic-title">⚠️ 常見陷阱注意</div>
+        <ul style="margin:0; padding-left:20px;">
+            <li>以為 C++ 有 GC（其實它是靠 RAII 機制，不是背景 GC）。</li>
+            <li>以為 JavaScript 很簡單所以沒有記憶體管理（其實是因為它幫你做掉了）。</li>
+            <li>看到「指標 (Pointer)」就以為要手動管理（Go 也有指標，但 Go 有 GC）。</li>
+        </ul>
+    </div>
+
+</div>
+
+<script>
+    // C. 關鍵字螢光筆互動邏輯
+    function highlight(type) {
+        // 1. 清除所有舊的高亮
+        document.querySelectorAll('.highlight-text').forEach(el => {
+            el.classList.remove('highlight-text');
+        });
+        document.querySelectorAll('.btn-kw').forEach(el => {
+            el.classList.remove('active');
+        });
+
+        // 2. 設置解釋文字與目標 ID
+        let explanation = "";
+        let targetIds = [];
+
+        // 找出對應按鈕並設為 active
+        const btn = document.querySelector(`button[onclick="highlight('${type}')"]`);
+        if(btn) btn.classList.add('active');
+
+        switch(type) {
+            case 'gc':
+                explanation = "<strong>垃圾回收 (Garbage Collection)</strong>：想像餐廳服務生（GC）會自動把客人吃完的空盤子（不再使用的記憶體）收走，不需要廚師（程式設計師）自己跑出來收。";
+                targetIds = ['txt-gc', 'txt-gc-en'];
+                break;
+            case 'auto':
+                explanation = "<strong>自動記憶體管理</strong>：程式設計師只要負責「申請」記憶體（例如建立物件），不用擔心「歸還」。系統會自己計算何時該歸還。";
+                targetIds = ['txt-java', 'txt-go', 'txt-js', 'txt-gc'];
+                break;
+            case 'manual':
+                explanation = "<strong>手動記憶體管理</strong>：像是自助餐，盤子拿了（malloc/new）之後，吃完必須自己拿去回收區（free/delete），如果你忘了拿去，桌子就會爆滿（記憶體洩漏）。";
+                targetIds = ['txt-c', 'txt-cpp'];
+                break;
+            case 'java':
+                explanation = "<strong>Java</strong>：內建強大的 JVM，是最具代表性的「自動記憶體管理」語言。口訣：寫 Java 不用擔心 free。";
+                targetIds = ['txt-java'];
+                break;
+            case 'go':
+                explanation = "<strong>Go</strong>：Google 開發的現代語言，為了開發效率與安全性，Runtime 直接內建垃圾回收機制。";
+                targetIds = ['txt-go'];
+                break;
+            case 'c':
+                explanation = "<strong>C</strong>：老牌底層語言，完全信任工程師。你必須自己寫 <code>free()</code> 來釋放記憶體，非常考驗功力。";
+                targetIds = ['txt-c'];
+                break;
+            case 'cpp':
+                explanation = "<strong>C++</strong>：C 的進化版，雖然有智慧指標幫忙，但本質上仍屬於手動管理範疇（無內建背景 GC）。";
+                targetIds = ['txt-cpp'];
+                break;
+            case 'js':
+                explanation = "<strong>JavaScript</strong>：網頁腳本語言。你在瀏覽器跑 JS 時，瀏覽器引擎（如 V8）會在背景默默幫你做垃圾回收。";
+                targetIds = ['txt-js'];
+                break;
+        }
+
+        // 3. 執行高亮與顯示文字
+        targetIds.forEach(id => {
+            const el = document.getElementById(id);
+            if(el) el.classList.add('highlight-text');
+        });
+        document.getElementById('explanation-display').innerHTML = explanation;
+    }
+
+    // E. 比較區互動邏輯
+    function showCompInfo(text) {
+        const box = document.getElementById('comp-result-box');
+        box.style.display = 'block';
+        box.textContent = text;
+    }
+
+    // G. 檢查答案邏輯
+    function checkQuiz() {
+        const correctAnswers = ['A', 'B', 'E'];
+        const userAnswers = Array.from(document.querySelectorAll('input[name="quiz"]:checked')).map(el => el.value);
+        const msgDiv = document.getElementById('quiz-msg');
+        
+        // 排序以便比較
+        userAnswers.sort();
+        
+        // 判斷邏輯
+        const isCorrect = JSON.stringify(userAnswers) === JSON.stringify(correctAnswers);
+        
+        msgDiv.style.display = 'block';
+        msgDiv.className = 'quiz-feedback'; // reset class
+
+        if (userAnswers.length === 0) {
+            msgDiv.textContent = "同學，這題是複選題，你還沒勾選任何答案喔！";
+            msgDiv.classList.add('feedback-error');
+            return;
+        }
+
+        if (isCorrect) {
+            msgDiv.textContent = "恭喜答對！完全正確！(A)(B)(E) 都是有 GC 的語言。";
+            msgDiv.classList.add('feedback-success');
+        } else {
+            // 簡單的錯誤提示
+            let wrongMsg = "答錯囉！";
+            if (userAnswers.includes('C') || userAnswers.includes('D')) {
+                wrongMsg += " C 或 C++ 是手動管理的，不能選。";
+            } else if (userAnswers.length < 3) {
+                wrongMsg += " 少選了喔！想想口訣「J G J」。";
+            }
+            msgDiv.textContent = wrongMsg + " 再試試看！";
+            msgDiv.classList.add('feedback-error');
+        }
+    }
+
+    // I. 顯示/隱藏答案
+    function toggleAnswer() {
+        const revealDiv = document.getElementById('answer-reveal');
+        if (revealDiv.style.display === 'none' || revealDiv.style.display === '') {
+            revealDiv.style.display = 'block';
+        } else {
+            revealDiv.style.display = 'none';
+        }
+    }
+</script>
+
+</body>
+</html>

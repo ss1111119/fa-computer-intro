@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALGO_Q45_Divide_Conquer_Typical_v1</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --highlight-color: #f1c40f;
+            --success-color: #27ae60;
+            --error-color: #c0392b;
+            --light-bg: #ecf0f1;
+            --card-bg: #ffffff;
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: "PingFang TC", "Microsoft JhengHei", "Heiti TC", sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* A. Header */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: var(--primary-color);
+            color: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+
+        header p {
+            margin: 10px 0 0;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        header .badge {
+            display: inline-block;
+            background: var(--accent-color);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+
+        /* Card Common Style */
+        .card {
+            background: var(--card-bg);
+            padding: 25px;
+            margin-bottom: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--accent-color);
+        }
+
+        h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--light-bg);
+            padding-bottom: 10px;
+            margin-top: 0;
+            font-size: 1.4rem;
+        }
+
+        /* B. Question Area */
+        .question-box {
+            font-size: 1.15rem;
+            font-weight: 500;
+        }
+
+        .options {
+            list-style: none;
+            padding: 0;
+            margin-top: 15px;
+        }
+
+        .options li {
+            padding: 8px 0;
+        }
+
+        /* C. Keyword Highlight Interaction */
+        .keyword-btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .btn-keyword {
+            background: white;
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+        }
+
+        .btn-keyword:hover, .btn-keyword.active {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .explanation-box {
+            background: #fff8e1;
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid #ffe082;
+            min-height: 40px;
+            font-weight: bold;
+            color: #5d4037;
+        }
+
+        /* Dynamic Highlight Class */
+        .highlight-text {
+            background-color: var(--highlight-color);
+            padding: 0 4px;
+            border-radius: 3px;
+            transition: background-color 0.3s;
+        }
+
+        /* D. Accordion */
+        .accordion {
+            background-color: var(--light-bg);
+            color: #444;
+            cursor: pointer;
+            padding: 15px;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .accordion:after {
+            content: '+';
+            font-size: 1.2rem;
+            color: #777;
+        }
+
+        .accordion.active:after {
+            content: '-';
+        }
+
+        .panel {
+            padding: 0 15px;
+            background-color: white;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.2s ease-out;
+            border-left: 2px solid var(--light-bg);
+            border-right: 2px solid var(--light-bg);
+            border-bottom: 2px solid var(--light-bg);
+        }
+
+        /* E. 3 Steps Interaction */
+        .steps-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .step-card {
+            background: white;
+            border: 1px solid #ddd;
+            padding: 15px;
+            text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .step-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--accent-color);
+        }
+
+        .step-title {
+            font-weight: bold;
+            color: var(--accent-color);
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .step-content {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 10px;
+            display: none; /* Hidden by default */
+            border-top: 1px dashed #ccc;
+            padding-top: 10px;
+        }
+
+        /* F. Algorithm Classification Table-like */
+        .algo-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+
+        .algo-list-item:last-child {
+            border-bottom: none;
+        }
+
+        .algo-list-item:hover {
+            background-color: #f9f9f9;
+        }
+
+        .algo-name {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .algo-status {
+            font-size: 0.9rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+            background: #eee;
+        }
+
+        /* G & H Quiz Section */
+        .quiz-option-label {
+            display: block;
+            padding: 12px;
+            margin-bottom: 8px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quiz-option-label:hover {
+            background-color: #f0f8ff;
+            border-color: var(--accent-color);
+        }
+
+        .quiz-option-label input {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+
+        .check-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        .check-btn:hover {
+            opacity: 0.9;
+        }
+
+        .feedback-area {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            display: none;
+        }
+
+        .feedback-correct {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .feedback-wrong {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* I. Mnemonics */
+        .mnemonic-box {
+            background: #e8f6f3;
+            border-left: 5px solid var(--success-color);
+            padding: 15px;
+            margin-top: 10px;
+        }
+
+        .pitfall-box {
+            background: #fff5f5;
+            border-left: 5px solid var(--error-color);
+            padding: 15px;
+            margin-top: 10px;
+        }
+
+        /* J. Reveal */
+        .reveal-box {
+            display: none;
+            margin-top: 20px;
+            border-top: 2px dashed #ccc;
+            padding-top: 20px;
+        }
+
+        /* Utilities */
+        .tag-correct { color: var(--success-color); font-weight: bold; }
+        .tag-wrong { color: var(--error-color); font-weight: bold; }
+        .u-bold { font-weight: bold; }
+
+        @media (max-width: 600px) {
+            header h1 { font-size: 1.5rem; }
+            .container { padding: 0; }
+            body { padding: 10px; }
+            .question-box { font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- A. 頁首區 -->
+    <header>
+        <h1>分治法是什麼？<br>把大問題切小就會做</h1>
+        <p>Divide and Conquer 必考策略</p>
+        <span class="badge">題號：45（複選題）</span>
+    </header>
+
+    <!-- B. 題目區 -->
+    <div class="card">
+        <h2>題目練習</h2>
+        <div class="question-box">
+            <span id="q-text">45. 下列哪些屬於「<span id="kw-dc">分治法（Divide and Conquer）</span>」典型用法？（複選）</span>
+            <ul class="options">
+                <li>(A) <span id="kw-ms">Merge Sort</span></li>
+                <li>(B) <span id="kw-qs">Quick Sort</span></li>
+                <li>(C) <span id="kw-bs">Binary Search</span></li>
+                <li>(D) <span id="kw-cs">Counting Sort</span></li>
+                <li>(E) <span id="kw-fft">FFT（快速傅立葉變換）</span></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- C. 關鍵字螢光筆互動 -->
+    <div class="card">
+        <h2>關鍵字拆解</h2>
+        <p style="font-size: 0.9rem; color: #666;">點擊下方按鈕，看看這些專有名詞是什麼意思：</p>
+        <div class="keyword-btn-group">
+            <button class="btn-keyword" onclick="highlight('dc')">分治法 / Divide and Conquer</button>
+            <button class="btn-keyword" onclick="highlight('ms')">Merge Sort</button>
+            <button class="btn-keyword" onclick="highlight('qs')">Quick Sort</button>
+            <button class="btn-keyword" onclick="highlight('bs')">Binary Search</button>
+            <button class="btn-keyword" onclick="highlight('cs')">Counting Sort</button>
+            <button class="btn-keyword" onclick="highlight('fft')">FFT</button>
+        </div>
+        <div class="explanation-box" id="explanation-display">
+            請點擊上方關鍵字，這裡會顯示老師的白話解釋。
+        </div>
+    </div>
+
+    <!-- D. 白話翻譯 -->
+    <div class="card">
+        <button class="accordion">【白話翻譯】題目到底在問什麼？</button>
+        <div class="panel">
+            <p><strong>翻譯蒟蒻：</strong><br>「哪些演算法會用到『把問題切成更小的子問題』，解完再整合回來的做法？」</p>
+        </div>
+        
+        <button class="accordion" style="margin-top: 10px;">【這題在考什麼】</button>
+        <div class="panel">
+            <p><strong>考點分析：</strong><br>你是否能辨認分治法的特徵：<span class="tag-correct">拆分 (Divide)</span> &rarr; <span class="tag-correct">解子問題 (Conquer)</span> &rarr; <span class="tag-correct">合併結果 (Combine)</span>。</p>
+        </div>
+    </div>
+
+    <!-- E. 分治法三步驟互動示意 -->
+    <div class="card">
+        <h2>分治法三部曲（點擊看比喻）</h2>
+        <div class="steps-container">
+            <div class="step-card" onclick="toggleStep(this)">
+                <span class="step-title">1. Divide 切分</span>
+                <div>把大問題切開</div>
+                <div class="step-content">比喻：整理書桌時，先把書、文具、雜物「分堆」。</div>
+            </div>
+            <div class="step-card" onclick="toggleStep(this)">
+                <span class="step-title">2. Conquer 解決</span>
+                <div>各自擊破子問題</div>
+                <div class="step-content">比喻：針對每一堆分別整理，書歸位、筆削好。</div>
+            </div>
+            <div class="step-card" onclick="toggleStep(this)">
+                <span class="step-title">3. Combine 合併</span>
+                <div>組合成最終答案</div>
+                <div class="step-content">比喻：把整理好的各部分放回桌上，整張桌子就乾淨了。</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- F. 演算法分類互動對照 -->
+    <div class="card">
+        <h2>是分治法嗎？（點擊查看）</h2>
+        <div id="algo-list">
+            <!-- Content generated by JS or static -->
+            <div class="algo-list-item" onclick="showAlgoStatus('Merge Sort', true, '標準分治：先拆半，排序後再合併。')">
+                <span class="algo-name">Merge Sort</span>
+                <span class="algo-status">?</span>
+            </div>
+            <div class="algo-list-item" onclick="showAlgoStatus('Quick Sort', true, '標準分治：選基準點切兩邊，遞迴處理。')">
+                <span class="algo-name">Quick Sort</span>
+                <span class="algo-status">?</span>
+            </div>
+            <div class="algo-list-item" onclick="showAlgoStatus('Binary Search', true, '廣義分治：每次砍半範圍，雖然不用合併，但用到了拆分思想。')">
+                <span class="algo-name">Binary Search</span>
+                <span class="algo-status">?</span>
+            </div>
+            <div class="algo-list-item" onclick="showAlgoStatus('Counting Sort', false, '非分治：它是用統計次數來排序，沒有「切分」問題。')">
+                <span class="algo-name">Counting Sort</span>
+                <span class="algo-status">?</span>
+            </div>
+            <div class="algo-list-item" onclick="showAlgoStatus('FFT', true, '進階分治：把多項式乘法拆成奇偶項遞迴計算。')">
+                <span class="algo-name">FFT</span>
+                <span class="algo-status">?</span>
+            </div>
+        </div>
+        <div id="algo-feedback" style="margin-top: 10px; font-weight: bold; min-height: 1.5em; color: var(--accent-color);"></div>
+    </div>
+
+    <!-- G. & H. 複選題互動檢核 -->
+    <div class="card" style="border-left-color: var(--primary-color);">
+        <h2>來試著解題（複選）</h2>
+        <form id="quiz-form">
+            <label class="quiz-option-label">
+                <input type="checkbox" name="option" value="A"> (A) Merge Sort
+            </label>
+            <label class="quiz-option-label">
+                <input type="checkbox" name="option" value="B"> (B) Quick Sort
+            </label>
+            <label class="quiz-option-label">
+                <input type="checkbox" name="option" value="C"> (C) Binary Search
+            </label>
+            <label class="quiz-option-label">
+                <input type="checkbox" name="option" value="D"> (D) Counting Sort
+            </label>
+            <label class="quiz-option-label">
+                <input type="checkbox" name="option" value="E"> (E) FFT（快速傅立葉變換）
+            </label>
+            <button type="button" class="check-btn" onclick="checkAnswer()">檢查答案</button>
+        </form>
+
+        <div id="quiz-feedback" class="feedback-area"></div>
+    </div>
+
+    <!-- I. 記憶口訣 -->
+    <div class="card">
+        <h2>名師筆記</h2>
+        <div class="mnemonic-box">
+            <strong>【記憶口訣】</strong><br>
+            「<span style="color:#d35400; font-size:1.2em;">合快二 FFT</span>，都是分治」<br>
+            (Merge, Quick, Binary, FFT)
+        </div>
+        <div class="pitfall-box">
+            <strong>【常見陷阱】</strong>
+            <ul style="margin: 5px 0 0 20px; padding:0;">
+                <li>看到排序 (Sort) 就選？錯！Counting Sort、Radix Sort 不是分治。</li>
+                <li>忘記 Binary Search？它是最簡單的分治（只分不合）。</li>
+                <li>FFT 看起來很難？不管原理，記得它是分治法的經典應用。</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- J. 正確答案揭曉 -->
+    <div class="card reveal-box" id="final-reveal">
+        <h2>正確答案解析</h2>
+        <p style="font-size: 1.2rem;">正確選項：<span class="tag-correct">A、B、C、E</span></p>
+        
+        <h3>逐一破解：</h3>
+        <ul>
+            <li>(A) <strong>Merge Sort</strong>：<span class="tag-correct">YES</span>。標準分治，拆半&rarr;排序&rarr;合併。</li>
+            <li>(B) <strong>Quick Sort</strong>：<span class="tag-correct">YES</span>。用 Pivot 分區切兩半，遞迴下去。</li>
+            <li>(C) <strong>Binary Search</strong>：<span class="tag-correct">YES</span>。每次把範圍砍半 (Divide)，範圍變小 (Conquer)。</li>
+            <li>(D) <strong>Counting Sort</strong>：<span class="tag-wrong">NO</span>。這是用「計數表」直接定位，沒有切分子問題的過程。</li>
+            <li>(E) <strong>FFT</strong>：<span class="tag-correct">YES</span>。利用分治法將複雜度從 O(N^2) 降到 O(N log N)。</li>
+        </ul>
+        <hr>
+        <p style="text-align: center; font-weight: bold; color: var(--primary-color);">恭喜你學會了分治法的核心判斷！</p>
+    </div>
+
+</div>
+
+<script>
+    // C. 關鍵字螢光筆互動
+    const explanations = {
+        'dc': '分治法（把大問題切成小問題，各自解完再合起來）',
+        'ms': 'Merge Sort（合併排序：先拆半，再排序合併，標準分治法）',
+        'qs': 'Quick Sort（快速排序：挑基準點分兩邊，再遞迴處理）',
+        'bs': 'Binary Search（二分搜尋：每次把範圍砍半，是簡化的分治）',
+        'cs': 'Counting Sort（計數排序：用次數表直接排，不靠切分，所以不算分治）',
+        'fft': 'FFT（快速傅立葉變換：用分治加速多項式計算）'
+    };
+
+    function highlight(key) {
+        // 清除舊的 highlight
+        document.querySelectorAll('.highlight-text').forEach(el => {
+            el.classList.remove('highlight-text');
+        });
+
+        // 加上新的 highlight
+        const targetId = 'kw-' + key;
+        const targetEl = document.getElementById(targetId);
+        if (targetEl) {
+            targetEl.classList.add('highlight-text');
+        }
+
+        // 處理題目主詞的特殊情況 (Divide and Conquer 與 分治法)
+        if (key === 'dc') {
+             const dcEl = document.getElementById('kw-dc');
+             if(dcEl) dcEl.classList.add('highlight-text');
+        }
+
+        // 更新解釋文字
+        const displayBox = document.getElementById('explanation-display');
+        displayBox.textContent = explanations[key] || '請選擇關鍵字';
+        displayBox.style.backgroundColor = '#fff8e1';
+    }
+
+    // D. Accordion Logic
+    const acc = document.getElementsByClassName("accordion");
+    for (let i = 0; i < acc.length; i++) {
+        acc[i].addEventListener("click", function() {
+            this.classList.toggle("active");
+            const panel = this.nextElementSibling;
+            if (panel.style.maxHeight) {
+                panel.style.maxHeight = null;
+            } else {
+                panel.style.maxHeight = panel.scrollHeight + "px";
+            }
+        });
+    }
+
+    // E. Toggle Step
+    function toggleStep(card) {
+        const content = card.querySelector('.step-content');
+        if (content.style.display === 'block') {
+            content.style.display = 'none';
+        } else {
+            content.style.display = 'block';
+        }
+    }
+
+    // F. Algo Status
+    function showAlgoStatus(name, isDC, text) {
+        const feedback = document.getElementById('algo-feedback');
+        const statusText = isDC ? '屬於分治法' : '不屬於分治法';
+        const color = isDC ? 'var(--success-color)' : 'var(--error-color)';
+        
+        feedback.innerHTML = `<span style="color:${color}">【${name}】${statusText}</span><br><span style="font-weight:normal; color:#555;">${text}</span>`;
+    }
+
+    // G. & H. Quiz Logic
+    function checkAnswer() {
+        const correctAnswers = ['A', 'B', 'C', 'E'];
+        // 取得使用者選的選項
+        const checkboxes = document.querySelectorAll('input[name="option"]:checked');
+        const userSelection = Array.from(checkboxes).map(cb => cb.value).sort();
+        
+        const feedbackArea = document.getElementById('quiz-feedback');
+        const revealArea = document.getElementById('final-reveal');
+
+        // 簡單陣列比較
+        const isCorrect = JSON.stringify(userSelection) === JSON.stringify(correctAnswers);
+        
+        // 判斷是否選了 D (陷阱)
+        const hasD = userSelection.includes('D');
+
+        feedbackArea.style.display = 'block';
+        feedbackArea.className = 'feedback-area'; // reset class
+
+        if (isCorrect) {
+            feedbackArea.classList.add('feedback-correct');
+            feedbackArea.innerHTML = '<strong>答對了！</strong><br>太棒了，你已經掌握了分治法的核心成員。';
+            revealArea.style.display = 'block';
+            revealArea.scrollIntoView({ behavior: 'smooth' });
+        } else {
+            feedbackArea.classList.add('feedback-wrong');
+            let msg = '<strong>答案不完全正確喔！</strong><br>';
+            
+            if (hasD) {
+                msg += '提示：你選了 (D) Counting Sort。<br>Counting Sort 是靠「數人頭」來排序，並沒有把問題切一半喔！<br>';
+            }
+            
+            if (userSelection.length === 0) {
+                msg += '提示：你還沒勾選任何選項。這題是複選題喔！';
+            } else if (!hasD) {
+                 msg += '提示：還有漏網之魚，或者多選了。想想口訣：「合快二 FFT」。';
+            }
+
+            feedbackArea.innerHTML = msg;
+            revealArea.style.display = 'none';
+        }
+    }
+</script>
+
+</body>
+</html>

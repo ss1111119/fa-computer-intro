@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SE_Q36_Refactoring_Purpose_v1</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --highlight-color: #f1c40f;
+            --correct-color: #27ae60;
+            --wrong-color: #c0392b;
+            --bg-color: #fdfdfd;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --code-bg: #f4f4f4;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        header p {
+            margin: 10px 0 0;
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+
+        .badge {
+            display: inline-block;
+            background-color: var(--accent-color);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+
+        /* Sections */
+        section {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-left: 5px solid var(--accent-color);
+        }
+
+        h3 {
+            margin-top: 0;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            color: var(--primary-color);
+        }
+
+        /* Question Area */
+        .question-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .highlighted-text {
+            background-color: var(--highlight-color);
+            padding: 2px 4px;
+            border-radius: 3px;
+            transition: all 0.3s;
+        }
+
+        /* Keyword Buttons */
+        .keyword-btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .keyword-btn {
+            background: white;
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+        }
+
+        .keyword-btn:hover, .keyword-btn.active {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .definition-box {
+            background-color: #e8f6f3;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid var(--correct-color);
+            margin-top: 10px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Accordion */
+        details {
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        
+        summary {
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        details p {
+            padding: 10px 0 0 10px;
+            margin: 0;
+            color: #555;
+        }
+
+        /* Code Comparison */
+        .code-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .code-block {
+            flex: 1;
+            min-width: 280px;
+            background: var(--code-bg);
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            border: 1px solid #ddd;
+        }
+
+        .code-title {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 10px;
+            text-align: center;
+            color: white;
+            padding: 5px;
+            border-radius: 3px;
+        }
+
+        .bad-code .code-title { background-color: var(--wrong-color); }
+        .good-code .code-title { background-color: var(--correct-color); }
+
+        .concept-footer {
+            margin-top: 15px;
+            text-align: center;
+            font-weight: bold;
+            color: var(--primary-color);
+            background: #eef;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        /* Options */
+        .option-card {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+
+        .option-header {
+            padding: 15px;
+            background: #fdfdfd;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .option-header:hover {
+            background: #f0f0f0;
+        }
+
+        .option-content {
+            padding: 15px;
+            border-top: 1px solid #ddd;
+            display: none;
+        }
+
+        .option-content.correct { background-color: #eafaf1; color: #0f5132; }
+        .option-content.wrong { background-color: #fdedec; color: #842029; }
+
+        .btn-reveal {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        /* Quiz */
+        .quiz-item {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px dashed #ccc;
+        }
+
+        .quiz-btn-group {
+            margin-top: 10px;
+        }
+
+        .quiz-btn {
+            margin-right: 10px;
+            padding: 8px 16px;
+            border: 1px solid #ccc;
+            background: white;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .quiz-feedback {
+            margin-top: 10px;
+            font-weight: bold;
+            display: none;
+        }
+
+        /* Pitfalls */
+        .mnemonic-box {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #ffeeba;
+            margin-bottom: 15px;
+        }
+
+        .pitfall-list li {
+            margin-bottom: 8px;
+        }
+
+        /* Answer Reveal Section */
+        .answer-section {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .big-btn {
+            font-size: 1.2rem;
+            padding: 15px 40px;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        .big-btn:active {
+            transform: scale(0.98);
+        }
+
+        .final-answer {
+            margin-top: 20px;
+            padding: 20px;
+            border: 2px solid var(--accent-color);
+            border-radius: 8px;
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 600px) {
+            .code-container { flex-direction: column; }
+            .keyword-btn { font-size: 0.85rem; padding: 6px 10px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- A. 頁首區 -->
+    <header>
+        <h1>重構不是加功能，是在「整理房間」</h1>
+        <p>Refactoring 核心觀念一次懂</p>
+        <div class="badge">題號：36</div>
+    </header>
+
+    <!-- B. 題目區 + C. 關鍵字互動 -->
+    <section>
+        <h3>題目預覽與關鍵字解析</h3>
+        <p>請試著點擊下方按鈕，我會幫你在題目中畫重點！</p>
+        
+        <div class="keyword-btn-group">
+            <button class="keyword-btn" onclick="highlightTerm('軟體重構', 'Refactoring：在不改變功能的前提下，整理與改善程式碼結構')">軟體重構</button>
+            <button class="keyword-btn" onclick="highlightTerm('Refactoring', '即軟體重構的英文，意思是重新構造內部結構')">Refactoring</button>
+            <button class="keyword-btn" onclick="highlightTerm('外部行為', '使用者看得到的功能、輸入與輸出的結果')">外部行為</button>
+            <button class="keyword-btn" onclick="highlightTerm('易讀性', '程式碼寫得好不好懂，別人接手能不能馬上看懂')">易讀性</button>
+            <button class="keyword-btn" onclick="highlightTerm('更易維護', '以後要修改、抓 Bug 或擴充功能時是否容易')">更易維護</button>
+            <button class="keyword-btn" onclick="highlightTerm('增加新功能', '這叫功能開發，不是重構')">增加新功能</button>
+            <button class="keyword-btn" onclick="highlightTerm('效能', '跑得快不快。重構的主要目的不是這個，雖然有時會變快')">效能</button>
+        </div>
+
+        <div class="question-box">
+            <p id="question-text" class="question-text">
+                36. 下列哪一項最能代表軟體重構（Refactoring）的目的？<br>
+                (A) 增加新功能<br>
+                (B) 使程式碼更易讀、更易維護，而不改變外部行為<br>
+                (C) 改變系統功能需求<br>
+                (D) 增加系統效能、提升硬體速度
+            </p>
+        </div>
+
+        <div id="definition-display" class="definition-box">
+            <span>點擊上方按鈕，這裡會顯示白話文解釋...</span>
+        </div>
+    </section>
+
+    <!-- D. 白話翻譯 -->
+    <section>
+        <h3>老師幫你翻譯翻譯</h3>
+        <details>
+            <summary>【白話翻譯】點我展開</summary>
+            <p>「程式現在可以正常用，也沒 Bug，但是內部寫得很亂（像義大利麵一樣）。工程師想把它整理乾淨，方便以後好修改。請問這樣做的目的是什麼？」</p>
+        </details>
+        <details>
+            <summary>【這題在考什麼】點我展開</summary>
+            <p>考你知不知道：重構 = 「功能不動」+「結構變好」。重點在於『不改變外部行為』。</p>
+        </details>
+    </section>
+
+    <!-- E. 重構概念互動示意 -->
+    <section>
+        <h3>重構概念示意圖</h3>
+        <p>比較一下，兩邊做的事情完全一樣（計算 10 + 5），但寫法不同。</p>
+        
+        <div class="code-container">
+            <div class="code-block bad-code">
+                <span class="code-title">重構前 (寫得亂)</span>
+                // 變數名稱看不懂<br>
+                var a = 10;<br>
+                var b = 5;<br>
+                // 邏輯混在一起<br>
+                if(a + b > 0) {<br>
+                  print("OK");<br>
+                }
+            </div>
+            <div class="code-block good-code">
+                <span class="code-title">重構後 (結構好)</span>
+                // 命名清楚<br>
+                const price = 10;<br>
+                const tax = 5;<br>
+                // 邏輯清楚<br>
+                if(isValid(price, tax)) {<br>
+                   showSuccess();<br>
+                }
+            </div>
+        </div>
+
+        <div class="concept-footer">
+            輸入一樣 (10, 5) &rarr; [ 黑盒子 ] &rarr; 輸出一樣 (OK)<br>
+            外部行為完全沒變！只改了內部寫法。
+        </div>
+    </section>
+
+    <!-- F. 選項逐一解析 -->
+    <section>
+        <h3>選項逐一擊破</h3>
+        <p>點擊按鈕查看為什麼對或錯。</p>
+
+        <div class="option-card">
+            <div class="option-header" onclick="toggleOption('optA')">
+                <span>(A) 增加新功能</span>
+                <button class="btn-reveal">解析</button>
+            </div>
+            <div id="optA" class="option-content wrong">
+                <strong>(X) 錯誤。</strong><br>
+                這是「新功能開發 (New Feature)」。重構的原則是「不」改變或增加使用者能看到的功能。
+            </div>
+        </div>
+
+        <div class="option-card">
+            <div class="option-header" onclick="toggleOption('optB')">
+                <span>(B) 使程式碼更易讀、更易維護，而不改變外部行為</span>
+                <button class="btn-reveal">解析</button>
+            </div>
+            <div id="optB" class="option-content correct">
+                <strong>(O) 正確！</strong><br>
+                這就是重構的標準定義。關鍵字：Internal Quality (內部品質) 提升，External Behavior (外部行為) 不變。
+            </div>
+        </div>
+
+        <div class="option-card">
+            <div class="option-header" onclick="toggleOption('optC')">
+                <span>(C) 改變系統功能需求</span>
+                <button class="btn-reveal">解析</button>
+            </div>
+            <div id="optC" class="option-content wrong">
+                <strong>(X) 錯誤。</strong><br>
+                這叫「需求變更 (Requirement Change)」。重構時，需求是不應該變動的。
+            </div>
+        </div>
+
+        <div class="option-card">
+            <div class="option-header" onclick="toggleOption('optD')">
+                <span>(D) 增加系統效能、提升硬體速度</span>
+                <button class="btn-reveal">解析</button>
+            </div>
+            <div id="optD" class="option-content wrong">
+                <strong>(X) 錯誤。</strong><br>
+                雖然整理過後程式「可能」跑比較快，但這是副作用或之後的「效能優化 (Optimization)」，不是重構的第一目的。有時為了可讀性，重構反而會稍微慢一點點（但在可接受範圍）。
+            </div>
+        </div>
+    </section>
+
+    <!-- G. 快速小測驗 -->
+    <section>
+        <h3>隨堂小考 (Mini Quiz)</h3>
+        
+        <div class="quiz-item">
+            <div>Q1. 工程師小明重構完系統後，使用者登入看到的畫面應該要不一樣嗎？</div>
+            <div class="quiz-btn-group">
+                <button class="quiz-btn" onclick="checkQuiz(1, 'yes')">要變不一樣</button>
+                <button class="quiz-btn" onclick="checkQuiz(1, 'no')">應該要一模一樣</button>
+            </div>
+            <div id="quiz-feed-1" class="quiz-feedback"></div>
+        </div>
+
+        <div class="quiz-item">
+            <div>Q2. 重構的主要目的是為了讓程式跑得跟飛一樣快？</div>
+            <div class="quiz-btn-group">
+                <button class="quiz-btn" onclick="checkQuiz(2, 'yes')">對，是為了效能</button>
+                <button class="quiz-btn" onclick="checkQuiz(2, 'no')">不對，是為了好讀好改</button>
+            </div>
+            <div id="quiz-feed-2" class="quiz-feedback"></div>
+        </div>
+
+        <div class="quiz-item">
+            <div>Q3. 什麼時候適合重構？</div>
+            <div class="quiz-btn-group">
+                <button class="quiz-btn" onclick="checkQuiz(3, 'feature')">程式很亂，要在上面加新功能前</button>
+                <button class="quiz-btn" onclick="checkQuiz(3, 'deadline')">要在明天交件的死線前</button>
+            </div>
+            <div id="quiz-feed-3" class="quiz-feedback"></div>
+        </div>
+    </section>
+
+    <!-- H. 口訣與陷阱 -->
+    <section>
+        <h3>最後衝刺重點</h3>
+        
+        <div class="mnemonic-box">
+            <strong>【記憶口訣】</strong>
+            <p style="font-size: 1.2rem; margin: 5px 0; color: #d35400;">「功能不動，結構變好」</p>
+            <p style="margin:0;">Refactoring = 改內不改外</p>
+        </div>
+
+        <div class="pitfall-list">
+            <strong>【常見陷阱 (Exam Pitfalls)】</strong>
+            <ul>
+                <li>(X) 誤以為重構就是修 Bug (修 Bug 是修正錯誤行為，重構是行為本來就是對的)。</li>
+                <li>(X) 誤以為重構一定是為了效能 (Optimization)。</li>
+                <li>(X) 誤以為重構可以改變使用者介面 (UI)。</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- I. 正確答案揭曉 -->
+    <div class="answer-section">
+        <button class="big-btn" onclick="revealAnswer()">揭曉正確答案</button>
+        
+        <div id="final-answer-box" class="final-answer">
+            <h2 style="color: var(--correct-color);">正確答案：(B)</h2>
+            <p><strong>使程式碼更易讀、更易維護，而不改變外部行為</strong></p>
+            <hr>
+            <p>恭喜你！你已經掌握軟體工程中最重要的概念之一了！<br>
+            這題在 APCS 或大一軟體工程概論都是必考題喔。</p>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // 原始題目文字，用於重置螢光筆效果
+    const originalQuestionHTML = `
+        36. 下列哪一項最能代表軟體重構（Refactoring）的目的？<br>
+        (A) 增加新功能<br>
+        (B) 使程式碼更易讀、更易維護，而不改變外部行為<br>
+        (C) 改變系統功能需求<br>
+        (D) 增加系統效能、提升硬體速度
+    `;
+
+    // 關鍵字互動
+    function highlightTerm(term, definition) {
+        const questionEl = document.getElementById('question-text');
+        const displayEl = document.getElementById('definition-display');
+        const buttons = document.querySelectorAll('.keyword-btn');
+
+        // 移除所有按鈕的 active 狀態
+        buttons.forEach(btn => btn.classList.remove('active'));
+        // 找出點擊的按鈕並設為 active (簡單處理，透過 event.target 的文字判斷略顯粗糙，這裡直接依賴點擊行為)
+        event.target.classList.add('active');
+
+        // 重置文字
+        questionEl.innerHTML = originalQuestionHTML;
+
+        // 執行標註
+        // 使用 replace 將純文字替換為帶有樣式的 span
+        // 注意：這裡只替換第一個匹配到的，若有多個需用 Regex /g
+        const innerHTML = questionEl.innerHTML;
+        const highlightedHTML = innerHTML.replace(
+            new RegExp(term, 'g'), 
+            `<span class="highlighted-text">${term}</span>`
+        );
+        questionEl.innerHTML = highlightedHTML;
+
+        // 顯示解釋
+        displayEl.innerHTML = `<strong>${term}</strong>：${definition}`;
+    }
+
+    // 選項解析開關
+    function toggleOption(id) {
+        const content = document.getElementById(id);
+        if (content.style.display === "block") {
+            content.style.display = "none";
+        } else {
+            content.style.display = "block";
+        }
+    }
+
+    // 小測驗邏輯
+    function checkQuiz(qNum, answer) {
+        const feedEl = document.getElementById(`quiz-feed-${qNum}`);
+        let text = "";
+        let color = "";
+
+        if (qNum === 1) {
+            if (answer === 'no') {
+                text = "(O) 沒錯！重構不能改變外部行為，使用者不該感覺到差異。";
+                color = "var(--correct-color)";
+            } else {
+                text = "(X) 不對喔，如果功能變了，那叫「改版」或「修正」，不是重構。";
+                color = "var(--wrong-color)";
+            }
+        } else if (qNum === 2) {
+            if (answer === 'no') {
+                text = "(O) 正確！效能優化 (Optimization) 是另一件事，重構是為了長遠的維護性。";
+                color = "var(--correct-color)";
+            } else {
+                text = "(X) 陷阱題！重構有時候甚至會讓程式稍微慢一點點（為了寫得更清楚），效能不是第一目標。";
+                color = "var(--wrong-color)";
+            }
+        } else if (qNum === 3) {
+            if (answer === 'feature') {
+                text = "(O) 賓果！「先整理，再開發」。在混亂的程式碼上加功能是惡夢。";
+                color = "var(--correct-color)";
+            } else {
+                text = "(X) 母湯喔！死線前重構風險太高，萬一改壞了會來不及修復。";
+                color = "var(--wrong-color)";
+            }
+        }
+
+        feedEl.style.display = "block";
+        feedEl.style.color = color;
+        feedEl.innerText = text;
+    }
+
+    // 揭曉答案
+    function revealAnswer() {
+        const answerBox = document.getElementById('final-answer-box');
+        answerBox.style.display = "block";
+        // 捲動到答案區
+        answerBox.scrollIntoView({ behavior: 'smooth' });
+    }
+</script>
+
+</body>
+</html>

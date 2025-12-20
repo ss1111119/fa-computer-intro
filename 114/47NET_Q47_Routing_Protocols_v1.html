@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NET_Q47_Routing_Protocols_v1</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50; /* 深藍 - 穩重 */
+            --accent-color: #e67e22; /* 橘色 - 重點 */
+            --correct-color: #27ae60; /* 綠色 - 正確 */
+            --wrong-color: #c0392b; /* 紅色 - 錯誤 */
+            --bg-color: #f4f6f7;
+            --text-color: #333;
+            --card-bg: #ffffff;
+            --highlight-bg: #fff3cd; /* 螢光筆底色 */
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "PingFang TC", "Microsoft JhengHei", "Heiti TC", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* A. 頁首區 */
+        header {
+            background-color: var(--primary-color);
+            color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+
+        header p {
+            margin: 5px 0 0;
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .badge {
+            display: inline-block;
+            background-color: var(--accent-color);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        /* 通用卡片樣式 */
+        .card {
+            background-color: var(--card-bg);
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            font-size: 1.3rem;
+            color: var(--primary-color);
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        /* B. 題目區 */
+        .question-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .options-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .options-list li {
+            padding: 8px 0;
+            font-size: 1.1rem;
+        }
+
+        /* C. 關鍵字互動 */
+        .keyword-btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .kw-btn {
+            background-color: #fff;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .kw-btn:hover, .kw-btn.active {
+            background-color: var(--primary-color);
+            color: #fff;
+        }
+
+        .highlighted-text {
+            background-color: yellow;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-weight: bold;
+            color: #000;
+            transition: background-color 0.3s;
+        }
+
+        .explanation-box {
+            background-color: #eef2f3;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-weight: bold;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            border-left: 4px solid var(--accent-color);
+        }
+
+        /* D. 白話翻譯 Accordion */
+        .accordion {
+            background-color: #eee;
+            color: #444;
+            cursor: pointer;
+            padding: 15px;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-size: 1.1rem;
+            font-weight: bold;
+            transition: 0.4s;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .accordion:hover {
+            background-color: #ddd;
+        }
+
+        .panel {
+            padding: 0 15px;
+            background-color: white;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.2s ease-out;
+            border-left: 1px solid #eee;
+            border-right: 1px solid #eee;
+            border-bottom: 1px solid #eee;
+        }
+
+        /* E. 路由 vs 非路由 對照區 */
+        .comparison-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .comparison-col {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .comp-item {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 8px;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+        }
+
+        .comp-item:hover {
+            background-color: #e2e6ea;
+        }
+
+        .comp-item.active-routing {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+            font-weight: bold;
+        }
+
+        .comp-item.active-non-routing {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+            font-weight: bold;
+        }
+
+        /* F. 選項解析 */
+        .analysis-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px dashed #ddd;
+        }
+
+        .analysis-item:last-child {
+            border-bottom: none;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            margin-right: 8px;
+            font-weight: bold;
+        }
+
+        .tag-correct { background-color: var(--correct-color); color: white; }
+        .tag-wrong { background-color: var(--wrong-color); color: white; }
+
+        /* G. 互動檢核 */
+        .quiz-form label {
+            display: block;
+            padding: 10px;
+            margin: 5px 0;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+
+        .quiz-form label:hover {
+            background-color: #f0f0f0;
+        }
+
+        .quiz-form input[type="checkbox"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+
+        .btn-check {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1.1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+            width: 100%;
+            font-weight: bold;
+        }
+
+        .btn-check:hover {
+            background-color: #d35400;
+        }
+
+        .result-box {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+            font-weight: bold;
+        }
+
+        .result-correct { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .result-partial { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        .result-wrong { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+        /* H. 記憶口訣 */
+        .mnemonic-box {
+            background-color: #fffbe6;
+            border: 2px solid #ffe58f;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .mnemonic-text {
+            font-size: 1.5rem;
+            text-align: center;
+            color: var(--accent-color);
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .pitfall-list li {
+            margin-bottom: 8px;
+            color: var(--wrong-color);
+        }
+
+        /* I. 答案揭曉 */
+        .answer-reveal {
+            display: none;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .btn-show-answer {
+            background-color: #7f8c8d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin-top: 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        /* 響應式調整 */
+        @media (max-width: 600px) {
+            header h1 { font-size: 1.5rem; }
+            .card { padding: 15px; }
+            .kw-btn { width: 100%; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- A. 頁首區 -->
+    <header>
+        <h1>誰在幫路由器「找路」？</h1>
+        <p>Routing Protocol 必考整理</p>
+        <div class="badge">題號：47（複選題）</div>
+    </header>
+
+    <!-- B. 題目區 -->
+    <div class="card">
+        <h2>題目內容</h2>
+        <div class="question-text">
+            47. 下列哪些屬於<span id="txt-routing-protocol">路由協定</span>（<span id="txt-routing-protocol-en">Routing Protocol</span>）？（複選）
+        </div>
+        <ul class="options-list">
+            <li>(A) <span id="txt-ospf">OSPF</span></li>
+            <li>(B) <span id="txt-bgp">BGP</span></li>
+            <li>(C) <span id="txt-rip">RIP</span></li>
+            <li>(D) <span id="txt-icmp">ICMP</span></li>
+            <li>(E) <span id="txt-arp">ARP</span></li>
+        </ul>
+    </div>
+
+    <!-- C. 關鍵字螢光筆互動 -->
+    <div class="card">
+        <h2>名詞解釋螢光筆（點擊學習）</h2>
+        <div class="keyword-btn-group">
+            <button class="kw-btn" onclick="highlight('routing-protocol', '路由協定（讓路由器彼此交換路徑資訊、決定封包怎麼走）')">路由協定</button>
+            <button class="kw-btn" onclick="highlight('routing-protocol-en', 'Routing Protocol（路由協定的英文）')">Routing Protocol</button>
+            <button class="kw-btn" onclick="highlight('ospf', 'OSPF（開放最短路徑優先，用在內部網路）')">OSPF</button>
+            <button class="kw-btn" onclick="highlight('bgp', 'BGP（邊界閘道協定，用在網際網路不同系統之間）')">BGP</button>
+            <button class="kw-btn" onclick="highlight('rip', 'RIP（路由資訊協定，用跳數決定路徑，較古老）')">RIP</button>
+            <button class="kw-btn" onclick="highlight('icmp', 'ICMP（錯誤回報與控制訊息，如 ping，不負責找路）')">ICMP</button>
+            <button class="kw-btn" onclick="highlight('arp', 'ARP（把 IP 轉成 MAC 位址，不是路由）')">ARP</button>
+        </div>
+        <div id="explanation-display" class="explanation-box">
+            請點擊上方按鈕，老師會幫你標記重點並解釋！
+        </div>
+    </div>
+
+    <!-- D. 白話翻譯 -->
+    <div class="card" style="padding: 0; overflow: hidden;">
+        <button class="accordion">【白話翻譯】題目到底在問什麼？ <span>+</span></button>
+        <div class="panel">
+            <p style="padding: 10px 0;"><strong>翻譯：</strong>「哪些協定是專門讓『路由器彼此交換路線資訊』，用來決定資料該怎麼走？」</p>
+        </div>
+        <button class="accordion" style="border-top: 1px solid #ddd;">【這題在考什麼】核心觀念 <span>+</span></button>
+        <div class="panel">
+            <p style="padding: 10px 0;"><strong>考點：</strong>你是否能分清楚「真正負責找路的協定」與「負責回報錯誤或查地址的輔助協定」之間的差別。</p>
+        </div>
+    </div>
+
+    <!-- E. 路由 vs 非路由協定互動對照 -->
+    <div class="card">
+        <h2>觀念對照：路由 vs 非路由</h2>
+        <p style="margin-top:0; color: #666; font-size: 0.9rem;">點擊下方項目查看分類原因：</p>
+        
+        <div class="comparison-container">
+            <div class="comparison-col">
+                <h3 style="color: var(--correct-color);">1. 路由協定 (Routing)</h3>
+                <small>功能：交換路徑表、算路徑</small>
+                <div style="margin-top: 10px;">
+                    <button class="comp-item" onclick="showCompInfo(this, 'routing', 'OSPF 會計算最短路徑，是典型的內部路由協定。')">OSPF</button>
+                    <button class="comp-item" onclick="showCompInfo(this, 'routing', 'BGP 負責連接全球網路的大型路由協定。')">BGP</button>
+                    <button class="comp-item" onclick="showCompInfo(this, 'routing', 'RIP 使用跳數(Hop Count)來選路，是早期的路由協定。')">RIP</button>
+                </div>
+            </div>
+            <div class="comparison-col">
+                <h3 style="color: var(--wrong-color);">2. 非路由協定 (Non-Routing)</h3>
+                <small>功能：輔助、報錯、查地址</small>
+                <div style="margin-top: 10px;">
+                    <button class="comp-item" onclick="showCompInfo(this, 'non-routing', 'ICMP 負責回報錯誤（如目的地無法到達），它不幫你選路。')">ICMP</button>
+                    <button class="comp-item" onclick="showCompInfo(this, 'non-routing', 'ARP 負責查 MAC 位址（是誰住這？），跟選路徑無關。')">ARP</button>
+                </div>
+            </div>
+        </div>
+        <div id="comp-feedback" class="explanation-box" style="margin-top: 15px; border-left-color: var(--primary-color);">
+            點擊上方協定，查看判斷依據。
+        </div>
+    </div>
+
+    <!-- G. 複選題互動檢核 (提前至解析前讓學生練習) -->
+    <div class="card">
+        <h2>隨堂練習（請勾選正確答案）</h2>
+        <div class="quiz-form">
+            <label><input type="checkbox" name="ans" value="A"> (A) OSPF</label>
+            <label><input type="checkbox" name="ans" value="B"> (B) BGP</label>
+            <label><input type="checkbox" name="ans" value="C"> (C) RIP</label>
+            <label><input type="checkbox" name="ans" value="D"> (D) ICMP</label>
+            <label><input type="checkbox" name="ans" value="E"> (E) ARP</label>
+            <button class="btn-check" onclick="checkAnswer()">檢查答案</button>
+        </div>
+        <div id="quiz-result" class="result-box"></div>
+    </div>
+
+    <!-- F. 複選題選項解析 -->
+    <div class="card">
+        <h2>選項逐一解析</h2>
+        
+        <div class="analysis-item">
+            <span class="tag tag-correct">正確</span> <strong>(A) OSPF</strong><br>
+            Open Shortest Path First。屬於內部閘道協定（IGP），用 Link State 演算法算最短路徑。
+        </div>
+
+        <div class="analysis-item">
+            <span class="tag tag-correct">正確</span> <strong>(B) BGP</strong><br>
+            Border Gateway Protocol。屬於外部閘道協定（EGP），網際網路的骨幹就是靠它串連不同系統。
+        </div>
+
+        <div class="analysis-item">
+            <span class="tag tag-correct">正確</span> <strong>(C) RIP</strong><br>
+            Routing Information Protocol。古老的距離向量協定，單純看「經過幾個路由器（跳數）」來決定路徑。
+        </div>
+
+        <div class="analysis-item">
+            <span class="tag tag-wrong">錯誤</span> <strong>(D) ICMP</strong><br>
+            Internet Control Message Protocol。它是網路層的「糾察隊」，負責回報錯誤（如 Ping 不到），<strong>不負責傳送使用者資料或決定路徑</strong>。
+        </div>
+
+        <div class="analysis-item">
+            <span class="tag tag-wrong">錯誤</span> <strong>(E) ARP</strong><br>
+            Address Resolution Protocol。它是「翻譯官」，已知 IP 查 MAC 位址。只在區域網路內廣播詢問，<strong>不涉及路由器的路徑選擇</strong>。
+        </div>
+    </div>
+
+    <!-- H. 記憶口訣與常見陷阱 -->
+    <div class="card">
+        <h2>名師秘笈</h2>
+        <div class="mnemonic-box">
+            <h3>【記憶口訣】</h3>
+            <div class="mnemonic-text">「O B R 會找路」</div>
+            <p style="text-align: center; margin:0;">(OSPF、BGP、RIP)</p>
+        </div>
+        
+        <h3>【常見陷阱】</h3>
+        <ul class="pitfall-list">
+            <li><strong>陷阱 1：</strong>看到 ICMP 很有名就選它。記住，Ping 是測試用的，不是用來找路的。</li>
+            <li><strong>陷阱 2：</strong>以為 ARP 跟 IP 有關就是路由。ARP 只是底層硬體位址的查詢工具。</li>
+            <li><strong>觀念：</strong>路由協定一定要能「交換路由表 (Routing Table)」。</li>
+        </ul>
+    </div>
+
+    <!-- I. 正確答案揭曉 -->
+    <button class="btn-show-answer" onclick="toggleAnswer()">顯示正確答案</button>
+    
+    <div id="final-answer" class="answer-reveal">
+        <h2>正確答案：(A)、(B)、(C)</h2>
+        <p>總結：OSPF、BGP、RIP 會交換路由資訊，屬於真正的路由協定。</p>
+    </div>
+
+    <div style="text-align: center; margin-top: 30px; color: #999; font-size: 0.8rem;">
+        Design for High School Network Cram Course
+    </div>
+
+</div>
+
+<script>
+    // C. 關鍵字螢光筆互動
+    function highlight(elementId, explanationText) {
+        // 移除所有目前的 highlight 樣式
+        const allSpans = document.querySelectorAll('.question-text span, .options-list span');
+        allSpans.forEach(span => span.classList.remove('highlighted-text'));
+
+        // 移除所有按鈕的 active 樣式
+        const allBtns = document.querySelectorAll('.kw-btn');
+        allBtns.forEach(btn => btn.classList.remove('active'));
+
+        // 加入新的 highlight
+        const targetElement = document.getElementById('txt-' + elementId);
+        if(targetElement) {
+            targetElement.classList.add('highlighted-text');
+        }
+
+        // 按鈕變色
+        const clickedBtn = event.target;
+        clickedBtn.classList.add('active');
+
+        // 更新解釋文字
+        const explanationBox = document.getElementById('explanation-display');
+        explanationBox.innerHTML = explanationText;
+        explanationBox.style.animation = "none";
+        explanationBox.offsetHeight; /* trigger reflow */
+        explanationBox.style.animation = "fadeIn 0.5s";
+    }
+
+    // D. Accordion 互動
+    const acc = document.getElementsByClassName("accordion");
+    for (let i = 0; i < acc.length; i++) {
+        acc[i].addEventListener("click", function() {
+            this.classList.toggle("active");
+            const panel = this.nextElementSibling;
+            if (panel.style.maxHeight) {
+                panel.style.maxHeight = null;
+                this.querySelector('span').innerText = '+';
+            } else {
+                panel.style.maxHeight = panel.scrollHeight + "px";
+                this.querySelector('span').innerText = '-';
+            }
+        });
+    }
+
+    // E. 觀念對照互動
+    function showCompInfo(btn, type, msg) {
+        // 重置所有按鈕樣式
+        const allComps = document.querySelectorAll('.comp-item');
+        allComps.forEach(b => {
+            b.classList.remove('active-routing');
+            b.classList.remove('active-non-routing');
+        });
+
+        // 設定目前按鈕樣式
+        if (type === 'routing') {
+            btn.classList.add('active-routing');
+        } else {
+            btn.classList.add('active-non-routing');
+        }
+
+        // 顯示訊息
+        const feedback = document.getElementById('comp-feedback');
+        feedback.innerText = msg;
+    }
+
+    // G. 檢查答案邏輯
+    function checkAnswer() {
+        const checkboxes = document.querySelectorAll('input[name="ans"]:checked');
+        let selected = [];
+        checkboxes.forEach((checkbox) => {
+            selected.push(checkbox.value);
+        });
+
+        const resultBox = document.getElementById('quiz-result');
+        resultBox.style.display = 'block';
+        resultBox.className = 'result-box'; // reset class
+
+        // 正確答案集合
+        const correctAnswers = ['A', 'B', 'C'];
+        
+        // 判斷邏輯
+        const isA = selected.includes('A');
+        const isB = selected.includes('B');
+        const isC = selected.includes('C');
+        const isD = selected.includes('D');
+        const isE = selected.includes('E');
+
+        // 包含錯誤選項
+        if (isD || isE) {
+            resultBox.classList.add('result-wrong');
+            resultBox.innerHTML = "❌ 答錯囉！<br>";
+            if (isD) resultBox.innerHTML += "-> ICMP 是用來報錯的，不是路由協定喔。<br>";
+            if (isE) resultBox.innerHTML += "-> ARP 是用來查 MAC 的，不負責找路。<br>";
+            resultBox.innerHTML += "請再試一次！";
+            return;
+        }
+
+        // 少選
+        if (selected.length > 0 && selected.length < 3) {
+            resultBox.classList.add('result-partial');
+            resultBox.innerHTML = "⚠️ 觀念正確，但沒選完整喔！<br>還有其他也是路由協定，再找找看「O B R」！";
+            return;
+        }
+
+        // 完全正確
+        if (selected.length === 3 && isA && isB && isC) {
+            resultBox.classList.add('result-correct');
+            resultBox.innerHTML = "✅ 完全正確！太強了！<br>OSPF、BGP、RIP 都是負責幫封包找路的協定。";
+            return;
+        }
+
+        // 未選
+        if (selected.length === 0) {
+            resultBox.classList.add('result-partial');
+            resultBox.innerHTML = "請先勾選答案再按檢查喔！";
+        }
+    }
+
+    // I. 顯示/隱藏答案
+    function toggleAnswer() {
+        const answerBox = document.getElementById('final-answer');
+        const btn = document.querySelector('.btn-show-answer');
+        
+        if (answerBox.style.display === 'block') {
+            answerBox.style.display = 'none';
+            btn.innerText = '顯示正確答案';
+        } else {
+            answerBox.style.display = 'block';
+            btn.innerText = '隱藏答案';
+            // 自動捲動到答案區
+            answerBox.scrollIntoView({behavior: "smooth"});
+        }
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DS_Q23_Graph_BFS_Queue_v1</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #475569;
+            --accent: #f59e0b;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --correct: #16a34a;
+            --wrong: #dc2626;
+            --border-radius: 8px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            line-height: 1.6;
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Section A: Header */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: var(--primary);
+            color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+        }
+
+        .sub-title {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .q-number {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+
+        /* Section B: Question Card */
+        .card {
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 24px;
+            border-left: 5px solid var(--primary);
+        }
+
+        .question-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .highlighted {
+            background-color: #fef08a; /* Yellow highlight */
+            color: #854d0e;
+            padding: 2px 4px;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+
+        /* Section C: Keywords */
+        .keyword-section {
+            margin-bottom: 24px;
+        }
+
+        .keyword-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .kw-btn {
+            background: white;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .kw-btn:hover, .kw-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .definition-box {
+            background: #eff6ff;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            border: 1px solid #bfdbfe;
+            min-height: 60px;
+            font-weight: 500;
+        }
+
+        /* Section D: Accordion */
+        details {
+            background: white;
+            margin-bottom: 10px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        summary {
+            padding: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            background: #f1f5f9;
+            list-style: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        summary::after {
+            content: "+";
+            font-size: 1.2rem;
+        }
+
+        details[open] summary::after {
+            content: "-";
+        }
+
+        .accordion-content {
+            padding: 15px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        /* Section E: Simulator */
+        .sim-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .graph-view {
+            width: 100%;
+            height: 250px;
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: var(--border-radius);
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* SVG Styles */
+        svg {
+            width: 100%;
+            height: 100%;
+        }
+        
+        circle {
+            fill: white;
+            stroke: var(--secondary);
+            stroke-width: 2;
+            transition: all 0.5s;
+        }
+
+        text {
+            font-family: sans-serif;
+            font-size: 14px;
+            font-weight: bold;
+            text-anchor: middle;
+            dominant-baseline: middle;
+            fill: var(--text);
+        }
+
+        line {
+            stroke: #cbd5e1;
+            stroke-width: 2;
+        }
+
+        .node-visited {
+            fill: var(--primary) !important;
+            stroke: var(--primary) !important;
+        }
+        
+        .node-visited text {
+            fill: white;
+        }
+
+        .node-processing {
+            fill: var(--accent) !important;
+            stroke: var(--accent) !important;
+        }
+
+        .queue-display {
+            width: 100%;
+            background: white;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            border: 2px solid var(--secondary);
+            text-align: center;
+        }
+
+        .queue-items {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            min-height: 40px;
+            margin-top: 10px;
+            padding: 5px;
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+
+        .q-item {
+            background: var(--accent);
+            color: black;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-weight: bold;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { transform: scale(0); }
+            to { transform: scale(1); }
+        }
+
+        .sim-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: #1d4ed8;
+        }
+        
+        .btn:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        .btn-reset {
+            background: var(--secondary);
+        }
+
+        /* Section F: Option Analysis */
+        .options-grid {
+            display: grid;
+            gap: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        }
+
+        .option-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: var(--border-radius);
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .opt-header {
+            font-weight: bold;
+            font-size: 1.1rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .opt-detail {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #cbd5e1;
+            display: none;
+            font-size: 0.95rem;
+        }
+        
+        .opt-tag {
+            font-size: 0.8rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        
+        .tag-correct { background: #dcfce7; color: #166534; }
+        .tag-wrong { background: #fee2e2; color: #991b1b; }
+
+        /* Section G: Quiz */
+        .quiz-item {
+            margin-bottom: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: var(--border-radius);
+        }
+        
+        .quiz-q {
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .quiz-options label {
+            display: block;
+            margin: 5px 0;
+            cursor: pointer;
+        }
+
+        .quiz-feedback {
+            margin-top: 8px;
+            font-size: 0.9rem;
+            padding: 8px;
+            border-radius: 4px;
+            display: none;
+        }
+
+        /* Section H: Mnemonic */
+        .mnemonic-box {
+            background: #fff7ed; /* Orange tint */
+            border-left: 5px solid var(--accent);
+            padding: 20px;
+            border-radius: var(--border-radius);
+        }
+
+        .mnemonic-title {
+            color: #9a3412;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        /* Section I: Reveal */
+        .reveal-section {
+            text-align: center;
+            margin-top: 40px;
+            margin-bottom: 60px;
+        }
+
+        .answer-box {
+            margin-top: 20px;
+            padding: 20px;
+            background: #dcfce7;
+            border: 2px solid #16a34a;
+            border-radius: var(--border-radius);
+            display: none;
+            animation: slideDown 0.5s ease-out;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .answer-big {
+            font-size: 3rem;
+            color: #16a34a;
+            font-weight: bold;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- A. Header -->
+    <header>
+        <h1>BFS 為什麼一定要用 Queue？</h1>
+        <div class="sub-title">Graph Search & Data Structure（新手友善）</div>
+        <div class="q-number">題號：23</div>
+    </header>
+
+    <!-- B. Question Card -->
+    <div class="card">
+        <div class="question-text" id="questionText">
+            23. 在<span class="kw-target" data-key="Graph">圖(Graph)</span>中，<span class="kw-target" data-key="BFS">BFS(Breadth-First Search)</span>通常使用哪種資料結構實作？<br><br>
+            (A) <span class="kw-target" data-key="Stack">Stack</span><br>
+            (B) <span class="kw-target" data-key="Queue">Queue</span><br>
+            (C) Hash Table<br>
+            (D) Priority Queue
+        </div>
+
+        <!-- C. Highlight Keywords -->
+        <div class="keyword-section">
+            <div class="keyword-buttons">
+                <button class="kw-btn" onclick="highlight('Graph')">Graph</button>
+                <button class="kw-btn" onclick="highlight('BFS')">BFS</button>
+                <button class="kw-btn" onclick="highlight('Queue')">Queue</button>
+                <button class="kw-btn" onclick="highlight('Stack')">Stack</button>
+                <button class="kw-btn" onclick="highlight('FIFO')">FIFO</button>
+            </div>
+            <div class="definition-box" id="definitionBox">
+                點擊上方關鍵字，這裡會顯示白話解釋。
+            </div>
+        </div>
+    </div>
+
+    <!-- D. Plain-language -->
+    <details>
+        <summary>【白話翻譯】這題到底在問什麼？</summary>
+        <div class="accordion-content">
+            <p><strong>白話翻譯：</strong><br>「在圖形中做『地毯式搜索』（一層一層擴散）時，待處理的節點要排隊，應該用哪一種資料結構來『排隊』最合適？」</p>
+            <br>
+            <p><strong>這題在考什麼：</strong><br>你是否理解 BFS 的「先進先出」特性。先發現的鄰居要先處理，這樣才能保證是按「層」推進，而不是一條路走到黑（那是 DFS）。</p>
+        </div>
+    </details>
+
+    <!-- E. BFS Simulator -->
+    <div class="card">
+        <h3>E. BFS 搜尋互動示意</h3>
+        <p style="margin-bottom: 15px; color: var(--secondary); font-size: 0.9rem;">
+            觀察 Queue 的變化：先進去的節點 (A)，會先被拿出來處理，然後把它的鄰居 (B, C) 加到後面。
+        </p>
+        
+        <div class="sim-container">
+            <!-- Visual Graph -->
+            <div class="graph-view">
+                <svg viewBox="0 0 400 250">
+                    <!-- Lines -->
+                    <line x1="200" y1="40" x2="140" y2="120" /> <!-- A to B -->
+                    <line x1="200" y1="40" x2="260" y2="120" /> <!-- A to C -->
+                    <line x1="140" y1="120" x2="80" y2="200" /> <!-- B to D -->
+                    <line x1="140" y1="120" x2="180" y2="200" /> <!-- B to E -->
+
+                    <!-- Nodes -->
+                    <g id="node-A">
+                        <circle cx="200" cy="40" r="20" />
+                        <text x="200" y="40">A</text>
+                    </g>
+                    <g id="node-B">
+                        <circle cx="140" cy="120" r="20" />
+                        <text x="140" y="120">B</text>
+                    </g>
+                    <g id="node-C">
+                        <circle cx="260" cy="120" r="20" />
+                        <text x="260" y="120">C</text>
+                    </g>
+                    <g id="node-D">
+                        <circle cx="80" cy="200" r="20" />
+                        <text x="80" y="200">D</text>
+                    </g>
+                    <g id="node-E">
+                        <circle cx="180" cy="200" r="20" />
+                        <text x="180" y="200">E</text>
+                    </g>
+                </svg>
+            </div>
+
+            <!-- Queue Status -->
+            <div class="queue-display">
+                <h4>Queue (佇列) 狀態：<span style="font-size:0.8rem; font-weight:normal;">[出口 ... 入口]</span></h4>
+                <div class="queue-items" id="queueVisual">
+                    <!-- JS fills this -->
+                    <span style="color:#94a3b8; align-self:center;">(空)</span>
+                </div>
+            </div>
+
+            <div class="sim-controls">
+                <button class="btn btn-reset" onclick="resetSim()">重置</button>
+                <button class="btn" id="nextStepBtn" onclick="nextStep()">下一步</button>
+            </div>
+            <p id="simStatus" style="font-weight: bold; color: var(--primary);">準備開始...</p>
+        </div>
+    </div>
+
+    <!-- F. Option Analysis -->
+    <h3 style="margin-bottom: 15px;">F. 選項逐一解析 (點擊查看)</h3>
+    <div class="options-grid">
+        <!-- A -->
+        <div class="option-card" onclick="toggleOption(this)">
+            <div class="opt-header">
+                (A) Stack
+                <span style="font-size:0.8rem; color:var(--secondary);">點擊解析</span>
+            </div>
+            <div class="opt-detail">
+                <span class="opt-tag tag-wrong">錯誤</span><br><br>
+                Stack 是「後進先出」(LIFO)。<br>
+                如果用 Stack，最新發現的節點會先被處理，這會導致「一條路走到黑」，變成 <strong>DFS (深度優先搜尋)</strong>，而不是 BFS。
+            </div>
+        </div>
+
+        <!-- B -->
+        <div class="option-card" onclick="toggleOption(this)">
+            <div class="opt-header">
+                (B) Queue
+                <span style="font-size:0.8rem; color:var(--secondary);">點擊解析</span>
+            </div>
+            <div class="opt-detail">
+                <span class="opt-tag tag-correct">正確</span><br><br>
+                Queue 是「先進先出」(FIFO)。<br>
+                先遇到的鄰居先排隊、先處理。這樣可以確保我們走完「第 1 層」的所有節點後，才開始處理「第 2 層」，符合 BFS 的定義。
+            </div>
+        </div>
+
+        <!-- C -->
+        <div class="option-card" onclick="toggleOption(this)">
+            <div class="opt-header">
+                (C) Hash Table
+                <span style="font-size:0.8rem; color:var(--secondary);">點擊解析</span>
+            </div>
+            <div class="opt-detail">
+                <span class="opt-tag tag-wrong">錯誤</span><br><br>
+                Hash Table 用於快速查找 (Key-Value)，例如「檢查節點是否走訪過 (Visited Set)」，但它本身沒有順序性，無法控制搜尋的先後次序。
+            </div>
+        </div>
+
+        <!-- D -->
+        <div class="option-card" onclick="toggleOption(this)">
+            <div class="opt-header">
+                (D) Priority Queue
+                <span style="font-size:0.8rem; color:var(--secondary);">點擊解析</span>
+            </div>
+            <div class="opt-detail">
+                <span class="opt-tag tag-wrong">錯誤</span><br><br>
+                Priority Queue 會根據「權重」插隊。<br>
+                這通常用於 <strong>Dijkstra (最短路徑)</strong> 或 <strong>Prim</strong> 演算法。普通的 BFS 不看權重，只看層級，所以不需要 Priority Queue。
+            </div>
+        </div>
+    </div>
+    <br>
+
+    <!-- G. Mini Quiz -->
+    <div class="card">
+        <h3>G. 快速小測驗</h3>
+        
+        <!-- Q1 -->
+        <div class="quiz-item">
+            <div class="quiz-q">1. BFS 與 DFS 最大的行為差異是什麼？</div>
+            <div class="quiz-options">
+                <label><input type="radio" name="q1" value="w"> BFS 用遞迴，DFS 用迴圈</label>
+                <label><input type="radio" name="q1" value="c"> BFS 是一層一層擴散，DFS 是一條路走到底</label>
+                <label><input type="radio" name="q1" value="w"> BFS 比較慢，DFS 比較快</label>
+            </div>
+            <button class="btn" style="margin-top:10px; padding: 5px 15px; font-size:0.8rem;" onclick="checkQuiz(1, 'c')">檢查答案</button>
+            <div id="fb1" class="quiz-feedback"></div>
+        </div>
+
+        <!-- Q2 -->
+        <div class="quiz-item">
+            <div class="quiz-q">2. 如果把 BFS 的 Queue 換成 Stack，會變成什麼演算法？</div>
+            <div class="quiz-options">
+                <label><input type="radio" name="q2" value="w"> Binary Search</label>
+                <label><input type="radio" name="q2" value="c"> DFS (深度優先搜尋)</label>
+                <label><input type="radio" name="q2" value="w"> 程式會當機</label>
+            </div>
+            <button class="btn" style="margin-top:10px; padding: 5px 15px; font-size:0.8rem;" onclick="checkQuiz(2, 'c')">檢查答案</button>
+            <div id="fb2" class="quiz-feedback"></div>
+        </div>
+        
+        <!-- Q3 -->
+        <div class="quiz-item">
+            <div class="quiz-q">3. 為什麼說 Queue 是 FIFO？</div>
+            <div class="quiz-options">
+                <label><input type="radio" name="q3" value="c"> 像排隊買票，先來的先服務 (First In First Out)</label>
+                <label><input type="radio" name="q3" value="w"> 像疊盤子，最後放的先拿 (Last In First Out)</label>
+            </div>
+            <button class="btn" style="margin-top:10px; padding: 5px 15px; font-size:0.8rem;" onclick="checkQuiz(3, 'c')">檢查答案</button>
+            <div id="fb3" class="quiz-feedback"></div>
+        </div>
+    </div>
+
+    <!-- H. Mnemonic -->
+    <div class="mnemonic-box">
+        <div class="mnemonic-title">【老師幫你背】記憶口訣</div>
+        <ul>
+            <li><strong>「BFS 一層一層，Queue 排好再說」</strong></li>
+            <li>(想像排隊買演唱會門票，先進去的先買，這就是 Queue)</li>
+        </ul>
+        <br>
+        <div class="mnemonic-title">【常見陷阱】</div>
+        <ol>
+            <li>看到 "Search" 就反射選 Stack (這是大忌，DFS 才是 Stack)。</li>
+            <li>搞混 Priority Queue：那是給有「權重/距離」的圖用的，這題是一般圖。</li>
+        </ol>
+    </div>
+
+    <!-- I. Answer Reveal -->
+    <div class="reveal-section">
+        <button class="btn" style="font-size: 1.2rem; padding: 15px 40px;" onclick="revealAnswer()">揭曉正確答案</button>
+        <div id="finalAnswer" class="answer-box">
+            <div class="answer-big">答案：(B)</div>
+            <p><strong>一句話理由：</strong>BFS 需要「先進先出 (FIFO)」的特性，確保同一層的節點都處理完後，才處理下一層。</p>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // --- Data Definition ---
+    const definitions = {
+        'Graph': 'Graph（圖）：由「節點 (Node)」與「邊 (Edge)」組成的結構，可表示地圖道路、FB好友關係等。',
+        'BFS': 'BFS（廣度優先搜尋）：一種搜尋策略，特色是「地毯式搜索」，先把起始點周圍的所有鄰居走完，再往外擴一層。',
+        'Breadth-First Search': '即 BFS，廣度優先搜尋。強調「廣度」，先水平擴散再垂直深入。',
+        'Queue': 'Queue（佇列）：一種資料結構，行為像「排隊」。先進去的資料先被處理 (FIFO)。',
+        'Stack': 'Stack（堆疊）：行為像「疊盤子」。最後放上去的盤子要先拿起來 (LIFO)。這是 DFS 用的。',
+        'FIFO': 'FIFO (First-In-First-Out)：先進先出。BFS 為了保證順序，必須遵守此規則。'
+    };
+
+    // --- Keyword Interaction ---
+    function highlight(key) {
+        // Update highlight in text
+        const textContainer = document.getElementById('questionText');
+        const spans = textContainer.querySelectorAll('.kw-target');
+        
+        spans.forEach(span => {
+            if(span.getAttribute('data-key') === key || 
+               (key === 'FIFO' && span.getAttribute('data-key') === 'Queue') || /* Map logical link */
+               (key === 'Breadth-First Search' && span.getAttribute('data-key') === 'BFS')) {
+                span.classList.add('highlighted');
+            } else {
+                span.classList.remove('highlighted');
+            }
+        });
+
+        // Update Definition Box
+        const defBox = document.getElementById('definitionBox');
+        defBox.innerHTML = definitions[key] || "請點擊關鍵字";
+        defBox.style.borderColor = "var(--primary)";
+        defBox.style.background = "#fff";
+    }
+
+    // --- Simulator Logic ---
+    let step = 0;
+    const steps = [
+        { 
+            text: "步驟 0: 準備開始。起點是 A。", 
+            queue: [], 
+            active: null, 
+            visited: [] 
+        },
+        { 
+            text: "步驟 1: 將起點 A 放入 Queue。", 
+            queue: ['A'], 
+            active: null, 
+            visited: ['A'] // Visual cue: in queue
+        },
+        { 
+            text: "步驟 2: 從 Queue 取出 A (處理中)。", 
+            queue: [], 
+            active: 'A', 
+            visited: ['A']
+        },
+        { 
+            text: "步驟 3: 找出 A 的鄰居 B, C，放入 Queue。", 
+            queue: ['B', 'C'], 
+            active: 'A', 
+            visited: ['A', 'B', 'C']
+        },
+        { 
+            text: "步驟 4: A 處理完畢。從 Queue 取出 B (處理中)。", 
+            queue: ['C'], 
+            active: 'B', 
+            visited: ['A', 'B', 'C']
+        },
+        { 
+            text: "步驟 5: 找出 B 的鄰居 D, E，放入 Queue。", 
+            queue: ['C', 'D', 'E'], 
+            active: 'B', 
+            visited: ['A', 'B', 'C', 'D', 'E']
+        },
+        { 
+            text: "步驟 6: B 處理完畢。從 Queue 取出 C (處理中)。", 
+            queue: ['D', 'E'], 
+            active: 'C', 
+            visited: ['A', 'B', 'C', 'D', 'E']
+        },
+        { 
+            text: "步驟 7: C 沒有未訪鄰居。處理完畢。", 
+            queue: ['D', 'E'], 
+            active: null, 
+            visited: ['A', 'B', 'C', 'D', 'E']
+        },
+        { 
+            text: "後續：依序取出 D, E 處理...直到 Queue 清空。", 
+            queue: [], 
+            active: null, 
+            visited: ['A', 'B', 'C', 'D', 'E']
+        }
+    ];
+
+    function updateSimVisuals(currentData) {
+        // Reset all nodes
+        ['A','B','C','D','E'].forEach(n => {
+            const el = document.getElementById('node-' + n).querySelector('circle');
+            el.classList.remove('node-visited', 'node-processing');
+            el.style.fill = 'white'; // reset inline
+        });
+
+        // Apply Visited (In queue or processed)
+        currentData.visited.forEach(n => {
+            const el = document.getElementById('node-' + n).querySelector('circle');
+            el.classList.add('node-visited');
+        });
+
+        // Apply Active (Currently Dequeued)
+        if(currentData.active) {
+            const el = document.getElementById('node-' + currentData.active).querySelector('circle');
+            el.classList.remove('node-visited');
+            el.classList.add('node-processing');
+        }
+
+        // Update Queue Text
+        const qDiv = document.getElementById('queueVisual');
+        qDiv.innerHTML = '';
+        if(currentData.queue.length === 0) {
+            qDiv.innerHTML = '<span style="color:#94a3b8; align-self:center;">(空)</span>';
+        } else {
+            currentData.queue.forEach(item => {
+                const span = document.createElement('div');
+                span.className = 'q-item';
+                span.innerText = item;
+                qDiv.appendChild(span);
+            });
+        }
+
+        // Update Status Text
+        document.getElementById('simStatus').innerText = currentData.text;
+    }
+
+    function nextStep() {
+        if(step < steps.length - 1) {
+            step++;
+            updateSimVisuals(steps[step]);
+        } else {
+            document.getElementById('simStatus').innerText = "模擬結束！所有節點都走過且 Queue 空了。";
+            document.getElementById('nextStepBtn').disabled = true;
+        }
+    }
+
+    function resetSim() {
+        step = 0;
+        document.getElementById('nextStepBtn').disabled = false;
+        updateSimVisuals(steps[0]);
+    }
+
+    // --- Option Toggle ---
+    function toggleOption(card) {
+        const detail = card.querySelector('.opt-detail');
+        if(detail.style.display === 'block') {
+            detail.style.display = 'none';
+        } else {
+            detail.style.display = 'block';
+        }
+    }
+
+    // --- Quiz Logic ---
+    function checkQuiz(qId, correctVal) {
+        const radios = document.getElementsByName('q' + qId);
+        let val = null;
+        for(let r of radios) {
+            if(r.checked) val = r.value;
+        }
+
+        const fb = document.getElementById('fb' + qId);
+        fb.style.display = 'block';
+
+        if(!val) {
+            fb.innerText = "請先選擇一個答案！";
+            fb.style.backgroundColor = "#f1f5f9";
+            fb.style.color = "black";
+            return;
+        }
+
+        if(val === correctVal) {
+            fb.innerText = "(O) 答對了！觀念正確。";
+            fb.style.backgroundColor = "#dcfce7";
+            fb.style.color = "#166534";
+        } else {
+            fb.innerText = "(X) 再想一下喔，參考上面的解析。";
+            fb.style.backgroundColor = "#fee2e2";
+            fb.style.color = "#991b1b";
+        }
+    }
+
+    // --- Answer Reveal ---
+    function revealAnswer() {
+        document.getElementById('finalAnswer').style.display = 'block';
+        // Auto scroll to answer
+        document.getElementById('finalAnswer').scrollIntoView({behavior: "smooth"});
+    }
+
+    // Init
+    resetSim();
+</script>
+
+</body>
+</html>

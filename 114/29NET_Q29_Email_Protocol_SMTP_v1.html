@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NET_Q29_Email_Protocol_SMTP_v1</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #e74c3c;
+            --highlight-color: #f1c40f;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --success-color: #27ae60;
+            --border-radius: 8px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* A. Header */
+        header {
+            background: var(--primary-color);
+            color: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        header h2 {
+            font-size: 1rem;
+            font-weight: normal;
+            opacity: 0.9;
+        }
+
+        .badge {
+            display: inline-block;
+            background: var(--accent-color);
+            color: white;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-top: 10px;
+        }
+
+        /* B. Question Card */
+        .card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .question-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .question-options {
+            list-style: none;
+            padding-left: 10px;
+        }
+
+        .question-options li {
+            margin: 8px 0;
+            font-family: monospace;
+            font-size: 1.1rem;
+        }
+
+        /* C. Highlight Interaction */
+        .highlight-span {
+            transition: background 0.3s;
+            padding: 0 2px;
+            border-radius: 3px;
+        }
+        
+        .highlight-active {
+            background-color: var(--highlight-color);
+            color: black;
+            font-weight: bold;
+        }
+
+        .control-panel {
+            margin-top: 20px;
+            background: #eef2f3;
+            padding: 15px;
+            border-radius: var(--border-radius);
+        }
+
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn-keyword {
+            background: white;
+            border: 1px solid #ccc;
+            padding: 5px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .btn-keyword:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-keyword.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .explanation-box {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px dashed #ccc;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        /* D. Plain Language (Accordion) */
+        .accordion {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .accordion-header {
+            background: #dfe6e9;
+            padding: 15px 20px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .accordion-content {
+            display: none;
+            padding: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .accordion-content.show {
+            display: block;
+        }
+
+        .tag-title {
+            color: var(--accent-color);
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        /* E. Email Flow */
+        .flow-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            margin: 20px 0;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: var(--border-radius);
+        }
+
+        .flow-step {
+            background: white;
+            padding: 10px 20px;
+            border: 2px solid var(--primary-color);
+            border-radius: 50px;
+            text-align: center;
+            width: 100%;
+            max-width: 300px;
+            position: relative;
+        }
+
+        .flow-arrow {
+            font-size: 1.5rem;
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        .protocol-label {
+            font-size: 0.8rem;
+            background: var(--accent-color);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-left: 5px;
+        }
+
+        /* F. Option Analysis */
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .option-card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            padding: 15px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .option-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary-color);
+        }
+
+        .option-header {
+            font-weight: bold;
+            font-size: 1.1rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .option-detail {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #eee;
+            display: none;
+            font-size: 0.95rem;
+        }
+
+        .option-detail.visible {
+            display: block;
+        }
+
+        .status-correct { color: var(--success-color); font-weight: bold; }
+        .status-wrong { color: var(--accent-color); font-weight: bold; }
+
+        /* G. Mini Quiz */
+        .quiz-section {
+            background: #eafaf1;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            border: 1px solid #d5f5e3;
+        }
+
+        .quiz-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #d5f5e3;
+        }
+
+        .quiz-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .quiz-feedback {
+            margin-top: 5px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            display: none;
+        }
+
+        .btn-quiz {
+            background: white;
+            border: 1px solid var(--primary-color);
+            padding: 2px 10px;
+            margin-right: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-quiz:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* H. Mnemonics */
+        .mnemonic-box {
+            background: #fff8e1;
+            border-left: 5px solid #ffc107;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 0 var(--border-radius) var(--border-radius) 0;
+        }
+
+        .mnemonic-list {
+            list-style-type: none;
+            margin-top: 10px;
+        }
+        
+        .mnemonic-list li::before {
+            content: "★";
+            color: #ffc107;
+            margin-right: 5px;
+        }
+
+        /* I. Reveal Answer */
+        .answer-section {
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .btn-reveal {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+            transition: transform 0.2s;
+        }
+
+        .btn-reveal:hover {
+            transform: scale(1.05);
+        }
+
+        .answer-content {
+            display: none;
+            margin-top: 20px;
+            animation: fadeIn 0.5s;
+            background: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            border: 2px solid var(--accent-color);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (min-width: 600px) {
+            .options-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .flow-container {
+                flex-direction: row;
+                justify-content: space-between;
+                padding: 20px;
+            }
+            .flow-step {
+                width: auto;
+            }
+            .flow-arrow {
+                transform: rotate(-90deg); /* Reset for desktop if needed, but horizontal usually points right */
+                transform: rotate(0deg);
+            }
+        }
+        
+        /* Mobile adjustment for flow arrow */
+        @media (max-width: 599px) {
+             .flow-arrow {
+                transform: rotate(90deg);
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- A. 頁首區 -->
+        <header>
+            <h1>電子郵件是怎麼「送出去」的？</h1>
+            <h2>Email Protocol 基礎必考題</h2>
+            <div class="badge">題號：29</div>
+        </header>
+
+        <!-- B. 題目區 -->
+        <div class="card">
+            <div class="question-text">
+                29. 下列哪一項協定主要在<span id="txt-transmit" class="highlight-span">傳輸</span><span id="txt-email" class="highlight-span">電子郵件</span>？
+            </div>
+            <ul class="question-options">
+                <li>(A) <span id="txt-ftp" class="highlight-span">FTP</span></li>
+                <li>(B) <span id="txt-smtp" class="highlight-span">SMTP</span></li>
+                <li>(C) <span id="txt-snmp" class="highlight-span">SNMP</span></li>
+                <li>(D) <span id="txt-pop3" class="highlight-span">POP3</span></li>
+            </ul>
+
+            <!-- C. 關鍵字互動 -->
+            <div class="control-panel">
+                <p style="margin-bottom:10px; font-size:0.9rem; color:#666;">點擊下方按鈕抓關鍵字：</p>
+                <div class="btn-group">
+                    <button class="btn-keyword" onclick="highlight('email')">電子郵件</button>
+                    <button class="btn-keyword" onclick="highlight('transmit')">傳輸</button>
+                    <button class="btn-keyword" onclick="highlight('smtp')">SMTP</button>
+                    <button class="btn-keyword" onclick="highlight('pop3')">POP3</button>
+                    <button class="btn-keyword" onclick="highlight('ftp')">FTP</button>
+                    <button class="btn-keyword" onclick="highlight('snmp')">SNMP</button>
+                </div>
+                <div id="explanation-display" class="explanation-box">
+                    請點選上方按鈕查看名詞解釋。
+                </div>
+            </div>
+        </div>
+
+        <!-- D. 白話翻譯 -->
+        <div class="accordion">
+            <div class="accordion-header" onclick="toggleAccordion('plain-lang')">
+                <span>📖 白話翻譯與考點解析 (點擊展開)</span>
+                <span>▼</span>
+            </div>
+            <div id="plain-lang" class="accordion-content">
+                <span class="tag-title">【白話翻譯】</span>
+                <p>「當你按下寄送 Email 的時候，真正負責把信送到對方郵件伺服器的是哪一個協定？」</p>
+                <br>
+                <span class="tag-title">【這題在考什麼】</span>
+                <p>「你能不能分清楚 Email 的『寄』與『收』，以及各協定的角色。就像郵差負責送信，你去信箱拿信，這是兩個不同的動作。」</p>
+            </div>
+        </div>
+
+        <!-- E. 電子郵件流程互動示意 -->
+        <div class="card">
+            <h3 style="text-align: center; margin-bottom: 15px;">📧 電子郵件運作流程圖</h3>
+            <div class="flow-container">
+                <div class="flow-step">
+                    <strong>寄件者</strong><br>
+                    (你寫好信按下傳送)
+                </div>
+                <div class="flow-arrow">➜</div>
+                <div class="flow-step" style="border-color: var(--accent-color); background: #fff0f0;">
+                    <strong>SMTP 伺服器</strong><br>
+                    <span class="protocol-label">傳送 SMTP</span>
+                </div>
+                <div class="flow-arrow">➜</div>
+                <div class="flow-step">
+                    <strong>對方郵件伺服器</strong><br>
+                    (信件暫存區)
+                </div>
+                <div class="flow-arrow">➜</div>
+                <div class="flow-step" style="border-color: #3498db; background: #eaf2f8;">
+                    <strong>收件者</strong><br>
+                    <span class="protocol-label" style="background:#3498db">接收 POP3</span>
+                </div>
+            </div>
+            <p style="text-align: center; color: #666; font-size: 0.9rem;">重點：SMTP 負責「送」，POP3 負責「收」</p>
+        </div>
+
+        <!-- F. 選項逐一解析 -->
+        <h3 style="margin-bottom: 10px;">🔍 選項逐一解析 (點擊卡片查看)</h3>
+        <div class="options-grid">
+            <div class="option-card" onclick="toggleOption(this)">
+                <div class="option-header">
+                    <span>(A) FTP</span>
+                    <span>▼</span>
+                </div>
+                <div class="option-detail">
+                    <span class="status-wrong">❌ 錯誤</span><br>
+                    全名：File Transfer Protocol (檔案傳輸協定)<br>
+                    說明：這是專門用來「傳檔案」的 (例如上傳網頁、下載大檔)，跟寄 Email 無關。
+                </div>
+            </div>
+
+            <div class="option-card" onclick="toggleOption(this)">
+                <div class="option-header">
+                    <span>(B) SMTP</span>
+                    <span>▼</span>
+                </div>
+                <div class="option-detail">
+                    <span class="status-correct">⭕ 正確</span><br>
+                    全名：Simple Mail Transfer Protocol (簡單郵件傳輸協定)<br>
+                    說明：專門負責「寄送」與「傳遞」電子郵件的標準協定。
+                </div>
+            </div>
+
+            <div class="option-card" onclick="toggleOption(this)">
+                <div class="option-header">
+                    <span>(C) SNMP</span>
+                    <span>▼</span>
+                </div>
+                <div class="option-detail">
+                    <span class="status-wrong">❌ 錯誤</span><br>
+                    全名：Simple Network Management Protocol (簡易網路管理協定)<br>
+                    說明：網管人員用來「監控設備」 (如路由器有沒有當機)，不是用來寄信的。
+                </div>
+            </div>
+
+            <div class="option-card" onclick="toggleOption(this)">
+                <div class="option-header">
+                    <span>(D) POP3</span>
+                    <span>▼</span>
+                </div>
+                <div class="option-detail">
+                    <span class="status-wrong">❌ 錯誤</span><br>
+                    全名：Post Office Protocol version 3 (郵局協定)<br>
+                    說明：這是負責從伺服器把信「抓下來 (接收)」的，不是負責寄送。
+                </div>
+            </div>
+        </div>
+
+        <!-- G. 快速小測驗 -->
+        <div class="quiz-section">
+            <h3 style="margin-bottom: 15px;">⚡ 快速觀念檢測</h3>
+            
+            <div class="quiz-item">
+                <p>1. 我想要「寄信」給老師，電腦會使用哪一個協定？</p>
+                <div style="margin-top:5px;">
+                    <button class="btn-quiz" onclick="checkQuiz(1, 'SMTP', this)">SMTP</button>
+                    <button class="btn-quiz" onclick="checkQuiz(1, 'POP3', this)">POP3</button>
+                </div>
+                <div id="quiz-fb-1" class="quiz-feedback"></div>
+            </div>
+
+            <div class="quiz-item">
+                <p>2. FTP 可以用來傳送電子郵件嗎？</p>
+                <div style="margin-top:5px;">
+                    <button class="btn-quiz" onclick="checkQuiz(2, 'YES', this)">可以</button>
+                    <button class="btn-quiz" onclick="checkQuiz(2, 'NO', this)">不行</button>
+                </div>
+                <div id="quiz-fb-2" class="quiz-feedback"></div>
+            </div>
+
+            <div class="quiz-item">
+                <p>3. SNMP 是用來做什麼的？</p>
+                <div style="margin-top:5px;">
+                    <button class="btn-quiz" onclick="checkQuiz(3, 'MANAGE', this)">管理網路設備</button>
+                    <button class="btn-quiz" onclick="checkQuiz(3, 'MAIL', this)">收發郵件</button>
+                </div>
+                <div id="quiz-fb-3" class="quiz-feedback"></div>
+            </div>
+        </div>
+
+        <!-- H. 口訣與常見陷阱 -->
+        <div class="mnemonic-box">
+            <h3>💡 老師的考試秘籍</h3>
+            <div style="margin-top: 10px;">
+                <strong>【記憶口訣】</strong>
+                <p style="font-size: 1.2rem; color: #d35400; font-weight: bold; margin: 5px 0;">「寄信用 SMTP，收信用 POP3」</p>
+                <p>想像：SMTP 是郵差 (S = Send)，POP3 是去郵局 (Post Office) 領信。</p>
+            </div>
+            <div style="margin-top: 15px;">
+                <strong>【常見陷阱】</strong>
+                <ul class="mnemonic-list">
+                    <li>看到「電子郵件」就亂選 POP3 (要看清楚是問傳輸還是接收)。</li>
+                    <li>以為 FTP 是萬能傳輸 (FTP 只能傳檔案，不能處理 Email 格式)。</li>
+                    <li>混淆 SNMP 與 SMTP (差一個字差很多，SNMP 是給網管用的)。</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- I. 正確答案揭曉 -->
+        <div class="answer-section">
+            <button class="btn-reveal" onclick="revealAnswer()">👀 點我揭曉答案</button>
+            <div id="final-answer" class="answer-content">
+                <h2 style="color: var(--success-color); font-size: 3rem;">(B)</h2>
+                <p style="font-size: 1.2rem; margin-top: 10px;">因為題目問的是「傳輸」電子郵件，<br>所以答案是 <strong>SMTP</strong> (Simple Mail Transfer Protocol)。</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // C. 關鍵字互動資料庫
+        const keywords = {
+            'email': {
+                targetIds: ['txt-email'],
+                text: '電子郵件 (E-mail)：網路上的信件，這題的主角。'
+            },
+            'transmit': {
+                targetIds: ['txt-transmit'],
+                text: '傳輸 (Transfer)：把資料從 A 點送到 B 點的動作，這裡是問「寄送」。'
+            },
+            'smtp': {
+                targetIds: ['txt-smtp'],
+                text: 'SMTP (簡單郵件傳輸協定)：負責「把信寄出去」的郵差。'
+            },
+            'pop3': {
+                targetIds: ['txt-pop3'],
+                text: 'POP3 (郵局協定)：負責「把信收下來」的機制。'
+            },
+            'ftp': {
+                targetIds: ['txt-ftp'],
+                text: 'FTP (檔案傳輸協定)：拿來傳檔案的 (File)，不是寄信的。'
+            },
+            'snmp': {
+                targetIds: ['txt-snmp'],
+                text: 'SNMP (網路管理協定)：網管用來監控設備狀況，與使用者寄信無關。'
+            }
+        };
+
+        function highlight(key) {
+            // 清除所有按鈕的 active 狀態
+            document.querySelectorAll('.btn-keyword').forEach(btn => btn.classList.remove('active'));
+            // 設定當前點擊按鈕為 active
+            event.target.classList.add('active');
+
+            // 清除所有文字螢光筆
+            document.querySelectorAll('.highlight-span').forEach(span => span.classList.remove('highlight-active'));
+
+            // 取得對應資料
+            const data = keywords[key];
+            
+            // 亮起對應的文字
+            data.targetIds.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.classList.add('highlight-active');
+            });
+
+            // 顯示解釋
+            const display = document.getElementById('explanation-display');
+            display.innerHTML = data.text;
+            display.style.backgroundColor = '#fffbea'; // 微黃背景提示更新
+            setTimeout(() => {
+                display.style.backgroundColor = 'white';
+            }, 300);
+        }
+
+        // D. 手風琴開關
+        function toggleAccordion(id) {
+            const content = document.getElementById(id);
+            if (content.classList.contains('show')) {
+                content.classList.remove('show');
+            } else {
+                content.classList.add('show');
+            }
+        }
+
+        // F. 選項卡片開關
+        function toggleOption(card) {
+            const detail = card.querySelector('.option-detail');
+            const wasVisible = detail.classList.contains('visible');
+            
+            // 關閉其他所有已打開的 (如果想要一次只顯示一個)
+            // document.querySelectorAll('.option-detail').forEach(d => d.classList.remove('visible'));
+
+            if (!wasVisible) {
+                detail.classList.add('visible');
+            } else {
+                detail.classList.remove('visible');
+            }
+        }
+
+        // G. 小測驗邏輯
+        function checkQuiz(qId, answer, btn) {
+            const fb = document.getElementById(`quiz-fb-${qId}`);
+            let isCorrect = false;
+            let msg = "";
+
+            // 重置該題按鈕樣式
+            const parent = btn.parentElement;
+            const buttons = parent.getElementsByTagName('button');
+            for(let b of buttons) {
+                b.style.background = 'white';
+                b.style.color = '#333';
+            }
+
+            if (qId === 1) {
+                if (answer === 'SMTP') {
+                    isCorrect = true;
+                    msg = "答對了！寄信就是找 SMTP。";
+                } else {
+                    msg = "答錯囉！POP3 是用來收信的。";
+                }
+            } else if (qId === 2) {
+                if (answer === 'NO') {
+                    isCorrect = true;
+                    msg = "正確！FTP 是傳檔案用的，不能寄 Email。";
+                } else {
+                    msg = "不對喔！FTP 只能傳檔案，沒有 Email 的格式功能。";
+                }
+            } else if (qId === 3) {
+                if (answer === 'MANAGE') {
+                    isCorrect = true;
+                    msg = "答對了！SNMP 是管理用的。";
+                } else {
+                    msg = "錯囉！SNMP 不負責收發信件。";
+                }
+            }
+
+            // 顯示回饋
+            fb.style.display = 'block';
+            fb.innerHTML = msg;
+            fb.style.color = isCorrect ? 'var(--success-color)' : 'var(--accent-color)';
+            
+            // 標示按鈕
+            btn.style.background = isCorrect ? 'var(--success-color)' : 'var(--accent-color)';
+            btn.style.color = 'white';
+        }
+
+        // I. 揭曉答案
+        function revealAnswer() {
+            const answerDiv = document.getElementById('final-answer');
+            const btn = document.querySelector('.btn-reveal');
+            
+            answerDiv.style.display = 'block';
+            btn.style.display = 'none'; // 隱藏按鈕
+            
+            // 自動捲動到底部
+            setTimeout(() => {
+                answerDiv.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+        }
+    </script>
+</body>
+</html>

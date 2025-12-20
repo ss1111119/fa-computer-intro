@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CO_Q40_ISA_Definition_v1</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --highlight-color: #f1c40f;
+            --text-color: #333;
+            --bg-color: #f4f6f7;
+            --card-bg: #ffffff;
+            --correct-color: #27ae60;
+            --wrong-color: #c0392b;
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        header h1 { margin: 0; font-size: 1.5rem; }
+        header p { margin: 10px 0 0; opacity: 0.9; }
+        .q-number {
+            display: inline-block;
+            background: var(--highlight-color);
+            color: var(--primary-color);
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+
+        /* Card Style */
+        .card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+            border-left: 5px solid var(--accent-color);
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        /* Question Section */
+        .question-text {
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 15px;
+        }
+        .options { list-style: none; padding: 0; }
+        .options li { margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 5px; }
+
+        /* Highlight Interaction */
+        .highlight-text {
+            transition: background-color 0.3s;
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+        .active-highlight {
+            background-color: var(--highlight-color);
+            font-weight: bold;
+            color: #000;
+        }
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .btn-keyword {
+            background: #e0e0e0;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .btn-keyword:hover { background: #d0d0d0; }
+        .btn-keyword.active {
+            background: var(--accent-color);
+            color: white;
+        }
+        .definition-box {
+            background: #eef7fb;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            font-size: 0.95rem;
+            min-height: 40px;
+            margin-top: 10px;
+            border-left: 4px solid var(--accent-color);
+        }
+
+        /* Accordion */
+        details {
+            background: #f8f9fa;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        summary {
+            padding: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            list-style: none; /* Hide default triangle in some browsers */
+        }
+        summary::-webkit-details-marker { display: none; }
+        summary::after {
+            content: "+"; 
+            float: right;
+            font-weight: bold;
+        }
+        details[open] summary::after { content: "-"; }
+        .accordion-content { padding: 15px; border-top: 1px solid #ddd; }
+
+        /* Layer Diagram */
+        .layer-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            margin: 20px 0;
+        }
+        .layer-box {
+            width: 80%;
+            padding: 10px;
+            text-align: center;
+            border: 2px solid #bdc3c7;
+            background: white;
+            cursor: default;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .layer-box.interactive {
+            cursor: pointer;
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+        .layer-box.interactive:hover {
+            background: #ebf5fb;
+        }
+        .layer-box.active-layer {
+            background: var(--accent-color);
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        .layer-info {
+            margin-top: 15px;
+            padding: 15px;
+            background: #fcf3cf;
+            border-radius: 5px;
+            text-align: center;
+            display: none;
+        }
+
+        /* Option Analysis */
+        .analysis-card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        .analysis-btn {
+            background: transparent;
+            color: var(--accent-color);
+            border: 1px solid var(--accent-color);
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+        .analysis-content {
+            display: none;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #ccc;
+            font-size: 0.95rem;
+        }
+        .tag { padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; margin-right: 5px; }
+        .tag-correct { background: var(--correct-color); color: white; }
+        .tag-wrong { background: var(--wrong-color); color: white; }
+
+        /* Quiz */
+        .quiz-item { margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
+        .quiz-options button {
+            margin: 5px 5px 0 0;
+            padding: 8px 15px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            background: white;
+            border-radius: 4px;
+        }
+        .quiz-feedback { margin-top: 10px; font-weight: bold; }
+
+        /* Mnemonics */
+        .mnemonics-box {
+            background: #fff9c4;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            border: 2px solid #f1c40f;
+        }
+
+        /* Reveal Answer */
+        .reveal-section { text-align: center; margin-top: 30px; margin-bottom: 50px; }
+        .btn-reveal {
+            background: var(--primary-color);
+            color: white;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #1a252f;
+            transition: transform 0.1s;
+        }
+        .btn-reveal:active { transform: translateY(4px); box-shadow: none; }
+        .final-answer {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background: var(--correct-color);
+            color: white;
+            border-radius: var(--border-radius);
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Mobile adjustments */
+        @media (max-width: 600px) {
+            .btn-keyword { flex: 1 1 30%; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- A. Header -->
+    <header>
+        <h1>ISA 是什麼？程式到底在跟硬體講什麼話</h1>
+        <p>Instruction Set Architecture 基礎必考</p>
+        <div class="q-number">題號：40</div>
+    </header>
+
+    <!-- B. Question Card -->
+    <div class="card">
+        <h2>題目區</h2>
+        <div class="question-text">
+            40. 下列哪一個最能描述「<span id="target-isa" class="highlight-text">指令集架構（ISA）</span>」？
+        </div>
+        <ul class="options">
+            <li>(A) <span id="target-hardware" class="highlight-text">CPU 的物理硬體</span>製造方式</li>
+            <li>(B) 程式語言的語法與編譯器設計</li>
+            <li>(C) <span id="target-interface" class="highlight-text">程式與硬體</span>之間的<span id="target-abstract" class="highlight-text">抽象介面</span>，定義可使用的<span id="target-instruction" class="highlight-text">指令</span></li>
+            <li>(D) 控制<span id="target-os" class="highlight-text">作業系統排程</span>的規範</li>
+        </ul>
+    </div>
+
+    <!-- C. Highlight Interaction -->
+    <div class="card">
+        <h2>關鍵字拆解（點擊按鈕查看定義）</h2>
+        <div class="btn-group">
+            <button class="btn-keyword" onclick="highlight('isa', 'target-isa')">ISA</button>
+            <button class="btn-keyword" onclick="highlight('instruction', 'target-instruction')">指令</button>
+            <button class="btn-keyword" onclick="highlight('set', 'target-isa')">指令集</button>
+            <button class="btn-keyword" onclick="highlight('abstract', 'target-abstract')">抽象介面</button>
+            <button class="btn-keyword" onclick="highlight('interface', 'target-interface')">程式與硬體</button>
+            <button class="btn-keyword" onclick="highlight('hardware', 'target-hardware')">CPU 硬體</button>
+            <button class="btn-keyword" onclick="highlight('os', 'target-os')">作業系統排程</button>
+        </div>
+        <div id="definition-display" class="definition-box">
+            請點擊上方關鍵字，這裡會顯示白話解釋。
+        </div>
+    </div>
+
+    <!-- D. Plain Language -->
+    <div class="card">
+        <h2>觀念白話文</h2>
+        <details open>
+            <summary>【白話翻譯】這題在問什麼？</summary>
+            <div class="accordion-content">
+                <p>「程式要讓 CPU 做事情，必須用 CPU 聽得懂的『指令語言』；那這套指令語言的規格叫什麼？」</p>
+                <p>簡單來說，軟體（程式）和硬體（CPU）語言不通，中間需要一個翻譯手冊或共同約定，這個約定就是 ISA。</p>
+            </div>
+        </details>
+        <details>
+            <summary>【這題考點】重點在哪？</summary>
+            <div class="accordion-content">
+                <p>這題在考你是否知道 ISA 是「程式看得到的硬體規格」，它位於軟體與硬體的交界處。</p>
+                <p>重點釐清：它不是「怎麼製造晶片」（那是微架構/製程），也不是「作業系統怎麼管時間」（那是 OS）。</p>
+            </div>
+        </details>
+    </div>
+
+    <!-- E. Abstraction Layers -->
+    <div class="card">
+        <h2>計算機層級示意（點擊 ISA 與 微架構）</h2>
+        <p style="text-align: center; font-size: 0.9rem; color: #666;">↓ 軟體 (Software) ↓</p>
+        <div class="layer-container">
+            <div class="layer-box">應用程式 (App)</div>
+            <div class="layer-box">程式語言 (C / Java / Python)</div>
+            <div class="layer-box">編譯器 (Compiler)</div>
+            <div class="layer-box interactive" id="layer-isa" onclick="showLayerInfo('isa')">ISA (指令集架構) ★ 介面層</div>
+            <div class="layer-box interactive" id="layer-micro" onclick="showLayerInfo('micro')">微架構 (Microarchitecture)</div>
+            <div class="layer-box">硬體實作 (Physical Hardware)</div>
+        </div>
+        <p style="text-align: center; font-size: 0.9rem; color: #666;">↑ 硬體 (Hardware) ↑</p>
+        
+        <div id="layer-info-box" class="layer-info"></div>
+    </div>
+
+    <!-- F. Option Analysis -->
+    <div class="card">
+        <h2>選項逐一解析</h2>
+        
+        <div class="analysis-card">
+            <strong>(A) CPU 的物理硬體製造方式</strong>
+            <br>
+            <button class="analysis-btn" onclick="toggleAnalysis(this)">顯示解析</button>
+            <div class="analysis-content">
+                <span class="tag tag-wrong">錯誤</span>
+                這是硬體製造、製程或微架構（Microarchitecture）的範疇。使用者（程式設計師）不需要知道 CPU 是幾奈米製程，只要知道指令怎麼下就好。
+            </div>
+        </div>
+
+        <div class="analysis-card">
+            <strong>(B) 程式語言的語法與編譯器設計</strong>
+            <br>
+            <button class="analysis-btn" onclick="toggleAnalysis(this)">顯示解析</button>
+            <div class="analysis-content">
+                <span class="tag tag-wrong">錯誤</span>
+                這是軟體層面的事。Python 語法或 C++ 編譯器在 ISA 的「上面」。ISA 是編譯器產出的目標，不是編譯器本身。
+            </div>
+        </div>
+
+        <div class="analysis-card">
+            <strong>(C) 程式與硬體之間的抽象介面，定義可使用的指令</strong>
+            <br>
+            <button class="analysis-btn" onclick="toggleAnalysis(this)">顯示解析</button>
+            <div class="analysis-content">
+                <span class="tag tag-correct">正確</span>
+                ISA 就像是硬體給軟體的一份「合約」或「手冊」。它定義了有哪些指令（如 ADD, JUMP）、暫存器有多少個、記憶體怎麼存取。
+            </div>
+        </div>
+
+        <div class="analysis-card">
+            <strong>(D) 控制作業系統排程的規範</strong>
+            <br>
+            <button class="analysis-btn" onclick="toggleAnalysis(this)">顯示解析</button>
+            <div class="analysis-content">
+                <span class="tag tag-wrong">錯誤</span>
+                排程（Scheduling）是作業系統（OS）軟體的功能，用來決定哪個程式先跑，跟底層的指令集架構無直接關係。
+            </div>
+        </div>
+    </div>
+
+    <!-- G. Mini Quiz -->
+    <div class="card">
+        <h2>快速驗收小測驗</h2>
+        
+        <div class="quiz-item">
+            <p>1. 同一個 ISA（例如 x86 架構）可以由不同的廠商做出內部構造不同的 CPU 嗎？</p>
+            <div class="quiz-options">
+                <button onclick="checkQuiz(this, true, '沒錯！Intel 和 AMD 都可以做 x86 的 CPU，內部設計不同，但都能跑一樣的程式。')">可以</button>
+                <button onclick="checkQuiz(this, false, '不對喔！只要符合 ISA 規範，內部實作可以完全不同（例如 Intel vs AMD）。')">不行</button>
+            </div>
+            <div class="quiz-feedback"></div>
+        </div>
+
+        <div class="quiz-item">
+            <p>2. 「ISA」和「微架構」哪一個比較接近物理硬體的實作細節？</p>
+            <div class="quiz-options">
+                <button onclick="checkQuiz(this, false, '錯囉！ISA 是抽象的規格書。微架構才是真的在管管線、電路怎麼跑。')">ISA</button>
+                <button onclick="checkQuiz(this, true, '正確！微架構（Microarchitecture）是 ISA 的具體實作方式。')">微架構</button>
+            </div>
+            <div class="quiz-feedback"></div>
+        </div>
+
+        <div class="quiz-item">
+            <p>3. 作業系統的排程規則（誰先跑、誰後跑）屬於 ISA 的定義範圍嗎？</p>
+            <div class="quiz-options">
+                <button onclick="checkQuiz(this, false, '錯！排程是 OS（軟體）在管的，ISA 只管指令怎麼執行。')">屬於</button>
+                <button onclick="checkQuiz(this, true, '答對了！ISA 不管排程，排程是作業系統的工作。')">不屬於</button>
+            </div>
+            <div class="quiz-feedback"></div>
+        </div>
+    </div>
+
+    <!-- H. Mnemonics -->
+    <div class="mnemonics-box">
+        <h2 style="border-bottom: 1px solid #d4ac0d; color: #7f6000;">【補教名師口訣】</h2>
+        <p><strong>「ISA 是指令規格，程式硬體的接口」</strong></p>
+        <p>記住：它是一份合約。軟體看著合約寫程式，硬體照著合約做執行。</p>
+        
+        <h3 style="margin-top:15px; font-size: 1rem; color: #c0392b;">【常見陷阱】</h3>
+        <ul style="padding-left: 20px;">
+            <li>把 ISA 當成「怎麼製造硬體」（那是微架構）。</li>
+            <li>把 ISA 和「程式語言」混在一起（ISA 是機器碼規格，不是 C/Python）。</li>
+            <li>以為 ISA 包含 OS 的功能（排程、檔案管理都不算 ISA）。</li>
+        </ul>
+    </div>
+
+    <!-- I. Reveal Answer -->
+    <div class="reveal-section">
+        <button class="btn-reveal" onclick="revealAnswer()">揭曉正確答案</button>
+        <div id="final-answer-box" class="final-answer">
+            <h2 style="color: white; border: none;">正確答案：(C)</h2>
+            <p>ISA 是程式與硬體之間的抽象介面，定義可使用的指令。</p>
+            <p>恭喜你學會了計算機組織最核心的觀念之一！</p>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // Data for Definitions
+    const definitions = {
+        'isa': '<strong>ISA (指令集架構)</strong>：程式能用哪些指令、暫存器怎麼用、記憶體怎麼看的一套「規格書」。',
+        'instruction': '<strong>指令</strong>：CPU 能理解並執行的最基本命令，例如：加法 (ADD)、載入 (LOAD)、跳躍 (JUMP)。',
+        'set': '<strong>指令集</strong>：CPU 支援的「全部」指令清單總和。',
+        'abstract': '<strong>抽象介面</strong>：把複雜的硬體細節遮住（抽象化），提供一個簡單一致的「使用方式」給程式員。',
+        'interface': '<strong>程式與硬體之間</strong>：ISA 位於軟體（程式）與硬體（CPU）的中間層，是兩者溝通的橋樑。',
+        'hardware': '<strong>CPU 硬體</strong>：實際的電路、電晶體與物理製造，這屬於「微架構」或「實作」，不是 ISA 本身。',
+        'os': '<strong>作業系統排程</strong>：這是 OS 軟體層負責管理時間與資源的規則，層級在 ISA 之上。'
+    };
+
+    // Keyword Highlight Function
+    function highlight(key, targetId) {
+        // Remove active class from all buttons
+        document.querySelectorAll('.btn-keyword').forEach(btn => btn.classList.remove('active'));
+        // Add active class to clicked button
+        event.target.classList.add('active');
+
+        // Remove highlight from all text spans
+        document.querySelectorAll('.highlight-text').forEach(span => span.classList.remove('active-highlight'));
+        
+        // Add highlight to target text
+        const target = document.getElementById(targetId);
+        if(target) {
+            target.classList.add('active-highlight');
+        }
+
+        // Update definition box
+        const display = document.getElementById('definition-display');
+        display.innerHTML = definitions[key];
+        display.style.animation = 'none';
+        display.offsetHeight; /* trigger reflow */
+        display.style.animation = 'fadeIn 0.3s';
+    }
+
+    // Layer Interaction Function
+    function showLayerInfo(layer) {
+        const infoBox = document.getElementById('layer-info-box');
+        const isaBox = document.getElementById('layer-isa');
+        const microBox = document.getElementById('layer-micro');
+
+        // Reset styles
+        isaBox.classList.remove('active-layer');
+        microBox.classList.remove('active-layer');
+
+        infoBox.style.display = 'block';
+
+        if (layer === 'isa') {
+            isaBox.classList.add('active-layer');
+            infoBox.innerHTML = '<strong>ISA (指令集架構)</strong><br>定義「可用指令」與「程式可觀察的行為」。<br>它是對外的介面，告訴程式設計師：「你可以叫我做加法，用 ADD 指令」。';
+        } else if (layer === 'micro') {
+            microBox.classList.add('active-layer');
+            infoBox.innerHTML = '<strong>微架構 (Microarchitecture)</strong><br>同一個 ISA 可以用不同的 CPU 內部設計來實作。<br>例如：同樣跑 x86 指令，Intel i9 和 i5 內部的管線、快取設計不同，這就是微架構不同。';
+        }
+    }
+
+    // Option Analysis Toggle
+    function toggleAnalysis(btn) {
+        const content = btn.nextElementSibling;
+        if (content.style.display === 'block') {
+            content.style.display = 'none';
+            btn.textContent = '顯示解析';
+        } else {
+            content.style.display = 'block';
+            btn.textContent = '隱藏解析';
+        }
+    }
+
+    // Quiz Check
+    function checkQuiz(btn, isCorrect, explanation) {
+        const parent = btn.parentElement;
+        const feedback = parent.nextElementSibling;
+        
+        // Disable buttons in this group
+        const buttons = parent.querySelectorAll('button');
+        buttons.forEach(b => {
+            b.disabled = true;
+            b.style.opacity = '0.6';
+        });
+
+        // Highlight selected
+        btn.style.opacity = '1';
+        btn.style.border = isCorrect ? '2px solid var(--correct-color)' : '2px solid var(--wrong-color)';
+        
+        // Show feedback
+        feedback.style.color = isCorrect ? 'var(--correct-color)' : 'var(--wrong-color)';
+        feedback.innerHTML = (isCorrect ? '✅ ' : '❌ ') + explanation;
+    }
+
+    // Reveal Answer
+    function revealAnswer() {
+        document.getElementById('final-answer-box').style.display = 'block';
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+</script>
+
+</body>
+</html>

@@ -3,64 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>112 農會電腦概論筆記目錄</title>
+    <title>電腦概論練習題目錄 (Q02-Q48)</title>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; line-height: 1.6; max-width: 800px; margin: 40px auto; padding: 0 20px; color: #333; }
         h1 { border-bottom: 2px solid #0366d6; padding-bottom: 10px; color: #0366d6; }
+        .alert { background: #fff5b1; padding: 10px; border-radius: 5px; border: 1px solid #e6d35c; margin-bottom: 20px; font-size: 0.9em; }
         ul { list-style: none; padding: 0; }
-        li { background: #f6f8fa; margin: 8px 0; padding: 12px; border-radius: 6px; border: 1px solid #d1d5da; transition: 0.2s; }
+        li { background: #f6f8fa; margin: 8px 0; padding: 12px; border-radius: 6px; border: 1px solid #d1d5da; transition: 0.2s; display: flex; align-items: center; }
         li:hover { background: #ebf0f4; border-color: #0366d6; }
-        a { text-decoration: none; color: #0366d6; font-weight: bold; display: block; }
+        a { text-decoration: none; color: #0366d6; font-weight: bold; flex-grow: 1; display: block; }
+        .tag { font-size: 0.8em; padding: 2px 6px; border-radius: 4px; margin-right: 10px; color: white; font-weight: normal; min-width: 35px; text-align: center; }
+        .tag-q { background-color: #6c757d; } /* 灰色 - 通用 */
+        .tag-se { background-color: #28a745; } /* 綠色 - SE */
+        .tag-net { background-color: #17a2b8; } /* 藍綠 - NET */
+        .tag-ds { background-color: #6610f2; } /* 紫色 - DS */
+        .tag-ai { background-color: #fd7e14; } /* 橘色 - AI */
+        .tag-db { background-color: #e83e8c; } /* 粉紅 - DB */
+        .tag-co { background-color: #dc3545; } /* 紅色 - CO */
     </style>
 </head>
 <body>
-    <h1>📂 112 農會電腦概論筆記目錄</h1>
-    <p>點擊下方連結查看各章節詳細筆記：</p>
+    <h1>📂 114電腦概論練習題目錄</h1>
+    
+    <div class="alert">
+        ⚠️ <strong>注意：</strong> Q30 的檔名在圖片中被截斷，請確認實際檔名是否為 <code>Supervised_Learning</code> 並手動修改下方程式碼中的連結，否則該題可能會無法開啟。
+    </div>
+
+    <p>點擊下方連結查看各章節練習題：</p>
     <ul>
-        <li><a href="01algorithm-and-pseudocode-intro.html">演算法與虛擬碼簡介</a></li>
-        <li><a href="03big5-encoding-basics.html">Big5 編碼基礎</a></li>
-        <li><a href="04big-o-constant-time-o1.html">時間複雜度 O(1) 教學 - 為什麼不是一小時？</a></li>
-        <li><a href="06wifi-vs-cellular-connection-basics.html">WiFi 終端設備連線特性教學</a></li>
-        <li><a href="07virtual-memory-vs-ram-basics.html">虛擬記憶體 vs 記憶體基礎</a></li>
-        <li><a href="08desktop_memory_rom_true_false_q8.html">電腦硬體概論：RAM vs ROM 互動教學</a></li>
-        <li><a href="09time-units-ms-us-ns-ps-cheatsheet.html">時間單位換算表 (ms, us, ns, ps)</a></li>
-        <li><a href="10utp-cable-categories-and-ethernet-speeds.html">雙絞線類別與乙太網路速度</a></li>
-        <li><a href="12storage-units-kb-mb-gb-bits-exam-traps.html">儲存單位換算與考試陷阱</a></li>
-        <li><a href="13linear-vs-binary-search-visualization.html">線性搜尋 vs 二分搜尋視覺化</a></li>
-        <li><a href="14time-sharing-multi-cpu-illusion.html">分時系統與多 CPU 錯覺</a></li>
-        <li><a href="15public-key-encryption-how-many-keys.html">公開金鑰加密：需要多少把鑰匙？</a></li>
-        <li><a href="16crypto-key-generation-prime-numbers.html">加密密鑰生成與質數</a></li>
-        <li><a href="17ipv6-address-length-16-bytes.html">IPv6 位址長度 (16 Bytes)</a></li>
-        <li><a href="18osi-network-layer-is-layer-3.html">OSI 網路層 (Layer 3) 說明</a></li>
-        <li><a href="19fcs-frame-check-sequence-link-layer.html">FCS 幀檢查序列 (鏈結層)</a></li>
-        <li><a href="20undirected-connected-graph-impossible-edges.html">無向連通圖的邊數計算</a></li>
-        <li><a href="21virtual-memory-run-programs-larger-than-ram.html">虛擬記憶體：執行大於 RAM 的程式</a></li>
-        <li><a href="23hard-disk-track-cylinder-sector-platter.html">硬碟結構：磁軌、柱面、磁區</a></li>
-        <li><a href="24byte-combinations-start-1-end-0.html">Byte 組合計算 (1開頭0結尾)</a></li>
-        <li><a href="25binary-or-operation-1100-or-0101.html">二進位 OR 運算實作</a></li>
-        <li><a href="27c-language-third-generation.html">C 語言與第三代程式語言</a></li>
-        <li><a href="28high-level-vs-low-level-language-difference.html">高階語言 vs 低階語言差異</a></li>
-        <li><a href="29power-set-count-empty-set-element.html">冪集數量計算與空集</a></li>
-        <li><a href="30countable-set-rational-numbers.html">可數集與有理數</a></li>
-        <li><a href="31os-process-scheduling-algorithms.html">作業系統排程演算法 - 互動式考前衝刺教學</a></li>
-        <li><a href="32time-sharing-vs-multitasking-os-illusion.html">作業系統觀念：分時 vs 多工 (Time Sharing vs Multitasking)</a></li>
-        <li><a href="33os-kernel-components-mcq-q3.html">作業系統核心（Kernel）組成元件：複選題練習</a></li>
-        <li><a href="34ai-algorithms-mcq-q4.html">人工智慧（AI）相關演算法：複選題練習</a></li>
-        <li><a href="35crypto-encryption-techniques-mcq-q5.html">資訊加解密技術：複選題練習（對稱式 vs 非對稱式）</a></li>
-        <li><a href="36application-layer-protocols-mcq-q6.html">網路通訊協定分層：應用層（Application Layer）複選題</a></li>
-        <li><a href="38ipv6-header-fields-mcq-q8.html">IPv6 資料報標頭欄位辨識：複選題</a></li>
-        <li><a href="39network-topologies-click-to-identify-q9.html">【電概名師開講】網路拓樸大解析 - 互動特訓班</a></li>
-        <li><a href="40ipv4-address-properties-mcq-q10.html">【高中電腦概論：IPv4 位址特性完全解析】</a></li>
-        <li><a href="41hexadecimal-symbols-mcq-q11.html">【電腦概論互動教學：十六進位系統】</a></li>
-        <li><a href="42main-memory-cell-size-mcq-q12.html">【電腦概論互動教室：記憶體單元與單位解析】</a></li>
-        <li><a href="43propositional-logic-implication-equivalence-mcq-q13.html">【名師教學】命題邏輯：蘊涵與等價關係完全攻略</a></li>
-        <li><a href="45low-level-programming-languages-mcq-q15.html">電腦概論互動教學：程式語言分類</a></li>
-        <li><a href="46programming-language-components-mcq-q16.html">電腦概論名師講堂：程式語言的組成部分</a></li>
-        <li><a href="47program-build-and-execution-process-mcq-q17.html">【名師教學】電腦概論：程式翻譯與執行流程 (Q17)</a></li>
-        <li><a href="48sql-reserved-keywords-mcq-q18.html">SQL 基礎教室 - 保留關鍵字互動教學</a></li>
-        <li><a href="49erd-shapes-click-to-identify-mcq-q19.html">ERD 形狀語言大解密 - 高中電腦概論互動教學</a></li>
-        <li><a href="50db_properties_mcq20_interactive.html">高中資料庫觀念互動教學：資料庫的特性</a></li>
-        <li><a href="ipv4-address-characteristics-mcq-q10.html">IPv4 位址特性辨識：複選題練習</a></li>
+        <li><span class="tag tag-q">Q02</span><a href="02while_loop_true_false_q2.html">02 While Loop (True/False)</a></li>
+        <li><span class="tag tag-q">Q03</span><a href="03c_array_index_true_false_q3.html">03 C Array Index (True/False)</a></li>
+        <li><span class="tag tag-q">Q04</span><a href="04race_condition_read_only_true_false_q4.html">04 Race Condition Read Only (True/False)</a></li>
+        <li><span class="tag tag-q">Q06</span><a href="06file_extension_true_false_q6.html">06 File Extension (True/False)</a></li>
+        <li><span class="tag tag-q">Q07</span><a href="07deadlock_true_false_q7.html">07 Deadlock (True/False)</a></li>
+        <li><span class="tag tag-q">Q08</span><a href="08singly_linked_list_time_complexity_q8.html">08 Singly Linked List Time Complexity</a></li>
+        <li><span class="tag tag-q">Q09</span><a href="09queue_fifo_true_false_q9.html">09 Queue FIFO (True/False)</a></li>
+        <li><span class="tag tag-q">Q10</span><a href="10bst_left_right_rule_true_false_q10.html">10 BST Left/Right Rule (True/False)</a></li>
+        <li><span class="tag tag-q">Q11</span><a href="11array_contiguous_memory_true_false_q11.html">11 Array Contiguous Memory (True/False)</a></li>
+        <li><span class="tag tag-q">Q14</span><a href="14primary_key_multiple_true_false_q14.html">14 Primary Key Multiple (True/False)</a></li>
+        <li><span class="tag tag-q">Q15</span><a href="15foreign_key_relationship_true_false_q15.html">15 Foreign Key Relationship (True/False)</a></li>
+        <li><span class="tag tag-q">Q16</span><a href="16recursion_concept_mcq_q16.html">16 Recursion Concept (MCQ)</a></li>
+        <li><span class="tag tag-q">Q17</span><a href="17error_handling_best_practice_mcq_q17.html">17 Error Handling Best Practice (MCQ)</a></li>
+        <li><span class="tag tag-q">Q18</span><a href="18cpu_scheduling_starvation_mcq_q18.html">18 CPU Scheduling Starvation (MCQ)</a></li>
+        <li><span class="tag tag-q">Q19</span><a href="19OS_MM_Q19_Paging_v1.html">19 OS Memory Management: Paging</a></li>
+        <li><span class="tag tag-ds">Q20</span><a href="20DS_Q20_Browser_Back_Stack_v1.html">20 DS: Browser Back Stack</a></li>
+        <li><span class="tag tag-ds">Q21</span><a href="21DS_Q21_Heap_Property_v1.html">21 DS: Heap Property</a></li>
+        <li><span class="tag tag-ds">Q22</span><a href="22DS_Q22_Tree_Traversal_Inorder_v1.html">22 DS: Tree Traversal Inorder</a></li>
+        <li><span class="tag tag-ds">Q23</span><a href="23DS_Q23_Graph_BFS_Queue_v1.html">23 DS: Graph BFS Queue</a></li>
+        <li><span class="tag tag-ds">Q24</span><a href="24DS_Q24_Sorting_TimeComplexity_nlogn_v1.html">24 DS: Sorting Time Complexity (nlogn)</a></li>
+        <li><span class="tag tag-ds">Q25</span><a href="25DS_Q25_TimeComplexity_On2_v1.html">25 DS: Time Complexity (On2)</a></li>
+        <li><span class="tag tag-net">Q27</span><a href="27NET_Q27_OSI_Router_Layer_v1.html">27 NET: OSI Router Layer</a></li>
+        <li><span class="tag tag-net">Q28</span><a href="28NET_Q28_DHCP_IP_Assignment_v1.html">28 NET: DHCP IP Assignment</a></li>
+        <li><span class="tag tag-net">Q29</span><a href="29NET_Q29_Email_Protocol_SMTP_v1.html">29 NET: Email Protocol SMTP</a></li>
+        
+        <li><span class="tag tag-ai">Q30</span><a href="30AI_Q30_Supervised_L...LinearRegression_v1.html">30 AI: Supervised Learning Linear Regression (Check Filename)</a></li>
+        
+        <li><span class="tag tag-ai">Q31</span><a href="31AI_Q31_Heuristic_Search_hn_v1.html">31 AI: Heuristic Search</a></li>
+        <li><span class="tag tag-ai">Q32</span><a href="32AI_Q32_Classification_NaiveBayes_v1.html">32 AI: Classification Naive Bayes</a></li>
+        <li><span class="tag tag-se">Q33</span><a href="33SE_Q33_SDLC_Requirement_Analysis_v1.html">33 SE: SDLC Requirement Analysis</a></li>
+        <li><span class="tag tag-se">Q34</span><a href="34SE_Q34_Agile_Core_Value_v1.html">34 SE: Agile Core Value</a></li>
+        <li><span class="tag tag-se">Q35</span><a href="35SE_Q35_Testing_Integration_v1.html">35 SE: Testing Integration</a></li>
+        <li><span class="tag tag-se">Q36</span><a href="36SE_Q36_Refactoring_Purpose_v1.html">36 SE: Refactoring Purpose</a></li>
+        <li><span class="tag tag-se">Q37</span><a href="37SE_Q37_NonFunctional_Requirement_v1.html">37 SE: Non-Functional Requirement</a></li>
+        <li><span class="tag tag-se">Q38</span><a href="38SE_Q38_Scrum_Sprint_Review_v1.html">38 SE: Scrum Sprint Review</a></li>
+        <li><span class="tag tag-co">Q40</span><a href="40CO_Q40_ISA_Definition_v1.html">40 CO: ISA Definition</a></li>
+        <li><span class="tag tag-q">Q41</span><a href="41PL_Q41_OOP_Core_Concepts_v1.html">41 PL: OOP Core Concepts</a></li>
+        <li><span class="tag tag-q">Q42</span><a href="42PL_Q42_Garbage_Collection_Languages_v1.html">42 PL: Garbage Collection Languages</a></li>
+        <li><span class="tag tag-db">Q43</span><a href="43DB_Q43_SQL_DDL_Commands_v1.html">43 DB: SQL DDL Commands</a></li>
+        <li><span class="tag tag-db">Q44</span><a href="44DB_Q44_SQL_JOIN_Types_v1.html">44 DB: SQL JOIN Types</a></li>
+        <li><span class="tag tag-q">Q45</span><a href="45ALGO_Q45_Divide_Conquer_Typical_v1.html">45 ALGO: Divide & Conquer Typical</a></li>
+        <li><span class="tag tag-net">Q46</span><a href="46NET_Q46_Application_Layer_Protocols_v1.html">46 NET: Application Layer Protocols</a></li>
+        <li><span class="tag tag-net">Q47</span><a href="47NET_Q47_Routing_Protocols_v1.html">47 NET: Routing Protocols</a></li>
+        <li><span class="tag tag-co">Q48</span><a href="48CO_Q48_CPU_Pipeline_Concepts_v1.html">48 CO: CPU Pipeline Concepts</a></li>
     </ul>
 </body>
 </html>

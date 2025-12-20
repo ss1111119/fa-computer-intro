@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DS_Q25_TimeComplexity_On2_v1</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #e67e22;
+            --light-bg: #f8f9fa;
+            --white: #ffffff;
+            --border: #dee2e6;
+            --success: #27ae60;
+            --danger: #c0392b;
+            --highlight-color: #ffeaa7;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "PingFang TC", "Microsoft JhengHei", "Heiti TC", sans-serif;
+        }
+
+        body {
+            background-color: #ecf0f1;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        /* A. 頁首區 */
+        header {
+            background-color: var(--primary);
+            color: var(--white);
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .question-id {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: var(--accent);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        /* 通用區塊樣式 */
+        .section {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 15px;
+            border-left: 4px solid var(--accent);
+            padding-left: 10px;
+        }
+
+        /* B. 題目區 */
+        .question-card {
+            background-color: var(--light-bg);
+            padding: 20px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+
+        .question-text span.active-highlight {
+            background-color: var(--accent);
+            color: white;
+            padding: 0 4px;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .options-list {
+            list-style: none;
+            margin-top: 15px;
+        }
+
+        .options-list li {
+            padding: 8px 0;
+        }
+
+        /* C. 關鍵字互動 */
+        .keyword-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .kw-btn {
+            background: white;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .kw-btn:hover, .kw-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .definition-box {
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            padding: 15px;
+            border-radius: 6px;
+            color: #856404;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+        }
+
+        /* D. 白話翻譯 Accordion */
+        details {
+            background: var(--light-bg);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        summary {
+            padding: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            list-style: none;
+            background: #e9ecef;
+        }
+        
+        summary:hover {
+            background: #dee2e6;
+        }
+
+        summary::after {
+            content: "+"; 
+            float: right;
+            font-weight: bold;
+        }
+
+        details[open] summary::after {
+            content: "-";
+        }
+
+        .details-content {
+            padding: 15px;
+            border-top: 1px solid var(--border);
+        }
+
+        /* E. 成長速度互動 */
+        .growth-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .growth-btn {
+            flex: 1;
+            padding: 10px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .growth-btn:hover {
+            background: #34495e;
+        }
+
+        .chart-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .chart-label {
+            width: 80px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .chart-bar-container {
+            flex: 1;
+            background: #eee;
+            height: 24px;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .chart-bar {
+            height: 100%;
+            background: var(--accent);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 10px;
+            color: white;
+            font-size: 0.8rem;
+            min-width: 0px; /* To allow small widths */
+        }
+        
+        .bar-green { background-color: var(--success); }
+        .bar-blue { background-color: #3498db; }
+        .bar-red { background-color: var(--danger); }
+
+        .chart-value {
+            margin-left: 10px;
+            font-size: 0.9rem;
+            width: 60px;
+            text-align: right;
+        }
+
+        /* F. 選項解析 */
+        .option-card {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+
+        .option-header {
+            padding: 15px;
+            background: var(--light-bg);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .option-header:hover {
+            background: #e2e6ea;
+        }
+
+        .option-body {
+            padding: 15px;
+            display: none;
+            border-top: 1px solid var(--border);
+            background: white;
+        }
+
+        .tag-correct { color: var(--success); font-weight: bold; }
+        .tag-wrong { color: var(--danger); font-weight: bold; }
+
+        /* G. 小測驗 */
+        .quiz-item {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px dashed var(--border);
+        }
+
+        .quiz-item:last-child { border-bottom: none; }
+
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .quiz-options button {
+            margin-right: 5px;
+            margin-bottom: 5px;
+            padding: 5px 15px;
+            border: 1px solid #ccc;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .quiz-feedback {
+            margin-top: 8px;
+            font-size: 0.9rem;
+            padding: 8px;
+            border-radius: 4px;
+            display: none;
+        }
+
+        /* H. 口訣 */
+        .mnemonic-box {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 5px solid var(--success);
+        }
+
+        .pitfall-box {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 5px solid var(--danger);
+        }
+
+        /* I. 答案揭曉 */
+        .reveal-section {
+            text-align: center;
+            background: var(--light-bg);
+        }
+
+        .reveal-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        .reveal-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .answer-content {
+            margin-top: 20px;
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .big-answer {
+            font-size: 3rem;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        /* RWD */
+        @media (max-width: 600px) {
+            header h1 { font-size: 1.2rem; }
+            .section { padding: 15px; }
+            .kw-btn { font-size: 0.8rem; padding: 5px 10px; }
+            .chart-row { flex-direction: column; align-items: flex-start; }
+            .chart-bar-container { width: 100%; margin: 5px 0; }
+            .chart-label { margin-bottom: 2px; }
+            .chart-value { text-align: left; margin-left: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- A. 頁首區 -->
+    <header>
+        <span class="question-id">題號：25</span>
+        <h1>O(n²) 到底代表什麼？不要再誤會了</h1>
+        <p>Time Complexity 基礎觀念（新手友善版）</p>
+    </header>
+
+    <!-- B. 題目區 -->
+    <div class="section">
+        <div class="section-title">題目</div>
+        <div class="question-card">
+            <p class="question-text">
+                25. 若某演算法的<span id="txt-complexity">時間複雜度</span>是 <span id="txt-on2">O(n²)</span>，代表什麼意思？
+            </p>
+            <ul class="options-list">
+                <li>(A) 執行時間與資料量無關</li>
+                <li>(B) 執行時間與 <span id="txt-n">n</span> 的<span id="txt-square">平方</span><span id="txt-prop">成正比</span></li>
+                <li>(C) 執行時間會比 <span id="txt-on">O(n)</span> 演算法更快</li>
+                <li>(D) 執行時間一定比 <span id="txt-nlogn">O(n log n)</span> 好</li>
+            </ul>
+        </div>
+
+        <!-- C. 關鍵字互動 -->
+        <div class="section-title" style="font-size: 1rem; border: none; padding-left: 0;">點擊下方關鍵字看翻譯：</div>
+        <div class="keyword-container">
+            <!-- 傳入 this 以修復可能的 event undefined 錯誤 -->
+            <button class="kw-btn" onclick="explain('complexity', this)">時間複雜度</button>
+            <button class="kw-btn" onclick="explain('on2', this)">O(n²)</button>
+            <button class="kw-btn" onclick="explain('n', this)">n</button>
+            <button class="kw-btn" onclick="explain('square', this)">平方</button>
+            <button class="kw-btn" onclick="explain('prop', this)">成正比</button>
+            <button class="kw-btn" onclick="explain('on', this)">O(n)</button>
+            <button class="kw-btn" onclick="explain('nlogn', this)">O(n log n)</button>
+        </div>
+        <div class="definition-box" id="def-box">
+            請點擊上方按鈕，這裡會顯示老師的白話解釋喔！
+        </div>
+    </div>
+
+    <!-- D. 白話翻譯 -->
+    <div class="section">
+        <div class="section-title">白話翻譯機</div>
+        <details>
+            <summary>這題如果翻譯成白話文是...</summary>
+            <div class="details-content">
+                <p><strong>「如果資料變成原來的 2 倍，執行時間大約會變成 4 倍，這種情況在說什麼？」</strong></p>
+                <hr style="margin: 10px 0; border: 0; border-top: 1px solid #ddd;">
+                <p style="color: var(--primary);"><strong>【這題在考什麼】</strong><br>你是否真正理解 O(n²) 是「成長速度」的趨勢，而不是指絕對的快或慢。</p>
+            </div>
+        </details>
+    </div>
+
+    <!-- E. 成長速度互動示意 -->
+    <div class="section">
+        <div class="section-title">數據會說話：成長速度大比拚</div>
+        <p style="margin-bottom: 15px;">試著點擊不同的資料量 n，觀察運算次數的變化（紅色條真的很恐怖）：</p>
+        
+        <div class="growth-controls">
+            <!-- 傳入 this 以修復 event undefined 錯誤 -->
+            <button class="growth-btn" onclick="updateChart(10, this)">n = 10 (小資料)</button>
+            <button class="growth-btn" onclick="updateChart(50, this)">n = 50 (中資料)</button>
+            <button class="growth-btn" onclick="updateChart(100, this)">n = 100 (大資料)</button>
+        </div>
+
+        <!-- O(n) -->
+        <div class="chart-row">
+            <div class="chart-label">O(n)</div>
+            <div class="chart-bar-container">
+                <div class="chart-bar bar-green" id="bar-n" style="width: 0%;"></div>
+            </div>
+            <div class="chart-value" id="val-n">0</div>
+        </div>
+
+        <!-- O(n log n) -->
+        <div class="chart-row">
+            <div class="chart-label">O(n log n)</div>
+            <div class="chart-bar-container">
+                <div class="chart-bar bar-blue" id="bar-nlogn" style="width: 0%;"></div>
+            </div>
+            <div class="chart-value" id="val-nlogn">0</div>
+        </div>
+
+        <!-- O(n^2) -->
+        <div class="chart-row">
+            <div class="chart-label">O(n²)</div>
+            <div class="chart-bar-container">
+                <div class="chart-bar bar-red" id="bar-on2" style="width: 0%;"></div>
+            </div>
+            <div class="chart-value" id="val-on2">0</div>
+        </div>
+        <p style="font-size: 0.8rem; color: #666; margin-top: 5px; text-align: right;">*數值為大約運算次數示意</p>
+    </div>
+
+    <!-- F. 選項逐一解析 -->
+    <div class="section">
+        <div class="section-title">選項逐一擊破</div>
+        <p style="margin-bottom: 10px;">點擊選項看老師解析：</p>
+
+        <!-- Option A -->
+        <div class="option-card">
+            <div class="option-header" onclick="toggleOption('opt-a')">
+                <span>(A) 執行時間與資料量無關</span>
+                <span style="color: #666;">▼</span>
+            </div>
+            <div class="option-body" id="opt-a">
+                <p><span class="tag-wrong">[錯]</span> 這是在描述 <strong>O(1)</strong>。</p>
+                <p>O(n²) 明顯有 n，代表跟資料量大大有關！</p>
+            </div>
+        </div>
+
+        <!-- Option B -->
+        <div class="option-card">
+            <div class="option-header" onclick="toggleOption('opt-b')">
+                <span>(B) 執行時間與 n 的平方成正比</span>
+                <span style="color: #666;">▼</span>
+            </div>
+            <div class="option-body" id="opt-b">
+                <p><span class="tag-correct">[正確]</span> 這就是定義。</p>
+                <p>當 n 變大，時間就像 n × n 一樣瘋狂成長。</p>
+            </div>
+        </div>
+
+        <!-- Option C -->
+        <div class="option-card">
+            <div class="option-header" onclick="toggleOption('opt-c')">
+                <span>(C) 執行時間會比 O(n) 演算法更快</span>
+                <span style="color: #666;">▼</span>
+            </div>
+            <div class="option-body" id="opt-c">
+                <p><span class="tag-wrong">[錯]</span> 通常是更慢！</p>
+                <p>O(n) 是線性成長（綠條），O(n²) 是平方成長（紅條）。資料量大時，O(n²) 慢非常多。</p>
+            </div>
+        </div>
+
+        <!-- Option D -->
+        <div class="option-card">
+            <div class="option-header" onclick="toggleOption('opt-d')">
+                <span>(D) 執行時間一定比 O(n log n) 好</span>
+                <span style="color: #666;">▼</span>
+            </div>
+            <div class="option-body" id="opt-d">
+                <p><span class="tag-wrong">[錯]</span> 「好」通常指執行時間短。</p>
+                <p>O(n log n) 的成長速度遠比 O(n²) 慢，所以 O(n log n) 通常比較好（效率較高）。</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- G. 快速小測驗 -->
+    <div class="section">
+        <div class="section-title">隨堂小考</div>
+        
+        <div class="quiz-item">
+            <p class="quiz-question">1. 若 n 從 10 變成 20 (變 2 倍)，O(n²) 的時間大約變幾倍？</p>
+            <div class="quiz-options">
+                <button onclick="checkQuiz(1, 'A', this)">2 倍</button>
+                <button onclick="checkQuiz(1, 'B', this)">4 倍</button>
+                <button onclick="checkQuiz(1, 'C', this)">100 倍</button>
+            </div>
+            <div class="quiz-feedback" id="q1-feedback"></div>
+        </div>
+
+        <div class="quiz-item">
+            <p class="quiz-question">2. 下列哪一種複雜度，在資料量大時跑得「最快」？</p>
+            <div class="quiz-options">
+                <button onclick="checkQuiz(2, 'A', this)">O(n)</button>
+                <button onclick="checkQuiz(2, 'B', this)">O(n²)</button>
+                <button onclick="checkQuiz(2, 'C', this)">O(n log n)</button>
+            </div>
+            <div class="quiz-feedback" id="q2-feedback"></div>
+        </div>
+
+        <div class="quiz-item">
+            <p class="quiz-question">3. 為什麼 n=5 (很小) 時，O(n²) 感覺不會慢？</p>
+            <div class="quiz-options">
+                <button onclick="checkQuiz(3, 'A', this)">因為電腦壞了</button>
+                <button onclick="checkQuiz(3, 'B', this)">因為資料太少，差異看不出來</button>
+            </div>
+            <div class="quiz-feedback" id="q3-feedback"></div>
+        </div>
+    </div>
+
+    <!-- H. 口訣與陷阱 -->
+    <div class="section">
+        <div class="section-title">老師的叮嚀</div>
+        
+        <div class="mnemonic-box">
+            <strong>【記憶口訣】</strong>
+            <p>「平方一出，資料大就苦」</p>
+            <small>（資料量一旦變大，時間就會爆炸性增加）</small>
+        </div>
+
+        <div class="pitfall-box">
+            <strong>【常見陷阱】</strong>
+            <ol style="margin-left: 20px;">
+                <li>把複雜度誤以為是「實際秒數」（它是成長趨勢）。</li>
+                <li>看到 O(n²) 以為一定很爛（在小資料量時，它其實還好，程式也好寫）。</li>
+                <li>沒注意題目問的是「代表什麼意思」，選了看似有道理但定義錯誤的選項。</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- I. 正確答案揭曉 -->
+    <div class="section reveal-section">
+        <button class="reveal-btn" onclick="showAnswer()">揭曉答案</button>
+        
+        <div class="answer-content" id="final-answer">
+            <p>正確答案是：</p>
+            <div class="big-answer">B</div>
+            <p style="margin-top: 10px; font-weight: bold;">
+                一句話理由：<br>
+                O(n²) 的定義就是執行時間與資料量(n)的平方成正比。
+            </p>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // C. 關鍵字資料與邏輯
+    const definitions = {
+        'complexity': '<strong>時間複雜度 (Time Complexity)</strong>：不是算幾秒，而是算「當資料量變多時，執行時間增加的速度」。',
+        'on2': '<strong>O(n²)</strong>：讀作 Big-O of n squared。想像兩層迴圈 (for 裡面還有 for)，資料量變成 n，運算次數大約是 n × n。',
+        'n': '<strong>n</strong>：Input Size，也就是資料的數量。例如：陣列裡有幾個數字。',
+        'square': '<strong>平方</strong>：就是自己乘自己。例如 3 的平方是 9，10 的平方是 100。',
+        'prop': '<strong>成正比</strong>：數學上的概念。如果 A 變大，B 也跟著按固定比例變大，就是成正比。',
+        'on': '<strong>O(n)</strong>：線性時間。資料變 10 倍，時間也大約變 10 倍。像是一層迴圈。',
+        'nlogn': '<strong>O(n log n)</strong>：比 O(n) 慢一點，但比 O(n²) 快很多！常見於高效率的排序法（如 Merge Sort）。'
+    };
+
+    // 接收 btn 參數，避免使用全域 event 導致錯誤
+    function explain(key, btn) {
+        // 1. 還原所有按鈕樣式
+        document.querySelectorAll('.kw-btn').forEach(b => b.classList.remove('active'));
+        // 2. 設定被點擊按鈕樣式 (如果有傳入 btn)
+        if (btn) {
+            btn.classList.add('active');
+        }
+
+        // 3. 顯示解釋
+        const box = document.getElementById('def-box');
+        box.innerHTML = definitions[key];
+        box.style.borderColor = '#e67e22';
+        box.style.backgroundColor = '#fff3cd';
+
+        // 4. 高亮題目中的對應文字
+        // 先移除舊的
+        document.querySelectorAll('.question-text span').forEach(span => span.classList.remove('active-highlight'));
+        // 加上新的
+        const targetId = 'txt-' + key;
+        const targetSpan = document.getElementById(targetId);
+        if (targetSpan) {
+            targetSpan.classList.add('active-highlight');
+        }
+    }
+
+    // E. 成長速度圖表邏輯
+    // 接收 btn 參數，避免在初始化時因缺少 event 而報錯
+    function updateChart(n, btn) {
+        const nVal = n;
+        const nLogNVal = Math.round(n * Math.log2(n));
+        const n2Val = n * n;
+
+        // 更新數值文字
+        document.getElementById('val-n').innerText = nVal;
+        document.getElementById('val-nlogn').innerText = nLogNVal;
+        document.getElementById('val-on2').innerText = n2Val;
+
+        // 計算寬度 (以最大值 n^2 為基準 100%)
+        // 為了讓小數值也能看見，設定最小寬度
+        const max = n2Val;
+        
+        const wN = Math.max((nVal / max) * 100, 1); 
+        const wNLogN = Math.max((nLogNVal / max) * 100, 2); 
+        
+        document.getElementById('bar-n').style.width = wN + '%';
+        document.getElementById('bar-nlogn').style.width = wNLogN + '%';
+        document.getElementById('bar-on2').style.width = '100%';
+
+        // 更新按鈕狀態
+        document.querySelectorAll('.growth-btn').forEach(b => {
+            b.style.background = '#2c3e50';
+        });
+        
+        // 如果有傳入按鈕物件，則設定該按鈕樣式
+        if (btn) {
+            btn.style.background = '#e67e22';
+        }
+    }
+
+    // 初始化圖表
+    // 手動選取第一個按鈕傳入，避免 event 為 undefined 的錯誤
+    const firstBtn = document.querySelector('.growth-btn');
+    updateChart(10, firstBtn);
+
+    // F. 選項開關
+    function toggleOption(id) {
+        const el = document.getElementById(id);
+        const header = el.previousElementSibling;
+        const arrow = header.querySelector('span:last-child');
+
+        if (el.style.display === 'block') {
+            el.style.display = 'none';
+            arrow.innerText = '▼';
+            header.style.backgroundColor = '#f8f9fa';
+        } else {
+            el.style.display = 'block';
+            arrow.innerText = '▲';
+            header.style.backgroundColor = '#ffeaa7'; // Highlight active
+        }
+    }
+
+    // G. 小測驗邏輯
+    function checkQuiz(qIdx, answer, btn) {
+        const feedback = document.getElementById(`q${qIdx}-feedback`);
+        const isCorrect = 
+            (qIdx === 1 && answer === 'B') || 
+            (qIdx === 2 && answer === 'A') || 
+            (qIdx === 3 && answer === 'B');
+
+        // Reset buttons in this group
+        const parent = btn.parentElement;
+        parent.querySelectorAll('button').forEach(b => {
+            b.style.background = 'white';
+            b.style.color = 'black';
+            b.style.borderColor = '#ccc';
+        });
+
+        feedback.style.display = 'block';
+        
+        if (isCorrect) {
+            btn.style.background = '#28a745';
+            btn.style.color = 'white';
+            btn.style.borderColor = '#28a745';
+            feedback.style.background = '#d4edda';
+            feedback.style.color = '#155724';
+            feedback.innerText = "答對了！觀念很清楚喔！";
+        } else {
+            btn.style.background = '#dc3545';
+            btn.style.color = 'white';
+            btn.style.borderColor = '#dc3545';
+            feedback.style.background = '#f8d7da';
+            feedback.style.color = '#721c24';
+            
+            if(qIdx === 1) feedback.innerText = "答錯囉。n 變 2 倍，n平方應該是 2x2 = 4 倍。";
+            if(qIdx === 2) feedback.innerText = "錯囉。O(n) 是直線成長，最慢最穩；O(n²) 衝最快代表跑最久。";
+            if(qIdx === 3) feedback.innerText = "不對喔，電腦沒壞。是因為 n 很小時，運算次數差異不大。";
+        }
+    }
+
+    // I. 顯示答案
+    function showAnswer() {
+        const ans = document.getElementById('final-answer');
+        ans.style.display = 'block';
+        document.querySelector('.reveal-btn').style.display = 'none';
+        
+        // 自動捲動到底部
+        ans.scrollIntoView({ behavior: 'smooth' });
+    }
+</script>
+
+</body>
+</html>

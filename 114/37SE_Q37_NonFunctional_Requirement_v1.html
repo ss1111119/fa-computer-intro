@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SE_Q37_NonFunctional_Requirement_v1</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #e67e22;
+            --correct-color: #27ae60;
+            --wrong-color: #c0392b;
+            --bg-color: #f4f6f7;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --highlight-bg: #fff3cd;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 15px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin: 0;
+            font-size: 1.8rem;
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1rem;
+            margin-top: 5px;
+        }
+
+        .q-number {
+            display: inline-block;
+            background: var(--primary-color);
+            color: white;
+            padding: 2px 10px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+
+        /* Card Styles */
+        .card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            border-left: 5px solid var(--primary-color);
+        }
+
+        h2 {
+            font-size: 1.3rem;
+            color: var(--primary-color);
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        /* Question Area */
+        .question-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .options p {
+            margin: 8px 0;
+            padding: 8px;
+            background: #f9f9f9;
+            border-radius: 4px;
+        }
+
+        /* Highlighter Interaction */
+        .keyword-span {
+            transition: background-color 0.3s;
+            padding: 0 2px;
+            border-radius: 2px;
+        }
+
+        .active-highlight {
+            background-color: yellow;
+            font-weight: bold;
+            color: black;
+            border-bottom: 2px solid var(--accent-color);
+        }
+
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn {
+            background: white;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+        }
+
+        .btn:hover, .btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .explanation-box {
+            background: #eef2f3;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-style: italic;
+            color: #555;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Accordion */
+        details {
+            background: #fff;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        summary {
+            padding: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            background: #f1f1f1;
+        }
+
+        .details-content {
+            padding: 15px;
+            border-top: 1px solid #ddd;
+        }
+
+        /* Comparison Section */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        @media (max-width: 600px) {
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .comp-box {
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .comp-box:hover {
+            background: #f0f8ff;
+        }
+
+        .comp-box h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.1rem;
+        }
+
+        .comp-active {
+            background: #d5f5e3;
+            border-color: var(--correct-color);
+        }
+
+        /* Option Analysis */
+        .option-card {
+            border: 1px solid #eee;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+
+        .toggle-btn {
+            background: #95a5a6;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+
+        .analysis-content {
+            display: none;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #ccc;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        .tag-correct { background: var(--correct-color); color: white; }
+        .tag-wrong { background: var(--wrong-color); color: white; }
+
+        /* Mini Quiz */
+        .quiz-item {
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .quiz-feedback {
+            margin-top: 5px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        /* Answer Reveal */
+        .reveal-section {
+            text-align: center;
+            margin-top: 30px;
+            padding: 30px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 8px;
+        }
+
+        .reveal-btn {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #d35400;
+        }
+
+        .reveal-btn:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        .answer-content {
+            display: none;
+            margin-top: 20px;
+            animation: fadeIn 0.5s;
+        }
+
+        .big-answer {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            background: white;
+            width: 80px;
+            height: 80px;
+            line-height: 80px;
+            border-radius: 50%;
+            margin: 0 auto 15px auto;
+        }
+
+        /* Mnemonics */
+        .mnemonic-box {
+            background: #fff3cd;
+            border: 2px solid #ffeeba;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- A. Header -->
+    <header>
+        <h1>什麼是「非功能性需求」？一題就會分</h1>
+        <div class="subtitle">Functional vs Non-functional Requirement</div>
+        <div class="q-number">題號：37</div>
+    </header>
+
+    <!-- B. Question Card -->
+    <section class="card">
+        <h2>題目內容</h2>
+        <div class="question-text">
+            37. 以下哪一項屬於「<span id="kw-nfr" class="keyword-span">非功能性需求</span>（Non-functional Requirement）」？
+        </div>
+        <div class="options">
+            <p>(A) 系統需提供<span id="kw-func-a" class="keyword-span">查詢學生資料的功能</span></p>
+            <p>(B) <span id="kw-func-b" class="keyword-span">使用者可新增與刪除帳號</span></p>
+            <p>(C) 查詢資料需在 <span id="kw-perf" class="keyword-span">2 秒內</span>完成</p>
+            <p>(D) 系統應提供<span id="kw-ui" class="keyword-span">課程列表頁面</span></p>
+        </div>
+    </section>
+
+    <!-- C. Highlight Interaction -->
+    <section class="card">
+        <h2>名師帶你畫重點</h2>
+        <p>點擊下方按鈕，看看題目中的關鍵字藏在哪裡：</p>
+        <div class="btn-group">
+            <button class="btn" onclick="highlight('func')">功能性需求</button>
+            <button class="btn" onclick="highlight('nfr')">非功能性需求</button>
+            <button class="btn" onclick="highlight('perf')">效能 / 反應時間</button>
+        </div>
+        <div class="explanation-box" id="highlight-explanation">
+            請點擊上方按鈕，解析重點會顯示在這裡。
+        </div>
+    </section>
+
+    <!-- D. Plain Language Translation -->
+    <section class="card">
+        <h2>白話翻譯與解題核心</h2>
+        <details open>
+            <summary>【白話翻譯】這題在問什麼？</summary>
+            <div class="details-content">
+                <p>簡單來說，題目在問：「哪一個選項<strong>不是</strong>在說『系統要做什麼功能』，而是在說『系統要<strong>做得多快、多穩、多好</strong>』？」</p>
+            </div>
+        </details>
+        <details>
+            <summary>【這題在考什麼】</summary>
+            <div class="details-content">
+                <p>考試重點在於你能不能分清楚：</p>
+                <ul>
+                    <li><strong>功能 (Functional)</strong> = 系統的「行為」與「動作」。(例：登入、查詢、列印)</li>
+                    <li><strong>非功能 (Non-functional)</strong> = 系統的「品質」與「限制」。(例：要在幾秒內跑完、要多安全、介面多好用)</li>
+                </ul>
+            </div>
+        </details>
+    </section>
+
+    <!-- E. Requirement Comparison -->
+    <section class="card">
+        <h2>需求類型對照表 (點擊查看重點)</h2>
+        <div class="comparison-grid">
+            <div class="comp-box" onclick="showComp(this, 'func')">
+                <h3>1. 功能性需求</h3>
+                <p><strong>關鍵字：</strong>提供...功能、可執行...動作、系統應...</p>
+                <ul>
+                    <li>查詢資料</li>
+                    <li>建立帳號</li>
+                    <li>計算成績</li>
+                </ul>
+                <div class="comp-feedback" style="display:none; color:var(--accent-color); font-weight:bold; margin-top:5px;">
+                    重點：描述系統「做什麼」(What to do)
+                </div>
+            </div>
+            <div class="comp-box" onclick="showComp(this, 'non-func')">
+                <h3>2. 非功能性需求</h3>
+                <p><strong>關鍵字：</strong>時間、安全性、可靠度、擴充性</p>
+                <ul>
+                    <li>反應時間 < 2秒</li>
+                    <li>可同時容納 1000 人</li>
+                    <li>符合資安法規</li>
+                </ul>
+                <div class="comp-feedback" style="display:none; color:var(--accent-color); font-weight:bold; margin-top:5px;">
+                    重點：描述系統「如何運作」(How well it does)
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- F. Option Analysis -->
+    <section class="card">
+        <h2>選項逐一解析</h2>
+        
+        <div class="option-card">
+            <p><strong>(A) 系統需提供查詢學生資料的功能</strong></p>
+            <button class="toggle-btn" onclick="toggleAnalysis('optA')">顯示解析</button>
+            <div id="optA" class="analysis-content">
+                <span class="tag tag-wrong">錯誤</span>
+                這是在描述系統要「做什麼事」，屬於<strong>功能性需求</strong>。
+            </div>
+        </div>
+
+        <div class="option-card">
+            <p><strong>(B) 使用者可新增與刪除帳號</strong></p>
+            <button class="toggle-btn" onclick="toggleAnalysis('optB')">顯示解析</button>
+            <div id="optB" class="analysis-content">
+                <span class="tag tag-wrong">錯誤</span>
+                新增與刪除是具體的「操作行為」，屬於<strong>功能性需求</strong>。
+            </div>
+        </div>
+
+        <div class="option-card">
+            <p><strong>(C) 查詢資料需在 2 秒內完成</strong></p>
+            <button class="toggle-btn" onclick="toggleAnalysis('optC')">顯示解析</button>
+            <div id="optC" class="analysis-content">
+                <span class="tag tag-correct">正確</span>
+                這裡規定了「速度」與「反應時間」，是對系統效能的品質要求，屬於<strong>非功能性需求</strong>。
+            </div>
+        </div>
+
+        <div class="option-card">
+            <p><strong>(D) 系統應提供課程列表頁面</strong></p>
+            <button class="toggle-btn" onclick="toggleAnalysis('optD')">顯示解析</button>
+            <div id="optD" class="analysis-content">
+                <span class="tag tag-wrong">錯誤</span>
+                這是在描述使用者介面 (UI) 的呈現，通常歸類在功能面或介面需求，不是效能或品質限制。
+            </div>
+        </div>
+    </section>
+
+    <!-- G. Mini Quiz -->
+    <section class="card">
+        <h2>快速小測驗 (點選答案)</h2>
+        
+        <div class="quiz-item">
+            <p>1. 「系統必須對所有密碼進行加密」屬於哪一類？</p>
+            <button class="btn" onclick="checkQuiz(1, 'F')">功能性</button>
+            <button class="btn" onclick="checkQuiz(1, 'NF')">非功能性</button>
+            <div id="quiz-fb-1" class="quiz-feedback"></div>
+        </div>
+
+        <div class="quiz-item">
+            <p>2. 「使用者按下結帳按鈕」屬於哪一類？</p>
+            <button class="btn" onclick="checkQuiz(2, 'F')">功能性</button>
+            <button class="btn" onclick="checkQuiz(2, 'NF')">非功能性</button>
+            <div id="quiz-fb-2" class="quiz-feedback"></div>
+        </div>
+
+        <div class="quiz-item">
+            <p>3. 「系統必須 24 小時運作不中斷 (可靠度)」屬於哪一類？</p>
+            <button class="btn" onclick="checkQuiz(3, 'F')">功能性</button>
+            <button class="btn" onclick="checkQuiz(3, 'NF')">非功能性</button>
+            <div id="quiz-fb-3" class="quiz-feedback"></div>
+        </div>
+    </section>
+
+    <!-- H. Mnemonics -->
+    <section class="card mnemonic-box">
+        <h2 style="color: #856404; border-bottom-color: #ffeeba;">老師的私房筆記</h2>
+        <h3>【記憶口訣】</h3>
+        <ul>
+            <li><strong>功能說「做啥」</strong> (What)</li>
+            <li><strong>非功能說「多好」</strong> (How well)</li>
+        </ul>
+        <h3>【常見陷阱】</h3>
+        <ol>
+            <li>不要看到「需求」兩個字就以為是功能。</li>
+            <li>看到「秒數」、「安全性」、「穩定度」、「同時連線數」這些關鍵字，請秒選非功能性需求。</li>
+            <li>頁面設計 (UI) 通常是為了支撐功能，除非特別強調「介面美觀度」或「易用性標準」，否則「提供某頁面」多視為功能描述。</li>
+        </ol>
+    </section>
+
+    <!-- I. Answer Reveal -->
+    <div class="reveal-section">
+        <p>準備好揭曉答案了嗎？</p>
+        <button class="reveal-btn" onclick="revealAnswer()">查看正確答案</button>
+        
+        <div id="final-answer" class="answer-content">
+            <div class="big-answer">C</div>
+            <h3>正確答案：(C)</h3>
+            <p>因為「查詢資料需在 2 秒內完成」是對系統<strong>效能 (Performance)</strong> 與 <strong>反應時間 (Response Time)</strong> 的限制，這就是標準的非功能性需求。</p>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // C. Highlight Logic
+    function highlight(type) {
+        // Reset all
+        document.querySelectorAll('.keyword-span').forEach(el => el.classList.remove('active-highlight'));
+        document.querySelectorAll('.btn').forEach(btn => btn.classList.remove('active'));
+        
+        const explanationBox = document.getElementById('highlight-explanation');
+        let text = "";
+
+        if (type === 'func') {
+            document.getElementById('kw-func-a').classList.add('active-highlight');
+            document.getElementById('kw-func-b').classList.add('active-highlight');
+            text = "功能性需求（系統「要做什麼」）：例如查詢資料、新增刪除帳號。";
+        } else if (type === 'nfr') {
+            document.getElementById('kw-nfr').classList.add('active-highlight');
+            text = "非功能性需求（系統「要做到多好、多快、多穩」）：這是本題要找的目標。";
+        } else if (type === 'perf') {
+            document.getElementById('kw-perf').classList.add('active-highlight');
+            text = "效能/反應時間（使用者等待結果的時間）：2 秒內完成，這就是對「速度」的要求。";
+        }
+
+        explanationBox.textContent = text;
+        event.target.classList.add('active');
+    }
+
+    // E. Comparison Logic
+    function showComp(element, type) {
+        // Clear previous highlights in this section
+        document.querySelectorAll('.comp-box').forEach(box => {
+            box.classList.remove('comp-active');
+            box.querySelector('.comp-feedback').style.display = 'none';
+        });
+
+        // Activate clicked
+        element.classList.add('comp-active');
+        element.querySelector('.comp-feedback').style.display = 'block';
+    }
+
+    // F. Toggle Analysis
+    function toggleAnalysis(id) {
+        const el = document.getElementById(id);
+        const btn = event.target;
+        if (el.style.display === 'block') {
+            el.style.display = 'none';
+            btn.textContent = '顯示解析';
+        } else {
+            el.style.display = 'block';
+            btn.textContent = '隱藏解析';
+        }
+    }
+
+    // G. Mini Quiz Logic
+    function checkQuiz(qNum, answer) {
+        const feedbackEl = document.getElementById(`quiz-fb-${qNum}`);
+        let msg = "";
+        let color = "";
+
+        // Q1: Security -> NF
+        if (qNum === 1) {
+            if (answer === 'NF') {
+                msg = "【答對了】安全性 (Security) 是典型的非功能性需求。";
+                color = "var(--correct-color)";
+            } else {
+                msg = "【答錯了】加密不是「新功能」，而是讓系統「更安全」的品質要求。";
+                color = "var(--wrong-color)";
+            }
+        }
+        // Q2: Checkout -> F
+        else if (qNum === 2) {
+            if (answer === 'F') {
+                msg = "【答對了】結帳是系統必須執行的一個具體動作。";
+                color = "var(--correct-color)";
+            } else {
+                msg = "【答錯了】這是系統要執行的動作，不是品質要求。";
+                color = "var(--wrong-color)";
+            }
+        }
+        // Q3: Reliability -> NF
+        else if (qNum === 3) {
+            if (answer === 'NF') {
+                msg = "【答對了】這是在講可靠度 (Reliability)，屬於品質要求。";
+                color = "var(--correct-color)";
+            } else {
+                msg = "【答錯了】不中斷是對於穩定性的要求，不是某個單一功能。";
+                color = "var(--wrong-color)";
+            }
+        }
+
+        feedbackEl.textContent = msg;
+        feedbackEl.style.color = color;
+    }
+
+    // I. Reveal Answer
+    function revealAnswer() {
+        const content = document.getElementById('final-answer');
+        content.style.display = 'block';
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>啟發式搜尋 h(n) 解析 - AI Q31</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #4f46e5;
+            --accent-color: #f59e0b;
+            --bg-color: #f3f4f6;
+            --text-color: #1f2937;
+            --card-bg: #ffffff;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding-bottom: 50px;
+        }
+
+        /* A. 頁首區 */
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem 1rem;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+            font-weight: 800;
+        }
+
+        header p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        header .badge {
+            display: inline-block;
+            background-color: var(--accent-color);
+            color: white;
+            padding: 0.25rem 0.8rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: bold;
+            margin-top: 1rem;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        /* 共用卡片樣式 */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e5e7eb;
+        }
+
+        h2 {
+            font-size: 1.4rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            border-left: 5px solid var(--accent-color);
+            padding-left: 10px;
+        }
+
+        /* B. 題目區 & C. 關鍵字互動 */
+        .question-box {
+            font-size: 1.15rem;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            line-height: 1.8;
+        }
+
+        .highlight-active {
+            background-color: #fde047;
+            padding: 0 4px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .keyword-btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .btn {
+            background-color: white;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            font-weight: 600;
+        }
+
+        .btn:hover, .btn.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .explanation-box {
+            background-color: #eff6ff;
+            border-left: 4px solid var(--primary-color);
+            padding: 1rem;
+            margin-top: 1rem;
+            display: none;
+            font-size: 0.95rem;
+        }
+
+        .explanation-box.show {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        /* D. 白話翻譯 Accordion */
+        .accordion {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .accordion-header {
+            background-color: #f9fafb;
+            padding: 1rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+        }
+
+        .accordion-header:hover {
+            background-color: #f3f4f6;
+        }
+
+        .accordion-content {
+            padding: 0 1rem;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background-color: white;
+            color: #4b5563;
+        }
+
+        .accordion-content p {
+            padding: 1rem 0;
+        }
+
+        .accordion-toggle {
+            transition: transform 0.3s;
+        }
+
+        .accordion.open .accordion-toggle {
+            transform: rotate(180deg);
+        }
+
+        .accordion.open .accordion-content {
+            max-height: 200px;
+        }
+
+        /* E. h(n) 概念示意 */
+        .map-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 2rem 0;
+            position: relative;
+        }
+
+        .nodes-wrapper {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .node {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: white;
+            border: 3px solid #d1d5db;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .node.start { border-color: var(--primary-color); background-color: #eff6ff; }
+        .node.goal { border-color: var(--success-color); background-color: #ecfdf5; }
+        .node.path { border-color: #9ca3af; }
+        
+        .node span { font-size: 12px; color: #6b7280; }
+        .node strong { font-size: 16px; }
+
+        .connection-line {
+            position: absolute;
+            top: 40px;
+            height: 4px;
+            background-color: #e5e7eb;
+            z-index: 1;
+        }
+
+        .h-value {
+            font-weight: bold;
+            color: var(--error-color);
+        }
+
+        .concept-note {
+            background-color: #fffbeb;
+            border: 1px solid #fcd34d;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        /* F. 選項解析 */
+        .option-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            margin-bottom: 0.8rem;
+            overflow: hidden;
+        }
+
+        .option-header {
+            padding: 1rem;
+            background-color: white;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .option-header:hover {
+            background-color: #f9fafb;
+        }
+
+        .option-body {
+            display: none;
+            padding: 1rem;
+            border-top: 1px solid #e5e7eb;
+            background-color: #f8fafc;
+        }
+
+        .option-body.correct {
+            background-color: #ecfdf5;
+            color: #065f46;
+        }
+
+        .option-body.wrong {
+            background-color: #fef2f2;
+            color: #991b1b;
+        }
+
+        .tag-correct {
+            background-color: var(--success-color);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        .tag-wrong {
+            background-color: var(--error-color);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        /* G. 快速小測驗 */
+        .quiz-item {
+            margin-bottom: 1.5rem;
+            border-bottom: 1px dashed #e5e7eb;
+            padding-bottom: 1rem;
+        }
+
+        .quiz-item:last-child {
+            border-bottom: none;
+        }
+
+        .quiz-question {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .quiz-options label {
+            display: inline-block;
+            margin-right: 1rem;
+            cursor: pointer;
+        }
+
+        .quiz-feedback {
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: bold;
+            display: none;
+        }
+
+        .quiz-feedback.correct { color: var(--success-color); }
+        .quiz-feedback.wrong { color: var(--error-color); }
+
+        /* H. 口訣與陷阱 */
+        .mnemonic-box {
+            background: linear-gradient(to right, #4f46e5, #ec4899);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .mnemonic-text {
+            font-size: 1.5rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+        }
+
+        .pitfall-list li {
+            margin-bottom: 0.5rem;
+            color: #dc2626;
+        }
+        
+        .pitfall-list li::marker {
+            color: #dc2626;
+        }
+
+        /* I. 答案揭曉 */
+        .reveal-section {
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .btn-reveal {
+            background-color: var(--accent-color);
+            color: white;
+            font-size: 1.2rem;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+            transition: transform 0.2s;
+        }
+
+        .btn-reveal:hover {
+            transform: scale(1.05);
+        }
+
+        .final-answer {
+            display: none;
+            margin-top: 1.5rem;
+            background-color: #ecfdf5;
+            border: 2px solid var(--success-color);
+            padding: 2rem;
+            border-radius: 12px;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .final-answer h3 {
+            color: var(--success-color);
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* RWD */
+        @media (max-width: 600px) {
+            header h1 { font-size: 1.5rem; }
+            .nodes-wrapper { flex-direction: column; align-items: center; gap: 20px; }
+            .connection-line { display: none; }
+            .node { width: 100px; height: 100px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- A. 頁首區 -->
+    <header>
+        <div class="container">
+            <h1>啟發式搜尋在「想什麼」？</h1>
+            <p>關鍵就是 h(n) — Heuristic Search 基礎必考觀念</p>
+            <div class="badge">題號：31</div>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <!-- B. 題目區 -->
+        <div class="card">
+            <h2>題目</h2>
+            <div class="question-box" id="questionBox">
+                31. 下列哪一項是<span id="txt-heuristic">啟發式搜尋</span>（Heuristic Search）常使用的函數？<br>
+                (A) 隨機函數<br>
+                (B) <span id="txt-eval">評估</span><span id="txt-state">狀態</span>好壞的<span id="txt-hn">估計函數 h(n)</span><br>
+                (C) 資料標準化函數<br>
+                (D) 反向函數
+            </div>
+        </div>
+
+        <!-- C. 關鍵字互動 -->
+        <div class="card">
+            <h2>💡 關鍵字解析（點擊按鈕試試看）</h2>
+            <div class="keyword-btn-group">
+                <button class="btn" onclick="highlight('heuristic')">啟發式搜尋</button>
+                <button class="btn" onclick="highlight('hn')">h(n)</button>
+                <button class="btn" onclick="highlight('state')">狀態</button>
+                <button class="btn" onclick="highlight('eval')">估計/評估</button>
+            </div>
+            
+            <div id="exp-heuristic" class="explanation-box">
+                <strong>啟發式搜尋 (Heuristic Search)：</strong><br>
+                就像我們找路時不會亂走，而是憑「直覺」或「經驗」判斷哪個方向比較近。這就是一種利用「經驗法則」幫助快速找方向的搜尋方法。
+            </div>
+            <div id="exp-hn" class="explanation-box">
+                <strong>h(n) 估計函數：</strong><br>
+                這是啟發式搜尋的靈魂！h 代表 Heuristic。用來「猜」目前位置離終點「大概」還有多遠。h(n) 越小，代表我們覺得離終點越近。
+            </div>
+            <div id="exp-state" class="explanation-box">
+                <strong>狀態 (State)：</strong><br>
+                在搜尋過程中，每一個停留的點、或者是棋盤上的一種局面，都稱為一個「狀態」。
+            </div>
+            <div id="exp-eval" class="explanation-box">
+                <strong>估計/評估：</strong><br>
+                啟發式搜尋的核心不是「精確計算」（因為還沒走到終點不知道多遠），而是靠「評估」來決定下一步該往哪裡走最划算。
+            </div>
+        </div>
+
+        <!-- D. 白話翻譯 -->
+        <div class="card">
+            <h2>🗣️ 老師幫你翻譯</h2>
+            
+            <div class="accordion" onclick="toggleAccordion(this)">
+                <div class="accordion-header">
+                    【白話翻譯】題目在問什麼？
+                    <span class="accordion-toggle">▼</span>
+                </div>
+                <div class="accordion-content">
+                    <p>「啟發式搜尋在走每一步時，不像無頭蒼蠅亂撞，它是靠什麼工具來『判斷哪個方向比較好』？」</p>
+                </div>
+            </div>
+
+            <div class="accordion" onclick="toggleAccordion(this)">
+                <div class="accordion-header">
+                    【考點解析】這題在考什麼觀念？
+                    <span class="accordion-toggle">▼</span>
+                </div>
+                <div class="accordion-content">
+                    <p>你是否知道啟發式搜尋的核心不是「隨機」試誤，也不是事後諸葛，而是靠一個能夠事前預測好壞的「估計函數 h(n)」。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- E. h(n) 概念互動 -->
+        <div class="card">
+            <h2>🧭 h(n) 概念圖解</h2>
+            <p>假設我們要從 <strong>起點</strong> 走到 <strong>目標</strong>，現在有兩條路 (A 和 B)，該怎麼選？</p>
+            
+            <div class="map-container">
+                <!-- 簡單的節點圖 -->
+                <div style="position: relative; width: 100%; max-width: 400px; height: 200px;">
+                    
+                    <!-- 起點 -->
+                    <div class="node start" style="position: absolute; top: 0; left: 50%; transform: translateX(-50%);">
+                        <strong>起點</strong>
+                        <span>現在位置</span>
+                    </div>
+
+                    <!-- 路徑 A -->
+                    <div class="node path" style="position: absolute; top: 100px; left: 10%;">
+                        <strong>A點</strong>
+                        <span class="h-value">h(n)=20</span>
+                    </div>
+
+                    <!-- 路徑 B -->
+                    <div class="node path" style="position: absolute; top: 100px; right: 10%; border-color: var(--accent-color); border-width: 4px;">
+                        <strong>B點</strong>
+                        <span class="h-value">h(n)=5</span>
+                    </div>
+
+                    <!-- 連線 (簡單示意，使用 borders 或 HR) -->
+                    <svg style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none;">
+                        <line x1="50%" y1="80" x2="20%" y2="100" stroke="#ccc" stroke-width="2" />
+                        <line x1="50%" y1="80" x2="80%" y2="100" stroke="#f59e0b" stroke-width="4" />
+                    </svg>
+
+                </div>
+            </div>
+
+            <div class="concept-note">
+                <p><strong>老師解說：</strong></p>
+                <p>電腦會看 h(n) 的數值：</p>
+                <ul style="margin-left: 20px; margin-top: 5px;">
+                    <li>走 A 點，估計還剩 20 公里 (h=20)</li>
+                    <li>走 B 點，估計只剩 5 公里 (h=5)</li>
+                </ul>
+                <p style="margin-top: 10px; color: var(--primary-color); font-weight: bold;">
+                    👉 啟發式搜尋會優先選擇 h(n) 較小的 B 點！這就是 h(n) 的功能。
+                </p>
+            </div>
+        </div>
+
+        <!-- F. 選項逐一解析 -->
+        <div class="card">
+            <h2>🧐 選項逐一擊破</h2>
+            <p style="margin-bottom: 1rem; color: #666; font-size: 0.9rem;">點擊選項查看詳細解析：</p>
+
+            <div class="option-card">
+                <div class="option-header" onclick="toggleOption(this)">
+                    <span>(A) 隨機函數</span>
+                    <span>▼</span>
+                </div>
+                <div class="option-body wrong">
+                    <span class="tag-wrong">錯誤</span>
+                    <p>隨機函數是「亂走」，完全沒有利用資訊來判斷好壞。啟發式搜尋是有「方向感」的，不是隨機的。</p>
+                </div>
+            </div>
+
+            <div class="option-card">
+                <div class="option-header" onclick="toggleOption(this)">
+                    <span>(B) 評估狀態好壞的估計函數 h(n)</span>
+                    <span>▼</span>
+                </div>
+                <div class="option-body correct">
+                    <span class="tag-correct">正確</span>
+                    <p>沒錯！這就是定義。利用 h(n) 來評估當前狀態距離目標「大約」還有多遠，引導搜尋方向。</p>
+                </div>
+            </div>
+
+            <div class="option-card">
+                <div class="option-header" onclick="toggleOption(this)">
+                    <span>(C) 資料標準化函數</span>
+                    <span>▼</span>
+                </div>
+                <div class="option-body wrong">
+                    <span class="tag-wrong">錯誤</span>
+                    <p>這是資料預處理（Data Preprocessing）在做的事（把數據縮放到 0~1 之間），跟搜尋路徑無關。</p>
+                </div>
+            </div>
+
+            <div class="option-card">
+                <div class="option-header" onclick="toggleOption(this)">
+                    <span>(D) 反向函數</span>
+                    <span>▼</span>
+                </div>
+                <div class="option-body wrong">
+                    <span class="tag-wrong">錯誤</span>
+                    <p>這是一個數學名詞，與啟發式搜尋的決策過程沒有直接關係。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- G. 快速小測驗 -->
+        <div class="card">
+            <h2>📝 觀念快充站</h2>
+            
+            <div class="quiz-item">
+                <p class="quiz-question">1. h(n) 是「實際」距離還是「估計」距離？</p>
+                <div class="quiz-options">
+                    <label><input type="radio" name="q1" value="wrong" onclick="checkQuiz(1, false)"> 絕對精準的實際距離</label><br>
+                    <label><input type="radio" name="q1" value="correct" onclick="checkQuiz(1, true)"> 推測的估計距離</label>
+                </div>
+                <div id="q1-feedback" class="quiz-feedback"></div>
+            </div>
+
+            <div class="quiz-item">
+                <p class="quiz-question">2. 啟發式搜尋通常會優先選擇 h(n) 比較大還是比較小的節點？</p>
+                <div class="quiz-options">
+                    <label><input type="radio" name="q2" value="wrong" onclick="checkQuiz(2, false)"> 比較大（代表比較遠）</label><br>
+                    <label><input type="radio" name="q2" value="correct" onclick="checkQuiz(2, true)"> 比較小（代表離目標比較近）</label>
+                </div>
+                <div id="q2-feedback" class="quiz-feedback"></div>
+            </div>
+
+            <div class="quiz-item">
+                <p class="quiz-question">3. 最知名的 A* 搜尋演算法，除了 h(n) 之外還加了什麼？</p>
+                <div class="quiz-options">
+                    <label><input type="radio" name="q3" value="correct" onclick="checkQuiz(3, true)"> 已經走過的距離 g(n)</label><br>
+                    <label><input type="radio" name="q3" value="wrong" onclick="checkQuiz(3, false)"> 隨機亂數</label>
+                </div>
+                <div id="q3-feedback" class="quiz-feedback"></div>
+            </div>
+        </div>
+
+        <!-- H. 口訣與陷阱 -->
+        <div class="mnemonic-box">
+            <p>🏆 必殺口訣</p>
+            <div class="mnemonic-text">「啟發靠估計，方向看 h(n)」</div>
+            <p style="font-size: 0.9rem; opacity: 0.9;">看到 Heuristic 就要想到 h(n)</p>
+        </div>
+
+        <div class="card" style="border-left: 5px solid #ef4444;">
+            <h2 style="color: #ef4444; border-left: none; padding-left: 0;">⚠️ 常見陷阱區</h2>
+            <ul class="pitfall-list" style="padding-left: 20px;">
+                <li><strong>陷阱 1：</strong> 以為 h(n) 是一定算得準的。錯！它是「估計」值（Heuristic），有時候會高估或低估。</li>
+                <li><strong>陷阱 2：</strong> 把 h(n) 當成隨機亂猜。錯！它是依據特定規則（如直線距離）做出的「有根據的猜測」。</li>
+                <li><strong>陷阱 3：</strong> 混淆 h(n) 與 g(n)。h(n) 是「還沒走的距離」，g(n) 是「已經走過的距離」。</li>
+            </ul>
+        </div>
+
+        <!-- I. 正確答案揭曉 -->
+        <div class="reveal-section">
+            <button class="btn-reveal" onclick="revealAnswer()">✨ 點我看正確答案</button>
+            
+            <div id="finalAnswer" class="final-answer">
+                <h3>答案：(B)</h3>
+                <p style="font-size: 1.2rem; font-weight: 500;">
+                    評估狀態好壞的估計函數 h(n)
+                </p>
+                <hr style="margin: 1rem 0; border: 0; border-top: 1px solid #d1fae5;">
+                <p><strong>一句話帶走：</strong><br>啟發式搜尋就是利用 h(n) 來幫我們「猜」哪條路最好！</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // C. 關鍵字互動邏輯
+        function highlight(key) {
+            // 清除所有目前的解釋顯示
+            document.querySelectorAll('.explanation-box').forEach(box => {
+                box.classList.remove('show');
+            });
+            
+            // 清除文字高亮
+            const ids = ['txt-heuristic', 'txt-hn', 'txt-state', 'txt-eval'];
+            ids.forEach(id => {
+                document.getElementById(id).classList.remove('highlight-active');
+            });
+            
+            // 設定對應的文字高亮與解釋
+            if (key === 'heuristic') {
+                document.getElementById('txt-heuristic').classList.add('highlight-active');
+                document.getElementById('exp-heuristic').classList.add('show');
+            } else if (key === 'hn') {
+                document.getElementById('txt-hn').classList.add('highlight-active');
+                document.getElementById('exp-hn').classList.add('show');
+            } else if (key === 'state') {
+                document.getElementById('txt-state').classList.add('highlight-active');
+                document.getElementById('exp-state').classList.add('show');
+            } else if (key === 'eval') {
+                document.getElementById('txt-eval').classList.add('highlight-active');
+                document.getElementById('exp-eval').classList.add('show');
+            }
+        }
+
+        // D. Accordion 展開收合
+        function toggleAccordion(element) {
+            element.classList.toggle('open');
+            const content = element.querySelector('.accordion-content');
+            if (element.classList.contains('open')) {
+                content.style.maxHeight = content.scrollHeight + "px";
+            } else {
+                content.style.maxHeight = "0";
+            }
+        }
+
+        // F. 選項解析展開
+        function toggleOption(element) {
+            const body = element.nextElementSibling;
+            if (body.style.display === "block") {
+                body.style.display = "none";
+            } else {
+                body.style.display = "block";
+            }
+        }
+
+        // G. 小測驗邏輯
+        function checkQuiz(qNum, isCorrect) {
+            const feedbackEl = document.getElementById(`q${qNum}-feedback`);
+            feedbackEl.style.display = 'block';
+            
+            if (isCorrect) {
+                feedbackEl.textContent = "⭕ 答對了！觀念正確。";
+                feedbackEl.className = "quiz-feedback correct";
+            } else {
+                feedbackEl.className = "quiz-feedback wrong";
+                if (qNum === 1) feedbackEl.textContent = "❌ 答錯囉！h(n) 是「Heuristic」，意思是啟發、估計，不是實際測量。";
+                if (qNum === 2) feedbackEl.textContent = "❌ 答錯囉！h(n) 代表「剩下的距離」，距離越小越好。";
+                if (qNum === 3) feedbackEl.textContent = "❌ 答錯囉！A* = g(n) + h(n)，會考量走過的成本。";
+            }
+        }
+
+        // I. 答案揭曉
+        function revealAnswer() {
+            const answerBox = document.getElementById('finalAnswer');
+            const btn = document.querySelector('.btn-reveal');
+            
+            answerBox.style.display = 'block';
+            btn.textContent = '🎉 恭喜你完成學習！';
+            btn.style.backgroundColor = '#10b981';
+            btn.style.cursor = 'default';
+            btn.removeAttribute('onclick');
+            
+            // 自動滾動到答案區
+            answerBox.scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

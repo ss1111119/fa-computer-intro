@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OOP 核心概念 | 題號 41</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50; /* 深藍 - 穩重專業 */
+            --accent-color: #e67e22;  /* 橘色 - 重點提示 */
+            --highlight-bg: #fff3cd;  /* 淺黃 - 螢光筆效果 */
+            --text-color: #333;
+            --light-gray: #f8f9fa;
+            --border-color: #ddd;
+            --correct-color: #27ae60;
+            --error-color: #c0392b;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            box-shadow: 0 0 15px rgba(0,0,0,0.05);
+        }
+
+        /* A. Header */
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 5px solid var(--accent-color);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        header p {
+            margin: 5px 0 0;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .question-number {
+            display: inline-block;
+            background: var(--accent-color);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-top: 10px;
+        }
+
+        /* Section Styling */
+        section {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            margin-top: 0;
+            border-left: 4px solid var(--accent-color);
+            padding-left: 10px;
+        }
+
+        /* B. Question Card */
+        .question-card {
+            background-color: var(--light-gray);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .question-text {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+
+        .option-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .option-list li {
+            margin-bottom: 8px;
+        }
+
+        /* Highlight Logic */
+        .highlight-span {
+            transition: background-color 0.3s;
+            padding: 0 2px;
+            border-radius: 2px;
+        }
+        
+        .highlight-active {
+            background-color: #ffeb3b;
+            color: #000;
+            font-weight: bold;
+            box-shadow: 0 0 5px rgba(0,0,0,0.2);
+        }
+
+        /* C. Keyword Buttons */
+        .keyword-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .btn-keyword {
+            background: white;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 5px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .btn-keyword:hover, .btn-keyword.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .definition-box {
+            background: #eef2f5;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+            border-left: 4px solid var(--primary-color);
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+        }
+
+        /* D. Accordion */
+        .accordion {
+            background-color: white;
+            color: var(--text-color);
+            cursor: pointer;
+            padding: 15px;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-size: 1rem;
+            font-weight: bold;
+            background: var(--light-gray);
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .accordion:after {
+            content: '+';
+            font-weight: bold;
+        }
+
+        .accordion.active:after {
+            content: '-';
+        }
+
+        .panel {
+            padding: 0 15px;
+            background-color: white;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.2s ease-out;
+            border: 1px solid var(--light-gray);
+            border-top: none;
+        }
+
+        .panel p {
+            margin: 15px 0;
+        }
+
+        /* E. OOP Pillars Interaction */
+        .pillar-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .pillar-btn {
+            padding: 15px;
+            background: white;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .pillar-btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .pillar-content {
+            margin-top: 15px;
+            padding: 15px;
+            background: #fff8e1; /* 淡黃色背景 */
+            border: 2px dashed #ffc107;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .pillar-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            display: block;
+            margin-bottom: 5px;
+            color: var(--accent-color);
+        }
+
+        /* F. Analysis */
+        .analysis-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-bottom: 1px dashed #eee;
+        }
+        .analysis-label {
+            font-weight: bold;
+            display: inline-block;
+            width: 250px;
+        }
+        .analysis-status {
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        .status-correct { color: var(--correct-color); }
+        .status-wrong { color: var(--error-color); }
+
+        /* G. Quiz Check */
+        .quiz-form {
+            background: var(--light-gray);
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 1px solid #ddd;
+        }
+
+        .checkbox-label input {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+
+        .btn-check {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .btn-check:hover {
+            opacity: 0.9;
+        }
+
+        .feedback-area {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .feedback-correct { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .feedback-wrong { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+        /* H. Mnemonics */
+        .mnemonic-box {
+            background: #e8f4fd;
+            border-left: 5px solid #3498db;
+            padding: 15px;
+        }
+
+        .pitfall-list {
+            list-style-type: none; /* Removed bullet to use CSS content if needed, but numbering is fine */
+            padding-left: 0;
+        }
+        .pitfall-list li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 5px;
+        }
+        .pitfall-list li:before {
+            content: "!";
+            position: absolute;
+            left: 0;
+            color: red;
+            font-weight: bold;
+        }
+
+        /* I. Answer Reveal */
+        .answer-reveal {
+            margin-top: 20px;
+            text-align: center;
+            border-top: 2px solid var(--border-color);
+            padding-top: 20px;
+        }
+        
+        .answer-box {
+            display: none;
+            margin-top: 15px;
+            padding: 20px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 8px;
+        }
+
+        .btn-reveal {
+            background: transparent;
+            border: 2px solid var(--text-color);
+            padding: 5px 15px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        /* Mobile tweaks */
+        @media (max-width: 600px) {
+            .pillar-grid {
+                grid-template-columns: 1fr;
+            }
+            .analysis-label {
+                display: block;
+                width: 100%;
+                margin-bottom: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- A. Header -->
+    <header>
+        <h1>OOP 為什麼要學？</h1>
+        <p>四大核心觀念一次搞懂 | Object-Oriented Programming 必考重點</p>
+        <div class="question-number">題號：41（複選題）</div>
+    </header>
+
+    <!-- B. Question Card -->
+    <section id="question-area">
+        <div class="question-card">
+            <div class="question-text">
+                41. 以下哪些屬於<span class="highlight-span" data-key="oop">物件導向</span>程式設計的核心概念？（複選）
+            </div>
+            <ul class="option-list">
+                <li>(A) <span class="highlight-span" data-key="encapsulation">封裝</span>（Encapsulation）</li>
+                <li>(B) <span class="highlight-span" data-key="inheritance">繼承</span>（Inheritance）</li>
+                <li>(C) <span class="highlight-span" data-key="polymorphism">多型</span>（Polymorphism）</li>
+                <li>(D) <span class="highlight-span" data-key="compilation">編譯</span>（Compilation）</li>
+                <li>(E) <span class="highlight-span" data-key="abstraction">抽象</span>（Abstraction）</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- C. Highlight Interaction -->
+    <section>
+        <h2>觀念掃描</h2>
+        <p style="font-size: 0.9rem; color: #666;">點擊下方按鈕，了解這些名詞在工蝦毀：</p>
+        <div class="keyword-area">
+            <button class="btn-keyword" onclick="highlight('oop')">物件導向</button>
+            <button class="btn-keyword" onclick="highlight('encapsulation')">封裝</button>
+            <button class="btn-keyword" onclick="highlight('inheritance')">繼承</button>
+            <button class="btn-keyword" onclick="highlight('polymorphism')">多型</button>
+            <button class="btn-keyword" onclick="highlight('abstraction')">抽象</button>
+            <button class="btn-keyword" onclick="highlight('compilation')">編譯</button>
+        </div>
+        <div class="definition-box" id="definition-text">
+            請點擊上方關鍵字，這裡會顯示「第一次聽也懂」的白話解釋。
+        </div>
+    </section>
+
+    <!-- D. Plain Language Translation -->
+    <section>
+        <button class="accordion">這題到底在考什麼？（點擊展開）</button>
+        <div class="panel">
+            <p><strong>【白話翻譯】</strong><br>
+            「哪些觀念是『物件導向』這種寫程式方法一定會用到的基本精神？」</p>
+            <p><strong>【核心重點】</strong><br>
+            你是否知道 OOP 的『四大支柱』，以及分辨哪些名詞只是程式執行的過程（如編譯），而不是設計觀念。</p>
+        </div>
+    </section>
+
+    <!-- E. OOP Pillars Interaction -->
+    <section>
+        <h2>OOP 四大核心對照</h2>
+        <p style="font-size: 0.9rem; color: #666;">點擊名詞查看生活化範例：</p>
+        <div class="pillar-grid">
+            <div class="pillar-btn" onclick="showPillar('encap', this)">1. 封裝<br><small>Encapsulation</small></div>
+            <div class="pillar-btn" onclick="showPillar('inhert', this)">2. 繼承<br><small>Inheritance</small></div>
+            <div class="pillar-btn" onclick="showPillar('poly', this)">3. 多型<br><small>Polymorphism</small></div>
+            <div class="pillar-btn" onclick="showPillar('abstr', this)">4. 抽象<br><small>Abstraction</small></div>
+        </div>
+        <div class="pillar-content" id="pillar-display">
+            <span class="pillar-title">請選擇上方概念</span>
+            這裡會顯示該概念的核心意義與生活範例。
+        </div>
+    </section>
+
+    <!-- F. Analysis -->
+    <section>
+        <h2>選項深度解析</h2>
+        <div id="analysis-container">
+            <!-- Content populated by JS purely for semantic order, but hardcoded here for reliability -->
+            <div class="analysis-item">
+                <span class="analysis-label">(A) 封裝（Encapsulation）</span>
+                <span class="analysis-status status-correct">→ 正確</span>
+                OOP 核心。把資料藏起來，只讓外部透過特定方法使用。
+            </div>
+            <div class="analysis-item">
+                <span class="analysis-label">(B) 繼承（Inheritance）</span>
+                <span class="analysis-status status-correct">→ 正確</span>
+                OOP 核心。子類別直接擁有父類別的功能，減少重複代碼。
+            </div>
+            <div class="analysis-item">
+                <span class="analysis-label">(C) 多型（Polymorphism）</span>
+                <span class="analysis-status status-correct">→ 正確</span>
+                OOP 核心。同一個指令，對不同物件有不同反應（增加彈性）。
+            </div>
+            <div class="analysis-item">
+                <span class="analysis-label">(D) 編譯（Compilation）</span>
+                <span class="analysis-status status-wrong">→ 錯誤</span>
+                這是程式「翻譯」成機器碼的過程，不是 OOP 的設計觀念。
+            </div>
+            <div class="analysis-item">
+                <span class="analysis-label">(E) 抽象（Abstraction）</span>
+                <span class="analysis-status status-correct">→ 正確</span>
+                OOP 核心。只定義「該做什麼」，隱藏「怎麼做」的複雜細節。
+            </div>
+        </div>
+    </section>
+
+    <!-- G. Answer Check -->
+    <section>
+        <h2>自我檢測</h2>
+        <div class="quiz-form">
+            <div class="checkbox-group">
+                <label class="checkbox-label"><input type="checkbox" name="opt" value="A"> (A) 封裝</label>
+                <label class="checkbox-label"><input type="checkbox" name="opt" value="B"> (B) 繼承</label>
+                <label class="checkbox-label"><input type="checkbox" name="opt" value="C"> (C) 多型</label>
+                <label class="checkbox-label"><input type="checkbox" name="opt" value="D"> (D) 編譯</label>
+                <label class="checkbox-label"><input type="checkbox" name="opt" value="E"> (E) 抽象</label>
+            </div>
+            <button class="btn-check" onclick="checkAnswer()">檢查答案</button>
+            <div id="quiz-feedback" class="feedback-area"></div>
+        </div>
+    </section>
+
+    <!-- H. Mnemonics -->
+    <section>
+        <h2>記憶口訣與陷阱</h2>
+        <div class="mnemonic-box">
+            <h3>【口訣】</h3>
+            <p style="font-size: 1.2rem; font-weight: bold; color: var(--primary-color);">「封繼多抽，就是 OOP」</p>
+            <p>（封裝、繼承、多型、抽象）</p>
+            <hr style="border:0; border-top:1px dashed #ccc;">
+            <h3>【常見陷阱】</h3>
+            <ul class="pitfall-list">
+                <li>看到很專業的程式名詞（如編譯、連結、載入）就選，那是執行流程！</li>
+                <li>只記三個（封裝、繼承、多型），忘了「抽象」也是核心之一。</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- I. Reveal -->
+    <section class="answer-reveal">
+        <button class="btn-reveal" onclick="toggleAnswer()">顯示正確解答</button>
+        <div id="final-answer" class="answer-box">
+            <h3 style="margin-top:0;">正確答案：A、B、C、E</h3>
+            <p>物件導向的核心是「封裝、繼承、多型、抽象」四大支柱，編譯（Compilation）不屬於其中之一。</p>
+        </div>
+    </section>
+
+    <footer style="text-align: center; padding: 20px; font-size: 0.8rem; color: #999;">
+        補教名師衝刺班教材 © 2024 Short-Term Sprint Series
+    </footer>
+</div>
+
+<script>
+    // Data for Definitions
+    const definitions = {
+        'oop': '<strong>物件導向</strong>（把資料和功能包成「物件」來使用，像堆積木一樣組裝程式）',
+        'encapsulation': '<strong>封裝</strong>（把內部細節藏起來，像膠囊一樣包好，只開放需要的操作）',
+        'inheritance': '<strong>繼承</strong>（子類別可以沿用父類別的功能，像兒子繼承父親的財產）',
+        'polymorphism': '<strong>多型</strong>（同一個操作，對不同物件有不同表現，按播放鍵：音樂播歌、影片播畫面）',
+        'abstraction': '<strong>抽象</strong>（只定義「該做什麼」，不管怎麼做，像開車只需懂方向盤，不用懂引擎）',
+        'compilation': '<strong>編譯</strong>（把程式碼轉成電腦看得懂的形式，這是翻譯過程，與 OOP 設計觀念無關）'
+    };
+
+    // Data for Pillars
+    const pillars = {
+        'encap': {
+            title: '封裝 (Encapsulation) → 保護資料',
+            desc: '像電視遙控器，你看不到內部電路（被封裝了），只能透過按鍵操作。保護內部零件不被隨意破壞。'
+        },
+        'inhert': {
+            title: '繼承 (Inheritance) → 重複利用',
+            desc: '像生物遺傳，子女（子類別）自動擁有父母（父類別）的特徵，不用重新創造，省時省力。'
+        },
+        'poly': {
+            title: '多型 (Polymorphism) → 彈性行為',
+            desc: '像「Play」這個動作，對 MP3 來說是發出聲音，對 GIF 來說是動起來。同一個指令，不同反應。'
+        },
+        'abstr': {
+            title: '抽象 (Abstraction) → 隱藏複雜',
+            desc: '像買咖啡，你只要說「我要拿鐵」，不需要知道店員怎麼磨豆、萃取、打奶泡。只看重點，忽略細節。'
+        }
+    };
+
+    // C. Highlight Logic
+    function highlight(key) {
+        // 1. Reset all spans
+        document.querySelectorAll('.highlight-span').forEach(span => {
+            span.classList.remove('highlight-active');
+        });
+        
+        // 2. Remove active class from buttons
+        document.querySelectorAll('.btn-keyword').forEach(btn => {
+            btn.classList.remove('active');
+        });
+
+        // 3. Highlight matching spans
+        const targets = document.querySelectorAll(`.highlight-span[data-key="${key}"]`);
+        targets.forEach(t => t.classList.add('highlight-active'));
+
+        // 4. Update Definition Box
+        const defBox = document.getElementById('definition-text');
+        if (definitions[key]) {
+            defBox.innerHTML = definitions[key];
+            defBox.style.backgroundColor = '#fff3cd'; // Flash effect color
+            setTimeout(() => { defBox.style.backgroundColor = '#eef2f5'; }, 300);
+        }
+
+        // 5. Set button active
+        const clickedBtn = document.querySelector(`button[onclick="highlight('${key}')"]`);
+        if(clickedBtn) clickedBtn.classList.add('active');
+    }
+
+    // D. Accordion Logic
+    const acc = document.querySelector(".accordion");
+    const panel = document.querySelector(".panel");
+    
+    acc.addEventListener("click", function() {
+        this.classList.toggle("active");
+        if (panel.style.maxHeight) {
+            panel.style.maxHeight = null;
+        } else {
+            panel.style.maxHeight = panel.scrollHeight + "px";
+        }
+    });
+
+    // E. Pillar Logic
+    function showPillar(key, btn) {
+        // Reset buttons
+        document.querySelectorAll('.pillar-btn').forEach(b => b.classList.remove('active'));
+        // Set active
+        btn.classList.add('active');
+
+        // Update content
+        const display = document.getElementById('pillar-display');
+        const data = pillars[key];
+        display.innerHTML = `<span class="pillar-title">${data.title}</span>${data.desc}`;
+    }
+
+    // G. Quiz Logic
+    function checkAnswer() {
+        const correctAnswers = ['A', 'B', 'C', 'E'];
+        const checkboxes = document.getElementsByName('opt');
+        let selected = [];
+        
+        for (let i = 0; i < checkboxes.length; i++) {
+            if (checkboxes[i].checked) {
+                selected.push(checkboxes[i].value);
+            }
+        }
+
+        selected.sort();
+        const feedback = document.getElementById('quiz-feedback');
+        feedback.style.display = 'block';
+        feedback.className = 'feedback-area'; // Reset classes
+
+        // Check Logic
+        // 1. Did they select D? (Fatal error)
+        if (selected.includes('D')) {
+            feedback.innerHTML = '<strong>❌ 答錯了！</strong><br>「編譯」是程式轉碼的過程，不是 OOP 的核心觀念喔！';
+            feedback.classList.add('feedback-wrong');
+            return;
+        }
+
+        // 2. Exact match?
+        const isMatch = JSON.stringify(selected) === JSON.stringify(correctAnswers);
+        
+        if (isMatch) {
+            feedback.innerHTML = '<strong>✅ 完全正確！</strong><br>封裝、繼承、多型、抽象，這四個就是 OOP 的四大金剛！';
+            feedback.classList.add('feedback-correct');
+        } else {
+            // Partial correct or missing
+            feedback.innerHTML = '<strong>⚠️ 差一點點！</strong><br>這題是複選題，你可能少選了核心觀念，或者還沒選完整。再想想口訣：「封繼多抽」。';
+            feedback.classList.add('feedback-wrong');
+        }
+    }
+
+    // I. Reveal Logic
+    function toggleAnswer() {
+        const box = document.getElementById('final-answer');
+        const btn = document.querySelector('.btn-reveal');
+        if (box.style.display === 'block') {
+            box.style.display = 'none';
+            btn.textContent = '顯示正確解答';
+        } else {
+            box.style.display = 'block';
+            btn.textContent = '隱藏正確解答';
+            // Scroll to answer
+            box.scrollIntoView({behavior: 'smooth'});
+        }
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CPU 為什麼要用 Pipeline？ - CO_Q48</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50; /* 深藍色 - 專業感 */
+            --accent-color: #e74c3c; /* 紅色 - 重點與錯誤 */
+            --highlight-bg: #f1c40f; /* 黃色 - 螢光筆 */
+            --highlight-text: #000;
+            --success-color: #27ae60; /* 綠色 - 正確 */
+            --bg-color: #f4f6f7;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* A. 頁首區 */
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        header p {
+            margin: 10px 0 0;
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+
+        .question-number {
+            display: inline-block;
+            background-color: rgba(255,255,255,0.2);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        /* 通用卡片樣式 */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-left: 5px solid var(--primary-color);
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        /* B. 題目區 */
+        .question-text {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .question-option {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .question-option:hover {
+            background-color: #e9ecef;
+        }
+
+        /* C. 關鍵字互動 */
+        .keyword-btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .btn-keyword {
+            background-color: white;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 5px 10px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .btn-keyword:hover, .btn-keyword.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .highlighted-text {
+            background-color: var(--highlight-bg);
+            color: var(--highlight-text);
+            padding: 2px 4px;
+            border-radius: 2px;
+            font-weight: bold;
+        }
+
+        .definition-box {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+        }
+
+        /* D. 手風琴與白話翻譯 */
+        .accordion-btn {
+            width: 100%;
+            background-color: #e2e6ea;
+            border: none;
+            padding: 15px;
+            text-align: left;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: var(--border-radius);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .accordion-content {
+            display: none;
+            padding: 15px;
+            background-color: white;
+            border: 1px solid #e2e6ea;
+            border-top: none;
+            border-radius: 0 0 var(--border-radius) var(--border-radius);
+        }
+
+        .accordion-content.show {
+            display: block;
+        }
+
+        .plain-text-highlight {
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        /* E. Pipeline 示意圖 */
+        .pipeline-diagram {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+
+        .stage-box {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+            min-width: 60px;
+            font-size: 0.8rem;
+            position: relative;
+        }
+
+        .stage-box::after {
+            content: "→";
+            position: absolute;
+            right: -15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .stage-box:last-child::after {
+            content: "";
+        }
+
+        .concept-note {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        /* G. 互動檢核 */
+        .quiz-section {
+            border-left: 5px solid var(--accent-color);
+        }
+
+        .checkbox-group label {
+            display: block;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+
+        .checkbox-group label:hover {
+            border-color: var(--primary-color);
+        }
+
+        .checkbox-group input:checked + span {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .btn-check {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        .btn-check:hover {
+            background-color: #c0392b;
+        }
+
+        .feedback-area {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .feedback-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .feedback-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        /* H. 口訣與陷阱 */
+        .mnemonic-box {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+
+        .pitfall-list {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .pitfall-list li {
+            padding: 8px 0;
+            border-bottom: 1px dashed #ccc;
+        }
+
+        .pitfall-list li:before {
+            content: "!";
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            background-color: var(--accent-color);
+            color: white;
+            text-align: center;
+            line-height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        /* I. 答案揭曉 */
+        .reveal-section {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        .correct-answer-display {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--success-color);
+            text-align: center;
+            margin: 10px 0;
+            letter-spacing: 5px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* RWD 調整 */
+        @media (max-width: 600px) {
+            header h1 { font-size: 1.3rem; }
+            .btn-keyword { flex-grow: 1; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- A. 頁首區 -->
+    <header>
+        <h1>CPU 為什麼要用 Pipeline？</h1>
+        <p>指令管線效能觀念一次搞懂</p>
+        <div class="question-number">題號：48（複選題）</div>
+    </header>
+
+    <!-- B. 題目區 & C. 關鍵字互動 -->
+    <section class="card">
+        <h2>題目：請仔細閱讀</h2>
+        
+        <!-- 關鍵字按鈕區 -->
+        <div class="keyword-btn-group">
+            <button class="btn-keyword" onclick="highlight('Pipeline', '指令管線：把指令執行流程拆成多個階段，像工廠流水線一樣重疊進行。')">Pipeline</button>
+            <button class="btn-keyword" onclick="highlight('吞吐量', '吞吐量 (Throughput)：單位時間內完成的指令數量。')">吞吐量</button>
+            <button class="btn-keyword" onclick="highlight('執行時間', '執行時間 (Execution Time / Latency)：完成「單一條」指令從頭到尾所需的時間。')">執行時間</button>
+            <button class="btn-keyword" onclick="highlight('hazard', 'Hazard (管線衝突)：指令之間互相卡住，導致管線必須暫停的情況。')">hazard</button>
+            <button class="btn-keyword" onclick="highlight('一拍一條', '一拍一條 (CPI = 1)：理想狀態下，每一個時脈週期就能輸出一條完成的指令。')">一拍一條</button>
+            <button class="btn-keyword" onclick="highlight('加速', '加速 (Speedup)：通常指整體程式執行時間變短。')">加速</button>
+        </div>
+
+        <!-- 解釋顯示區 -->
+        <div id="definition-display" class="definition-box">
+            點擊上方按鈕，查看關鍵字定義與題目中的位置。
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+
+        <!-- 題目內文 -->
+        <div id="question-content" class="question-text">
+            48. 關於「指令管線（Pipeline）」的敘述，哪些是正確的？（複選）<br><br>
+            (A) Pipeline 可以提高指令吞吐量<br>
+            (B) Pipeline 會增加每一條指令的執行時間<br>
+            (C) Pipeline 容易產生 hazard<br>
+            (D) 假如沒有 hazard，理論上指令可以一拍一條完成<br>
+            (E) Pipeline 保證所有程式一定加速
+        </div>
+    </section>
+
+    <!-- D. 白話翻譯 -->
+    <section class="card">
+        <button class="accordion-btn" onclick="toggleAccordion('plain-lang')">
+            <span>這題到底在問什麼？（白話翻譯）</span>
+            <span style="font-size: 1.5rem;">+</span>
+        </button>
+        <div id="plain-lang" class="accordion-content">
+            <p><strong>【白話翻譯】</strong><br>
+            「哪些選項正確描述了 CPU 使用『工廠流水線（Pipeline）』方式執行指令時，會帶來的好處與壞處？」</p>
+            
+            <p><strong>【這題在考什麼】</strong><br>
+            你是否能分清楚 <span class="plain-text-highlight">「整體產能（吞吐量）」</span> 與 <span class="plain-text-highlight">「單一工作速度（延遲）」</span> 的差別，以及 Pipeline 先天會遇到的限制（衝突）。</p>
+        </div>
+    </section>
+
+    <!-- E. Pipeline 概念互動示意 -->
+    <section class="card">
+        <h2>五階段 Pipeline 概念圖</h2>
+        <p>想像 CPU 執行指令就像「洗衣服」：</p>
+        <div class="pipeline-diagram">
+            <div class="stage-box">IF<br>(取指)</div>
+            <div class="stage-box">ID<br>(解碼)</div>
+            <div class="stage-box">EX<br>(執行)</div>
+            <div class="stage-box">MEM<br>(存取)</div>
+            <div class="stage-box">WB<br>(回寫)</div>
+        </div>
+        <div class="concept-note">
+            重點觀念：Pipeline 提高的是「整體產能」，不是「個別速度」！
+        </div>
+        <p style="font-size: 0.9rem; color: #666; margin-top: 10px;">
+            ※ 每一件衣服（指令）洗完的時間其實沒變短（甚至加上傳遞時間會變長），但因為可以同時洗第一件、烘第二件、摺第三件... 所以一小時內洗完的衣服變多了。
+        </p>
+    </section>
+
+    <!-- G. 複選題互動檢核 -->
+    <section class="card quiz-section">
+        <h2>來試試看！勾選正確答案（複選）</h2>
+        <div class="checkbox-group">
+            <label>
+                <input type="checkbox" name="option" value="A">
+                <span>(A) Pipeline 可以提高指令吞吐量</span>
+            </label>
+            <label>
+                <input type="checkbox" name="option" value="B">
+                <span>(B) Pipeline 會增加每一條指令的執行時間</span>
+            </label>
+            <label>
+                <input type="checkbox" name="option" value="C">
+                <span>(C) Pipeline 容易產生 hazard</span>
+            </label>
+            <label>
+                <input type="checkbox" name="option" value="D">
+                <span>(D) 假如沒有 hazard，理論上指令可以一拍一條完成</span>
+            </label>
+            <label>
+                <input type="checkbox" name="option" value="E">
+                <span>(E) Pipeline 保證所有程式一定加速</span>
+            </label>
+        </div>
+        <button class="btn-check" onclick="checkAnswer()">檢查答案</button>
+
+        <div id="feedback-box" class="feedback-area"></div>
+    </section>
+
+    <!-- F. 選項解析與 I. 答案揭曉 -->
+    <div id="reveal-area" class="reveal-section">
+        <section class="card" style="border-left-color: var(--success-color);">
+            <h2>正確答案揭曉</h2>
+            <div class="correct-answer-display">A、C、D</div>
+            <p style="text-align: center; font-weight: bold;">
+                一句話總結：「Pipeline 提高吞吐量，但會有 hazard，也不保證每個程式都加速。」
+            </p>
+            
+            <hr>
+            
+            <h3>【名師詳解】</h3>
+            <p><strong>(A) 正確：</strong> 就像生產線一樣，同時間有多個階段在處理不同的指令，單位時間內完成的指令變多了（吞吐量上升）。</p>
+            
+            <p><strong>(B) 錯誤（這是陷阱！）：</strong> <span style="color: var(--accent-color);">Pipeline 不會縮短單一指令的時間。</span> 事實上，因為要在各階段間傳遞資料（加入 latch 暫存器），單一指令從進入到離開的時間反而會稍微變長（Latency 增加）。</p>
+            
+            <p><strong>(C) 正確：</strong> 因為多條指令同時在管線中，前面的指令還沒寫入結果，後面的指令就要讀取，就會發生資料衝突（Data Hazard）；或者搶同一個硬體資源（Structural Hazard）。</p>
+            
+            <p><strong>(D) 正確：</strong> 在最理想（無衝突）的情況下，當管線填滿後，每一個時脈週期（Clock Cycle）都會有一條指令從管線末端產出。 CPI = 1。</p>
+            
+            <p><strong>(E) 錯誤：</strong> 如果程式充滿了分支指令（Branch）導致管線一直清空（Flush），或者衝突太多導致暫停（Stall），效能提升會很有限，不保證一定加速。</p>
+        </section>
+
+        <!-- H. 記憶口訣與常見陷阱 -->
+        <section class="card">
+            <h2>考前衝刺筆記</h2>
+            
+            <div class="mnemonic-box">
+                <h3 style="margin:0; color:white; border:none;">【記憶口訣】</h3>
+                <p style="font-size: 1.2rem; margin: 10px 0 0;">「管線拚產量，不保證單快」</p>
+            </div>
+
+            <h3>【常見陷阱】</h3>
+            <ul class="pitfall-list">
+                <li>把「吞吐量 (Throughput)」誤當成「單一執行時間 (Latency/Execution Time)」。</li>
+                <li>以為 Pipeline 是萬靈丹，實際上會有額外開銷 (Overhead)。</li>
+                <li>忽略 hazard 帶來的 penalty（懲罰），導致理想 CPI 達不到 1。</li>
+            </ul>
+        </section>
+    </div>
+
+</div>
+
+<script>
+    // 原始題目文字，用於重置螢光標示
+    const originalText = `48. 關於「指令管線（Pipeline）」的敘述，哪些是正確的？（複選）<br><br>
+            (A) Pipeline 可以提高指令吞吐量<br>
+            (B) Pipeline 會增加每一條指令的執行時間<br>
+            (C) Pipeline 容易產生 hazard<br>
+            (D) 假如沒有 hazard，理論上指令可以一拍一條完成<br>
+            (E) Pipeline 保證所有程式一定加速`;
+
+    function highlight(keyword, explanation) {
+        // 更新解釋文字
+        const display = document.getElementById('definition-display');
+        display.innerHTML = `<strong>【${keyword}】</strong> ${explanation}`;
+        
+        // 標記按鈕狀態
+        document.querySelectorAll('.btn-keyword').forEach(btn => {
+            btn.classList.remove('active');
+            if(btn.innerText.includes(keyword)) {
+                btn.classList.add('active');
+            }
+        });
+
+        // 執行內文螢光標示
+        const contentDiv = document.getElementById('question-content');
+        // 先重置回原始文字
+        let newHtml = originalText;
+        
+        // 使用正則表達式進行全域替換，忽略大小寫
+        const regex = new RegExp(keyword, 'gi');
+        newHtml = newHtml.replace(regex, (match) => {
+            return `<span class="highlighted-text">${match}</span>`;
+        });
+        
+        contentDiv.innerHTML = newHtml;
+    }
+
+    function toggleAccordion(id) {
+        const content = document.getElementById(id);
+        const btn = content.previousElementSibling;
+        const icon = btn.querySelector('span:last-child');
+        
+        if (content.classList.contains('show')) {
+            content.classList.remove('show');
+            icon.innerText = "+";
+        } else {
+            content.classList.add('show');
+            icon.innerText = "-";
+        }
+    }
+
+    function checkAnswer() {
+        // 取得所有勾選的答案
+        const checkboxes = document.querySelectorAll('input[name="option"]:checked');
+        let selected = [];
+        checkboxes.forEach((checkbox) => {
+            selected.push(checkbox.value);
+        });
+
+        const feedbackBox = document.getElementById('feedback-box');
+        const revealArea = document.getElementById('reveal-area');
+        
+        // 排序比較
+        selected.sort();
+        const correct = ['A', 'C', 'D'];
+        
+        // 簡單陣列比較
+        const isCorrect = JSON.stringify(selected) === JSON.stringify(correct);
+
+        if (selected.length === 0) {
+            feedbackBox.style.display = 'block';
+            feedbackBox.className = 'feedback-area feedback-error';
+            feedbackBox.innerHTML = '<strong>老師提醒：</strong> 請先勾選你覺得正確的選項再來檢查喔！';
+            return;
+        }
+
+        if (isCorrect) {
+            feedbackBox.style.display = 'block';
+            feedbackBox.className = 'feedback-area feedback-success';
+            feedbackBox.innerHTML = '<strong>答對了！太棒了！</strong><br>你的觀念非常清晰，完全掌握了指令管線的核心概念。請往下滑看詳細解析確認觀念。';
+            revealArea.style.display = 'block';
+            // 自動捲動到解析區
+            setTimeout(() => {
+                revealArea.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+        } else {
+            feedbackBox.style.display = 'block';
+            feedbackBox.className = 'feedback-area feedback-error';
+            
+            let errorMsg = '<strong>差一點點！</strong><br>';
+            
+            // 檢查具體錯誤
+            if (selected.includes('B')) {
+                errorMsg += '• 注意選項 (B)：Pipeline 雖然像工廠生產線，但把工作切細並加上傳遞時間，單一指令從頭做到尾的時間其實是「增加」的喔。<br>';
+            }
+            if (selected.includes('E')) {
+                errorMsg += '• 注意選項 (E)：如果有嚴重的 hazard (衝突) 沒處理好，效能可能會變很差，並非「保證」加速。<br>';
+            }
+            if (!selected.includes('A') || !selected.includes('C') || !selected.includes('D')) {
+                errorMsg += '• 你漏選了一些正確選項，Pipeline 的好處是吞吐量與理想的一拍一條。<br>';
+            }
+            
+            errorMsg += '<br><strong>別氣餒，我們來看看正確答案與解析！(已為您展開下方詳解)</strong>';
+            feedbackBox.innerHTML = errorMsg;
+            revealArea.style.display = 'block';
+        }
+    }
+</script>
+
+</body>
+</html>

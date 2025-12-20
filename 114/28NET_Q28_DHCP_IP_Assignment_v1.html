@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NET_Q28_DHCP_IP_Assignment_v1</title>
+    <style>
+        :root {
+            --primary: #2563eb;       /* 專業藍 */
+            --primary-light: #eff6ff;
+            --secondary: #d97706;     /* 重點橘 */
+            --text-main: #1f2937;
+            --text-sub: #4b5563;
+            --bg-body: #f3f4f6;
+            --bg-card: #ffffff;
+            --border: #e5e7eb;
+            --success: #059669;
+            --error: #dc2626;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, "Microsoft JhengHei", "Segoe UI", sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding-bottom: 50px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* --- Header --- */
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        header p {
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+
+        header .badge {
+            display: inline-block;
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-top: 8px;
+        }
+
+        /* --- Card Styles --- */
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--primary);
+            border-left: 4px solid var(--primary);
+            padding-left: 12px;
+        }
+
+        /* --- Question Area --- */
+        .question-box {
+            font-size: 1.15rem;
+            font-weight: 500;
+            margin-bottom: 20px;
+            padding: 16px;
+            background-color: var(--primary-light);
+            border-radius: 8px;
+            line-height: 1.8;
+        }
+
+        .options-list {
+            list-style: none;
+        }
+
+        .options-list li {
+            padding: 8px 0;
+            font-size: 1.05rem;
+        }
+
+        /* --- Highlighter --- */
+        .keyword-btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .btn-kw {
+            background: white;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .btn-kw:hover, .btn-kw.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .highlight-text {
+            background-color: transparent;
+            transition: background-color 0.3s;
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+
+        .highlight-text.active {
+            background-color: #fcd34d; /* 黃色螢光筆 */
+            color: black;
+            font-weight: bold;
+        }
+
+        .explanation-box {
+            background-color: #f8fafc;
+            border: 1px dashed var(--border);
+            padding: 16px;
+            border-radius: 8px;
+            min-height: 60px;
+            font-size: 0.95rem;
+            color: var(--text-sub);
+        }
+
+        /* --- Accordion (Plain Language) --- */
+        details {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        summary {
+            background-color: #f9fafb;
+            padding: 16px;
+            cursor: pointer;
+            font-weight: 600;
+            list-style: none; /* Hide default triangle */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        summary::after {
+            content: "+";
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        details[open] summary::after {
+            content: "-";
+        }
+
+        .accordion-content {
+            padding: 16px;
+            border-top: 1px solid var(--border);
+            background-color: white;
+        }
+
+        .plain-text-highlight {
+            color: var(--secondary);
+            font-weight: bold;
+        }
+
+        /* --- Visual Process (DHCP) --- */
+        .process-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            align-items: center;
+            background-color: #f0f9ff;
+            padding: 24px;
+            border-radius: 12px;
+        }
+
+        .network-diagram {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .device {
+            width: 100px;
+            height: 100px;
+            border: 2px solid var(--text-main);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: white;
+            z-index: 2;
+            text-align: center;
+            padding: 5px;
+            font-size: 0.8rem;
+        }
+
+        .device strong {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 0.9rem;
+        }
+
+        .server {
+            border-color: var(--secondary);
+            background-color: #fffbeb;
+        }
+
+        .connection-line {
+            position: absolute;
+            top: 50%;
+            left: 50px;
+            right: 50px;
+            height: 2px;
+            background: #cbd5e1;
+            z-index: 1;
+        }
+
+        .packet {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--primary);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            opacity: 0;
+            transition: all 0.5s ease;
+            white-space: nowrap;
+            z-index: 3;
+        }
+
+        .step-display {
+            background: white;
+            padding: 12px 20px;
+            border-radius: 30px;
+            border: 1px solid var(--border);
+            text-align: center;
+            font-weight: bold;
+            color: var(--primary);
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .control-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.2s;
+        }
+
+        .control-btn:hover {
+            background-color: #1d4ed8;
+        }
+
+        .control-btn:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        /* --- Option Analysis --- */
+        .option-card {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+
+        .option-header {
+            padding: 16px;
+            background: #f9fafb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .option-content {
+            padding: 16px;
+            display: none;
+            border-top: 1px solid var(--border);
+        }
+
+        .option-content.show {
+            display: block;
+        }
+
+        .tag-correct {
+            color: var(--success);
+            font-weight: bold;
+            border: 1px solid var(--success);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        .tag-wrong {
+            color: var(--error);
+            font-weight: bold;
+            border: 1px solid var(--error);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        /* --- Quiz --- */
+        .quiz-item {
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px dashed var(--border);
+        }
+
+        .quiz-item:last-child {
+            border-bottom: none;
+        }
+
+        .quiz-q {
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .quiz-options button {
+            margin-right: 8px;
+            margin-bottom: 8px;
+            padding: 6px 16px;
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .quiz-options button:hover {
+            background: #f3f4f6;
+        }
+
+        .feedback {
+            margin-top: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: none;
+        }
+
+        .feedback.correct {
+            color: var(--success);
+            display: block;
+        }
+
+        .feedback.wrong {
+            color: var(--error);
+            display: block;
+        }
+
+        /* --- Mnemonics & Pitfalls --- */
+        .memo-box {
+            background-color: #fff7ed; /* Orange tint */
+            border-left: 4px solid var(--secondary);
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .pitfall-list li {
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .pitfall-list li::before {
+            content: "!";
+            position: absolute;
+            left: 0;
+            color: var(--error);
+            font-weight: bold;
+        }
+
+        /* --- Answer Reveal --- */
+        .reveal-section {
+            text-align: center;
+            margin-top: 40px;
+            padding: 30px;
+            background: var(--primary);
+            border-radius: 12px;
+            color: white;
+        }
+
+        .answer-display {
+            margin-top: 20px;
+            display: none;
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .big-letter {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #fbbf24;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .reveal-btn {
+            background: white;
+            color: var(--primary);
+            font-weight: bold;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .reveal-btn:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        /* RWD Adjustments */
+        @media (max-width: 600px) {
+            header {
+                padding: 16px;
+            }
+            .question-box {
+                font-size: 1rem;
+            }
+            .network-diagram {
+                flex-direction: column;
+                height: 250px;
+            }
+            .connection-line {
+                width: 2px;
+                height: 100px;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+            }
+            .packet {
+                top: 50%; 
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- A. Header -->
+    <header>
+        <div class="badge">題號：28</div>
+        <h1>IP 位址誰來發？DHCP 一次搞懂</h1>
+        <p>Network Service & Protocol（新手友善版）</p>
+    </header>
+
+    <!-- B. Question Card with C. Highlights -->
+    <div class="card">
+        <h2 class="section-title">題目區</h2>
+        
+        <!-- Keyword Buttons -->
+        <div class="keyword-btn-group">
+            <button class="btn-kw" onclick="toggleHighlight('lan', '區域網路：就是像你家或學校電腦教室這種小範圍的網路環境。')">區域網路</button>
+            <button class="btn-kw" onclick="toggleHighlight('ip', 'IP 位址：網路世界中的門牌號碼，每個設備都要有才能上網。')">IP 位址</button>
+            <button class="btn-kw" onclick="toggleHighlight('auto', '自動分配：不用你手動輸入數字，插上線就能用。')">自動分配</button>
+            <button class="btn-kw" onclick="toggleHighlight('dhcp', 'DHCP (Dynamic Host Configuration Protocol)：動態主機設定協定，專門負責自動發 IP 的管家。')">DHCP</button>
+            <button class="btn-kw" onclick="toggleHighlight('dns', 'DNS (Domain Name System)：網域名稱系統，負責把網址(www.google.com)轉成IP，像是查號台，不負責發IP。')">DNS</button>
+            <button class="btn-kw" onclick="toggleHighlight('smtp', 'SMTP (Simple Mail Transfer Protocol)：簡單郵件傳輸協定，負責寄送電子郵件的郵差。')">SMTP</button>
+            <button class="btn-kw" onclick="toggleHighlight('arp', 'ARP (Address Resolution Protocol)：位址解析協定，負責查 IP 對應的網路卡硬體位址(MAC)。')">ARP</button>
+        </div>
+
+        <!-- Question Text with Span Hooks -->
+        <div class="question-box">
+            28. 什麼設備負責提供<span id="kw-lan" class="highlight-text">區域網路</span>中<span id="kw-auto" class="highlight-text">自動分配</span> <span id="kw-ip" class="highlight-text">IP 位址</span>？<br>
+            <ul class="options-list">
+                <li>(A) <span id="kw-dns" class="highlight-text">DNS</span></li>
+                <li>(B) <span id="kw-smtp" class="highlight-text">SMTP</span></li>
+                <li>(C) <span id="kw-dhcp" class="highlight-text">DHCP</span></li>
+                <li>(D) <span id="kw-arp" class="highlight-text">ARP</span></li>
+            </ul>
+        </div>
+
+        <!-- Explanation Output -->
+        <div class="explanation-box" id="explanation-display">
+            點擊上方關鍵字按鈕，這裡會顯示白話解釋。
+        </div>
+    </div>
+
+    <!-- D. Plain Language Accordion -->
+    <div class="card">
+        <h2 class="section-title">白話翻譯與考點</h2>
+        
+        <details open>
+            <summary>【白話翻譯】這題到底在問什麼？</summary>
+            <div class="accordion-content">
+                <p>「當你把電腦或手機接上 Wi-Fi，不用自己設定 IP，這個 IP 是誰自動幫你發的？」<br><br>
+                就像你去住飯店，櫃檯人員會直接給你一個<span class="plain-text-highlight">房號（IP）</span>，不用你自己隨便找房間住。這題就在問「誰是那個櫃檯人員」。</p>
+            </div>
+        </details>
+
+        <details>
+            <summary>【這題在考什麼】</summary>
+            <div class="accordion-content">
+                <p>你是否能分清楚各種網路服務各自負責的工作。不要看到英文縮寫就頭暈，只要記住每個縮寫對應的「職業」即可。</p>
+            </div>
+        </details>
+    </div>
+
+    <!-- E. DHCP Visual Process -->
+    <div class="card">
+        <h2 class="section-title">IP 自動分配流程 (DHCP)</h2>
+        <div class="process-container">
+            <div class="network-diagram">
+                <!-- Line -->
+                <div class="connection-line"></div>
+                
+                <!-- Client -->
+                <div class="device client">
+                    <strong>你的電腦</strong>
+                    <span id="client-ip-display" style="color: #6b7280; font-size: 0.75rem;">(無 IP)</span>
+                </div>
+
+                <!-- Packet Animation Object -->
+                <div class="packet" id="anim-packet">請求</div>
+
+                <!-- Server -->
+                <div class="device server">
+                    <strong>DHCP 伺服器</strong>
+                    <span style="font-size: 0.7rem;">IP 池: 192.168.1.100~200</span>
+                </div>
+            </div>
+
+            <div class="step-display" id="step-text">
+                準備好開始了嗎？請按「下一步」
+            </div>
+
+            <button class="control-btn" id="anim-btn" onclick="nextStep()">下一步</button>
+        </div>
+    </div>
+
+    <!-- F. Option Analysis -->
+    <div class="card">
+        <h2 class="section-title">選項逐一解析</h2>
+        <p style="margin-bottom: 15px; color: var(--text-sub); font-size: 0.9rem;">點擊選項卡片查看詳細說明：</p>
+
+        <!-- Option A -->
+        <div class="option-card" onclick="toggleOption('opt-a')">
+            <div class="option-header">
+                <strong>(A) DNS</strong>
+                <span style="font-size: 0.8rem; color: #6b7280;">點擊展開</span>
+            </div>
+            <div class="option-content" id="opt-a">
+                <span class="tag-wrong">錯誤</span>
+                <p style="margin-top: 8px;"><strong>DNS (Domain Name System)</strong> 是「網路查號台」。</p>
+                <p>它的功能是把網址（如 google.com）轉換成 IP 位址（如 142.250.1.1），它負責「查」，不負責「發」。</p>
+            </div>
+        </div>
+
+        <!-- Option B -->
+        <div class="option-card" onclick="toggleOption('opt-b')">
+            <div class="option-header">
+                <strong>(B) SMTP</strong>
+                <span style="font-size: 0.8rem; color: #6b7280;">點擊展開</span>
+            </div>
+            <div class="option-content" id="opt-b">
+                <span class="tag-wrong">錯誤</span>
+                <p style="margin-top: 8px;"><strong>SMTP (Simple Mail Transfer Protocol)</strong> 是「網路郵差」。</p>
+                <p>它專門負責「寄送」電子郵件，跟 IP 分配完全沒關係。</p>
+            </div>
+        </div>
+
+        <!-- Option C -->
+        <div class="option-card" onclick="toggleOption('opt-c')">
+            <div class="option-header">
+                <strong>(C) DHCP</strong>
+                <span style="font-size: 0.8rem; color: #6b7280;">點擊展開</span>
+            </div>
+            <div class="option-content" id="opt-c">
+                <span class="tag-correct">正確</span>
+                <p style="margin-top: 8px;"><strong>DHCP (Dynamic Host Configuration Protocol)</strong> 是「IP 發放員」。</p>
+                <p>當電腦連上網路時，DHCP 伺服器會自動從 IP 池中抓一個沒人用的 IP 給你，並告訴你子網路遮罩、閘道器等資訊。</p>
+            </div>
+        </div>
+
+        <!-- Option D -->
+        <div class="option-card" onclick="toggleOption('opt-d')">
+            <div class="option-header">
+                <strong>(D) ARP</strong>
+                <span style="font-size: 0.8rem; color: #6b7280;">點擊展開</span>
+            </div>
+            <div class="option-content" id="opt-d">
+                <span class="tag-wrong">錯誤</span>
+                <p style="margin-top: 8px;"><strong>ARP (Address Resolution Protocol)</strong> 是「身份核對員」。</p>
+                <p>它的功能是已知對方的 IP，去詢問對方的 MAC (硬體) 位址，是在區域網路內部溝通用的。</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- G. Mini Quiz -->
+    <div class="card">
+        <h2 class="section-title">快速小測驗</h2>
+        
+        <div class="quiz-item">
+            <div class="quiz-q">1. 如果家中沒有開啟 DHCP 功能，電腦接上線能直接上網嗎？</div>
+            <div class="quiz-options">
+                <button onclick="checkQuiz(this, 'no', '1')">不能</button>
+                <button onclick="checkQuiz(this, 'yes', '1')">可以</button>
+            </div>
+            <div id="fb-1" class="feedback"></div>
+        </div>
+
+        <div class="quiz-item">
+            <div class="quiz-q">2. DNS 和 DHCP 最大的差別是什麼？</div>
+            <div class="quiz-options">
+                <button onclick="checkQuiz(this, 'wrong', '2')">DNS 發 IP，DHCP 查網址</button>
+                <button onclick="checkQuiz(this, 'correct', '2')">DNS 查 IP，DHCP 發 IP</button>
+            </div>
+            <div id="fb-2" class="feedback"></div>
+        </div>
+
+        <div class="quiz-item">
+            <div class="quiz-q">3. 哪一個協定可以幫你「自動」設定好子網路遮罩與預設閘道？</div>
+            <div class="quiz-options">
+                <button onclick="checkQuiz(this, 'dhcp', '3')">DHCP</button>
+                <button onclick="checkQuiz(this, 'arp', '3')">ARP</button>
+            </div>
+            <div id="fb-3" class="feedback"></div>
+        </div>
+    </div>
+
+    <!-- H. Mnemonics & Pitfalls -->
+    <div class="card">
+        <h2 class="section-title">口訣與常見陷阱</h2>
+        
+        <div class="memo-box">
+            <h3>【記憶口訣】</h3>
+            <p style="font-size: 1.2rem; font-weight: bold; margin-top: 8px;">「IP 自動配，找 DHCP」</p>
+            <p style="margin-top: 4px;">D 開頭想成 "Distribute" (分配)，專門發 IP。</p>
+        </div>
+
+        <div class="memo-box" style="background-color: #fef2f2; border-left-color: var(--error);">
+            <h3>【常見陷阱】</h3>
+            <ul class="pitfall-list" style="list-style: none; margin-top: 8px;">
+                <li>看到題目寫 "IP" 就急著選 DNS (DNS 是查號台，不是發放員)。</li>
+                <li>搞混 DHCP (發 IP) 與 ARP (查 MAC)。</li>
+                <li>誤以為自動取得 IP 是電腦自己產生的 (其實是跟伺服器要來的)。</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- I. Answer Reveal -->
+    <div class="reveal-section">
+        <p>都學會了嗎？來看看正確答案！</p>
+        <button class="reveal-btn" onclick="showAnswer()">揭曉答案</button>
+        
+        <div id="final-answer" class="answer-display">
+            <span class="big-letter">C</span>
+            <p><strong>正確理由：</strong>DHCP (動態主機設定協定) 負責在區域網路中，自動分配 IP 位址給用戶端設備。</p>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // --- C. Keyword Highlight Logic ---
+    function toggleHighlight(key, text) {
+        // Remove active class from all buttons and text spans
+        document.querySelectorAll('.btn-kw').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.highlight-text').forEach(s => s.classList.remove('active'));
+
+        // Identify button that was clicked
+        // Note: Event target might not match perfectly if we had icons inside, 
+        // but simple buttons work with 'onclick'.
+        // We need to find the specific button element to add active class.
+        // For simplicity, we loop through buttons to find which one triggered specific key logic? 
+        // Actually easier: pass 'this' or just re-select by matching the onclick attribute or text logic.
+        // Let's just find the button that contains the onclick with 'key'.
+        const buttons = document.querySelectorAll('.btn-kw');
+        buttons.forEach(btn => {
+            if(btn.getAttribute('onclick').includes(`'${key}'`)) {
+                btn.classList.add('active');
+            }
+        });
+
+        // Add active class to target text span
+        const targetSpan = document.getElementById('kw-' + key);
+        if (targetSpan) {
+            targetSpan.classList.add('active');
+        }
+
+        // Update explanation text
+        const display = document.getElementById('explanation-display');
+        display.innerHTML = `<strong>【說明】</strong> ${text}`;
+        display.style.backgroundColor = '#fffbeb';
+        display.style.borderColor = '#d97706';
+        display.style.color = '#1f2937';
+    }
+
+    // --- E. DHCP Animation Logic ---
+    let currentStep = 0;
+    const steps = [
+        { 
+            text: "用戶端開機，大喊：「誰能給我一個 IP？」(DHCP Discover)", 
+            packetPos: { left: "20%", opacity: 1 },
+            packetText: "我要 IP!"
+        },
+        { 
+            text: "伺服器收到，回覆：「這裡有個 192.168.1.101 可以用喔！」(DHCP Offer)", 
+            packetPos: { left: "80%", opacity: 1 }, 
+            packetText: "這 IP 給你"
+        },
+        { 
+            text: "用戶端確認並設定 IP，可以上網了！(DHCP Request/Ack)", 
+            packetPos: { left: "20%", opacity: 0 }, // Hide packet at end
+            packetText: "收到了"
+        }
+    ];
+
+    function nextStep() {
+        const stepText = document.getElementById('step-text');
+        const packet = document.getElementById('anim-packet');
+        const clientIp = document.getElementById('client-ip-display');
+        const btn = document.getElementById('anim-btn');
+
+        if (currentStep >= steps.length) {
+            // Reset
+            currentStep = 0;
+            stepText.innerText = "重置完成，請按下一步重新開始。";
+            packet.style.opacity = 0;
+            clientIp.innerText = "(無 IP)";
+            clientIp.style.color = "#6b7280";
+            clientIp.style.fontWeight = "normal";
+            btn.innerText = "下一步";
+            return;
+        }
+
+        const scene = steps[currentStep];
+
+        // Update Text
+        stepText.innerText = scene.text;
+
+        // Animate Packet
+        packet.innerText = scene.packetText;
+        packet.style.opacity = scene.packetPos.opacity;
+        
+        // Handle direction logic visually
+        if (currentStep === 0) {
+            // Client to Server
+            packet.style.left = "20%";
+            setTimeout(() => { packet.style.left = "80%"; }, 100);
+        } else if (currentStep === 1) {
+            // Server to Client
+            packet.style.left = "80%";
+            setTimeout(() => { packet.style.left = "20%"; }, 100);
+        } else if (currentStep === 2) {
+            // Final state
+            packet.style.left = "20%";
+            clientIp.innerText = "192.168.1.101";
+            clientIp.style.color = "#059669";
+            clientIp.style.fontWeight = "bold";
+            btn.innerText = "重播";
+        }
+
+        currentStep++;
+    }
+
+    // --- F. Option Toggle Logic ---
+    function toggleOption(id) {
+        const content = document.getElementById(id);
+        content.classList.toggle('show');
+    }
+
+    // --- G. Quiz Logic ---
+    function checkQuiz(btn, answer, id) {
+        const feedback = document.getElementById('fb-' + id);
+        
+        // Correct answers
+        // Q1: no (不能)
+        // Q2: correct (DNS查IP, DHCP發IP)
+        // Q3: dhcp
+
+        let isCorrect = false;
+        let msg = "";
+
+        if (id === '1' && answer === 'no') {
+            isCorrect = true;
+            msg = "答對了！沒有 DHCP 就要手動設定 IP，否則無法上網。";
+        } else if (id === '2' && answer === 'correct') {
+            isCorrect = true;
+            msg = "沒錯！記住 DNS 是查號台，DHCP 是發牌員。";
+        } else if (id === '3' && answer === 'dhcp') {
+            isCorrect = true;
+            msg = "正確！DHCP 不只發 IP，連遮罩和閘道器都會一起給。";
+        } else {
+            isCorrect = false;
+            msg = "答錯囉，再想一下機制！";
+            if (id === '1') msg = "如果沒有 DHCP 又沒手動設 IP，電腦是沒有門牌號碼的，無法上網。";
+            if (id === '2') msg = "剛好相反囉！DNS 是用來查網址對應 IP 的。";
+            if (id === '3') msg = "ARP 是用來查 MAC 位址的喔。";
+        }
+
+        feedback.className = "feedback " + (isCorrect ? "correct" : "wrong");
+        feedback.innerText = msg;
+    }
+
+    // --- I. Answer Reveal ---
+    function showAnswer() {
+        const div = document.getElementById('final-answer');
+        div.style.display = "block";
+        // Smooth scroll to answer
+        div.scrollIntoView({ behavior: 'smooth' });
+    }
+</script>
+
+</body>
+</html>

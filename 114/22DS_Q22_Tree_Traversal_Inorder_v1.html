@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tree Traversal Inorder 解析 - DS_Q22</title>
+    <style>
+        :root {
+            --primary-color: #2563EB; /* 專業藍 */
+            --secondary-color: #4F46E5; /* 深藍 */
+            --accent-color: #F59E0B; /* 重點橘 */
+            --success-color: #10B981; /* 正確綠 */
+            --error-color: #EF4444; /* 錯誤紅 */
+            --bg-color: #F3F4F6;
+            --card-bg: #FFFFFF;
+            --text-main: #1F2937;
+            --text-sub: #6B7280;
+            --highlight-bg: #FEF3C7; /* 螢光筆底色 */
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: "Noto Sans TC", "Microsoft JhengHei", -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* --- A. 頁首區 --- */
+        header {
+            text-align: center;
+            padding: 30px 0;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            color: var(--primary-color);
+            margin: 0 0 10px 0;
+            font-weight: 800;
+        }
+
+        header .subtitle {
+            font-size: 1rem;
+            color: var(--text-sub);
+            font-weight: 500;
+        }
+
+        header .badge {
+            display: inline-block;
+            background-color: var(--text-main);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-top: 10px;
+        }
+
+        /* --- 通用卡片樣式 --- */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            padding: 24px;
+            margin-bottom: 24px;
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--text-main);
+            border-bottom: 1px solid #E5E7EB;
+            padding-bottom: 10px;
+        }
+
+        /* --- B. 題目區 & C. 關鍵字互動 --- */
+        .question-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .keyword-span {
+            cursor: pointer;
+            border-bottom: 2px dashed var(--text-sub);
+            transition: all 0.2s;
+            padding: 0 2px;
+        }
+
+        .keyword-span:hover {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+
+        .keyword-span.active {
+            background-color: var(--highlight-bg);
+            color: var(--secondary-color);
+            border-bottom: 2px solid var(--accent-color);
+        }
+
+        .options-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .options-list li {
+            padding: 8px 0;
+            font-size: 1.1rem;
+        }
+
+        .keyword-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .btn-keyword {
+            background-color: #E0E7FF;
+            color: var(--secondary-color);
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .btn-keyword:hover {
+            background-color: #C7D2FE;
+        }
+
+        .explanation-box {
+            background-color: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            padding: 15px;
+            border-radius: 8px;
+            color: var(--text-sub);
+            font-size: 0.95rem;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+        }
+
+        /* --- D. 白話翻譯 (Accordion) --- */
+        details {
+            margin-bottom: 10px;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        summary {
+            background-color: #F9FAFB;
+            padding: 12px 16px;
+            cursor: pointer;
+            font-weight: 600;
+            list-style: none; /* Hide default marker */
+            position: relative;
+        }
+        
+        summary::after {
+            content: "+";
+            position: absolute;
+            right: 20px;
+            font-weight: bold;
+        }
+
+        details[open] summary::after {
+            content: "-";
+        }
+
+        .accordion-content {
+            padding: 16px;
+            background-color: #fff;
+            color: var(--text-sub);
+        }
+
+        /* --- E. Tree Simulator --- */
+        .simulator-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .tree-wrapper {
+            position: relative;
+            width: 280px;
+            height: 180px;
+            margin-top: 10px;
+        }
+
+        /* SVG lines */
+        .tree-lines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        .tree-line {
+            stroke: #9CA3AF;
+            stroke-width: 3;
+        }
+
+        .node {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: white;
+            border: 3px solid #6B7280;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            position: absolute;
+            z-index: 2;
+            transition: all 0.4s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .node.active {
+            background-color: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+            transform: scale(1.1);
+        }
+
+        /* Node Positions */
+        #node-root { top: 10px; left: 115px; } /* Center */
+        #node-left { top: 100px; left: 45px; } /* Left Child */
+        #node-right { top: 100px; left: 185px; } /* Right Child */
+
+        .node-label {
+            position: absolute;
+            font-size: 0.75rem;
+            color: #6B7280;
+            width: 60px;
+            text-align: center;
+            top: -20px;
+            left: -5px;
+        }
+
+        .control-panel {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .btn-sim {
+            padding: 10px;
+            border: 1px solid var(--primary-color);
+            background-color: white;
+            color: var(--primary-color);
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-sim:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .sim-result {
+            margin-top: 10px;
+            font-weight: bold;
+            color: var(--text-main);
+            background: #F3F4F6;
+            padding: 10px 20px;
+            border-radius: 20px;
+            min-width: 200px;
+            text-align: center;
+        }
+
+        /* --- F. 選項解析 --- */
+        .option-card {
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+
+        .option-header {
+            padding: 12px 16px;
+            background-color: #F9FAFB;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .option-header:hover {
+            background-color: #F3F4F6;
+        }
+
+        .option-content {
+            padding: 16px;
+            display: none;
+            border-top: 1px solid #E5E7EB;
+        }
+
+        .option-content.correct {
+            background-color: #ECFDF5; /* Green tint */
+            color: #065F46;
+        }
+
+        .option-content.wrong {
+            background-color: #FEF2F2; /* Red tint */
+            color: #991B1B;
+        }
+
+        .status-badge {
+            font-size: 0.8rem;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        
+        .status-correct { background-color: var(--success-color); color: white; }
+        .status-wrong { background-color: var(--text-sub); color: white; }
+
+        /* --- G. 快速小測驗 --- */
+        .quiz-item {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px dashed #E5E7EB;
+        }
+        
+        .quiz-item:last-child { border-bottom: none; }
+
+        .quiz-q {
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .quiz-options button {
+            margin-right: 10px;
+            margin-bottom: 5px;
+            padding: 6px 12px;
+            border: 1px solid #D1D5DB;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .quiz-feedback {
+            margin-top: 8px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            display: none;
+        }
+
+        /* --- H. 口訣與陷阱 --- */
+        .mnemonic-box {
+            background-color: #FFFBEB;
+            border-left: 5px solid var(--accent-color);
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .pitfall-list {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        
+        .pitfall-list li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 8px;
+        }
+        
+        .pitfall-list li::before {
+            content: "!";
+            position: absolute;
+            left: 0;
+            color: var(--error-color);
+            font-weight: bold;
+        }
+
+        /* --- I. 答案揭曉 --- */
+        .reveal-section {
+            text-align: center;
+            padding: 30px;
+            background-color: var(--text-main);
+            color: white;
+            border-radius: 12px;
+        }
+
+        .btn-reveal {
+            background-color: var(--accent-color);
+            color: black;
+            font-size: 1.2rem;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 4px 0 #D97706;
+            transition: transform 0.1s;
+        }
+
+        .btn-reveal:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        .final-answer {
+            display: none;
+            margin-top: 20px;
+            animation: fadeIn 0.5s;
+        }
+
+        .big-letter {
+            font-size: 4rem;
+            color: var(--accent-color);
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 0.8rem;
+            color: var(--text-sub);
+        }
+
+        /* RWD Adjustments */
+        @media (max-width: 600px) {
+            .container { padding: 10px; }
+            .btn-keyword { flex: 1 1 40%; text-align: center; }
+            header h1 { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- A. 頁首區 -->
+    <header>
+        <h1>Tree Traversal 一看就懂：Inorder 是哪一個？</h1>
+        <div class="subtitle">資料結構 Data Structure（新手友善）</div>
+        <div class="badge">題號：22</div>
+    </header>
+
+    <!-- B. 題目區 & C. 關鍵字互動 -->
+    <div class="card">
+        <div class="section-title">題目</div>
+        <div class="question-text">
+            22. 在 <span id="kw-tree" class="keyword-span">Tree Traversal</span> 中，哪一種走訪順序是「<span id="kw-left" class="keyword-span">左子樹</span> → <span id="kw-root" class="keyword-span">根</span> → <span id="kw-right" class="keyword-span">右子樹</span>」？
+        </div>
+        <ul class="options-list">
+            <li>(A) <span id="kw-pre" class="keyword-span">Preorder</span></li>
+            <li>(B) <span id="kw-in" class="keyword-span">Inorder</span></li>
+            <li>(C) <span id="kw-post" class="keyword-span">Postorder</span></li>
+            <li>(D) <span id="kw-level" class="keyword-span">Level-order</span></li>
+        </ul>
+
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+
+        <div style="font-weight: bold; margin-bottom: 10px; color: var(--primary-color);">▼ 點擊下方關鍵字，看看是什麼意思：</div>
+        
+        <div class="keyword-buttons">
+            <button class="btn-keyword" onclick="highlight('kw-tree', 'Tree Traversal（樹的走訪：按照規則，一個一個拜訪樹中的節點）')">Tree Traversal</button>
+            <button class="btn-keyword" onclick="highlight('kw-left', '左子樹（Left Subtree：節點左邊分支的整棵小樹）')">左子樹</button>
+            <button class="btn-keyword" onclick="highlight('kw-root', '根（Root：樹最上面那個節點，可以想成是「主角」）')">根</button>
+            <button class="btn-keyword" onclick="highlight('kw-right', '右子樹（Right Subtree：節點右邊分支的整棵小樹）')">右子樹</button>
+            <button class="btn-keyword" onclick="highlight('kw-pre', 'Preorder（前序走訪：根 → 左 → 右，根在最前面）')">Preorder</button>
+            <button class="btn-keyword" onclick="highlight('kw-in', 'Inorder（中序走訪：左 → 根 → 右，根在中間）')">Inorder</button>
+            <button class="btn-keyword" onclick="highlight('kw-post', 'Postorder（後序走訪：左 → 右 → 根，根在最後面）')">Postorder</button>
+            <button class="btn-keyword" onclick="highlight('kw-level', 'Level-order（層序走訪：由上到下，由左到右，像切蛋糕一層一層切）')">Level-order</button>
+        </div>
+
+        <div class="explanation-box" id="explanationText">
+            請點擊上方按鈕，白話解釋會出現在這裡...
+        </div>
+    </div>
+
+    <!-- D. 白話翻譯 -->
+    <div class="card">
+        <div class="section-title">白話翻譯機</div>
+        
+        <details>
+            <summary>【白話翻譯】這題在問什麼？</summary>
+            <div class="accordion-content">
+                「在走訪一棵樹的時候，如果規定一定要『先看左邊，再看自己(根)，最後看右邊』，這種走法在電腦科學裡叫什麼名字？」
+            </div>
+        </details>
+
+        <details>
+            <summary>【考試重點】這題在考什麼？</summary>
+            <div class="accordion-content">
+                你能不能把「走訪順序口訣」和「英文專有名詞」正確對起來。<br>
+                關鍵在於「根(Root)」排在第幾個位置。
+            </div>
+        </details>
+    </div>
+
+    <!-- E. Tree Traversal 互動示意 -->
+    <div class="card">
+        <div class="section-title">Tree 走訪模擬器</div>
+        <p style="color:var(--text-sub); font-size: 0.9rem;">點擊下方按鈕，觀察節點亮起的順序（A 是根，B 是左，C 是右）：</p>
+        
+        <div class="simulator-area">
+            <div class="tree-wrapper">
+                <svg class="tree-lines">
+                    <!-- Line Root to Left -->
+                    <line x1="140" y1="35" x2="70" y2="125" class="tree-line" />
+                    <!-- Line Root to Right -->
+                    <line x1="140" y1="35" x2="210" y2="125" class="tree-line" />
+                </svg>
+                
+                <div class="node" id="node-root">A
+                    <div class="node-label">根 (Root)</div>
+                </div>
+                <div class="node" id="node-left">B
+                    <div class="node-label">左 (Left)</div>
+                </div>
+                <div class="node" id="node-right">C
+                    <div class="node-label">右 (Right)</div>
+                </div>
+            </div>
+
+            <div class="sim-result" id="sim-result-text">準備就緒</div>
+
+            <div class="control-panel">
+                <button class="btn-sim" onclick="simulate('pre')">Preorder<br>(根→左→右)</button>
+                <button class="btn-sim" onclick="simulate('in')">Inorder<br>(左→根→右)</button>
+                <button class="btn-sim" onclick="simulate('post')">Postorder<br>(左→右→根)</button>
+                <button class="btn-sim" onclick="simulate('level')">Level-order<br>(上→下,左→右)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- F. 選項逐一解析 -->
+    <div class="card">
+        <div class="section-title">選項逐一破解</div>
+        <p style="margin-bottom: 15px;">點擊選項看詳細解析：</p>
+
+        <!-- Option A -->
+        <div class="option-card">
+            <div class="option-header" onclick="toggleOption('opt-a')">
+                <span>(A) Preorder</span>
+                <span class="status-badge status-wrong">顯示解析</span>
+            </div>
+            <div class="option-content wrong" id="opt-a">
+                <strong>錯！</strong><br>
+                Pre = Previous (前面)。<br>
+                Preorder 是「<strong>根</strong> → 左 → 右」。根在最前面先被拜訪。
+            </div>
+        </div>
+
+        <!-- Option B -->
+        <div class="option-card">
+            <div class="option-header" onclick="toggleOption('opt-b')">
+                <span>(B) Inorder</span>
+                <span class="status-badge status-correct">顯示解析</span>
+            </div>
+            <div class="option-content correct" id="opt-b">
+                <strong>正確！</strong><br>
+                In = Inside/Intermediate (中間)。<br>
+                Inorder 正是「左 → <strong>根</strong> → 右」。根夾在左右子樹的中間。
+            </div>
+        </div>
+
+        <!-- Option C -->
+        <div class="option-card">
+            <div class="option-header" onclick="toggleOption('opt-c')">
+                <span>(C) Postorder</span>
+                <span class="status-badge status-wrong">顯示解析</span>
+            </div>
+            <div class="option-content wrong" id="opt-c">
+                <strong>錯！</strong><br>
+                Post = Posterior (後面)。<br>
+                Postorder 是「左 → 右 → <strong>根</strong>」。根在最後面才出現。
+            </div>
+        </div>
+
+        <!-- Option D -->
+        <div class="option-card">
+            <div class="option-header" onclick="toggleOption('opt-d')">
+                <span>(D) Level-order</span>
+                <span class="status-badge status-wrong">顯示解析</span>
+            </div>
+            <div class="option-content wrong" id="opt-d">
+                <strong>錯！</strong><br>
+                Level-order 是「層序走訪」。<br>
+                規則是：第1層看完看第2層，由左而右。不看根在中間還是旁邊。
+            </div>
+        </div>
+    </div>
+
+    <!-- G. 快速小測驗 -->
+    <div class="card">
+        <div class="section-title">快速驗收 (Mini Quiz)</div>
+        
+        <div class="quiz-item">
+            <span class="quiz-q">1. 哪一種走訪順序，會讓你「最後」才看到根節點 (Root)？</span>
+            <div class="quiz-options">
+                <button onclick="checkQuiz(1, 'A', false)">Preorder</button>
+                <button onclick="checkQuiz(1, 'B', false)">Inorder</button>
+                <button onclick="checkQuiz(1, 'C', true)">Postorder</button>
+            </div>
+            <div id="quiz-fb-1" class="quiz-feedback"></div>
+        </div>
+
+        <div class="quiz-item">
+            <span class="quiz-q">2. 為什麼二元搜尋樹 (BST) 喜歡用 Inorder？</span>
+            <div class="quiz-options">
+                <button onclick="checkQuiz(2, 'A', true)">因為印出來剛好會由小到大排序</button>
+                <button onclick="checkQuiz(2, 'B', false)">因為速度最快</button>
+            </div>
+            <div id="quiz-fb-2" class="quiz-feedback"></div>
+        </div>
+
+        <div class="quiz-item">
+            <span class="quiz-q">3. Level-order 是一層一層往下找，它屬於哪種搜尋策略？</span>
+            <div class="quiz-options">
+                <button onclick="checkQuiz(3, 'A', false)">DFS (深度優先)</button>
+                <button onclick="checkQuiz(3, 'B', true)">BFS (廣度優先)</button>
+            </div>
+            <div id="quiz-fb-3" class="quiz-feedback"></div>
+        </div>
+    </div>
+
+    <!-- H. 口訣與陷阱 -->
+    <div class="card">
+        <div class="section-title">老師的私房筆記</div>
+        
+        <div class="mnemonic-box">
+            <h3 style="margin-top:0; color:var(--text-main);">★ 記憶口訣：看「根」在哪裡</h3>
+            <ul style="margin-bottom:0;">
+                <li><strong>Pre</strong>order：根在<strong>前</strong> (根→左→右)</li>
+                <li><strong>In</strong>order：根在<strong>中</strong> (左→根→右)</li>
+                <li><strong>Post</strong>order：根在<strong>後</strong> (左→右→根)</li>
+            </ul>
+        </div>
+
+        <div style="background-color: #FEF2F2; padding: 15px; border-radius: 8px;">
+            <h3 style="margin-top:0; color:#991B1B;">⚠️ 常見陷阱</h3>
+            <ul class="pitfall-list">
+                <li>只背英文名稱，卻忘了 Root 的位置。</li>
+                <li>搞混 Inorder (中) 和 Preorder (前) 的順序。</li>
+                <li>看到「由上到下」就選 Level-order，但題目如果有規定「左右順序」就要小心。</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- I. 正確答案揭曉 -->
+    <div class="reveal-section">
+        <p>準備好揭曉答案了嗎？</p>
+        <button class="btn-reveal" onclick="revealAnswer()">揭曉正確答案</button>
+        
+        <div id="finalAnswerBlock" class="final-answer">
+            <div class="big-letter">B</div>
+            <h3>正確答案：Inorder</h3>
+            <p>理由：題目標示「左子樹 → 根 → 右子樹」，<br>根夾在中間，這正是 Inorder (中序) 的定義！</p>
+        </div>
+    </div>
+
+    <footer>
+        衝刺班講義系列 - DS_Q22_Tree_Traversal_Inorder_v1<br>
+        Built for Students
+    </footer>
+
+</div>
+
+<script>
+    // --- C. 關鍵字互動 ---
+    function highlight(elementId, explanation) {
+        // 1. 清除所有現有的 highlight
+        document.querySelectorAll('.keyword-span').forEach(el => {
+            el.classList.remove('active');
+        });
+
+        // 2. 標示目標
+        const target = document.getElementById(elementId);
+        if(target) {
+            target.classList.add('active');
+            // 捲動到文字位置 (Optional, 視需求)
+        }
+
+        // 3. 顯示解釋
+        const box = document.getElementById('explanationText');
+        box.style.color = '#1F2937'; // 變深色
+        box.style.fontWeight = 'bold';
+        box.style.backgroundColor = '#FEF3C7';
+        box.innerHTML = explanation;
+        
+        // 短暫閃爍效果復原背景
+        setTimeout(() => {
+            box.style.backgroundColor = '#F8FAFC';
+        }, 300);
+    }
+
+    // --- E. Tree Simulator ---
+    let isSimulating = false;
+
+    function simulate(type) {
+        if (isSimulating) return;
+        isSimulating = true;
+
+        const nodes = {
+            root: document.getElementById('node-root'),
+            left: document.getElementById('node-left'),
+            right: document.getElementById('node-right')
+        };
+        
+        const resultText = document.getElementById('sim-result-text');
+        
+        // Reset styles
+        Object.values(nodes).forEach(n => n.classList.remove('active'));
+        
+        let sequence = [];
+        let labelSeq = "";
+
+        // 定義順序
+        if (type === 'pre') {
+            sequence = [nodes.root, nodes.left, nodes.right];
+            labelSeq = "A (根) → B (左) → C (右)";
+        } else if (type === 'in') {
+            sequence = [nodes.left, nodes.root, nodes.right];
+            labelSeq = "B (左) → A (根) → C (右)";
+        } else if (type === 'post') {
+            sequence = [nodes.left, nodes.right, nodes.root];
+            labelSeq = "B (左) → C (右) → A (根)";
+        } else if (type === 'level') {
+            sequence = [nodes.root, nodes.left, nodes.right];
+            labelSeq = "A (第一層) → B, C (第二層)";
+        }
+
+        resultText.innerText = "走訪中...";
+
+        // 動畫執行
+        let delay = 0;
+        sequence.forEach((node, index) => {
+            setTimeout(() => {
+                node.classList.add('active');
+            }, delay);
+            
+            // 移除 highlight 的時間 (做成流水燈效果)
+            setTimeout(() => {
+                // 如果是最後一個，保持亮著一下
+                if(index !== sequence.length - 1) {
+                    node.classList.remove('active');
+                }
+            }, delay + 800);
+
+            delay += 1000;
+        });
+
+        // 結束
+        setTimeout(() => {
+            Object.values(nodes).forEach(n => n.classList.remove('active'));
+            resultText.innerText = "順序：" + labelSeq;
+            isSimulating = false;
+        }, delay);
+    }
+
+    // --- F. 選項解析 ---
+    function toggleOption(id) {
+        const content = document.getElementById(id);
+        const header = content.previousElementSibling;
+        const badge = header.querySelector('.status-badge');
+
+        if (content.style.display === 'block') {
+            content.style.display = 'none';
+            badge.textContent = '顯示解析';
+            badge.className = 'status-badge ' + (content.classList.contains('correct') ? 'status-correct' : 'status-wrong');
+            badge.style.backgroundColor = ''; // reset
+            badge.style.color = '';
+        } else {
+            content.style.display = 'block';
+            badge.textContent = '收起解析';
+            badge.style.backgroundColor = '#E5E7EB';
+            badge.style.color = '#374151';
+        }
+    }
+
+    // --- G. 快速小測驗 ---
+    function checkQuiz(qIndex, choice, isCorrect) {
+        const feedbackBox = document.getElementById(`quiz-fb-${qIndex}`);
+        
+        if (isCorrect) {
+            feedbackBox.style.color = '#059669';
+            feedbackBox.innerHTML = "Bingo! 答對了！觀念很清楚喔。";
+        } else {
+            feedbackBox.style.color = '#DC2626';
+            if(qIndex === 1) feedbackBox.innerHTML = "不對喔，想想看「Post」是什麼意思？（Post = 後）";
+            if(qIndex === 2) feedbackBox.innerHTML = "不是喔，Inorder 對於 BST 有特殊的排序性質。";
+            if(qIndex === 3) feedbackBox.innerHTML = "Level-order 是廣度優先 (BFS)，因為它是一層一層擴散出去的。";
+        }
+        feedbackBox.style.display = 'block';
+    }
+
+    // --- I. 答案揭曉 ---
+    function revealAnswer() {
+        const block = document.getElementById('finalAnswerBlock');
+        block.style.display = 'block';
+        // Auto scroll to answer
+        block.scrollIntoView({ behavior: 'smooth' });
+    }
+</script>
+
+</body>
+</html>

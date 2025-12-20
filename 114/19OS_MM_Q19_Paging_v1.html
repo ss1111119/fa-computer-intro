@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>分頁(Paging)機制：一題搞懂 - OS衝刺班</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #e67e22;
+            --highlight-bg: #f1c40f;
+            --correct-color: #27ae60;
+            --wrong-color: #c0392b;
+            --bg-color: #f4f6f7;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --border-radius: 8px;
+            --spacing: 16px;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: var(--spacing);
+        }
+
+        /* A. Header */
+        header {
+            background: var(--primary-color);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 0 0 var(--border-radius) var(--border-radius);
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        header h1 { margin: 0; font-size: 1.5rem; }
+        header p { margin: 5px 0 0; opacity: 0.9; font-size: 0.9rem; }
+        .badge {
+            display: inline-block;
+            background: var(--accent-color);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+
+        /* Section Styling */
+        section {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--primary-color);
+        }
+        
+        h2 {
+            font-size: 1.2rem;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+
+        /* B. Question Card */
+        .question-text {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .options-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .options-list li {
+            padding: 8px 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .options-list li:last-child { border-bottom: none; }
+
+        /* C. Highlights */
+        .keyword-btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .keyword-btn {
+            background: white;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 5px 10px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+        .keyword-btn:hover, .keyword-btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
+        .highlighted-text {
+            background-color: var(--highlight-bg);
+            padding: 0 2px;
+            border-radius: 2px;
+            font-weight: bold;
+        }
+        #definition-box {
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            padding: 10px;
+            border-radius: 4px;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            font-size: 0.95rem;
+        }
+
+        /* D. Accordion */
+        .accordion-btn {
+            background-color: #eee;
+            color: #444;
+            cursor: pointer;
+            padding: 15px;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-size: 1rem;
+            transition: 0.4s;
+            border-radius: 4px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+        }
+        .accordion-btn:after { content: '+'; font-weight: bold; }
+        .accordion-btn.active:after { content: '-'; }
+        .accordion-panel {
+            padding: 0 15px;
+            background-color: white;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.2s ease-out;
+            border-left: 2px solid #ccc;
+            margin-top: 5px;
+        }
+        .plain-speak { color: var(--accent-color); font-weight: bold; }
+
+        /* E. Simulator */
+        .sim-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            user-select: none;
+        }
+        .sim-column {
+            flex: 1;
+            min-width: 140px;
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .sim-column h3 { font-size: 1rem; margin-bottom: 10px; color: #555; }
+        
+        .page-item {
+            background: var(--accent-color);
+            color: white;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: transform 0.1s;
+            border: 2px solid transparent;
+        }
+        .page-item.selected {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px var(--primary-color);
+            transform: scale(1.05);
+        }
+        .page-item.placed {
+            background: #95a5a6;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .frame-slot {
+            background: white;
+            border: 2px dashed #bdc3c7;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 4px;
+            min-height: 24px;
+            cursor: pointer;
+            position: relative;
+        }
+        .frame-slot:hover { border-color: var(--primary-color); }
+        .frame-slot.occupied { border-style: solid; border-color: var(--accent-color); }
+        
+        .frame-label {
+            position: absolute;
+            left: -30px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.8rem;
+            color: #7f8c8d;
+            width: 25px;
+            text-align: right;
+        }
+
+        .sim-controls {
+            margin-top: 15px;
+            text-align: center;
+        }
+        .btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .btn:hover { background-color: #34495e; }
+        .sim-result {
+            margin-top: 10px;
+            font-weight: bold;
+            color: var(--correct-color);
+            min-height: 1.5em;
+            text-align: center;
+        }
+        .instruction { font-size: 0.9rem; color: #666; margin-bottom: 10px; text-align: center;}
+
+        /* F. Options Analysis */
+        .option-card {
+            border: 1px solid #eee;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+        .option-header {
+            background: #f8f9fa;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        .option-content {
+            padding: 15px;
+            display: none;
+            border-top: 1px solid #eee;
+        }
+        .status-badge {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .correct { background: #d4edda; color: #155724; }
+        .wrong { background: #f8d7da; color: #721c24; }
+        .btn-reveal-opt {
+            background: none;
+            border: 1px solid #ccc;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        /* G. Quiz */
+        .quiz-item {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #eee;
+        }
+        .quiz-options button {
+            margin-right: 10px;
+            padding: 5px 15px;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .quiz-options button:hover { background: #f0f0f0; }
+        .quiz-feedback { margin-top: 5px; font-weight: bold; font-size: 0.9rem; }
+        .text-green { color: var(--correct-color); }
+        .text-red { color: var(--wrong-color); }
+
+        /* H. Mnemonics */
+        .mnemonic-box {
+            background: #e8f6f3;
+            border-left: 5px solid var(--correct-color);
+            padding: 15px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .pitfall-list li { margin-bottom: 5px; }
+
+        /* I. Answer Reveal */
+        #answer-content { display: none; margin-top: 15px; }
+        .final-answer {
+            font-size: 2rem;
+            color: var(--correct-color);
+            font-weight: bold;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #7f8c8d;
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 600px) {
+            .sim-container { flex-direction: column; align-items: center; }
+            .sim-column { width: 100%; max-width: 300px; }
+            header h1 { font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>分頁 (Paging) 機制：一題搞懂</h1>
+    <p>記憶體管理 Memory Management（新手友善）</p>
+    <div class="badge">題號：19</div>
+</header>
+
+<div class="container">
+
+    <!-- B. 題目區 -->
+    <section id="question-area">
+        <h2>題目：19</h2>
+        <div class="question-text" id="question-text">
+            下列哪一項描述符合「分頁(Paging)」機制？
+        </div>
+        <ul class="options-list">
+            <li>(A) 將程式拆成固定大小的頁面(page)放入任意的實體框架(frame)</li>
+            <li>(B) 必須將整個程式一次載入連續實體記憶體才能執行</li>
+            <li>(C) 不支援虛擬記憶體</li>
+            <li>(D) 分頁大小可以任意改變，不固定</li>
+        </ul>
+    </section>
+
+    <!-- C. 關鍵字互動 -->
+    <section>
+        <h2>關鍵字螢光筆</h2>
+        <p style="font-size:0.9rem; color:#666;">點擊按鈕，找出題目中的關鍵字與解釋：</p>
+        <div class="keyword-btn-group">
+            <button class="keyword-btn" onclick="highlight('paging')">分頁(Paging)</button>
+            <button class="keyword-btn" onclick="highlight('fixed')">固定大小</button>
+            <button class="keyword-btn" onclick="highlight('page')">頁面(Page)</button>
+            <button class="keyword-btn" onclick="highlight('frame')">實體框架(Frame)</button>
+            <button class="keyword-btn" onclick="highlight('continuous')">連續</button>
+            <button class="keyword-btn" onclick="highlight('vm')">虛擬記憶體</button>
+        </div>
+        <div id="definition-box">
+            請點擊上方按鈕查看名詞解釋...
+        </div>
+    </section>
+
+    <!-- D. 白話翻譯 -->
+    <section>
+        <button class="accordion-btn">白話翻譯與考點解析</button>
+        <div class="accordion-panel">
+            <p><strong>白話翻譯：</strong><br>
+            這題在問：「Paging」這種管理記憶體的方法，到底是怎麼運作的？<br>
+            <span class="plain-speak">就像我們要租倉庫(記憶體)來放東西(程式)，Paging 是規定所有箱子大小都要一樣大，還是可以隨便亂塞？</span></p>
+            
+            <p><strong>這題在考什麼：</strong><br>
+            核心在考你知不知道 <span class="plain-speak">Paging = 切成固定大小 + 可以亂放(不連續)</span>。這是它跟 Segmentation (分段，大小不固定) 最大的差別。</p>
+        </div>
+    </section>
+
+    <!-- E. 模擬器 -->
+    <section>
+        <h2>互動模擬：分頁搬運工</h2>
+        <p class="instruction">步驟：1. 先點選左邊的 Page (程式) <br> 2. 再點選右邊任意的 Frame (記憶體) 把它放進去。</p>
+        
+        <div class="sim-container">
+            <!-- 邏輯記憶體 -->
+            <div class="sim-column">
+                <h3>程式 (Logical Memory)</h3>
+                <p style="font-size:0.8rem; color:#666;">切成 4 個固定大小的 Page</p>
+                <div id="p0" class="page-item" onclick="selectPage('p0')">Page 0 (P0)</div>
+                <div id="p1" class="page-item" onclick="selectPage('p1')">Page 1 (P1)</div>
+                <div id="p2" class="page-item" onclick="selectPage('p2')">Page 2 (P2)</div>
+                <div id="p3" class="page-item" onclick="selectPage('p3')">Page 3 (P3)</div>
+            </div>
+
+            <!-- 實體記憶體 -->
+            <div class="sim-column">
+                <h3>實體記憶體 (Physical RAM)</h3>
+                <p style="font-size:0.8rem; color:#666;">切成 6 個固定大小的 Frame</p>
+                <div style="position: relative;">
+                    <div class="frame-label">F0</div>
+                    <div id="f0" class="frame-slot" onclick="placePage('f0')"></div>
+                </div>
+                <div style="position: relative;">
+                    <div class="frame-label">F1</div>
+                    <div id="f1" class="frame-slot" onclick="placePage('f1')"></div>
+                </div>
+                <div style="position: relative;">
+                    <div class="frame-label">F2</div>
+                    <div id="f2" class="frame-slot" onclick="placePage('f2')"></div>
+                </div>
+                <div style="position: relative;">
+                    <div class="frame-label">F3</div>
+                    <div id="f3" class="frame-slot" onclick="placePage('f3')"></div>
+                </div>
+                <div style="position: relative;">
+                    <div class="frame-label">F4</div>
+                    <div id="f4" class="frame-slot" onclick="placePage('f4')"></div>
+                </div>
+                <div style="position: relative;">
+                    <div class="frame-label">F5</div>
+                    <div id="f5" class="frame-slot" onclick="placePage('f5')"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sim-result" id="sim-message"></div>
+        <div class="sim-controls">
+            <button class="btn" onclick="resetSim()">重置模擬</button>
+        </div>
+    </section>
+
+    <!-- F. 選項解析 -->
+    <section>
+        <h2>選項逐一解析</h2>
+        <p style="font-size:0.9rem; color:#666;">點擊按鈕查看該選項為什麼對或錯：</p>
+
+        <!-- Option A -->
+        <div class="option-card">
+            <div class="option-header">
+                <span>(A) 將程式拆成固定大小...</span>
+                <button class="btn-reveal-opt" onclick="toggleOption('optA')">顯示解析</button>
+            </div>
+            <div id="optA" class="option-content">
+                <span class="status-badge correct">正確</span>
+                <p><strong>老師講解：</strong>這就是 Paging 的定義！把程式切成固定大小的 Page，記憶體切成同樣大小的 Frame。因為大小一樣，所以 Page 可以隨便塞進任何一個空的 Frame 裡，不用排隊連在一起。</p>
+            </div>
+        </div>
+
+        <!-- Option B -->
+        <div class="option-card">
+            <div class="option-header">
+                <span>(B) 必須...一次載入連續實體記憶體...</span>
+                <button class="btn-reveal-opt" onclick="toggleOption('optB')">顯示解析</button>
+            </div>
+            <div id="optB" class="option-content">
+                <span class="status-badge wrong">錯誤</span>
+                <p><strong>老師講解：</strong>這是「連續記憶體配置」的老舊觀念。Paging 最強大的地方就是「不用連續」！P0 可以放 F1，P1 可以放 F5，分開住沒關係。</p>
+            </div>
+        </div>
+
+        <!-- Option C -->
+        <div class="option-card">
+            <div class="option-header">
+                <span>(C) 不支援虛擬記憶體</span>
+                <button class="btn-reveal-opt" onclick="toggleOption('optC')">顯示解析</button>
+            </div>
+            <div id="optC" class="option-content">
+                <span class="status-badge wrong">錯誤</span>
+                <p><strong>老師講解：</strong>剛好相反！Paging 是現代「虛擬記憶體 (Virtual Memory)」的基礎。因為切很細又不需連續，作業系統可以很容易地把暫時不用的 Page 丟到硬碟去，讓記憶體看起來變大。</p>
+            </div>
+        </div>
+
+        <!-- Option D -->
+        <div class="option-card">
+            <div class="option-header">
+                <span>(D) 分頁大小可以任意改變...</span>
+                <button class="btn-reveal-opt" onclick="toggleOption('optD')">顯示解析</button>
+            </div>
+            <div id="optD" class="option-content">
+                <span class="status-badge wrong">錯誤</span>
+                <p><strong>老師講解：</strong>這是「分段 (Segmentation)」的特徵。Paging 的特色就是「一視同仁、大小固定」(例如一頁就是 4KB)。如果大小不固定，那是 Segmentation。</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- G. 快速測驗 -->
+    <section>
+        <h2>30秒隨堂考</h2>
+        
+        <div class="quiz-item">
+            <p>1. 分頁 (Paging) 的每一個頁面大小是固定的嗎？</p>
+            <div class="quiz-options">
+                <button onclick="checkQuiz(1, true)">是 (Fixed)</button>
+                <button onclick="checkQuiz(1, false)">否 (Variable)</button>
+            </div>
+            <div id="q1-feedback" class="quiz-feedback"></div>
+        </div>
+
+        <div class="quiz-item">
+            <p>2. 使用 Paging 機制，程式在實體記憶體中必須「連續」存放嗎？</p>
+            <div class="quiz-options">
+                <button onclick="checkQuiz(2, true)">必須連續</button>
+                <button onclick="checkQuiz(2, false)">不必連續</button>
+            </div>
+            <div id="q2-feedback" class="quiz-feedback"></div>
+        </div>
+
+        <div class="quiz-item">
+            <p>3. Paging 通常是實現「虛擬記憶體」的基礎技術嗎？</p>
+            <div class="quiz-options">
+                <button onclick="checkQuiz(3, true)">是</button>
+                <button onclick="checkQuiz(3, false)">否</button>
+            </div>
+            <div id="q3-feedback" class="quiz-feedback"></div>
+        </div>
+    </section>
+
+    <!-- H. 口訣與陷阱 -->
+    <section>
+        <h2>衝刺班口訣 & 陷阱</h2>
+        <div class="mnemonic-box">
+            口訣：「頁固定、位不連，虛擬記憶體靠它撐」
+        </div>
+        <p><strong>記憶重點：</strong></p>
+        <ul class="pitfall-list">
+            <li><strong>頁固定：</strong>Page 大小絕對是固定的 (由硬體決定)。</li>
+            <li><strong>位不連：</strong>在實體記憶體的位置(位址)不需要連續。</li>
+        </ul>
+        <br>
+        <p><strong>常見陷阱 (Exam Pitfalls)：</strong></p>
+        <ul class="pitfall-list" style="color: #c0392b;">
+            <li>[!] 看到「大小不固定」 -> 選 Segmentation (分段)。</li>
+            <li>[!] 看到「邏輯意義完整切割 (如函式、主程式)」 -> 選 Segmentation。</li>
+            <li>[!] 看到「解決外部破碎 (External Fragmentation)」 -> Paging 最擅長。</li>
+        </ul>
+    </section>
+
+    <!-- I. 正確答案 -->
+    <section id="answer-section">
+        <button class="btn" style="width:100%" onclick="showFinalAnswer()">揭曉本題答案</button>
+        <div id="answer-content">
+            <p>正確答案是：</p>
+            <div class="final-answer">(A)</div>
+            <p><strong>一句話總結：</strong>因為 Paging 將程式切成固定大小的 Page，所以可以放入記憶體中任意位置的 Frame，不需要連續空間。</p>
+        </div>
+    </section>
+
+</div>
+
+<footer>
+    <p>OS衝刺班教材 © 2025</p>
+</footer>
+
+<script>
+    /* --- C. Highlights Logic --- */
+    const definitions = {
+        'paging': '分頁 (Paging)：把記憶體切成一格一格「固定大小」來使用的技術。',
+        'fixed': '固定大小：像切吐司一樣，每一片厚度都規定好，不能忽大忽小。',
+        'page': '頁面 (Page)：程式(Process)被切出來的一小塊，大小固定。',
+        'frame': '實體框架 (Frame)：實體記憶體(RAM)被切出來的一小格，大小跟 Page 一樣。',
+        'continuous': '連續：必須黏在一起放，中間不能斷開。(Paging 不需要這樣！)',
+        'vm': '虛擬記憶體 (Virtual Memory)：讓程式以為記憶體很大，其實是用硬碟/SSD幫忙撐場面。',
+        'default': '請點擊上方按鈕查看名詞解釋...'
+    };
+
+    // Store original HTML to clear highlights easily
+    const questionContainer = document.getElementById('question-text');
+    const originalQuestionHTML = questionContainer.innerHTML;
+
+    function highlight(key) {
+        // Reset explanation
+        document.getElementById('definition-box').innerText = definitions[key];
+        
+        // Update Buttons active state
+        document.querySelectorAll('.keyword-btn').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+
+        // Simple text replacement for highlighting (reset first to avoid nesting)
+        let html = originalQuestionHTML;
+        
+        // Define mapping for text replacement
+        const map = {
+            'paging': ['分頁(Paging)'],
+            'fixed': ['固定大小'],
+            'page': ['頁面(page)'],
+            'frame': ['實體框架(frame)'],
+            'continuous': ['連續'],
+            'vm': ['虛擬記憶體']
+        };
+
+        const targets = map[key];
+        if(targets) {
+            targets.forEach(text => {
+                // Global replace, case insensitive
+                const regex = new RegExp(text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+                html = html.replace(regex, `<span class="highlighted-text">$&</span>`);
+            });
+        }
+        questionContainer.innerHTML = html;
+    }
+
+    /* --- D. Accordion Logic --- */
+    document.querySelector('.accordion-btn').addEventListener('click', function() {
+        this.classList.toggle('active');
+        var panel = this.nextElementSibling;
+        if (panel.style.maxHeight) {
+            panel.style.maxHeight = null;
+        } else {
+            panel.style.maxHeight = panel.scrollHeight + "px";
+        }
+    });
+
+    /* --- E. Simulator Logic --- */
+    let selectedPageId = null;
+    let placedCount = 0;
+    const totalPages = 4;
+
+    function selectPage(id) {
+        const el = document.getElementById(id);
+        if(el.classList.contains('placed')) return; // Already moved
+
+        // Clear previous selection
+        document.querySelectorAll('.page-item').forEach(p => p.classList.remove('selected'));
+        
+        selectedPageId = id;
+        el.classList.add('selected');
+        document.getElementById('sim-message').innerText = "已選取 " + el.innerText.split(' ')[0] + "，請點選右側空白 Frame 放入。";
+        document.getElementById('sim-message').style.color = "#333";
+    }
+
+    function placePage(frameId) {
+        if(!selectedPageId) {
+            document.getElementById('sim-message').innerText = "請先點選左側的 Page！";
+            document.getElementById('sim-message').style.color = "#c0392b";
+            return;
+        }
+
+        const frameEl = document.getElementById(frameId);
+        if(frameEl.classList.contains('occupied')) {
+            document.getElementById('sim-message').innerText = "這個 Frame 已經有人住了！選別的。";
+            document.getElementById('sim-message').style.color = "#c0392b";
+            return;
+        }
+
+        // Logic: Move text/visual to frame
+        const pageEl = document.getElementById(selectedPageId);
+        
+        // Mark Page as placed
+        pageEl.classList.remove('selected');
+        pageEl.classList.add('placed');
+        pageEl.removeAttribute('onclick');
+
+        // Mark Frame as occupied
+        frameEl.classList.add('occupied');
+        frameEl.innerText = pageEl.innerText.split(' ')[2]; // Get P0, P1 etc
+        frameEl.style.backgroundColor = getComputedStyle(pageEl).backgroundColor;
+        frameEl.style.color = "white";
+        frameEl.style.display = "flex";
+        frameEl.style.alignItems = "center";
+        frameEl.style.justifyContent = "center";
+        frameEl.style.fontWeight = "bold";
+
+        // Reset state
+        selectedPageId = null;
+        placedCount++;
+
+        // Success Check
+        if(placedCount === totalPages) {
+            document.getElementById('sim-message').innerText = "🎉 成功！Page 固定大小，可以放入任意 Frame，不必連續！";
+            document.getElementById('sim-message').style.color = "#27ae60";
+        } else {
+            document.getElementById('sim-message').innerText = "成功放入！還有 " + (totalPages - placedCount) + " 個 Page。";
+            document.getElementById('sim-message').style.color = "#27ae60";
+        }
+    }
+
+    function resetSim() {
+        placedCount = 0;
+        selectedPageId = null;
+        document.getElementById('sim-message').innerText = "";
+        
+        // Reset Pages
+        ['p0','p1','p2','p3'].forEach(id => {
+            const el = document.getElementById(id);
+            el.classList.remove('placed', 'selected');
+            el.setAttribute('onclick', `selectPage('${id}')`);
+        });
+
+        // Reset Frames
+        ['f0','f1','f2','f3','f4','f5'].forEach(id => {
+            const el = document.getElementById(id);
+            el.classList.remove('occupied');
+            el.innerText = "";
+            el.style.backgroundColor = "white";
+        });
+    }
+
+    /* --- F. Option Toggle --- */
+    function toggleOption(id) {
+        const content = document.getElementById(id);
+        if(content.style.display === 'block') {
+            content.style.display = 'none';
+        } else {
+            content.style.display = 'block';
+        }
+    }
+
+    /* --- G. Quiz Logic --- */
+    function checkQuiz(qNum, answer) {
+        const feedbackEl = document.getElementById(`q1-feedback`.replace('1', qNum));
+        
+        // Define correct answers
+        const key = {
+            1: true,  // Fixed size
+            2: false, // Not continuous
+            3: true   // Supports VM
+        };
+
+        if(answer === key[qNum]) {
+            feedbackEl.innerHTML = `<span class="text-green">⭕ 答對了！</span>`;
+            if(qNum === 1) feedbackEl.innerHTML += " Page 大小必須固定。";
+            if(qNum === 2) feedbackEl.innerHTML += " 這是 Paging 最大優點：不需連續。";
+            if(qNum === 3) feedbackEl.innerHTML += " Paging 是虛擬記憶體的核心。";
+        } else {
+            feedbackEl.innerHTML = `<span class="text-red">❌ 再想一下...</span>`;
+        }
+    }
+
+    /* --- I. Answer Reveal --- */
+    function showFinalAnswer() {
+        document.getElementById('answer-content').style.display = 'block';
+        // Scroll to bottom
+        setTimeout(() => {
+            document.getElementById('answer-section').scrollIntoView({behavior: "smooth"});
+        }, 100);
+    }
+</script>
+
+</body>
+</html>

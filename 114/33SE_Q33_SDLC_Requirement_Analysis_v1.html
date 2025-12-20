@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SE_Q33_SDLC_Requirement_Analysis_v1</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --highlight-color: #f1c40f;
+            --success-color: #27ae60;
+            --error-color: #c0392b;
+            --bg-color: #f4f6f7;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --border-radius: 8px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding-bottom: 50px;
+        }
+
+        /* Container */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 15px;
+        }
+
+        /* Header */
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .badge {
+            display: inline-block;
+            background-color: var(--accent-color);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+
+        /* Sections General */
+        section {
+            background-color: var(--card-bg);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--accent-color);
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        /* Question Card */
+        .question-text {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .options p {
+            margin: 8px 0;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border: 1px solid #eee;
+            border-radius: 4px;
+        }
+
+        /* Highlight Interaction */
+        .highlight-span {
+            transition: background-color 0.3s;
+            padding: 0 2px;
+            border-radius: 3px;
+        }
+        
+        .highlight-active {
+            background-color: var(--highlight-color);
+            color: black;
+            font-weight: bold;
+        }
+
+        .keyword-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .btn-keyword {
+            background-color: white;
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+            padding: 5px 10px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .btn-keyword:hover, .btn-keyword.active {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .explanation-box {
+            background-color: #e8f4fc;
+            padding: 15px;
+            border-radius: 4px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        /* Accordion */
+        .accordion-btn {
+            background-color: #eee;
+            color: #444;
+            cursor: pointer;
+            padding: 15px;
+            width: 100%;
+            text-align: left;
+            border: none;
+            outline: none;
+            transition: 0.4s;
+            font-weight: bold;
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+
+        .accordion-btn:after {
+            content: '+';
+            float: right;
+            font-weight: bold;
+        }
+
+        .accordion-btn.active:after {
+            content: '-';
+        }
+
+        .accordion-panel {
+            padding: 0 15px;
+            background-color: white;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.2s ease-out;
+            margin-bottom: 10px;
+        }
+
+        .accordion-content {
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+        }
+
+        /* SDLC Flow */
+        .flow-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        @media (min-width: 600px) {
+            .flow-container {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+        }
+
+        .flow-step {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            background-color: #eee;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            position: relative;
+        }
+
+        .flow-step.active {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: bold;
+            transform: scale(1.05);
+        }
+
+        .flow-info {
+            margin-top: 15px;
+            padding: 15px;
+            border: 2px dashed var(--accent-color);
+            background-color: #fdfdfd;
+            border-radius: 4px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        /* Option Analysis */
+        .option-card {
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .option-header {
+            padding: 12px;
+            background-color: #f9f9f9;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .option-header:hover {
+            background-color: #eee;
+        }
+
+        .option-detail {
+            display: none;
+            padding: 15px;
+            border-top: 1px solid #ddd;
+        }
+
+        .option-detail.correct {
+            background-color: #e9f7ef;
+            color: #1e8449;
+        }
+
+        .option-detail.wrong {
+            background-color: #fdedec;
+            color: #c0392b;
+        }
+
+        /* Mini Quiz */
+        .quiz-item {
+            margin-bottom: 20px;
+            border-bottom: 1px dashed #ccc;
+            padding-bottom: 15px;
+        }
+
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .quiz-options button {
+            margin-right: 10px;
+            padding: 5px 15px;
+            cursor: pointer;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .quiz-feedback {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            display: none;
+            padding: 5px;
+            border-radius: 3px;
+        }
+
+        .quiz-feedback.correct { background-color: #d4edda; color: #155724; display: block; }
+        .quiz-feedback.wrong { background-color: #f8d7da; color: #721c24; display: block; }
+
+        /* Answer Reveal */
+        .btn-reveal {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background-color: var(--primary-color);
+            color: white;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .btn-reveal:hover {
+            background-color: #34495e;
+        }
+
+        #final-answer-content {
+            display: none;
+            margin-top: 15px;
+            text-align: center;
+            padding: 20px;
+            background-color: #2c3e50;
+            color: white;
+            border-radius: 4px;
+        }
+
+        .correct-opt {
+            font-size: 3rem;
+            color: var(--highlight-color);
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        /* Lists */
+        ul {
+            padding-left: 20px;
+            margin-top: 10px;
+        }
+        li {
+            margin-bottom: 5px;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- A. 頁首區 -->
+    <header>
+        <h1>SDLC 第一步在做什麼？需求分析一題就懂</h1>
+        <p>Software Development Life Cycle 基礎必考</p>
+        <div class="badge">題號：33</div>
+    </header>
+
+    <!-- B. 題目區 -->
+    <section id="question-card">
+        <h2>題目檢視</h2>
+        <div class="question-text">
+            33. 軟體開發生命週期（<span id="txt-sdlc" class="highlight-span">SDLC</span>）中，「<span id="txt-req" class="highlight-span">需求分析</span>（Requirement Analysis）」的主要目的為何？
+        </div>
+        <div class="options">
+            <p>(A) <span id="txt-code" class="highlight-span">撰寫程式碼</span></p>
+            <p>(B) <span id="txt-user" class="highlight-span">確認使用者需求</span>並定義<span id="txt-sys" class="highlight-span">系統功能</span></p>
+            <p>(C) 進行單元<span id="txt-test" class="highlight-span">測試</span></p>
+            <p>(D) 完成系統<span id="txt-deploy" class="highlight-span">部署</span></p>
+        </div>
+    </section>
+
+    <!-- C. 關鍵字互動 -->
+    <section>
+        <h2>關鍵字拆解 (點點看)</h2>
+        <p style="margin-bottom: 10px; font-size: 0.9rem; color: #666;">點擊下方按鈕，看看題目中這幾個詞代表什麼意思：</p>
+        <div class="keyword-buttons">
+            <button class="btn-keyword" onclick="highlight('sdlc')">SDLC</button>
+            <button class="btn-keyword" onclick="highlight('req')">需求分析</button>
+            <button class="btn-keyword" onclick="highlight('user')">使用者需求</button>
+            <button class="btn-keyword" onclick="highlight('sys')">系統功能</button>
+            <button class="btn-keyword" onclick="highlight('code')">撰寫程式</button>
+            <button class="btn-keyword" onclick="highlight('test')">測試</button>
+            <button class="btn-keyword" onclick="highlight('deploy')">部署</button>
+        </div>
+        <div class="explanation-box" id="explanation-display">
+            請點選上方關鍵字，這裡會顯示白話文解釋。
+        </div>
+    </section>
+
+    <!-- D. 白話翻譯 -->
+    <section>
+        <h2>翻譯蒟蒻</h2>
+        
+        <button class="accordion-btn">【白話翻譯】這題在問什麼？</button>
+        <div class="accordion-panel">
+            <div class="accordion-content">
+                「在還沒寫任何一行程式碼之前，軟體工程師第一件重要的事情是在做什麼？」<br>
+                就像蓋房子之前，要先問屋主「你要幾房幾廳？」而不是直接開始疊磚頭。
+            </div>
+        </div>
+
+        <button class="accordion-btn">【考試重點】這題考什麼觀念？</button>
+        <div class="accordion-panel">
+            <div class="accordion-content">
+                你在考驗你是否分得清楚 SDLC 各階段的「核心任務」。<br>
+                特別是區分「想做什麼 (What)」跟「怎麼做 (How)」的差別。
+            </div>
+        </div>
+    </section>
+
+    <!-- E. SDLC 流程互動 -->
+    <section>
+        <h2>SDLC 流程地圖</h2>
+        <p style="margin-bottom: 10px; font-size: 0.9rem;">點擊「需求分析」看看它的位置與職責：</p>
+        <div class="flow-container">
+            <div class="flow-step" onclick="showFlow('req', this)">1. 需求分析</div>
+            <div class="flow-step" onclick="showFlow('design', this)">2. 系統設計</div>
+            <div class="flow-step" onclick="showFlow('impl', this)">3. 程式實作</div>
+            <div class="flow-step" onclick="showFlow('test', this)">4. 測試</div>
+            <div class="flow-step" onclick="showFlow('maint', this)">5. 部署/維護</div>
+        </div>
+        <div id="flow-info-box" class="flow-info">
+            點選上方流程，查看各階段重點。
+        </div>
+    </section>
+
+    <!-- F. 選項解析 -->
+    <section>
+        <h2>選項逐一擊破</h2>
+        
+        <!-- Option A -->
+        <div class="option-card">
+            <div class="option-header" onclick="toggleOption('opt-a')">
+                (A) 撰寫程式碼
+                <span>+ 顯示解析</span>
+            </div>
+            <div id="opt-a" class="option-detail wrong">
+                <strong>[錯誤]</strong> 這是第 3 階段「實作 (Implementation)」的工作。需求分析階段連程式碼編輯器都還沒打開呢！
+            </div>
+        </div>
+
+        <!-- Option B -->
+        <div class="option-card">
+            <div class="option-header" onclick="toggleOption('opt-b')">
+                (B) 確認使用者需求並定義系統功能
+                <span>+ 顯示解析</span>
+            </div>
+            <div id="opt-b" class="option-detail correct">
+                <strong>[正確]</strong> 沒錯！這就是核心目的。先確認「客戶要解決什麼問題 (需求)」，然後定義「系統要具備什麼能力 (功能)」。
+            </div>
+        </div>
+
+        <!-- Option C -->
+        <div class="option-card">
+            <div class="option-header" onclick="toggleOption('opt-c')">
+                (C) 進行單元測試
+                <span>+ 顯示解析</span>
+            </div>
+            <div id="opt-c" class="option-detail wrong">
+                <strong>[錯誤]</strong> 這是第 4 階段「測試 (Testing)」的工作。程式都還沒寫出來，沒辦法進行測試喔。
+            </div>
+        </div>
+
+        <!-- Option D -->
+        <div class="option-card">
+            <div class="option-header" onclick="toggleOption('opt-d')">
+                (D) 完成系統部署
+                <span>+ 顯示解析</span>
+            </div>
+            <div id="opt-d" class="option-detail wrong">
+                <strong>[錯誤]</strong> 這是最後階段「部署 (Deployment)」的工作。這是把做好的軟體安裝到客戶的電腦或伺服器上。
+            </div>
+        </div>
+    </section>
+
+    <!-- G. 快速小測驗 -->
+    <section>
+        <h2>30秒隨堂考</h2>
+        
+        <div class="quiz-item">
+            <div class="quiz-question">Q1. 需求分析的時候，工程師已經開始大量寫程式碼了嗎？</div>
+            <div class="quiz-options">
+                <button onclick="checkQuiz(1, true, 'quiz-feedback-1')">是</button>
+                <button onclick="checkQuiz(1, false, 'quiz-feedback-1')">否</button>
+            </div>
+            <div id="quiz-feedback-1" class="quiz-feedback"></div>
+        </div>
+
+        <div class="quiz-item">
+            <div class="quiz-question">Q2. 如果需求分析做錯了（誤會客戶的意思），後果嚴重嗎？</div>
+            <div class="quiz-options">
+                <button onclick="checkQuiz(2, true, 'quiz-feedback-2')">嚴重</button>
+                <button onclick="checkQuiz(2, false, 'quiz-feedback-2')">不嚴重</button>
+            </div>
+            <div id="quiz-feedback-2" class="quiz-feedback"></div>
+        </div>
+
+        <div class="quiz-item">
+            <div class="quiz-question">Q3. 「使用者需求」和「系統功能」是一樣的東西嗎？</div>
+            <div class="quiz-options">
+                <button onclick="checkQuiz(3, true, 'quiz-feedback-3')">一樣</button>
+                <button onclick="checkQuiz(3, false, 'quiz-feedback-3')">不一樣</button>
+            </div>
+            <div id="quiz-feedback-3" class="quiz-feedback"></div>
+        </div>
+    </section>
+
+    <!-- H. 口訣與陷阱 -->
+    <section>
+        <h2>老師的筆記</h2>
+        
+        <div style="background-color: #fff3cd; padding: 15px; border-radius: 5px; margin-bottom: 15px;">
+            <h3 style="color: #856404; margin-bottom: 5px;">★ 記憶口訣</h3>
+            <p style="font-size: 1.2rem; font-weight: bold;">「先問要什麼，再想怎麼做」</p>
+        </div>
+
+        <h3 style="font-size: 1rem; margin-bottom: 5px;">常見陷阱區：</h3>
+        <ul>
+            <li>[X] 以為需求分析就是直接畫畫面 (那是設計階段的 UI 設計)。</li>
+            <li>[X] 覺得需求分析只是聊天不重要 (其實它是最重要的地基)。</li>
+            <li>[X] 把「系統設計 (怎麼做)」跟「需求分析 (做什麼)」混淆。</li>
+        </ul>
+    </section>
+
+    <!-- I. 答案揭曉 -->
+    <section id="final-answer">
+        <button class="btn-reveal" onclick="revealAnswer()">點擊揭曉正確答案</button>
+        <div id="final-answer-content">
+            <span class="correct-opt">答案：(B)</span>
+            <p>理由：需求分析的目的在於確認使用者需求並定義系統功能。</p>
+            <p style="margin-top: 10px; color: #f1c40f;">恭喜你完成這個單元的學習！</p>
+        </div>
+    </section>
+
+</div>
+
+<script>
+    /* --- C. Keyword Highlight Logic --- */
+    const definitions = {
+        'sdlc': 'SDLC（軟體開發生命週期）：從想法誕生到系統完成、維護的整個循環流程。',
+        'req': '需求分析：在動手寫程式前，先搞清楚「要做什麼」、範圍到哪裡。',
+        'user': '使用者需求：使用者（客戶）真正遇到的困難或想要解決的問題。',
+        'sys': '系統功能：系統必須具備的能力（例如：登入、結帳、列印報表）。',
+        'code': '撰寫程式：這是實作（Implementation）階段的事，不是需求分析。',
+        'test': '測試：這是檢查程式有沒有寫錯的階段。',
+        'deploy': '部署：把完成的軟體安裝上去給人用。'
+    };
+
+    function highlight(key) {
+        // Reset all highlights
+        document.querySelectorAll('.highlight-span').forEach(el => el.classList.remove('highlight-active'));
+        document.querySelectorAll('.btn-keyword').forEach(el => el.classList.remove('active'));
+
+        // Activate specific highlight
+        const targetSpan = document.getElementById('txt-' + key);
+        if(targetSpan) targetSpan.classList.add('highlight-active');
+
+        // Activate button style
+        const targetBtn = document.querySelector(`button[onclick="highlight('${key}')"]`);
+        if(targetBtn) targetBtn.classList.add('active');
+
+        // Update text
+        const displayBox = document.getElementById('explanation-display');
+        displayBox.innerHTML = definitions[key];
+        displayBox.style.backgroundColor = '#fff3cd'; // Slightly yellower background for attention
+        setTimeout(() => { displayBox.style.backgroundColor = '#e8f4fc'; }, 300);
+    }
+
+    /* --- D. Accordion Logic --- */
+    const acc = document.getElementsByClassName("accordion-btn");
+    for (let i = 0; i < acc.length; i++) {
+        acc[i].addEventListener("click", function() {
+            this.classList.toggle("active");
+            const panel = this.nextElementSibling;
+            if (panel.style.maxHeight) {
+                panel.style.maxHeight = null;
+            } else {
+                panel.style.maxHeight = panel.scrollHeight + "px";
+            }
+        });
+    }
+
+    /* --- E. SDLC Flow Logic --- */
+    const flowData = {
+        'req': '【需求分析】：重點在「做什麼 (What)」。蒐集需求、訪談客戶、產出需求規格書。',
+        'design': '【系統設計】：重點在「怎麼做 (How)」。資料庫設計、架構設計、介面設計。',
+        'impl': '【程式實作】：按圖施工。工程師開始寫程式碼 (Coding)。',
+        'test': '【測試】：找 Bug。進行單元測試、整合測試、系統測試。',
+        'maint': '【部署/維護】：安裝上線。修正上線後的問題、功能更新。'
+    };
+
+    function showFlow(stage, element) {
+        // Reset styles
+        document.querySelectorAll('.flow-step').forEach(el => el.classList.remove('active'));
+        // Set active
+        element.classList.add('active');
+        // Update text
+        const infoBox = document.getElementById('flow-info-box');
+        infoBox.innerText = flowData[stage];
+        
+        if(stage === 'req') {
+            infoBox.style.color = '#c0392b'; // Highlight red for emphasis
+            infoBox.innerText += ' ★本題重點！';
+        } else {
+            infoBox.style.color = 'var(--primary-color)';
+        }
+    }
+
+    /* --- F. Option Analysis Logic --- */
+    function toggleOption(id) {
+        const el = document.getElementById(id);
+        if (el.style.display === "block") {
+            el.style.display = "none";
+        } else {
+            el.style.display = "block";
+        }
+    }
+
+    /* --- G. Quiz Logic --- */
+    function checkQuiz(qNum, userAnswer, feedbackId) {
+        const feedbackEl = document.getElementById(feedbackId);
+        let isCorrect = false;
+        let msg = "";
+
+        if (qNum === 1) {
+            // Q: Is it coding? Ans: False
+            isCorrect = (userAnswer === false);
+            msg = isCorrect ? "答對了！寫程式是後面的階段，現在還只是在計畫。" : "答錯囉。需求分析還不動手寫 code，只動口不動手（訪談）。";
+        } else if (qNum === 2) {
+            // Q: Is it serious? Ans: True
+            isCorrect = (userAnswer === true);
+            msg = isCorrect ? "沒錯！需求分析錯，後面做的全部都是白工，成本超高。" : "答錯囉。這非常嚴重，就像蓋房子藍圖畫錯，房子蓋好也不能住。";
+        } else if (qNum === 3) {
+            // Q: Same? Ans: False
+            isCorrect = (userAnswer === false);
+            msg = isCorrect ? "很好！需求是「客戶的痛點」，功能是「系統解決痛點的方法」，需要轉化。" : "答錯囉。例如：使用者需求是「不想帶錢包」，系統功能是「Apple Pay 支付」。這兩者需要分析轉化。";
+        }
+
+        feedbackEl.innerText = msg;
+        feedbackEl.className = "quiz-feedback " + (isCorrect ? "correct" : "wrong");
+    }
+
+    /* --- I. Reveal Logic --- */
+    function revealAnswer() {
+        const content = document.getElementById('final-answer-content');
+        const btn = document.querySelector('.btn-reveal');
+        content.style.display = 'block';
+        btn.style.display = 'none';
+        
+        // Auto scroll to bottom
+        content.scrollIntoView({behavior: "smooth"});
+    }
+</script>
+
+</body>
+</html>

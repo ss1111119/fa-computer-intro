@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NET_Q46_Application_Layer_Protocols_v1</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --highlight-color: #f1c40f;
+            --success-color: #27ae60;
+            --danger-color: #c0392b;
+            --light-bg: #f8f9fa;
+            --border-color: #ddd;
+        }
+
+        * {
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #eef2f5;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+
+        /* A. 頁首區 */
+        header {
+            background: var(--primary-color);
+            color: #fff;
+            padding: 20px;
+            border-radius: 8px 8px 0 0;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        header p {
+            margin: 5px 0 0;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .badge {
+            display: inline-block;
+            background: var(--accent-color);
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-top: 10px;
+        }
+
+        /* 區塊通用樣式 */
+        section {
+            padding: 20px 0;
+            border-bottom: 1px dashed var(--border-color);
+        }
+
+        h2 {
+            border-left: 5px solid var(--accent-color);
+            padding-left: 10px;
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        /* B. 題目區 */
+        .question-card {
+            background: var(--light-bg);
+            padding: 20px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .question-text {
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .options-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .options-list li {
+            padding: 5px 0;
+        }
+
+        /* 高亮效果 */
+        .highlight-bg {
+            background-color: var(--highlight-color);
+            padding: 0 2px;
+            border-radius: 2px;
+            transition: background 0.3s;
+        }
+
+        /* C. 關鍵字互動 */
+        .keyword-btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            padding: 8px 12px;
+            border: 1px solid var(--accent-color);
+            background: #fff;
+            color: var(--accent-color);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .btn:hover, .btn.active {
+            background: var(--accent-color);
+            color: #fff;
+        }
+
+        .explanation-box {
+            background: #e8f4fc;
+            padding: 15px;
+            border-radius: 4px;
+            min-height: 60px;
+            margin-top: 10px;
+            border-left: 4px solid var(--accent-color);
+        }
+
+        /* D. 白話翻譯 Accordion */
+        details {
+            background: var(--light-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 10px;
+        }
+
+        details summary {
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
+        details p {
+            margin: 10px 0 0;
+            padding-left: 15px;
+            border-left: 2px solid #ddd;
+        }
+
+        /* E. OSI 分層互動 */
+        .layer-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .layer {
+            padding: 10px;
+            background: #fff;
+            border: 1px solid #999;
+            text-align: center;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .layer.active-layer {
+            background: var(--accent-color);
+            color: #fff;
+            border-color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .proto-tag {
+            display: inline-block;
+            padding: 2px 6px;
+            margin: 0 2px;
+            background: #eee;
+            border-radius: 3px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            color: #333;
+            border: 1px solid #ccc;
+        }
+
+        .proto-tag:hover {
+            background: #ddd;
+        }
+
+        .layer-message {
+            text-align: center;
+            margin-top: 10px;
+            font-weight: bold;
+            color: var(--danger-color);
+            min-height: 24px;
+        }
+
+        /* F & G. 選項與檢查 */
+        .check-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .checkbox-label {
+            display: block;
+            padding: 10px;
+            background: var(--light-bg);
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .checkbox-label input {
+            margin-right: 5px;
+        }
+
+        .checkbox-label:hover {
+            background: #e0e0e0;
+        }
+
+        .check-btn {
+            background: var(--success-color);
+            color: #fff;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            display: block;
+            margin: 0 auto;
+            width: 100%;
+            max-width: 200px;
+        }
+
+        .check-btn:hover {
+            background: #219150;
+        }
+
+        .result-area {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .result-area.show {
+            display: block;
+        }
+
+        .status-correct {
+            border-color: var(--success-color);
+            background: #eaffea;
+            color: var(--success-color);
+        }
+
+        .status-wrong {
+            border-color: var(--danger-color);
+            background: #fceceb;
+            color: var(--danger-color);
+        }
+
+        /* H. 記憶口訣 */
+        .mnemonic-box {
+            background: #fff8e1;
+            border: 1px solid #ffe082;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .mnemonic-box ul {
+            margin: 5px 0;
+            padding-left: 20px;
+        }
+
+        /* I. 答案揭曉 */
+        .answer-reveal {
+            text-align: center;
+            background: var(--primary-color);
+            color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .big-answer {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--highlight-color);
+            margin: 10px 0;
+        }
+
+        /* RWD */
+        @media (max-width: 600px) {
+            header h1 { font-size: 1.2rem; }
+            .btn { width: 100%; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- A. 頁首區 -->
+    <header>
+        <h1>哪些協定是「使用者直接用到的」？</h1>
+        <p>Application Layer 協定必考整理</p>
+        <div class="badge">題號：46（複選題）</div>
+    </header>
+
+    <!-- B. 題目區 -->
+    <section>
+        <h2>題目區</h2>
+        <div class="question-card">
+            <div class="question-text">
+                46. 下列哪些<span id="txt-proto">協定</span>屬於<span id="txt-app">應用層</span>（<span id="txt-app-en">Application Layer</span>）協定？（複選）
+            </div>
+            <ul class="options-list">
+                <li>(A) <span id="txt-http">HTTP</span></li>
+                <li>(B) <span id="txt-ftp">FTP</span></li>
+                <li>(C) <span id="txt-dns">DNS</span></li>
+                <li>(D) <span id="txt-tcp">TCP</span></li>
+                <li>(E) <span id="txt-smtp">SMTP</span></li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- C. 關鍵字互動 -->
+    <section>
+        <h2>關鍵字解析（點擊按鈕查看解釋）</h2>
+        <div class="keyword-btn-group">
+            <button class="btn" onclick="highlight('app', '應用層', '最靠近使用者的網路層，負責實際提供服務')">應用層</button>
+            <button class="btn" onclick="highlight('app-en', 'Application Layer', '應用層的英文名稱')">Application Layer</button>
+            <button class="btn" onclick="highlight('proto', '協定', '電腦之間溝通的共同語言與規則')">協定</button>
+            <button class="btn" onclick="highlight('http', 'HTTP', '網頁傳輸協定，用來看網站，例如瀏覽器網址列的 http://')">HTTP</button>
+            <button class="btn" onclick="highlight('ftp', 'FTP', '檔案傳輸協定，專門用來上下載檔案')">FTP</button>
+            <button class="btn" onclick="highlight('dns', 'DNS', '網域名稱系統，像電話簿一樣把網址 (google.com) 轉成 IP (142.250...)')">DNS</button>
+            <button class="btn" onclick="highlight('tcp', 'TCP', '傳輸層協定，負責可靠傳輸（掛號信的概念），不是應用層')">TCP</button>
+            <button class="btn" onclick="highlight('smtp', 'SMTP', '簡易郵件傳輸協定，用來寄送電子郵件')">SMTP</button>
+        </div>
+        <div id="explanation-display" class="explanation-box">
+            請點擊上方按鈕，這裡會顯示名詞解釋。
+        </div>
+    </section>
+
+    <!-- D. 白話翻譯 -->
+    <section>
+        <h2>題目翻譯蒟蒻</h2>
+        <details>
+            <summary>點此展開：這題到底在問什麼？</summary>
+            <p><strong>【白話翻譯】</strong><br>
+            「哪些協定是『使用者在上網、收信、傳檔案時直接用到的服務協定』？」</p>
+            <p><strong>【這題在考什麼】</strong><br>
+            「你是否能分清楚『應用層協定（服務）』與『底層傳輸協定（運送）』的差別。」</p>
+        </details>
+    </section>
+
+    <!-- E. OSI / TCP-IP 分層互動 -->
+    <section>
+        <h2>層級架構示意圖（點擊協定名稱）</h2>
+        <div class="layer-stack">
+            <div id="layer-5" class="layer">
+                <strong>應用層 (Application)</strong><br>
+                <span class="proto-tag" onclick="highlightLayer(5, '')">HTTP</span>
+                <span class="proto-tag" onclick="highlightLayer(5, '')">FTP</span>
+                <span class="proto-tag" onclick="highlightLayer(5, '')">DNS</span>
+                <span class="proto-tag" onclick="highlightLayer(5, '')">SMTP</span>
+            </div>
+            <div id="layer-4" class="layer">
+                <strong>傳輸層 (Transport)</strong><br>
+                <span class="proto-tag" onclick="highlightLayer(4, 'TCP 是幫應用層服務傳資料的卡車，本身不是應用層！')">TCP</span>
+                <span class="proto-tag" onclick="highlightLayer(4, 'UDP 也是傳輸層，負責快速傳輸！')">UDP</span>
+            </div>
+            <div id="layer-3" class="layer">網路層 (IP)</div>
+            <div id="layer-2" class="layer">資料連結層</div>
+            <div id="layer-1" class="layer">實體層</div>
+        </div>
+        <div id="layer-msg" class="layer-message"></div>
+    </section>
+
+    <!-- F & G. 複選題互動檢核 -->
+    <section>
+        <h2>作答練習（複選題）</h2>
+        <p>請勾選所有屬於「應用層」的協定：</p>
+        <div class="check-container">
+            <label class="checkbox-label"><input type="checkbox" name="quiz" value="A"> (A) HTTP</label>
+            <label class="checkbox-label"><input type="checkbox" name="quiz" value="B"> (B) FTP</label>
+            <label class="checkbox-label"><input type="checkbox" name="quiz" value="C"> (C) DNS</label>
+            <label class="checkbox-label"><input type="checkbox" name="quiz" value="D"> (D) TCP</label>
+            <label class="checkbox-label"><input type="checkbox" name="quiz" value="E"> (E) SMTP</label>
+        </div>
+        <button class="check-btn" onclick="checkAnswer()">檢查答案</button>
+
+        <div id="quiz-result" class="result-area"></div>
+
+        <div style="margin-top: 20px; font-size: 0.9rem; color: #555;">
+            <strong>選項解析：</strong><br>
+            (A) <strong>HTTP</strong>：正確，提供網頁服務。<br>
+            (B) <strong>FTP</strong>：正確，提供檔案傳輸。<br>
+            (C) <strong>DNS</strong>：正確，提供名稱解析。<br>
+            (D) <strong>TCP</strong>：<span style="color:var(--danger-color); font-weight:bold;">錯！</span>TCP 是傳輸層，負責運送資料。<br>
+            (E) <strong>SMTP</strong>：正確，提供郵件寄送。
+        </div>
+    </section>
+
+    <!-- H. 記憶口訣 -->
+    <section>
+        <h2>老師的記憶口訣</h2>
+        <div class="mnemonic-box">
+            <h3>★ 口訣：「網頁檔案信，名字都在應用層」</h3>
+            <ul>
+                <li>網頁：HTTP</li>
+                <li>檔案：FTP</li>
+                <li>信件：SMTP</li>
+                <li>名字（網域）：DNS</li>
+            </ul>
+            <hr style="border:0; border-top:1px dashed #ccc; margin:10px 0;">
+            <h3>★ 常見陷阱</h3>
+            <ol>
+                <li>看到 TCP/UDP 千萬別選，那是「傳輸層」。</li>
+                <li>以為 DNS 處理 IP 就是網路層？錯！它是幫忙查號碼簿的「應用服務」。</li>
+            </ol>
+        </div>
+    </section>
+
+    <!-- I. 正確答案揭曉 -->
+    <section>
+        <div class="answer-reveal">
+            <h3>本題正確答案</h3>
+            <div class="big-answer">A、B、C、E</div>
+            <p>HTTP、FTP、DNS、SMTP 都是直接服務使用者的應用層協定。</p>
+        </div>
+    </section>
+
+</div>
+
+<script>
+    // C. 關鍵字螢光筆互動
+    function highlight(key, term, explanation) {
+        // 清除所有高亮
+        document.querySelectorAll('[id^="txt-"]').forEach(el => {
+            el.classList.remove('highlight-bg');
+        });
+
+        // 加上特定高亮
+        const target = document.getElementById('txt-' + key);
+        if(target) {
+            target.classList.add('highlight-bg');
+        }
+
+        // 顯示解釋
+        const display = document.getElementById('explanation-display');
+        display.innerHTML = `<strong>${term}</strong><br>${explanation}`;
+    }
+
+    // E. OSI 分層互動
+    function highlightLayer(layerNum, message) {
+        // 清除所有層級高亮
+        document.querySelectorAll('.layer').forEach(el => {
+            el.classList.remove('active-layer');
+        });
+
+        // 高亮目標層級
+        const targetLayer = document.getElementById('layer-' + layerNum);
+        if(targetLayer) {
+            targetLayer.classList.add('active-layer');
+        }
+
+        // 顯示提示訊息
+        const msgBox = document.getElementById('layer-msg');
+        msgBox.textContent = message;
+    }
+
+    // G. 複選題檢核
+    function checkAnswer() {
+        const checkboxes = document.querySelectorAll('input[name="quiz"]:checked');
+        let selected = [];
+        checkboxes.forEach((checkbox) => {
+            selected.push(checkbox.value);
+        });
+
+        const resultBox = document.getElementById('quiz-result');
+        const correctAnswers = ['A', 'B', 'C', 'E'];
+        
+        // 判斷是否完全正確
+        const isCorrect = selected.length === correctAnswers.length && 
+                          selected.every(val => correctAnswers.includes(val));
+        
+        // 判斷是否選了 TCP (D)
+        const hasTCP = selected.includes('D');
+
+        resultBox.classList.add('show');
+        resultBox.className = 'result-area show'; // reset class
+
+        if (isCorrect) {
+            resultBox.classList.add('status-correct');
+            resultBox.innerHTML = `
+                <strong>恭喜答對！完全正確！</strong><br>
+                應用層就是這四個：HTTP、FTP、DNS、SMTP。<br>
+                TCP 負責在底層運送，沒有被騙到，很棒！
+            `;
+        } else {
+            resultBox.classList.add('status-wrong');
+            let msg = `<strong>答案不完全正確喔！</strong><br>`;
+            
+            if (hasTCP) {
+                msg += `⚠️ <span style="color:#d32f2f; font-weight:bold;">陷阱注意：</span>你選到了 (D) TCP。<br>TCP 雖然很有名，但它是「傳輸層」協定，負責確保資料送達，不是應用層。<br>`;
+            } else if (selected.length < 4) {
+                msg += `你少選了幾個選項，這題是複選題喔！<br>`;
+            } else {
+                msg += `再檢查一下定義，記住口訣：「網頁檔案信，名字都在應用層」。<br>`;
+            }
+            resultBox.innerHTML = msg;
+        }
+    }
+</script>
+
+</body>
+</html>

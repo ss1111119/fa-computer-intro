@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI_Q30_Supervised_Learning_LinearRegression_v1</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --success-color: #27ae60;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --highlight-bg: #f1c40f;
+            --text-color: #333;
+            --border-radius: 8px;
+            --spacing: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "PingFang TC", "Microsoft JhengHei", "Heiti TC", sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding-bottom: 50px;
+        }
+
+        /* 容器 */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: var(--spacing);
+        }
+
+        /* A. 頁首區 */
+        header {
+            text-align: center;
+            margin-bottom: 24px;
+            padding: 24px 0;
+            border-bottom: 3px solid var(--primary-color);
+        }
+
+        header h1 {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .badge {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-top: 8px;
+            font-weight: bold;
+        }
+
+        /* 通用卡片樣式 */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 24px;
+            border: 1px solid #eee;
+        }
+
+        .section-title {
+            border-left: 5px solid var(--secondary-color);
+            padding-left: 12px;
+            margin-bottom: 16px;
+            font-size: 1.3rem;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        /* B. 題目區 */
+        .question-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 16px;
+            line-height: 1.8;
+        }
+
+        .options p {
+            margin: 8px 0;
+            padding: 8px;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+
+        /* 用於高亮的樣式 */
+        .highlight-text {
+            background-color: var(--highlight-bg);
+            padding: 2px 4px;
+            border-radius: 4px;
+            color: black;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        /* C. 關鍵字互動 */
+        .keyword-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .kw-btn {
+            background-color: white;
+            border: 1px solid var(--secondary-color);
+            color: var(--secondary-color);
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+
+        .kw-btn:hover, .kw-btn.active {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .explanation-box {
+            background-color: #e8f4fd;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            border-left: 4px solid var(--secondary-color);
+            margin-top: 10px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+        }
+
+        .explanation-box p {
+            margin: 0;
+            font-size: 1rem;
+        }
+
+        /* D. 白話翻譯 Accordion */
+        .accordion {
+            background-color: var(--card-bg);
+            cursor: pointer;
+            padding: 15px;
+            width: 100%;
+            text-align: left;
+            border: none;
+            outline: none;
+            transition: 0.4s;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-bottom: 1px solid #eee;
+            position: relative;
+        }
+
+        .accordion:after {
+            content: '+';
+            position: absolute;
+            right: 20px;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .accordion.active:after {
+            content: '-';
+        }
+
+        .panel {
+            padding: 0 15px;
+            background-color: white;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.2s ease-out;
+            border-bottom: 1px solid #eee;
+        }
+
+        .panel p {
+            padding: 15px 0;
+            color: #555;
+        }
+
+        /* E. 學習類型對照 */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .comp-col {
+            background: #fdfdfd;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .comp-header {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #eee;
+            color: var(--primary-color);
+        }
+
+        .comp-header.sup { border-color: var(--secondary-color); }
+        .comp-header.unsup { border-color: var(--accent-color); }
+
+        .comp-list {
+            list-style: none;
+        }
+
+        .comp-item {
+            padding: 8px;
+            margin-bottom: 5px;
+            background: white;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .comp-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .comp-item.selected {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .comp-message {
+            margin-top: 12px;
+            padding: 10px;
+            background: #f1f1f1;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            text-align: center;
+            color: var(--text-color);
+        }
+
+        /* F. 選項逐一解析 */
+        .option-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+
+        .option-header {
+            padding: 12px 16px;
+            background: #f9f9f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-reveal {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .btn-reveal:hover {
+            opacity: 0.9;
+        }
+
+        .option-detail {
+            padding: 12px 16px;
+            background: white;
+            border-top: 1px solid #eee;
+            display: none;
+        }
+
+        .status-correct { color: var(--success-color); font-weight: bold; }
+        .status-wrong { color: var(--accent-color); font-weight: bold; }
+
+        /* G. 快速小測驗 */
+        .quiz-item {
+            margin-bottom: 20px;
+            border-bottom: 1px dashed #eee;
+            padding-bottom: 15px;
+        }
+
+        .quiz-q {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .quiz-options button {
+            margin-right: 8px;
+            margin-bottom: 8px;
+            padding: 6px 12px;
+            border: 1px solid #ccc;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .quiz-options button.correct-btn {
+            background-color: var(--success-color);
+            color: white;
+            border-color: var(--success-color);
+        }
+
+        .quiz-options button.wrong-btn {
+            background-color: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+        }
+
+        .quiz-feedback {
+            margin-top: 8px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        /* H. 口訣與陷阱 */
+        .tips-box {
+            background-color: #fff8e1;
+            border-left: 5px solid #ffc107;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .tips-list {
+            padding-left: 20px;
+            margin-top: 5px;
+        }
+        
+        .tips-list li {
+            margin-bottom: 5px;
+        }
+
+        /* I. 正確答案揭曉 */
+        .answer-section {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .btn-big-reveal {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(231, 76, 60, 0.3);
+            transition: transform 0.2s;
+        }
+
+        .btn-big-reveal:hover {
+            transform: scale(1.05);
+        }
+
+        .final-answer {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 8px;
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        .final-answer h3 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: var(--highlight-bg);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* RWD */
+        @media (max-width: 600px) {
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+            header h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- A. 頁首區 -->
+    <header>
+        <h1>什麼是監督式學習？<br>一題就會判斷</h1>
+        <p>Machine Learning 基礎必考觀念</p>
+        <div class="badge">題號：30</div>
+    </header>
+
+    <!-- B. 題目區 -->
+    <div class="card">
+        <div class="section-title">題目</div>
+        <div class="question-text" id="question-text">
+            30. 下列哪一項屬於<span id="txt-supervised">監督式學習（Supervised Learning）</span>？<br>
+            (A) <span id="txt-kmeans">K-means</span><br>
+            (B) <span id="txt-pca">PCA</span><br>
+            (C) <span id="txt-linear">Linear Regression</span><br>
+            (D) <span id="txt-apriori">Apriori</span>
+        </div>
+    </div>
+
+    <!-- C. 關鍵字螢光筆互動 -->
+    <div class="card">
+        <div class="section-title">C. 關鍵字教學（點擊按鈕）</div>
+        <p style="margin-bottom: 10px; font-size: 0.9rem; color:#666;">點選下方關鍵字，題目對應處會亮起，並顯示白話解釋。</p>
+        
+        <div class="keyword-container">
+            <button class="kw-btn" onclick="highlightKeyword('supervised', 'txt-supervised', '監督式學習（有答案的學習方式，資料中已標示正確結果，像是老師給了考古題詳解）')">監督式學習</button>
+            <button class="kw-btn" onclick="highlightKeyword('unsupervised', null, '非監督式學習（沒有答案，讓電腦自己找規律，像是把一堆混在一起的樂高積木分類）')">非監督式學習</button>
+            <button class="kw-btn" onclick="highlightKeyword('kmeans', 'txt-kmeans', 'K-means（分群演算法：自己把資料分堆，沒有標準答案，屬於非監督）')">K-means</button>
+            <button class="kw-btn" onclick="highlightKeyword('pca', 'txt-pca', 'PCA（主成分分析：資料降維方法，把複雜變簡單，不靠答案，屬於非監督）')">PCA</button>
+            <button class="kw-btn" onclick="highlightKeyword('linear', 'txt-linear', 'Linear Regression（線性迴歸：用已知答案的歷史資料來學一條預測線，屬於監督式）')">Linear Regression</button>
+            <button class="kw-btn" onclick="highlightKeyword('apriori', 'txt-apriori', 'Apriori（關聯規則：找出常一起出現的商品，例如啤酒與尿布，屬於非監督）')">Apriori</button>
+        </div>
+
+        <div class="explanation-box">
+            <p id="explanation-text">請點擊上方按鈕查看說明。</p>
+        </div>
+    </div>
+
+    <!-- D. 白話翻譯 -->
+    <div class="card" style="padding:0; overflow:hidden;">
+        <button class="accordion">【白話翻譯】題目在問什麼？</button>
+        <div class="panel">
+            <p><strong>翻譯：</strong>「哪一個演算法是『老師先給答案，電腦照答案學』的那一種？」</p>
+        </div>
+
+        <button class="accordion">【這題在考什麼】核心觀念</button>
+        <div class="panel">
+            <p><strong>重點：</strong>你能不能分清楚「有沒有標準答案（標籤）」，來判斷是不是監督式學習。看到「預測數值」或「分類別」通常是監督式；看到「分群」或「找關聯」通常是非監督式。</p>
+        </div>
+    </div>
+
+    <!-- E. 學習類型對照互動示意 -->
+    <div class="card">
+        <div class="section-title">E. 兩大學習類型對照</div>
+        <p style="margin-bottom: 12px; font-size: 0.9rem;">點擊演算法名稱，看看它屬於哪一邊：</p>
+        
+        <div class="comparison-grid">
+            <!-- 左側：監督式 -->
+            <div class="comp-col">
+                <div class="comp-header sup">監督式學習<br><span style="font-size:0.8rem; font-weight:normal;">(有正確答案 / Label)</span></div>
+                <ul class="comp-list">
+                    <li class="comp-item" onclick="checkType('sup', 'Linear Regression', '正確！這是回歸問題，用來預測連續數值，需要歷史資料的答案。')">Linear Regression</li>
+                    <li class="comp-item" onclick="checkType('sup', 'Logistic Regression', '正確！這是分類問題，用來判斷是A還是B，需要知道正確類別。')">Logistic Regression</li>
+                    <li class="comp-item" onclick="checkType('sup', 'Decision Tree', '正確！決策樹，根據特徵一路判斷下去，需要訓練資料有答案。')">Decision Tree</li>
+                </ul>
+            </div>
+
+            <!-- 右側：非監督式 -->
+            <div class="comp-col">
+                <div class="comp-header unsup">非監督式學習<br><span style="font-size:0.8rem; font-weight:normal;">(無正確答案 / Unlabeled)</span></div>
+                <ul class="comp-list">
+                    <li class="comp-item" onclick="checkType('unsup', 'K-means', '沒錯！這是分群，電腦自己看誰跟誰長得像就分一堆。')">K-means</li>
+                    <li class="comp-item" onclick="checkType('unsup', 'PCA', '沒錯！這是降維，把資料簡化，不需要標準答案。')">PCA</li>
+                    <li class="comp-item" onclick="checkType('unsup', 'Apriori', '沒錯！這是關聯規則，找商品之間的關係，沒有所謂對錯答案。')">Apriori</li>
+                </ul>
+            </div>
+        </div>
+        <div class="comp-message" id="comp-msg">請點擊上方演算法名稱</div>
+    </div>
+
+    <!-- F. 選項逐一解析 -->
+    <div class="card">
+        <div class="section-title">F. 選項逐一解析</div>
+        
+        <div class="option-card">
+            <div class="option-header">
+                <strong>(A) K-means</strong>
+                <button class="btn-reveal" onclick="toggleOption('opt-a')">顯示解析</button>
+            </div>
+            <div class="option-detail" id="opt-a">
+                <p><span class="status-wrong">錯誤。</span><br>K-means 是「分群」演算法，資料沒有標籤，屬於非監督式學習。</p>
+            </div>
+        </div>
+
+        <div class="option-card">
+            <div class="option-header">
+                <strong>(B) PCA</strong>
+                <button class="btn-reveal" onclick="toggleOption('opt-b')">顯示解析</button>
+            </div>
+            <div class="option-detail" id="opt-b">
+                <p><span class="status-wrong">錯誤。</span><br>PCA (主成分分析) 是用來「降維」的，不需要答案標籤，屬於非監督式學習。</p>
+            </div>
+        </div>
+
+        <div class="option-card">
+            <div class="option-header">
+                <strong>(C) Linear Regression</strong>
+                <button class="btn-reveal" onclick="toggleOption('opt-c')">顯示解析</button>
+            </div>
+            <div class="option-detail" id="opt-c">
+                <p><span class="status-correct">正確！</span><br>Linear Regression (線性迴歸) 需要利用「已知答案」(例如過去的坪數與房價) 來訓練模型，預測未來的數值，屬於監督式學習。</p>
+            </div>
+        </div>
+
+        <div class="option-card">
+            <div class="option-header">
+                <strong>(D) Apriori</strong>
+                <button class="btn-reveal" onclick="toggleOption('opt-d')">顯示解析</button>
+            </div>
+            <div class="option-detail" id="opt-d">
+                <p><span class="status-wrong">錯誤。</span><br>Apriori 是用來找「關聯規則」(例如買麵包通常會買牛奶)，資料本身沒有預設的標準答案，屬於非監督式學習。</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- G. 快速小測驗 -->
+    <div class="card">
+        <div class="section-title">G. 隨堂小測驗</div>
+        
+        <!-- Q1 -->
+        <div class="quiz-item">
+            <p class="quiz-q">1. 資料「沒有」標記正確答案，是哪一類學習？</p>
+            <div class="quiz-options">
+                <button onclick="checkQuiz(this, 'wrong', 'feedback1', '這是指有答案的情況喔！')">監督式</button>
+                <button onclick="checkQuiz(this, 'correct', 'feedback1', '答對了！沒答案就是非監督。')">非監督式</button>
+            </div>
+            <div id="feedback1" class="quiz-feedback"></div>
+        </div>
+
+        <!-- Q2 -->
+        <div class="quiz-item">
+            <p class="quiz-q">2. 想預測明天的「股價」(連續數值)，最可能用哪種？</p>
+            <div class="quiz-options">
+                <button onclick="checkQuiz(this, 'correct', 'feedback2', '賓果！預測數值常用 Regression (監督式)。')">Linear Regression</button>
+                <button onclick="checkQuiz(this, 'wrong', 'feedback2', '這是做分群用的喔。')">K-means</button>
+            </div>
+            <div id="feedback2" class="quiz-feedback"></div>
+        </div>
+
+        <!-- Q3 -->
+        <div class="quiz-item">
+            <p class="quiz-q">3. 想要把全校學生依興趣自動分成 5 群，該用？</p>
+            <div class="quiz-options">
+                <button onclick="checkQuiz(this, 'wrong', 'feedback3', '這是做預測用的喔。')">Linear Regression</button>
+                <button onclick="checkQuiz(this, 'correct', 'feedback3', '正確！分群 (Clustering) 找 K-means。')">K-means</button>
+            </div>
+            <div id="feedback3" class="quiz-feedback"></div>
+        </div>
+    </div>
+
+    <!-- H. 口訣與陷阱 -->
+    <div class="card">
+        <div class="section-title">H. 老師的獨家筆記</div>
+        
+        <div class="tips-box">
+            <strong>【記憶口訣】</strong>
+            <ul class="tips-list" style="list-style: none;">
+                <li>★ 有答案找監督，沒答案找非監督</li>
+                <li>★ 預測、分類 → 監督 (Supervised)</li>
+                <li>★ 分群、關聯 → 非監督 (Unsupervised)</li>
+            </ul>
+        </div>
+
+        <div class="tips-box" style="background-color: #ffebee; border-left-color: var(--accent-color);">
+            <strong>【常見陷阱】</strong>
+            <ol class="tips-list">
+                <li>看到英文縮寫就亂選 (例如 PCA 看起來很厲害就選它，錯！)。</li>
+                <li>把「關聯規則 (Association)」誤以為是監督式，其實它是非監督。</li>
+                <li>分不清 Regression (預測數值) 與 Classification (預測類別)，但這兩個其實<strong>都是</strong>監督式學習。</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- I. 正確答案揭曉 -->
+    <div class="answer-section">
+        <button class="btn-big-reveal" onclick="revealAnswer()">揭曉本題答案</button>
+        
+        <div id="final-answer-box" class="final-answer">
+            <h3>正確答案：(C)</h3>
+            <p style="font-size: 1.2rem;">Linear Regression (線性迴歸)</p>
+            <hr style="margin: 15px 0; border: 0; border-top: 1px solid rgba(255,255,255,0.3);">
+            <p><strong>一句話理由：</strong><br>Linear Regression 使用「有標記答案」的歷史資料來訓練模型，這正是監督式學習的定義。</p>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // C. 關鍵字高亮功能
+    function highlightKeyword(type, elementId, explanation) {
+        // 1. 清除所有高亮
+        const allHighlights = document.querySelectorAll('.highlight-text');
+        allHighlights.forEach(el => el.classList.remove('highlight-text'));
+        
+        // 2. 清除所有按鈕狀態
+        const allBtns = document.querySelectorAll('.kw-btn');
+        allBtns.forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+
+        // 3. 高亮目標文字
+        if (elementId) {
+            const targetEl = document.getElementById(elementId);
+            if (targetEl) {
+                targetEl.classList.add('highlight-text');
+            }
+        }
+
+        // 4. 顯示解釋
+        const expBox = document.getElementById('explanation-text');
+        expBox.innerHTML = explanation;
+        
+        // 如果是 'unsupervised' 這種沒有特定對應文字的，可以不用高亮，只顯示解釋
+    }
+
+    // D. Accordion 功能
+    const acc = document.getElementsByClassName("accordion");
+    for (let i = 0; i < acc.length; i++) {
+        acc[i].addEventListener("click", function() {
+            this.classList.toggle("active");
+            const panel = this.nextElementSibling;
+            if (panel.style.maxHeight) {
+                panel.style.maxHeight = null;
+            } else {
+                panel.style.maxHeight = panel.scrollHeight + "px";
+            } 
+        });
+    }
+
+    // E. 學習類型對照互動
+    function checkType(type, name, msg) {
+        // 清除選擇樣式
+        const items = document.querySelectorAll('.comp-item');
+        items.forEach(item => item.classList.remove('selected'));
+        
+        // 加上當前樣式
+        event.target.classList.add('selected');
+        
+        // 顯示訊息
+        const msgBox = document.getElementById('comp-msg');
+        msgBox.innerHTML = `<strong>${name}</strong>：${msg}`;
+        msgBox.style.backgroundColor = type === 'sup' ? '#e8f4fd' : '#fff3e0';
+        msgBox.style.color = 'black';
+    }
+
+    // F. 選項解析開關
+    function toggleOption(id) {
+        const el = document.getElementById(id);
+        const btn = event.target;
+        if (el.style.display === "block") {
+            el.style.display = "none";
+            btn.innerText = "顯示解析";
+        } else {
+            el.style.display = "block";
+            btn.innerText = "隱藏解析";
+        }
+    }
+
+    // G. 快速測驗
+    function checkQuiz(btn, type, feedbackId, msg) {
+        const feedbackEl = document.getElementById(feedbackId);
+        const parent = btn.parentElement;
+        
+        // 鎖定該題按鈕
+        const buttons = parent.querySelectorAll('button');
+        buttons.forEach(b => b.disabled = true);
+
+        if (type === 'correct') {
+            btn.classList.add('correct-btn');
+            feedbackEl.innerHTML = `<span style="color:var(--success-color)">✔ ${msg}</span>`;
+        } else {
+            btn.classList.add('wrong-btn');
+            feedbackEl.innerHTML = `<span style="color:var(--accent-color)">✘ ${msg}</span>`;
+        }
+    }
+
+    // I. 揭曉答案
+    function revealAnswer() {
+        const box = document.getElementById('final-answer-box');
+        box.style.display = 'block';
+        // 滾動到答案處
+        box.scrollIntoView({ behavior: 'smooth' });
+    }
+</script>
+
+</body>
+</html>

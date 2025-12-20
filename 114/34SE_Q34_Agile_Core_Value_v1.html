@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SE_Q34_Agile_Core_Value_v1</title>
+    <style>
+        :root {
+            --primary-color: #2563EB; /* 專業藍 */
+            --accent-color: #F59E0B; /* 重點橘 */
+            --bg-color: #F3F4F6;
+            --card-bg: #FFFFFF;
+            --text-main: #1F2937;
+            --text-sub: #4B5563;
+            --success: #10B981;
+            --error: #EF4444;
+            --highlight: #FEF3C7;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Microsoft JhengHei", "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        /* A. 頁首區 */
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        header .badge {
+            display: inline-block;
+            background-color: rgba(255,255,255,0.2);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-top: 8px;
+        }
+
+        /* 共用區塊樣式 */
+        .section {
+            padding: 20px;
+            border-bottom: 1px solid #E5E7EB;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            border-left: 4px solid var(--accent-color);
+            padding-left: 10px;
+        }
+
+        /* B. 題目區 */
+        .question-card {
+            font-size: 1.1rem;
+            background-color: #F9FAFB;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #E5E7EB;
+        }
+
+        .question-text {
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .options-list {
+            list-style: none;
+        }
+
+        .options-list li {
+            margin-bottom: 8px;
+            padding: 5px;
+            border-radius: 4px;
+        }
+
+        /* 高亮樣式 */
+        .highlight-bg {
+            background-color: #FCD34D;
+            color: #000;
+            font-weight: bold;
+            padding: 0 4px;
+            border-radius: 2px;
+            transition: background-color 0.3s;
+        }
+
+        /* C. 關鍵字互動 */
+        .keyword-btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .btn-kw {
+            background-color: white;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .btn-kw:hover, .btn-kw.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .definition-box {
+            background-color: #EFF6FF;
+            border: 1px solid #BFDBFE;
+            padding: 15px;
+            border-radius: 8px;
+            color: var(--text-sub);
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+        }
+
+        /* D. 白話翻譯 Accordion */
+        .accordion {
+            background-color: #F3F4F6;
+            cursor: pointer;
+            padding: 15px;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 8px;
+            transition: 0.4s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .accordion:hover {
+            background-color: #E5E7EB;
+        }
+
+        .panel {
+            padding: 0 15px;
+            background-color: white;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.2s ease-out;
+            border-left: 3px solid var(--primary-color);
+            margin-top: 5px;
+        }
+
+        .panel p {
+            padding: 15px 0;
+        }
+
+        /* E. 敏捷價值互動 */
+        .agile-values-list {
+            list-style: none;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .agile-value-item {
+            padding: 12px;
+            border-bottom: 1px solid #E5E7EB;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.95rem;
+        }
+
+        .agile-value-item:last-child {
+            border-bottom: none;
+        }
+
+        .agile-value-item:hover {
+            background-color: #F9FAFB;
+        }
+
+        .agile-value-item.selected {
+            background-color: #DBEAFE;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .value-explanation {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #ECFDF5;
+            border: 1px solid #6EE7B7;
+            border-radius: 6px;
+            color: #065F46;
+            display: none;
+        }
+
+        .more-important {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .less-important {
+            color: #6B7280;
+            font-size: 0.9em;
+        }
+
+        /* F. 選項解析 */
+        .option-card {
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+
+        .option-header {
+            padding: 15px;
+            background-color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-reveal {
+            background-color: transparent;
+            border: 1px solid var(--text-sub);
+            color: var(--text-sub);
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .btn-reveal:hover {
+            background-color: var(--text-sub);
+            color: white;
+        }
+
+        .option-content {
+            padding: 15px;
+            border-top: 1px solid #E5E7EB;
+            display: none;
+        }
+
+        .status-correct {
+            background-color: #D1FAE5;
+            color: #065F46;
+        }
+
+        .status-wrong {
+            background-color: #FEE2E2;
+            color: #991B1B;
+        }
+
+        /* G. 小測驗 */
+        .quiz-item {
+            background-color: #F9FAFB;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .quiz-btn {
+            padding: 6px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 5px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .btn-yes { background-color: var(--primary-color); }
+        .btn-no { background-color: var(--text-sub); }
+
+        .quiz-feedback {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            padding: 8px;
+            border-radius: 4px;
+            display: none;
+        }
+
+        /* H. 口訣 */
+        .tips-box {
+            background-color: #FFFBEB;
+            border: 1px solid #FCD34D;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        .tips-box h3 {
+            color: #92400E;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+
+        .tips-box ul {
+            padding-left: 20px;
+            color: #92400E;
+        }
+
+        /* I. 答案揭曉 */
+        .final-reveal-section {
+            text-align: center;
+            padding: 40px 20px;
+            background-color: #F3F4F6;
+        }
+
+        .btn-final {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #D97706;
+            transition: transform 0.1s;
+        }
+
+        .btn-final:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #D97706;
+        }
+
+        .final-answer-box {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: white;
+            border: 2px solid var(--success);
+            border-radius: 8px;
+            display: none;
+        }
+
+        .final-answer-big {
+            font-size: 2rem;
+            color: var(--success);
+            font-weight: bold;
+        }
+        
+        /* Utility */
+        .tag-correct {
+            display: inline-block;
+            background: #10B981;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            margin-right: 5px;
+        }
+        .tag-wrong {
+            display: inline-block;
+            background: #EF4444;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            margin-right: 5px;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <!-- A. 頁首區 -->
+    <header>
+        <h1>Agile 在重視什麼？核心價值一次搞懂</h1>
+        <p>Agile Development 必考觀念衝刺</p>
+        <div class="badge">題號：34</div>
+    </header>
+
+    <!-- B. 題目區 -->
+    <div class="section">
+        <div class="section-title">題目</div>
+        <div class="question-card">
+            <p class="question-text">
+                34. 在<span id="txt-agile">敏捷開發（Agile）</span>中，以下哪一項是其<span id="txt-core">核心價值</span>？
+            </p>
+            <ul class="options-list">
+                <li>(A) <span id="txt-doc">文件</span>比軟體重要</li>
+                <li>(B) <span id="txt-plan">計畫</span>固定不變</li>
+                <li>(C) <span id="txt-customer">客戶合作</span>高於<span id="txt-contract">合約談判</span></li>
+                <li>(D) 一次<span id="txt-deliver">交付</span>整個完整系統</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- C. 關鍵字螢光筆互動 -->
+    <div class="section">
+        <div class="section-title">點擊關鍵字找線索</div>
+        <div class="keyword-btn-group">
+            <button class="btn-kw" onclick="highlight('txt-agile', 'Agile：強調快速回饋、彈性調整的開發方式，不是隨便亂做。')">敏捷開發</button>
+            <button class="btn-kw" onclick="highlight('txt-core', '核心價值：最重要、最優先遵守的原則。')">核心價值</button>
+            <button class="btn-kw" onclick="highlight('txt-customer', '客戶合作：持續與使用者溝通、一起調整方向，而不是開發完才給客戶看。')">客戶合作</button>
+            <button class="btn-kw" onclick="highlight('txt-contract', '合約談判：只依合約條文，不彈性溝通，這比較像傳統開發。')">合約談判</button>
+            <button class="btn-kw" onclick="highlight('txt-doc', '文件：Agile 認為可用的軟體比文件重要，但不是說完全不寫文件喔！')">文件</button>
+            <button class="btn-kw" onclick="highlight('txt-plan', '計畫：Agile 重視回應變化，計畫是可以調整的。')">計畫</button>
+            <button class="btn-kw" onclick="highlight('txt-deliver', '交付：Agile 喜歡「小量、分批」交付，而不是一次全部。')">交付</button>
+        </div>
+        <div class="definition-box" id="definition-display">
+            點擊上方按鈕，查看白話解釋...
+        </div>
+    </div>
+
+    <!-- D. 白話翻譯 -->
+    <div class="section">
+        <button class="accordion" onclick="toggleAccordion(this)">
+            翻譯蒟蒻：這題到底在問什麼？
+            <span>▼</span>
+        </button>
+        <div class="panel">
+            <p><strong>【白話翻譯】</strong><br>
+            「在敏捷開發的世界裡，當我們面臨選擇時，比起死守文件或冰冷的合約，團隊更重視的是什麼？」</p>
+            <p><strong>【這題在考什麼】</strong><br>
+            「你是否真正理解 Agile Manifesto（敏捷宣言）的四大核心價值。」</p>
+        </div>
+    </div>
+
+    <!-- E. 敏捷核心價值互動 -->
+    <div class="section">
+        <div class="section-title">Agile 宣言四大價值 (請點擊第 3 項)</div>
+        <p style="margin-bottom:10px; font-size:0.9rem; color:#666;">箭頭左邊 (粗體) 比右邊重要：</p>
+        <ul class="agile-values-list">
+            <li class="agile-value-item" onclick="selectValue(this, '重視人與人的溝通，勝過死板的流程 SOP。')">
+                <span class="more-important">個人與互動</span> 
+                <span>&gt;</span> 
+                <span class="less-important">流程與工具</span>
+            </li>
+            <li class="agile-value-item" onclick="selectValue(this, '軟體能動最重要，文件寫再厚，程式跑不動也沒用。')">
+                <span class="more-important">可運作的軟體</span> 
+                <span>&gt;</span> 
+                <span class="less-important">詳細文件</span>
+            </li>
+            <li class="agile-value-item" id="target-value" onclick="selectValue(this, '正確！這就是本題考點。與其拿著合約吵架，不如跟客戶一起合作把東西做好。')">
+                <span class="more-important">客戶合作</span> 
+                <span>&gt;</span> 
+                <span class="less-important">合約談判</span>
+            </li>
+            <li class="agile-value-item" onclick="selectValue(this, '計畫趕不上變化，要能隨時應變，而不是死守原本的甘特圖。')">
+                <span class="more-important">回應變化</span> 
+                <span>&gt;</span> 
+                <span class="less-important">遵循計畫</span>
+            </li>
+        </ul>
+        <div id="value-explain-box" class="value-explanation"></div>
+    </div>
+
+    <!-- F. 選項逐一解析 -->
+    <div class="section">
+        <div class="section-title">選項逐一擊破</div>
+        
+        <!-- Option A -->
+        <div class="option-card">
+            <div class="option-header">
+                <span>(A) 文件比軟體重要</span>
+                <button class="btn-reveal" onclick="toggleOption('opt-a')">顯示解析</button>
+            </div>
+            <div id="opt-a" class="option-content status-wrong">
+                <p><span class="tag-wrong">錯誤</span>Agile 強調「可運作的軟體」高於「詳細文件」。</p>
+            </div>
+        </div>
+
+        <!-- Option B -->
+        <div class="option-card">
+            <div class="option-header">
+                <span>(B) 計畫固定不變</span>
+                <button class="btn-reveal" onclick="toggleOption('opt-b')">顯示解析</button>
+            </div>
+            <div id="opt-b" class="option-content status-wrong">
+                <p><span class="tag-wrong">錯誤</span>Agile 強調「回應變化」，而不是死守計畫。計畫是為了改變而存在的。</p>
+            </div>
+        </div>
+
+        <!-- Option C -->
+        <div class="option-card">
+            <div class="option-header">
+                <span>(C) 客戶合作高於合約談判</span>
+                <button class="btn-reveal" onclick="toggleOption('opt-c')">顯示解析</button>
+            </div>
+            <div id="opt-c" class="option-content status-correct">
+                <p><span class="tag-correct">正確</span>這是 Agile 四大核心價值之一。比起拿合約保護自己，不如跟客戶同一陣線。</p>
+            </div>
+        </div>
+
+        <!-- Option D -->
+        <div class="option-card">
+            <div class="option-header">
+                <span>(D) 一次交付整個完整系統</span>
+                <button class="btn-reveal" onclick="toggleOption('opt-d')">顯示解析</button>
+            </div>
+            <div id="opt-d" class="option-content status-wrong">
+                <p><span class="tag-wrong">錯誤</span>Agile 強調「小量、持續交付（Iterative & Incremental）」，這樣才能早點收到回饋，早點修正。</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- G. 快速小測驗 -->
+    <div class="section">
+        <div class="section-title">隨堂小測驗</div>
+        
+        <div class="quiz-item">
+            <p class="quiz-question">1. Agile 是否完全不需要寫文件？</p>
+            <button class="quiz-btn btn-yes" onclick="checkQuiz(1, false)">是</button>
+            <button class="quiz-btn btn-no" onclick="checkQuiz(1, true)">否</button>
+            <div id="quiz-res-1" class="quiz-feedback"></div>
+        </div>
+
+        <div class="quiz-item">
+            <p class="quiz-question">2. Agile 為什麼不喜歡一次交付全部？</p>
+            <button class="quiz-btn btn-yes" onclick="checkQuiz(2, 'feedback')">為了早點拿回饋</button>
+            <button class="quiz-btn btn-no" onclick="checkQuiz(2, 'lazy')">因為工程師想偷懶</button>
+            <div id="quiz-res-2" class="quiz-feedback"></div>
+        </div>
+
+        <div class="quiz-item">
+            <p class="quiz-question">3. 「客戶合作」具體是指？</p>
+            <button class="quiz-btn btn-yes" onclick="checkQuiz(3, 'contract')">簽完合約就不見面</button>
+            <button class="quiz-btn btn-no" onclick="checkQuiz(3, 'comm')">持續溝通調整方向</button>
+            <div id="quiz-res-3" class="quiz-feedback"></div>
+        </div>
+    </div>
+
+    <!-- H. 口訣與陷阱 -->
+    <div class="section">
+        <div class="tips-box">
+            <h3>【記憶口訣】</h3>
+            <ul>
+                <li>「客戶一起做，比合約更重要」</li>
+                <li>「軟體能跑，比文件更重要」</li>
+            </ul>
+            
+            <h3 style="margin-top:15px;">【常見陷阱】</h3>
+            <ul>
+                <li>以為 Agile 就是「沒有計畫」（錯！是有計畫，但隨時調整）。</li>
+                <li>以為 Agile 就是「沒有文件」（錯！是有文件，但精簡實用）。</li>
+                <li>不知道 Agile 四大價值是「相對關係」（右邊也要做，只是左邊更優先）。</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- I. 正確答案揭曉 -->
+    <div class="final-reveal-section">
+        <button class="btn-final" onclick="revealAnswer()">揭曉正確答案</button>
+        <div id="final-answer" class="final-answer-box">
+            <div class="final-answer-big">答案：(C)</div>
+            <p style="margin-top:10px;">理由：敏捷開發強調「客戶合作」高於「合約談判」。</p>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // C. 關鍵字高亮功能
+    function highlight(elementId, desc) {
+        // 清除所有高亮
+        document.querySelectorAll('.highlight-bg').forEach(el => {
+            el.classList.remove('highlight-bg');
+        });
+        
+        // 清除按鈕選取狀態
+        document.querySelectorAll('.btn-kw').forEach(btn => {
+            btn.classList.remove('active');
+        });
+
+        // 加上高亮
+        const target = document.getElementById(elementId);
+        if(target) {
+            target.classList.add('highlight-bg');
+        }
+
+        // 顯示解釋
+        const display = document.getElementById('definition-display');
+        display.innerHTML = `<strong>${document.getElementById(elementId).innerText}</strong>：${desc}`;
+        display.style.color = "#1F2937"; // 變深色
+        
+        // 標記當前按鈕 (透過 event target 較複雜，這裡簡化處理 UX)
+        event.target.classList.add('active');
+    }
+
+    // D. Accordion 功能
+    function toggleAccordion(btn) {
+        btn.classList.toggle("active");
+        var panel = btn.nextElementSibling;
+        var arrow = btn.querySelector('span');
+        
+        if (panel.style.maxHeight) {
+            panel.style.maxHeight = null;
+            arrow.innerHTML = "▼";
+        } else {
+            panel.style.maxHeight = panel.scrollHeight + "px";
+            arrow.innerHTML = "▲";
+        }
+    }
+
+    // E. 敏捷價值選擇功能
+    function selectValue(element, text) {
+        // 移除其他選取
+        document.querySelectorAll('.agile-value-item').forEach(el => {
+            el.classList.remove('selected');
+        });
+        
+        // 選取當前
+        element.classList.add('selected');
+        
+        // 顯示說明
+        const box = document.getElementById('value-explain-box');
+        box.style.display = 'block';
+        box.innerHTML = `<strong>解析：</strong>${text}`;
+    }
+
+    // F. 選項顯示功能
+    function toggleOption(id) {
+        const content = document.getElementById(id);
+        const btn = event.target;
+        
+        if (content.style.display === "block") {
+            content.style.display = "none";
+            btn.innerText = "顯示解析";
+        } else {
+            content.style.display = "block";
+            btn.innerText = "隱藏解析";
+        }
+    }
+
+    // G. 測驗功能
+    function checkQuiz(qIndex, answer) {
+        const resBox = document.getElementById(`quiz-res-${qIndex}`);
+        resBox.style.display = 'block';
+        
+        let isCorrect = false;
+        let msg = "";
+
+        // 題目 1: Agile 是否完全不需要寫文件？ (Answer: False/No)
+        if (qIndex === 1) {
+            if (answer === true) {
+                isCorrect = true;
+                msg = "答對了！Agile 仍需文件，只是「軟體」比「文件」優先。";
+            } else {
+                msg = "答錯囉。Agile 不是不寫文件，而是不寫沒用的死文件。";
+            }
+        }
+        
+        // 題目 2: 為什麼不一次交付？ (Answer: feedback)
+        if (qIndex === 2) {
+            if (answer === 'feedback') {
+                isCorrect = true;
+                msg = "沒錯！早點交付才能早點發現做錯方向。";
+            } else {
+                msg = "不對喔，持續交付比較累，但為了品質是值得的。";
+            }
+        }
+
+        // 題目 3: 客戶合作指什麼？ (Answer: comm)
+        if (qIndex === 3) {
+            if (answer === 'comm') {
+                isCorrect = true;
+                msg = "正解！隨時保持聯絡，比只看合約更重要。";
+            } else {
+                msg = "錯了，那是傳統外包做法，Agile 要把客戶當隊友。";
+            }
+        }
+
+        if (isCorrect) {
+            resBox.style.backgroundColor = "#D1FAE5";
+            resBox.style.color = "#065F46";
+            resBox.innerHTML = `<span style='font-weight:bold'>[正確]</span> ${msg}`;
+        } else {
+            resBox.style.backgroundColor = "#FEE2E2";
+            resBox.style.color = "#991B1B";
+            resBox.innerHTML = `<span style='font-weight:bold'>[錯誤]</span> ${msg}`;
+        }
+    }
+
+    // I. 答案揭曉
+    function revealAnswer() {
+        const box = document.getElementById('final-answer');
+        box.style.display = 'block';
+        box.scrollIntoView({ behavior: 'smooth' });
+    }
+</script>
+
+</body>
+</html>

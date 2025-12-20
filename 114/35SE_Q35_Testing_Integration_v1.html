@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SE_Q35_Testing_Integration_v1</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --highlight-color: #f1c40f;
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+            --bg-color: #f4f6f7;
+            --card-bg: #ffffff;
+            --text-color: #333;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding-bottom: 50px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* A. 頁首區 */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px 0;
+            border-bottom: 3px solid var(--accent-color);
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        header h2 {
+            font-size: 1rem;
+            color: #7f8c8d;
+            font-weight: normal;
+        }
+
+        header .badge {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+
+        /* 通用卡片樣式 */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 25px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            color: var(--accent-color);
+            margin-bottom: 15px;
+            border-left: 5px solid var(--accent-color);
+            padding-left: 10px;
+            font-weight: bold;
+        }
+
+        /* B. 題目區 & C. 關鍵字互動 */
+        .question-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            line-height: 1.8;
+        }
+
+        .options-list {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+
+        .options-list li {
+            padding: 8px 0;
+            font-size: 1rem;
+        }
+
+        .keyword-btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn-key {
+            background-color: white;
+            border: 2px solid var(--accent-color);
+            color: var(--accent-color);
+            padding: 5px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .btn-key:hover, .btn-key.active {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .highlight-text {
+            background-color: transparent;
+            padding: 0 4px;
+            border-radius: 3px;
+            transition: background-color 0.3s;
+        }
+
+        .highlight-text.active {
+            background-color: var(--highlight-color);
+            font-weight: bold;
+        }
+
+        .explanation-box {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #edf7ff;
+            border-radius: 5px;
+            font-size: 1rem;
+            display: none; /* 初始隱藏 */
+            border-left: 4px solid var(--accent-color);
+        }
+
+        /* D. 白話翻譯 accordion */
+        details {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        summary {
+            font-weight: bold;
+            color: var(--primary-color);
+            outline: none;
+            cursor: pointer;
+        }
+
+        .plain-content {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+            color: #555;
+        }
+
+        /* E. 測試層級示意 */
+        .pyramid-container {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            align-items: center;
+        }
+
+        .level-box {
+            width: 80%;
+            padding: 10px;
+            text-align: center;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .level-box:hover {
+            background-color: #d0d0d0;
+        }
+
+        .level-box.target-level {
+            border: 2px solid var(--accent-color);
+        }
+        
+        .level-box.active {
+            background-color: var(--accent-color);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        /* 金字塔層級寬度變化 */
+        .lvl-4 { width: 90%; }
+        .lvl-3 { width: 70%; }
+        .lvl-2 { width: 50%; }
+        .lvl-1 { width: 30%; }
+
+        .level-desc {
+            margin-top: 15px;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            color: var(--accent-color);
+            min-height: 2.5em;
+        }
+
+        /* F. 選項解析 */
+        .option-card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+
+        .option-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-reveal-opt {
+            background-color: #95a5a6;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .opt-detail {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #ccc;
+            display: none;
+        }
+
+        .correct { color: var(--success-color); font-weight: bold; }
+        .wrong { color: var(--error-color); font-weight: bold; }
+
+        /* G. 小測驗 */
+        .quiz-item {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 20px;
+        }
+        
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .quiz-options button {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .quiz-options button:hover {
+            background-color: #f0f0f0;
+        }
+
+        .quiz-feedback {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+            font-weight: bold;
+        }
+
+        .fb-correct { background-color: #d4edda; color: #155724; }
+        .fb-wrong { background-color: #f8d7da; color: #721c24; }
+
+        /* H. 口訣與陷阱 */
+        .tips-list {
+            padding-left: 20px;
+        }
+        .tips-list li {
+            margin-bottom: 8px;
+        }
+        .mnemonic {
+            background-color: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 1.2rem;
+            color: #856404;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        /* I. 答案揭曉 */
+        .reveal-section {
+            text-align: center;
+            padding: 30px 0;
+        }
+
+        .btn-main {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+            transition: transform 0.2s;
+        }
+
+        .btn-main:active {
+            transform: scale(0.95);
+        }
+
+        .final-answer {
+            margin-top: 20px;
+            font-size: 2rem;
+            color: var(--success-color);
+            font-weight: bold;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .final-reason {
+            margin-top: 10px;
+            color: #555;
+            display: none;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* RWD */
+        @media (max-width: 600px) {
+            .container { padding: 10px; }
+            header h1 { font-size: 1.3rem; }
+            .question-text { font-size: 1.1rem; }
+            .lvl-1, .lvl-2, .lvl-3, .lvl-4 { width: 100%; } /* 手機版全部滿版 */
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <!-- A. 頁首區 -->
+    <header>
+        <h1>哪一種測試在看「模組之間有沒有接好」？</h1>
+        <h2>Software Testing 必考觀念</h2>
+        <span class="badge">題號：35</span>
+    </header>
+
+    <!-- B. 題目區 & C. 關鍵字互動 -->
+    <section class="card">
+        <div class="card-title">題目</div>
+        <div class="question-text">
+            35. 下列哪一項測試主要在確認「<span class="highlight-text" id="txt-module">各模組</span><span class="highlight-text" id="txt-interaction">彼此之間的互動</span>是否正常」？
+        </div>
+        <ul class="options-list">
+            <li>(A) <span class="highlight-text" id="txt-unit">單元測試（Unit Testing）</span></li>
+            <li>(B) <span class="highlight-text" id="txt-system">系統測試（System Testing）</span></li>
+            <li>(C) <span class="highlight-text" id="txt-integration">整合測試（Integration Testing）</span></li>
+            <li>(D) <span class="highlight-text" id="txt-acceptance">驗收測試（Acceptance Testing）</span></li>
+        </ul>
+
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+        <p style="font-size: 0.9rem; color: #666; margin-bottom: 10px;">點擊關鍵字看白話文解釋：</p>
+        
+        <div class="keyword-btn-group">
+            <button class="btn-key" onclick="highlightTerm('module', '模組（系統中的一小塊功能，像樂高積木的一塊）')">模組</button>
+            <button class="btn-key" onclick="highlightTerm('interaction', '互動（兩個東西接在一起傳遞資料，有沒有接順）')">互動</button>
+            <button class="btn-key" onclick="highlightTerm('unit', '單元測試（只測單一模組本身正不正常，不管別人）')">單元測試</button>
+            <button class="btn-key" onclick="highlightTerm('integration', '整合測試（測模組「接在一起」會不會出問題）')">整合測試</button>
+            <button class="btn-key" onclick="highlightTerm('system', '系統測試（全部組裝完畢，整個系統一起測）')">系統測試</button>
+            <button class="btn-key" onclick="highlightTerm('acceptance', '驗收測試（最後一關，給使用者或客戶確認能不能用）')">驗收測試</button>
+        </div>
+
+        <div id="explanation-display" class="explanation-box"></div>
+    </section>
+
+    <!-- D. 白話翻譯 -->
+    <section class="card">
+        <div class="card-title">題目翻譯蒟蒻</div>
+        <details open>
+            <summary>【白話翻譯】點此收合</summary>
+            <div class="plain-content">
+                <p><strong>「如果每個零件單獨都沒壞，但組起來卻不能用，這時候要做的是哪一種測試？」</strong></p>
+                <br>
+                <p><strong>【這題在考什麼】</strong></p>
+                <p>你是否能分清楚『測單一模組』與『測模組之間合作』的差別。</p>
+            </div>
+        </details>
+    </section>
+
+    <!-- E. 測試層級互動示意 -->
+    <section class="card">
+        <div class="card-title">測試層級示意圖 (點擊互動)</div>
+        <p style="text-align: center; margin-bottom: 15px; font-size: 0.9rem; color: #666;">請試著點擊「整合測試」</p>
+        
+        <div class="pyramid-container">
+            <div class="level-box lvl-4" onclick="showLevelDesc(this, '驗收測試：使用者說OK才算過關')">驗收測試 (Acceptance)</div>
+            <div class="level-box lvl-3" onclick="showLevelDesc(this, '系統測試：整個軟體功能與效能測試')">系統測試 (System)</div>
+            <div class="level-box lvl-2 target-level" onclick="showLevelDesc(this, '整合測試：重點在模組之間的介面與資料傳遞')">整合測試 (Integration)</div>
+            <div class="level-box lvl-1" onclick="showLevelDesc(this, '單元測試：最小單位，測試單一程式碼邏輯')">單元測試 (Unit)</div>
+        </div>
+
+        <div id="level-description" class="level-desc">
+            點擊上方方塊查看說明...
+        </div>
+    </section>
+
+    <!-- F. 選項逐一解析 -->
+    <section class="card">
+        <div class="card-title">選項逐一解析</div>
+        
+        <!-- Option A -->
+        <div class="option-card">
+            <div class="option-header">
+                <span>(A) 單元測試（Unit Testing）</span>
+                <button class="btn-reveal-opt" onclick="toggleOpt('opt-a')">顯示解析</button>
+            </div>
+            <div id="opt-a" class="opt-detail">
+                <span class="wrong">錯誤</span>。單元測試是「獨善其身」，只確認自己內部的程式碼邏輯對不對，完全不管跟別人的互動。
+            </div>
+        </div>
+
+        <!-- Option B -->
+        <div class="option-card">
+            <div class="option-header">
+                <span>(B) 系統測試（System Testing）</span>
+                <button class="btn-reveal-opt" onclick="toggleOpt('opt-b')">顯示解析</button>
+            </div>
+            <div id="opt-b" class="opt-detail">
+                <span class="wrong">錯誤</span>。系統測試是「大雜燴」，把所有東西都組好了，測試「整個系統」的功能有沒有符合當初開的需求規格，範圍比模組互動更大。
+            </div>
+        </div>
+
+        <!-- Option C -->
+        <div class="option-card">
+            <div class="option-header">
+                <span>(C) 整合測試（Integration Testing）</span>
+                <button class="btn-reveal-opt" onclick="toggleOpt('opt-c')">顯示解析</button>
+            </div>
+            <div id="opt-c" class="opt-detail">
+                <span class="correct">正確</span>！整合測試（Integration）的英文原意就是「積分、結合」。專門用來測試當兩個已經通過單元測試的模組「接在一起」時，介面（Interface）和資料傳遞會不會出錯。
+            </div>
+        </div>
+
+        <!-- Option D -->
+        <div class="option-card">
+            <div class="option-header">
+                <span>(D) 驗收測試（Acceptance Testing）</span>
+                <button class="btn-reveal-opt" onclick="toggleOpt('opt-d')">顯示解析</button>
+            </div>
+            <div id="opt-d" class="opt-detail">
+                <span class="wrong">錯誤</span>。這是最後一關，重點在於「使用者（客戶）」滿不滿意、會不會用，而不是技術上的模組介面問題。
+            </div>
+        </div>
+    </section>
+
+    <!-- G. 快速小測驗 -->
+    <section class="card">
+        <div class="card-title">快速小測驗</div>
+        
+        <div class="quiz-item">
+            <div class="quiz-question">1. 兩個模組單獨跑都沒問題，但資料傳過去就當機，這是哪個測試階段該抓出的Bug？</div>
+            <div class="quiz-options">
+                <button onclick="checkQuiz(1, 'A', this)">A. 單元測試</button>
+                <button onclick="checkQuiz(1, 'B', this)">B. 整合測試</button>
+                <button onclick="checkQuiz(1, 'C', this)">C. 驗收測試</button>
+            </div>
+            <div id="quiz-fb-1" class="quiz-feedback"></div>
+        </div>
+
+        <div class="quiz-item">
+            <div class="quiz-question">2. 下列哪一個測試主要是由「客戶/使用者」來進行確認的？</div>
+            <div class="quiz-options">
+                <button onclick="checkQuiz(2, 'A', this)">A. 驗收測試</button>
+                <button onclick="checkQuiz(2, 'B', this)">B. 整合測試</button>
+                <button onclick="checkQuiz(2, 'C', this)">C. 單元測試</button>
+            </div>
+            <div id="quiz-fb-2" class="quiz-feedback"></div>
+        </div>
+
+        <div class="quiz-item">
+            <div class="quiz-question">3. 為什麼做完單元測試，還需要做整合測試？</div>
+            <div class="quiz-options">
+                <button onclick="checkQuiz(3, 'A', this)">A. 因為老闆規定的</button>
+                <button onclick="checkQuiz(3, 'B', this)">B. 因為單元測試只保證局部正確，無法保證介面銜接正確</button>
+            </div>
+            <div id="quiz-fb-3" class="quiz-feedback"></div>
+        </div>
+    </section>
+
+    <!-- H. 口訣與常見陷阱 -->
+    <section class="card">
+        <div class="card-title">名師筆記</div>
+        
+        <div class="mnemonic">
+            ★ 記憶口訣：<br>
+            「單元測自己，整合測關係」
+        </div>
+
+        <h3 style="margin-bottom: 10px; color: var(--error-color);">【常見陷阱】</h3>
+        <ul class="tips-list">
+            <li><strong>看到很多模組就亂選：</strong> 不要看到「模組」兩個字就選單元測試，重點是後面那句「彼此互動」。</li>
+            <li><strong>搞混整合與驗收：</strong> 整合是工程師在看「接頭」有沒有接好；驗收是客戶在看「好不好用」。</li>
+            <li><strong>關鍵字忽略：</strong> 題目如果有「介面 (Interface)」、「互動 (Interaction)」、「資料傳遞」，90% 都是選整合測試。</li>
+        </ul>
+    </section>
+
+    <!-- I. 正確答案揭曉 -->
+    <section class="reveal-section">
+        <button class="btn-main" onclick="revealAnswer()">揭曉正確答案</button>
+        <div id="final-answer-box" class="final-answer">
+            答案：(C)
+        </div>
+        <div id="final-reason-box" class="final-reason">
+            理由：整合測試的重點在於確認模組之間的互動是否正常。
+        </div>
+    </section>
+
+</div>
+
+<script>
+    // C. 關鍵字互動
+    function highlightTerm(termId, explanation) {
+        // 移除所有高亮
+        document.querySelectorAll('.highlight-text').forEach(el => {
+            el.classList.remove('active');
+        });
+        document.querySelectorAll('.btn-key').forEach(el => {
+            el.classList.remove('active');
+        });
+
+        // 加入當前高亮
+        const textSpan = document.getElementById('txt-' + termId);
+        if(textSpan) textSpan.classList.add('active');
+        
+        // 按鈕狀態
+        event.target.classList.add('active');
+
+        // 顯示解釋
+        const box = document.getElementById('explanation-display');
+        box.style.display = 'block';
+        box.innerHTML = '<strong>說明：</strong> ' + explanation;
+    }
+
+    // E. 測試層級互動
+    function showLevelDesc(element, text) {
+        // 清除其他 active
+        document.querySelectorAll('.level-box').forEach(el => {
+            el.classList.remove('active');
+        });
+        
+        // 加上 active
+        element.classList.add('active');
+        
+        // 更新文字
+        const display = document.getElementById('level-description');
+        display.innerHTML = text;
+        display.style.color = '#333';
+        display.style.backgroundColor = '#fff';
+        display.style.border = '1px solid #ccc';
+        display.style.borderRadius = '5px';
+    }
+
+    // F. 選項解析開關
+    function toggleOpt(id) {
+        const el = document.getElementById(id);
+        const btn = event.target;
+        if (el.style.display === 'block') {
+            el.style.display = 'none';
+            btn.innerText = '顯示解析';
+            btn.style.backgroundColor = '#95a5a6';
+        } else {
+            el.style.display = 'block';
+            btn.innerText = '隱藏解析';
+            btn.style.backgroundColor = '#7f8c8d';
+        }
+    }
+
+    // G. 小測驗邏輯
+    function checkQuiz(qNum, answer, btnElement) {
+        const feedbackEl = document.getElementById('quiz-fb-' + qNum);
+        const correctAnswers = { 1: 'B', 2: 'A', 3: 'B' };
+        
+        // 重置按鈕樣式
+        const parent = btnElement.parentElement;
+        parent.querySelectorAll('button').forEach(b => b.style.backgroundColor = 'white');
+        
+        feedbackEl.style.display = 'block';
+        
+        if (answer === correctAnswers[qNum]) {
+            feedbackEl.className = 'quiz-feedback fb-correct';
+            feedbackEl.innerText = '答對了！觀念正確。';
+            btnElement.style.backgroundColor = '#d4edda';
+        } else {
+            feedbackEl.className = 'quiz-feedback fb-wrong';
+            let msg = '';
+            if (qNum === 1) msg = '單獨正常但接起來當機，就是「整合」的問題喔！';
+            if (qNum === 2) msg = '客戶參與的是最後的「驗收測試」。';
+            if (qNum === 3) msg = '單元測試只能保證自己沒錯，不能保證跟別人溝通沒錯。';
+            feedbackEl.innerText = '答錯囉。' + msg;
+            btnElement.style.backgroundColor = '#f8d7da';
+        }
+    }
+
+    // I. 答案揭曉
+    function revealAnswer() {
+        document.getElementById('final-answer-box').style.display = 'block';
+        document.getElementById('final-reason-box').style.display = 'block';
+        
+        // 自動捲動到底部
+        setTimeout(() => {
+            window.scrollTo({
+                top: document.body.scrollHeight,
+                behavior: 'smooth'
+            });
+        }, 100);
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI_Q32_Classification_NaiveBayes_v1</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #e74c3c;
+            --highlight-color: #f1c40f;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --correct-color: #27ae60;
+            --wrong-color: #c0392b;
+            --border-radius: 8px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Noto Sans TC", "Microsoft JhengHei", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* A. Header */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        header .tag {
+            display: inline-block;
+            background: var(--accent-color);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        /* Section Container Styles */
+        .section-card {
+            background: var(--card-bg);
+            padding: 25px;
+            margin-bottom: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--primary-color);
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        /* B. Question Card */
+        .question-text {
+            font-size: 1.15rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .options-list {
+            list-style: none;
+            padding-left: 10px;
+        }
+
+        .options-list li {
+            margin-bottom: 8px;
+            padding: 8px;
+            border: 1px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .highlight-bg {
+            background-color: var(--highlight-color);
+            color: black;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        /* C. Keywords Interaction */
+        .keyword-btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .btn-keyword {
+            background: white;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .btn-keyword:hover, .btn-keyword.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .explanation-box {
+            background: #eef2f3;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+        }
+
+        .explanation-box span {
+            color: var(--accent-color);
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        /* D. Accordion */
+        .accordion {
+            background-color: #f1f1f1;
+            color: #444;
+            cursor: pointer;
+            padding: 18px;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-size: 1rem;
+            transition: 0.4s;
+            border-radius: var(--border-radius);
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .active, .accordion:hover {
+            background-color: #ddd;
+        }
+
+        .panel {
+            padding: 0 18px;
+            background-color: white;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.2s ease-out;
+            margin-bottom: 10px;
+            border-left: 3px solid #ccc;
+        }
+        
+        .panel p {
+            margin: 15px 0;
+        }
+
+        /* E. Task Mapping */
+        .mapping-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .mapping-item {
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .mapping-item:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary-color);
+        }
+
+        .mapping-item h3 {
+            font-size: 1rem;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .mapping-item ul {
+            font-size: 0.9rem;
+            padding-left: 20px;
+            color: #666;
+        }
+
+        .mapping-desc {
+            font-size: 0.85rem;
+            color: var(--accent-color);
+            margin-top: 5px;
+            font-weight: bold;
+            display: none;
+        }
+
+        /* F. Option Analysis */
+        .option-card {
+            border: 1px solid #eee;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: var(--border-radius);
+        }
+
+        .btn-reveal-opt {
+            background: #eee;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            margin-top: 5px;
+            border-radius: 4px;
+        }
+
+        .analysis-content {
+            display: none;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #ccc;
+        }
+
+        .correct-tag { color: var(--correct-color); font-weight: bold; }
+        .wrong-tag { color: var(--wrong-color); font-weight: bold; }
+
+        /* G. Mini Quiz */
+        .quiz-item {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .quiz-options button {
+            margin-right: 10px;
+            margin-top: 5px;
+            padding: 6px 12px;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .quiz-feedback {
+            margin-top: 8px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        /* H. Mnemonic */
+        .mnemonic-box {
+            background: #fff8e1;
+            border-left: 5px solid #ffc107;
+            padding: 15px;
+        }
+
+        .pitfall-list {
+            list-style-type: none;
+        }
+        
+        .pitfall-list li::before {
+            content: "⚠️ ";
+        }
+
+        /* I. Answer Reveal */
+        .final-reveal-area {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .btn-big-reveal {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #c0392b;
+            transition: all 0.1s;
+        }
+
+        .btn-big-reveal:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        .answer-content {
+            display: none;
+            margin-top: 20px;
+            animation: fadeIn 0.5s;
+        }
+
+        .big-letter {
+            font-size: 4rem;
+            color: var(--correct-color);
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 0.8rem;
+            color: #888;
+            padding-bottom: 20px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            header h1 { font-size: 1.3rem; }
+            .section-card { padding: 15px; }
+            .mapping-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- A. 頁首區 -->
+    <header>
+        <h1>哪一個演算法「會幫你分對類」？</h1>
+        <p>Classification 任務快速判斷</p>
+        <div class="tag">題號：32</div>
+    </header>
+
+    <!-- B. 題目區 -->
+    <section class="section-card">
+        <h2>題目區</h2>
+        <div class="question-text" id="question-area">
+            32. 下列哪一種演算法可以用於<span id="kw-classification">分類（Classification）</span>任務？
+        </div>
+        <ul class="options-list">
+            <li>(A) <span id="kw-kmeans">K-means</span></li>
+            <li>(B) <span id="kw-bayes">Naive Bayes</span></li>
+            <li>(C) <span id="kw-apriori">Apriori</span></li>
+            <li>(D) <span id="kw-pagerank">PageRank</span></li>
+        </ul>
+    </section>
+
+    <!-- C. 關鍵字螢光筆互動 -->
+    <section class="section-card">
+        <h2>關鍵字解析（點擊按鈕螢光標示）</h2>
+        <div class="keyword-btn-group">
+            <button class="btn-keyword" onclick="highlight('classification')">分類（Classification）</button>
+            <button class="btn-keyword" onclick="highlight('label')">標記資料</button>
+            <button class="btn-keyword" onclick="highlight('kmeans')">K-means</button>
+            <button class="btn-keyword" onclick="highlight('bayes')">Naive Bayes</button>
+            <button class="btn-keyword" onclick="highlight('apriori')">Apriori</button>
+            <button class="btn-keyword" onclick="highlight('pagerank')">PageRank</button>
+        </div>
+        <div class="explanation-box" id="explanation-display">
+            請點擊上方關鍵字，這裡會顯示白話文解釋。
+        </div>
+    </section>
+
+    <!-- D. 白話翻譯 -->
+    <section class="section-card">
+        <h2>白話翻譯與考點</h2>
+        
+        <button class="accordion">【白話翻譯】這題到底在問什麼？</button>
+        <div class="panel">
+            <p>「如果我要讓電腦判斷一封信是『垃圾郵件』還是『正常郵件』，哪一個演算法能直接用來做？」</p>
+        </div>
+
+        <button class="accordion">【這題在考什麼】</button>
+        <div class="panel">
+            <p>「你是否能分清楚『分類』與『分群』、『關聯』、『排序』的差別。」</p>
+            <p>這是機器學習最基礎的「四大任務」題型。</p>
+        </div>
+    </section>
+
+    <!-- E. 任務類型對照互動示意 -->
+    <section class="section-card">
+        <h2>任務類型對照（點選演算法看對應）</h2>
+        <div class="mapping-grid">
+            <div class="mapping-item" onclick="showMapInfo('class')">
+                <h3>1) 分類 (Classification)</h3>
+                <ul>
+                    <li>代表：<strong>Naive Bayes</strong>, Logistic Regression</li>
+                    <li>特徵：有標準答案 (標籤)</li>
+                </ul>
+                <div class="mapping-desc" id="map-desc-class">★ 本題重點！像這題的 Naive Bayes。</div>
+            </div>
+
+            <div class="mapping-item" onclick="showMapInfo('cluster')">
+                <h3>2) 分群 (Clustering)</h3>
+                <ul>
+                    <li>代表：<strong>K-means</strong></li>
+                    <li>特徵：沒有標準答案 (無標籤)</li>
+                </ul>
+                <div class="mapping-desc" id="map-desc-cluster">★ 這是把資料自己分堆，不是分類。</div>
+            </div>
+
+            <div class="mapping-item" onclick="showMapInfo('assoc')">
+                <h3>3) 關聯分析</h3>
+                <ul>
+                    <li>代表：<strong>Apriori</strong></li>
+                    <li>特徵：找「尿布與啤酒」的關係</li>
+                </ul>
+                <div class="mapping-desc" id="map-desc-assoc">★ 這是找一起出現的商品，不是分類。</div>
+            </div>
+
+            <div class="mapping-item" onclick="showMapInfo('rank')">
+                <h3>4) 排名 / 重要性</h3>
+                <ul>
+                    <li>代表：<strong>PageRank</strong></li>
+                    <li>特徵：計算網頁重要程度</li>
+                </ul>
+                <div class="mapping-desc" id="map-desc-rank">★ 這是 Google 搜尋早期的排名法。</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- F. 選項逐一解析 -->
+    <section class="section-card">
+        <h2>選項逐一解析</h2>
+        
+        <div class="option-card">
+            <strong>(A) K-means</strong>
+            <br>
+            <button class="btn-reveal-opt" onclick="toggleAnalysis('opt-a')">顯示解析</button>
+            <div id="opt-a" class="analysis-content">
+                <span class="wrong-tag">【錯誤】</span> 
+                屬於分群（Clustering）。<br>
+                它是把資料依照相似度「分堆」，但他不知道每一堆叫什麼名字（無監督學習）。
+            </div>
+        </div>
+
+        <div class="option-card">
+            <strong>(B) Naive Bayes</strong>
+            <br>
+            <button class="btn-reveal-opt" onclick="toggleAnalysis('opt-b')">顯示解析</button>
+            <div id="opt-b" class="analysis-content">
+                <span class="correct-tag">【正確】</span>
+                樸素貝氏分類器（Naive Bayes Classifier）。<br>
+                利用機率來計算資料屬於哪一類的經典演算法，常用於「垃圾郵件過濾」。
+            </div>
+        </div>
+
+        <div class="option-card">
+            <strong>(C) Apriori</strong>
+            <br>
+            <button class="btn-reveal-opt" onclick="toggleAnalysis('opt-c')">顯示解析</button>
+            <div id="opt-c" class="analysis-content">
+                <span class="wrong-tag">【錯誤】</span>
+                用於關聯規則（Association Rules）。<br>
+                經典案例是超市找出「買麵包的人通常也會買牛奶」。
+            </div>
+        </div>
+
+        <div class="option-card">
+            <strong>(D) PageRank</strong>
+            <br>
+            <button class="btn-reveal-opt" onclick="toggleAnalysis('opt-d')">顯示解析</button>
+            <div id="opt-d" class="analysis-content">
+                <span class="wrong-tag">【錯誤】</span>
+                用於排名（Ranking）。<br>
+                這是 Google 用來衡量網頁重要性的演算法。
+            </div>
+        </div>
+    </section>
+
+    <!-- G. 快速小測驗 -->
+    <section class="section-card">
+        <h2>快速小測驗 (Mini Quiz)</h2>
+        
+        <div class="quiz-item">
+            <p>1. 分類任務（Classification）一定要有「標記資料（正確答案）」嗎？</p>
+            <div class="quiz-options">
+                <button onclick="checkQuiz(1, true)">是</button>
+                <button onclick="checkQuiz(1, false)">否</button>
+            </div>
+            <div id="quiz-fb-1" class="quiz-feedback"></div>
+        </div>
+
+        <div class="quiz-item">
+            <p>2. 「判斷這張照片是貓還是狗」，屬於什麼任務？</p>
+            <div class="quiz-options">
+                <button onclick="checkQuiz(2, 'cluster')">分群</button>
+                <button onclick="checkQuiz(2, 'class')">分類</button>
+            </div>
+            <div id="quiz-fb-2" class="quiz-feedback"></div>
+        </div>
+
+        <div class="quiz-item">
+            <p>3. K-means 的 "K" 代表分成 K 類，所以它是分類演算法？</p>
+            <div class="quiz-options">
+                <button onclick="checkQuiz(3, true)">對</button>
+                <button onclick="checkQuiz(3, false)">錯</button>
+            </div>
+            <div id="quiz-fb-3" class="quiz-feedback"></div>
+        </div>
+    </section>
+
+    <!-- H. 口訣與陷阱 -->
+    <section class="section-card mnemonic-box">
+        <h2>【記憶口訣與常見陷阱】</h2>
+        <div style="margin-bottom: 20px;">
+            <h3>口訣：</h3>
+            <p style="font-size: 1.2rem; font-weight: bold; color: var(--primary-color);">「要分對類，找 Bayes」</p>
+            <p style="font-size: 0.9rem;">(想成：分類是被動的被死 -> Bayes)</p>
+        </div>
+        
+        <h3>常見陷阱：</h3>
+        <ul class="pitfall-list">
+            <li>把「分群 (K-means)」當成「分類」。記住：K-means 沒有標準答案，只是自己玩分堆。</li>
+            <li>看到英文名詞就亂選。請務必記住 Apriori 是關聯（購物籃），PageRank 是排名（網頁）。</li>
+        </ul>
+    </section>
+
+    <!-- I. 正確答案揭曉 -->
+    <section class="section-card final-reveal-area">
+        <h2>準備好確認答案了嗎？</h2>
+        <button class="btn-big-reveal" onclick="revealAnswer()">揭曉正確答案</button>
+        
+        <div id="final-answer" class="answer-content">
+            <div class="big-letter">B</div>
+            <p style="font-size: 1.2rem; font-weight: bold; margin: 10px 0;">Naive Bayes</p>
+            <p>一句話理由：Naive Bayes 是利用機率進行預測的典型「分類」演算法。</p>
+        </div>
+    </section>
+
+    <footer>
+        <p>補教名師 AI 衝刺班 | AI_Q32_Classification_NaiveBayes_v1</p>
+    </footer>
+
+</div>
+
+<script>
+    // Data for explanations
+    const explanations = {
+        'classification': '分類 (Classification)：把資料分到「已知類別」中（例如：是貓、是狗）。',
+        'label': '標記資料：資料已經知道正確類別（例如：照片已經標註好這是貓）。',
+        'kmeans': 'K-means（分群演算法）：自己依照特徵分堆，沒有事先定義的類別（無標準答案）。',
+        'bayes': 'Naive Bayes（樸素貝氏分類器）：用機率統計來判斷資料屬於哪一類（常用於文字分類）。',
+        'apriori': 'Apriori（關聯規則）：找常一起出現的項目（例如：尿布與啤酒）。',
+        'pagerank': 'PageRank（網頁排名）：計算節點重要性的演算法，用於搜尋引擎排序。'
+    };
+
+    // Keyword Highlight Logic
+    function highlight(key) {
+        // Reset all highlights
+        document.querySelectorAll('.highlight-bg').forEach(el => {
+            el.classList.remove('highlight-bg');
+        });
+        document.querySelectorAll('.btn-keyword').forEach(btn => {
+            btn.classList.remove('active');
+        });
+
+        // Set explanation text
+        const display = document.getElementById('explanation-display');
+        if (explanations[key]) {
+            display.innerHTML = `<span>解析：</span>${explanations[key]}`;
+        }
+
+        // Highlight specific elements based on key
+        let targetId = '';
+        if (key === 'classification') targetId = 'kw-classification';
+        else if (key === 'kmeans') targetId = 'kw-kmeans';
+        else if (key === 'bayes') targetId = 'kw-bayes';
+        else if (key === 'apriori') targetId = 'kw-apriori';
+        else if (key === 'pagerank') targetId = 'kw-pagerank';
+
+        if (targetId) {
+            const el = document.getElementById(targetId);
+            if (el) el.classList.add('highlight-bg');
+        }
+        
+        // Highlight logic for 'label' (concept only, no specific ID in question text to highlight, keeps explanation)
+        
+        // Button active state
+        const btn = document.querySelector(`button[onclick="highlight('${key}')"]`);
+        if(btn) btn.classList.add('active');
+    }
+
+    // Accordion Logic
+    const acc = document.getElementsByClassName("accordion");
+    for (let i = 0; i < acc.length; i++) {
+        acc[i].addEventListener("click", function() {
+            this.classList.toggle("active");
+            const panel = this.nextElementSibling;
+            if (panel.style.maxHeight) {
+                panel.style.maxHeight = null;
+            } else {
+                panel.style.maxHeight = panel.scrollHeight + "px";
+            }
+        });
+    }
+
+    // Task Mapping Logic
+    function showMapInfo(type) {
+        // Hide all descriptions first
+        document.querySelectorAll('.mapping-desc').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('.mapping-item').forEach(el => el.style.borderColor = '#ddd');
+
+        // Show specific
+        const descId = `map-desc-${type}`;
+        const descEl = document.getElementById(descId);
+        if(descEl) {
+            descEl.style.display = 'block';
+            descEl.parentElement.style.borderColor = 'var(--accent-color)';
+        }
+    }
+
+    // Option Analysis Reveal
+    function toggleAnalysis(id) {
+        const el = document.getElementById(id);
+        if (el.style.display === "block") {
+            el.style.display = "none";
+        } else {
+            el.style.display = "block";
+        }
+    }
+
+    // Mini Quiz Logic
+    function checkQuiz(qNum, answer) {
+        const fb = document.getElementById(`quiz-fb-${qNum}`);
+        let isCorrect = false;
+        let text = "";
+
+        if (qNum === 1) {
+            // Must have labels? Yes.
+            if (answer === true) {
+                isCorrect = true;
+                text = "答對了！分類屬於「監督式學習」，一定要有正確答案給電腦看。";
+            } else {
+                text = "答錯囉！如果沒有標記資料，那就是「分群」了。";
+            }
+        } else if (qNum === 2) {
+            // Cat or Dog? Classification.
+            if (answer === 'class') {
+                isCorrect = true;
+                text = "正確！因為類別（貓、狗）是已知且定義好的。";
+            } else {
+                text = "不對喔，分群是讓電腦自己把照片分成兩堆，但他不知道那是貓或狗。";
+            }
+        } else if (qNum === 3) {
+            // K-means is classification? No.
+            if (answer === false) {
+                isCorrect = true;
+                text = "觀念正確！K-means 是「分群 (Clustering)」，那個 K 是指分成 K 堆的意思。";
+            } else {
+                text = "陷阱題！K-means 雖然有分，但它是「分群」，不是分類。";
+            }
+        }
+
+        fb.style.color = isCorrect ? "var(--correct-color)" : "var(--wrong-color)";
+        fb.innerHTML = (isCorrect ? "⭕ " : "❌ ") + text;
+    }
+
+    // Final Answer Reveal
+    function revealAnswer() {
+        const answerDiv = document.getElementById('final-answer');
+        answerDiv.style.display = 'block';
+        // Auto scroll to bottom
+        answerDiv.scrollIntoView({behavior: "smooth"});
+    }
+</script>
+
+</body>
+</html>

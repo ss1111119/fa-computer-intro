@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DS_Q24_Sorting_TimeComplexity_nlogn_v1</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #4f46e5;
+            --accent-color: #f59e0b;
+            --danger-color: #dc2626;
+            --success-color: #16a34a;
+            --bg-color: #f8fafc;
+            --text-color: #1e293b;
+            --card-bg: #ffffff;
+            --border-radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "PingFang TC", "Microsoft JhengHei", "Heiti TC", sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding-bottom: 60px;
+        }
+
+        /* Container */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 20px;
+        }
+
+        header h1 {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+            font-weight: 800;
+        }
+
+        header p {
+            color: #64748b;
+            font-size: 1rem;
+        }
+
+        .badge {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--secondary-color);
+            border-left: 5px solid var(--accent-color);
+            padding-left: 12px;
+        }
+
+        /* Question Section */
+        .question-box {
+            font-size: 1.15rem;
+            font-weight: 500;
+            margin-bottom: 20px;
+            line-height: 1.8;
+        }
+
+        .question-highlight {
+            background-color: yellow;
+            padding: 2px 4px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .options-list {
+            list-style: none;
+        }
+
+        .options-list li {
+            padding: 12px 16px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            background: #fdfdfd;
+        }
+
+        /* Keyword Interaction */
+        .keyword-btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .key-btn {
+            background: white;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 6px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+
+        .key-btn:hover, .key-btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .explanation-box {
+            background-color: #eff6ff;
+            border-left: 4px solid var(--primary-color);
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 0 8px 8px 0;
+            min-height: 80px;
+        }
+
+        .explanation-title {
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        /* Accordion */
+        details {
+            margin-bottom: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        details summary {
+            background: #f8fafc;
+            padding: 15px;
+            cursor: pointer;
+            font-weight: 600;
+            list-style: none; /* Hide default triangle */
+        }
+        
+        details summary::-webkit-details-marker {
+            display: none;
+        }
+
+        details summary::after {
+            content: "+";
+            float: right;
+            font-weight: bold;
+        }
+
+        details[open] summary::after {
+            content: "-";
+        }
+
+        details .content {
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        /* Demo Section */
+        .demo-container {
+            text-align: center;
+            background: #f1f5f9;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .array-display {
+            font-family: monospace;
+            font-size: 1.5rem;
+            margin: 20px 0;
+            letter-spacing: 5px;
+            font-weight: bold;
+            color: #334155;
+        }
+
+        .demo-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .demo-btn {
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            background: #cbd5e1;
+            color: #334155;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .demo-btn.active-demo {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .demo-result {
+            margin-top: 15px;
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .complexity-tag {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-family: monospace;
+        }
+
+        .tag-slow { background: #fee2e2; color: #991b1b; }
+        .tag-fast { background: #dcfce7; color: #166534; }
+
+        /* Option Analysis */
+        .option-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+
+        .option-header {
+            padding: 15px;
+            background: #f8fafc;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .option-body {
+            padding: 15px;
+            border-top: 1px solid #e2e8f0;
+            display: none;
+            background: white;
+        }
+
+        .option-body.show {
+            display: block;
+        }
+
+        .status-wrong { color: var(--danger-color); font-weight: bold; }
+        .status-correct { color: var(--success-color); font-weight: bold; }
+
+        /* Quiz */
+        .quiz-item {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px dashed #cbd5e1;
+        }
+
+        .quiz-options button {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #cbd5e1;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .quiz-options button.correct {
+            background: #dcfce7;
+            border-color: #166534;
+            color: #166534;
+        }
+
+        .quiz-options button.wrong {
+            background: #fee2e2;
+            border-color: #991b1b;
+            color: #991b1b;
+        }
+
+        .quiz-feedback {
+            margin-top: 8px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            display: none;
+        }
+
+        /* Mnemonics */
+        .mnemonic-box {
+            background: #fffbeb;
+            border: 2px solid #fcd34d;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        /* Answer Reveal */
+        .reveal-section {
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .reveal-btn {
+            background: var(--accent-color);
+            color: white;
+            font-size: 1.2rem;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+
+        .reveal-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .final-answer {
+            display: none;
+            margin-top: 20px;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .big-letter {
+            font-size: 4rem;
+            font-weight: 900;
+            color: var(--success-color);
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (min-width: 600px) {
+            .demo-controls {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- A. Header -->
+    <header>
+        <h1>哪一個排序是 O(n log n)？</h1>
+        <p>補教名師：一題秒懂 Sorting Algorithm & Time Complexity</p>
+        <div class="badge">題號：24</div>
+    </header>
+
+    <!-- B. Question Card -->
+    <section class="card">
+        <h2 class="card-title">題目區</h2>
+        <div class="question-box">
+            24. 下列哪一個<span id="txt-sort" class="">排序演算法</span>在<span id="txt-avg" class="">平均情況</span>下的<span id="txt-time" class="">時間複雜度</span>為 <span id="txt-nlogn" class="">O(n log n)</span>？
+        </div>
+        <ul class="options-list">
+            <li>(A) <span id="txt-bubble">Bubble Sort</span></li>
+            <li>(B) <span id="txt-select">Selection Sort</span></li>
+            <li>(C) <span id="txt-merge">Merge Sort</span></li>
+            <li>(D) <span id="txt-insert">Insertion Sort</span></li>
+        </ul>
+    </section>
+
+    <!-- C. Highlight Keywords -->
+    <section class="card">
+        <h2 class="card-title">關鍵字拆解（點擊按鈕查看解釋）</h2>
+        <div class="keyword-btn-group">
+            <button class="key-btn" onclick="highlight('sort')">排序演算法</button>
+            <button class="key-btn" onclick="highlight('avg')">平均情況</button>
+            <button class="key-btn" onclick="highlight('time')">時間複雜度</button>
+            <button class="key-btn" onclick="highlight('nlogn')">O(n log n)</button>
+            <button class="key-btn" onclick="highlight('bubble')">Bubble Sort</button>
+            <button class="key-btn" onclick="highlight('select')">Selection Sort</button>
+            <button class="key-btn" onclick="highlight('merge')">Merge Sort</button>
+            <button class="key-btn" onclick="highlight('insert')">Insertion Sort</button>
+        </div>
+        <div class="explanation-box">
+            <span class="explanation-title" id="exp-title">請點擊上方關鍵字</span>
+            <span id="exp-content">這裡會顯示該術語的白話文解釋，幫助你快速理解題意。</span>
+        </div>
+    </section>
+
+    <!-- D. Plain Language -->
+    <section class="card">
+        <h2 class="card-title">白話文翻譯機</h2>
+        <details open>
+            <summary>這題在問什麼？（白話版）</summary>
+            <div class="content">
+                <p>「如果有非常多資料要整理順序，哪一種方法在『大部分情況下』速度比較快、效率比較高？」</p>
+            </div>
+        </details>
+        <details>
+            <summary>考試重點在哪？</summary>
+            <div class="content">
+                <p>這題在考你能不能將演算法分為兩個等級：</p>
+                <ul>
+                    <li><strong>慢郎中等級 O(n²)</strong>：資料變多，時間暴增。</li>
+                    <li><strong>資優生等級 O(n log n)</strong>：資料變多，時間增加得比較合理。</li>
+                </ul>
+            </div>
+        </details>
+    </section>
+
+    <!-- E. Sorting Concept Demo -->
+    <section class="card">
+        <h2 class="card-title">排序流程與速度示意</h2>
+        <div class="demo-container">
+            <p>假設資料：</p>
+            <div class="array-display">[ 8, 3, 6, 2, 7 ]</div>
+            
+            <div class="demo-controls">
+                <button class="demo-btn" onclick="runDemo('bubble', this)">Bubble</button>
+                <button class="demo-btn" onclick="runDemo('selection', this)">Selection</button>
+                <button class="demo-btn" onclick="runDemo('insertion', this)">Insertion</button>
+                <button class="demo-btn" onclick="runDemo('merge', this)">Merge</button>
+            </div>
+
+            <div class="demo-result" id="demo-output">
+                請點擊上方按鈕觀看運作邏輯
+            </div>
+        </div>
+    </section>
+
+    <!-- F. Option Analysis -->
+    <section class="card">
+        <h2 class="card-title">選項逐一破解</h2>
+        
+        <div class="option-card">
+            <div class="option-header" onclick="toggleOption('opt-a')">
+                <span>(A) Bubble Sort (氣泡排序)</span>
+                <span>▼ 點擊看解析</span>
+            </div>
+            <div class="option-body" id="opt-a">
+                <p><span class="status-wrong">錯誤</span></p>
+                <p>就像氣泡從水底慢慢浮上來，它每次只能交換相鄰的兩個數字。</p>
+                <p><strong>平均複雜度：O(n²)</strong></p>
+                <p>評語：資料一多就慢到懷疑人生。</p>
+            </div>
+        </div>
+
+        <div class="option-card">
+            <div class="option-header" onclick="toggleOption('opt-b')">
+                <span>(B) Selection Sort (選擇排序)</span>
+                <span>▼ 點擊看解析</span>
+            </div>
+            <div class="option-body" id="opt-b">
+                <p><span class="status-wrong">錯誤</span></p>
+                <p>每次從還沒排好的堆裡「選擇」一個最小的放到前面。</p>
+                <p><strong>平均複雜度：O(n²)</strong></p>
+                <p>評語：不管資料原本亂不亂，它都要完整跑完兩層迴圈，很死腦筋。</p>
+            </div>
+        </div>
+
+        <div class="option-card">
+            <div class="option-header" onclick="toggleOption('opt-c')">
+                <span>(C) Merge Sort (合併排序)</span>
+                <span>▼ 點擊看解析</span>
+            </div>
+            <div class="option-body" id="opt-c">
+                <p><span class="status-correct">正確</span></p>
+                <p>採用<strong>Divide and Conquer (分治法)</strong>。先把資料切一半、再切一半...直到剩下一個，排好後再慢慢「合併」起來。</p>
+                <p><strong>平均複雜度：O(n log n)</strong></p>
+                <p>評語：切分是 log n 層，每層合併花 n，乘起來就是 n log n。穩定且快速！</p>
+            </div>
+        </div>
+
+        <div class="option-card">
+            <div class="option-header" onclick="toggleOption('opt-d')">
+                <span>(D) Insertion Sort (插入排序)</span>
+                <span>▼ 點擊看解析</span>
+            </div>
+            <div class="option-body" id="opt-d">
+                <p><span class="status-wrong">錯誤</span></p>
+                <p>像玩撲克牌一樣，把拿到的新牌「插入」到手中已排好的位置。</p>
+                <p><strong>平均複雜度：O(n²)</strong></p>
+                <p>評語：雖然在資料「幾乎排好」時很快，但平均來說還是慢。</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- G. Mini Quiz -->
+    <section class="card">
+        <h2 class="card-title">30秒驗收小測驗</h2>
+        
+        <div class="quiz-item">
+            <p>1. 哪一種排序法一定會把資料「切半」處理？</p>
+            <div class="quiz-options">
+                <button onclick="checkQuiz(this, false, '不對喔，Bubble 是交換相鄰的。')">Bubble Sort</button>
+                <button onclick="checkQuiz(this, true, '沒錯！Merge Sort 先切半再合併。')">Merge Sort</button>
+                <button onclick="checkQuiz(this, false, 'Selection 是挑最小的，不切資料。')">Selection Sort</button>
+            </div>
+            <div class="quiz-feedback"></div>
+        </div>
+
+        <div class="quiz-item">
+            <p>2. 資料量很大時，O(n²) 與 O(n log n) 誰比較快？</p>
+            <div class="quiz-options">
+                <button onclick="checkQuiz(this, false, '平方等級(n²)資料越多越慢喔！')">O(n²) 比較快</button>
+                <button onclick="checkQuiz(this, true, '答對了！n log n 效率好很多。')">O(n log n) 比較快</button>
+            </div>
+            <div class="quiz-feedback"></div>
+        </div>
+
+        <div class="quiz-item">
+            <p>3. Bubble, Selection, Insertion 這三兄弟平均是哪個等級？</p>
+            <div class="quiz-options">
+                <button onclick="checkQuiz(this, true, '正解！它們是效率較差的平方三兄弟。')">O(n²)</button>
+                <button onclick="checkQuiz(this, false, '不對喔，只有 Merge/Quick/Heap 才是這等級。')">O(n log n)</button>
+            </div>
+            <div class="quiz-feedback"></div>
+        </div>
+    </section>
+
+    <!-- H. Mnemonics -->
+    <section class="card">
+        <h2 class="card-title">名師口訣與陷阱</h2>
+        <div class="mnemonic-box">
+            <h3>【記憶口訣】</h3>
+            <p style="font-size: 1.2rem; font-weight: bold; color: var(--text-color); margin-top:10px;">
+                「平方三兄弟，合併最聰明」
+            </p>
+            <ul style="margin-left: 20px; margin-top: 10px;">
+                <li><strong>平方三兄弟 (O(n²))：</strong> Bubble, Selection, Insertion</li>
+                <li><strong>合併最聰明 (O(n log n))：</strong> Merge Sort</li>
+            </ul>
+        </div>
+
+        <div style="background: #fee2e2; padding: 15px; border-radius: 8px; border: 1px solid #fecaca;">
+            <h3>【常見陷阱】</h3>
+            <ol style="margin-left: 20px; margin-top: 5px;">
+                <li>只背英文名字，不背複雜度。</li>
+                <li>看到 Sort 就亂選 Bubble (因為名字最好記)。</li>
+                <li>Quick Sort (快速排序) 平均也是 O(n log n)，但最差會變成 O(n²)，要小心題目問什麼！(本題未列出 Quick Sort，Merge Sort 最穩)。</li>
+            </ol>
+        </div>
+    </section>
+
+    <!-- I. Answer Reveal -->
+    <div class="reveal-section">
+        <button class="reveal-btn" onclick="revealAnswer()">揭曉正確答案</button>
+        <div id="finalAnswer" class="final-answer">
+            <span class="big-letter">C</span>
+            <p style="font-size: 1.2rem; margin-top: 10px;">Merge Sort (合併排序)</p>
+            <p style="color: #64748b; margin-top: 5px;">理由：利用分治法與遞迴，平均複雜度為 O(n log n)。</p>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // Data for keywords
+    const keywordData = {
+        'sort': {
+            title: '排序演算法 (Sorting Algorithm)',
+            desc: '就是把一堆亂七八糟的資料，依照大小順序（由小到大或由大到小）排列整齊的方法。'
+        },
+        'avg': {
+            title: '平均情況 (Average Case)',
+            desc: '不是運氣最好(資料已排好)，也不是運氣最差(資料完全倒序)，而是「一般隨機亂數」的情況下，電腦要跑多久。'
+        },
+        'time': {
+            title: '時間複雜度 (Time Complexity)',
+            desc: '用來衡量「演算法執行速度」隨著「資料量變大」而變慢的趨勢。我們通常用大 O 符號來表示。'
+        },
+        'nlogn': {
+            title: 'O(n log n)',
+            desc: '這是比較快的等級！當資料量 n 變大，它的時間雖然也會增加，但比 O(n²) 慢很多。Merge Sort、Heap Sort、Quick Sort(平均) 都屬此類。'
+        },
+        'bubble': {
+            title: 'Bubble Sort (氣泡排序)',
+            desc: '像氣泡一樣，比較相鄰兩個數字，大的往後換。效率：O(n²)，慢。'
+        },
+        'select': {
+            title: 'Selection Sort (選擇排序)',
+            desc: '每次把眼睛睜大，從剩餘數字中「選」一個最小的放前面。效率：O(n²)，慢。'
+        },
+        'merge': {
+            title: 'Merge Sort (合併排序)',
+            desc: '先切切切，切到最小，再排好合起來。效率：O(n log n)，快！是本題正解。'
+        },
+        'insert': {
+            title: 'Insertion Sort (插入排序)',
+            desc: '像打撲克牌理牌，拿一張新的插進已排好的位置。效率：O(n²)，慢。'
+        }
+    };
+
+    // Data for Demo
+    const demoData = {
+        'bubble': {
+            text: '左右互比，大的往右移...<br>要做非常多次交換。',
+            complexity: 'O(n²)',
+            style: 'tag-slow'
+        },
+        'selection': {
+            text: '掃描全場找最小，放到第一位...<br>不管資料如何都要掃完。',
+            complexity: 'O(n²)',
+            style: 'tag-slow'
+        },
+        'insertion': {
+            text: '拿起數字，插入前方已排好的位置...<br>萬一數字很小，要移動很多人。',
+            complexity: 'O(n²)',
+            style: 'tag-slow'
+        },
+        'merge': {
+            text: '切半、切半... 分別排序後再<br><strong>合併 (Merge)</strong> 回來。',
+            complexity: 'O(n log n)',
+            style: 'tag-fast'
+        }
+    };
+
+    // Keyword Highlight Function
+    function highlight(key) {
+        // Reset all highlights
+        document.querySelectorAll('[id^="txt-"]').forEach(el => {
+            el.classList.remove('question-highlight');
+        });
+        
+        // Remove active class from buttons
+        document.querySelectorAll('.key-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+
+        // Highlight specific text
+        const targetId = 'txt-' + key;
+        const targetEl = document.getElementById(targetId);
+        if(targetEl) {
+            targetEl.classList.add('question-highlight');
+        }
+
+        // Set Button Active
+        event.target.classList.add('active');
+
+        // Update Explanation
+        const data = keywordData[key];
+        document.getElementById('exp-title').textContent = data.title;
+        document.getElementById('exp-content').textContent = data.desc;
+    }
+
+    // Demo Function
+    function runDemo(type, btnElement) {
+        // Reset buttons
+        document.querySelectorAll('.demo-btn').forEach(btn => btn.classList.remove('active-demo'));
+        btnElement.classList.add('active-demo');
+
+        const data = demoData[type];
+        const output = document.getElementById('demo-output');
+        
+        output.innerHTML = `
+            <div style="font-size: 1.1rem; margin-bottom:10px;">${data.text}</div>
+            <div class="complexity-tag ${data.style}">平均複雜度：${data.complexity}</div>
+        `;
+    }
+
+    // Toggle Option Function
+    function toggleOption(id) {
+        const el = document.getElementById(id);
+        if (el.classList.contains('show')) {
+            el.classList.remove('show');
+        } else {
+            el.classList.add('show');
+        }
+    }
+
+    // Check Quiz Function
+    function checkQuiz(btn, isCorrect, msg) {
+        const parent = btn.parentElement;
+        const feedback = parent.nextElementSibling;
+
+        // Reset sibling buttons style
+        const siblings = parent.querySelectorAll('button');
+        siblings.forEach(b => {
+            b.classList.remove('correct', 'wrong');
+            b.disabled = true; // Disable after choice
+            b.style.opacity = '0.6';
+        });
+
+        // Set current button style
+        btn.style.opacity = '1';
+        if (isCorrect) {
+            btn.classList.add('correct');
+            feedback.style.color = 'var(--success-color)';
+            feedback.innerHTML = '✔ ' + msg;
+        } else {
+            btn.classList.add('wrong');
+            feedback.style.color = 'var(--danger-color)';
+            feedback.innerHTML = '✘ ' + msg;
+        }
+        feedback.style.display = 'block';
+    }
+
+    // Reveal Answer
+    function revealAnswer() {
+        const ans = document.getElementById('finalAnswer');
+        ans.style.display = 'block';
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+</script>
+
+</body>
+</html>

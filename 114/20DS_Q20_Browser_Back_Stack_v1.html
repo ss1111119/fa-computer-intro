@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DS_Q20_Browser_Back_Stack_v1</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #4f46e5;
+            --success-color: #16a34a;
+            --error-color: #dc2626;
+            --highlight-bg: #fef08a;
+            --text-main: #1f2937;
+            --text-light: #6b7280;
+            --bg-page: #f3f4f6;
+            --bg-card: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, "Microsoft JhengHei", sans-serif;
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding-bottom: 50px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* 標題區 */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .tag-q-num {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-top: 10px;
+        }
+
+        /* 卡片通用樣式 */
+        .card {
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border: 1px solid #e5e7eb;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            border-left: 4px solid var(--primary-color);
+            padding-left: 10px;
+            font-weight: bold;
+        }
+
+        /* 題目區 */
+        .question-text {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            line-height: 1.8;
+        }
+
+        .options-list {
+            list-style: none;
+            padding-left: 10px;
+        }
+
+        .options-list li {
+            margin-bottom: 8px;
+            padding: 8px;
+            background: #f9fafb;
+            border-radius: 6px;
+        }
+
+        /* 關鍵字高亮 */
+        .kw-span {
+            transition: background 0.3s;
+            padding: 0 4px;
+            border-radius: 4px;
+        }
+
+        .kw-highlight {
+            background-color: var(--highlight-bg);
+            font-weight: bold;
+            color: #854d0e;
+            border-bottom: 2px solid #eab308;
+        }
+
+        .keyword-btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            background: #e5e7eb;
+            color: var(--text-main);
+        }
+
+        .btn:hover {
+            background: #d1d5db;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+        .btn-primary:hover { background: #1d4ed8; }
+
+        .btn-danger {
+            background: var(--error-color);
+            color: white;
+        }
+
+        .definition-box {
+            background: #eff6ff;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            font-size: 0.95rem;
+        }
+
+        /* 白話翻譯 Accordion */
+        .accordion {
+            cursor: pointer;
+            padding: 15px;
+            width: 100%;
+            text-align: left;
+            border: none;
+            outline: none;
+            background-color: #f3f4f6;
+            border-radius: 8px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .accordion:after {
+            content: '+';
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .accordion.active:after {
+            content: '-';
+        }
+
+        .panel {
+            padding: 0 15px;
+            background-color: white;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.2s ease-out;
+            border-radius: 0 0 8px 8px;
+        }
+
+        .panel p {
+            margin: 15px 0;
+            color: var(--text-light);
+        }
+
+        /* Stack 模擬器 */
+        .simulator-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .browser-screen {
+            width: 100%;
+            height: 60px;
+            background: #fff;
+            border: 2px solid #333;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            position: relative;
+        }
+
+        .browser-screen::before {
+            content: '目前畫面';
+            position: absolute;
+            top: -25px;
+            left: 0;
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .stack-visual-container {
+            width: 200px;
+            height: 250px;
+            border-left: 4px solid #333;
+            border-right: 4px solid #333;
+            border-bottom: 4px solid #333;
+            border-radius: 0 0 8px 8px;
+            display: flex;
+            flex-direction: column-reverse; /* 讓新的元素從底部堆上去視覺上比較像真實堆疊，但為了符合 Push Down 概念，我們用 code 控制 */
+            justify-content: flex-start;
+            padding: 10px;
+            background: rgba(0,0,0,0.03);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stack-label {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .stack-item {
+            width: 100%;
+            height: 40px;
+            background: var(--primary-color);
+            color: white;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            animation: slideIn 0.3s ease-out;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* 選項解析 */
+        .option-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        @media (min-width: 600px) {
+            .option-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .option-card {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .option-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary-color);
+        }
+
+        .opt-header {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .opt-content {
+            display: none;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            padding-top: 10px;
+            border-top: 1px dashed #eee;
+        }
+
+        .opt-correct {
+            border-left: 5px solid var(--success-color);
+        }
+        .opt-wrong {
+            border-left: 5px solid var(--error-color);
+        }
+
+        .status-badge {
+            float: right;
+            font-size: 0.8rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+            color: white;
+        }
+
+        /* 測驗區 */
+        .quiz-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .quiz-options button {
+            margin-right: 10px;
+            margin-top: 5px;
+        }
+        .quiz-feedback {
+            margin-top: 8px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        /* 口訣區 */
+        .mnemonic-box {
+            background: #fffbeb;
+            border: 2px solid #fcd34d;
+            padding: 20px;
+            border-radius: 12px;
+        }
+
+        .mnemonic-title {
+            color: #b45309;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .pitfall-list li {
+            margin-left: 20px;
+            margin-bottom: 5px;
+            color: #4b5563;
+        }
+
+        /* 答案揭曉 */
+        .reveal-area {
+            text-align: center;
+            padding: 30px 0;
+        }
+
+        .answer-box {
+            display: none;
+            margin-top: 20px;
+            background: #dcfce7;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #22c55e;
+            animation: popIn 0.5s;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .big-letter {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--success-color);
+            display: block;
+            margin-bottom: 10px;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- A. 頁首區 -->
+    <header>
+        <h1>為什麼「瀏覽器返回上一頁」要用 Stack？</h1>
+        <p>資料結構 Data Structure（新手友善）</p>
+        <span class="tag-q-num">題號：20</span>
+    </header>
+
+    <!-- B. 題目區 -->
+    <div class="card">
+        <div class="section-title">題目</div>
+        <div class="question-text">
+            20. 下列哪一種結構最適合實作「<span id="kw-browser" class="kw-span">瀏覽器返回</span>上一頁」的功能？
+        </div>
+        <ul class="options-list">
+            <li>(A) <span id="kw-queue-opt" class="kw-span">Queue</span></li>
+            <li>(B) <span id="kw-stack-opt" class="kw-span">Stack</span></li>
+            <li>(C) Array</li>
+            <li>(D) Hash Table</li>
+        </ul>
+    </div>
+
+    <!-- C. 關鍵字互動 -->
+    <div class="card">
+        <div class="section-title">關鍵字解析（點擊按鈕）</div>
+        <div class="keyword-btn-group">
+            <button class="btn" onclick="highlight('browser')">瀏覽器返回</button>
+            <button class="btn" onclick="highlight('stack')">Stack</button>
+            <button class="btn" onclick="highlight('queue')">Queue</button>
+            <button class="btn" onclick="highlight('lifo')">LIFO</button>
+            <button class="btn" onclick="highlight('fifo')">FIFO</button>
+        </div>
+        <div class="definition-box" id="definition-display">
+            點擊上方按鈕，這裡會顯示白話解釋喔！
+        </div>
+    </div>
+
+    <!-- D. 白話翻譯 -->
+    <div class="card" style="padding: 0; overflow: hidden;">
+        <button class="accordion" onclick="toggleAccordion(this)">白話翻譯與考點（點擊展開）</button>
+        <div class="panel">
+            <p><strong>白話翻譯：</strong><br>「瀏覽器在你一頁一頁點進去後，按『返回』時，該用哪一種資料結構來記錄上一個畫面？」</p>
+            <p><strong>這題在考什麼：</strong><br>「生活情境如何對應資料結構特性」。你要判斷這個行為是「先進先出」還是「後進先出」。</p>
+        </div>
+    </div>
+
+    <!-- E. Stack 模擬互動 -->
+    <div class="card">
+        <div class="section-title">互動模擬實驗室</div>
+        <p style="text-align: center; margin-bottom: 20px; color: #666;">試著操作看看，觀察資料怎麼進出</p>
+        
+        <div class="simulator-area">
+            <div class="browser-screen" id="current-page">首頁 Home</div>
+            
+            <div class="controls">
+                <button class="btn btn-primary" onclick="simPush()">前往新頁面 (Push)</button>
+                <button class="btn" onclick="simPop()">返回上一頁 (Pop)</button>
+                <button class="btn btn-danger" onclick="simReset()">重置</button>
+            </div>
+
+            <div class="stack-visual-container" id="stack-container">
+                <!-- Stack Items will go here -->
+            </div>
+            <div class="stack-label">瀏覽器歷史紀錄 Stack (後進先出)</div>
+        </div>
+    </div>
+
+    <!-- F. 選項逐一解析 -->
+    <div class="card">
+        <div class="section-title">選項逐一解析（點擊卡片翻牌）</div>
+        <div class="option-grid">
+            <!-- Option A -->
+            <div class="option-card opt-wrong" onclick="toggleOption(this)">
+                <div class="opt-header">(A) Queue</div>
+                <div class="opt-content">
+                    <span class="status-badge" style="background: var(--error-color)">錯誤</span>
+                    <p><strong>Queue 是「排隊」！</strong><br>特色是 FIFO（先進先出）。如果瀏覽器用 Queue，按返回鍵會回到你「最早」看的那一頁，這不符合我們的習慣。</p>
+                </div>
+            </div>
+            <!-- Option B -->
+            <div class="option-card opt-correct" onclick="toggleOption(this)">
+                <div class="opt-header">(B) Stack</div>
+                <div class="opt-content">
+                    <span class="status-badge" style="background: var(--success-color)">正確</span>
+                    <p><strong>Stack 是「疊盤子」！</strong><br>特色是 LIFO（後進先出）。最後看過的頁面，會被放在最上面，按返回時第一個拿出來，完全符合瀏覽器邏輯。</p>
+                </div>
+            </div>
+            <!-- Option C -->
+            <div class="option-card opt-wrong" onclick="toggleOption(this)">
+                <div class="opt-header">(C) Array</div>
+                <div class="opt-content">
+                    <span class="status-badge" style="background: var(--error-color)">錯誤</span>
+                    <p>Array 只是「容器」，它把資料排排站，但沒有規定一定要從哪邊拿。題目問的是「行為邏輯」，Array 缺乏 LIFO 的強制性。</p>
+                </div>
+            </div>
+            <!-- Option D -->
+            <div class="option-card opt-wrong" onclick="toggleOption(this)">
+                <div class="opt-header">(D) Hash Table</div>
+                <div class="opt-content">
+                    <span class="status-badge" style="background: var(--error-color)">錯誤</span>
+                    <p>Hash Table 是為了「快速查找」（例如查字典）。瀏覽器上一頁不需要查找特定頁面，只需要回到「剛才那個」，所以不適合。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- G. 快速小測驗 -->
+    <div class="card">
+        <div class="section-title">3秒快速小測驗</div>
+        
+        <div class="quiz-item">
+            <p>1. Stack 的資料取出順序是？</p>
+            <div class="quiz-options">
+                <button class="btn" onclick="checkQuiz(this, false, '這是排隊(Queue)的特性喔！')">先進先出 (FIFO)</button>
+                <button class="btn" onclick="checkQuiz(this, true, '沒錯！像疊盤子一樣，最後放的先拿。')">後進先出 (LIFO)</button>
+            </div>
+            <div class="quiz-feedback"></div>
+        </div>
+
+        <div class="quiz-item">
+            <p>2. 瀏覽器「上一頁」通常是回到最近還沒關閉的頁面嗎？</p>
+            <div class="quiz-options">
+                <button class="btn" onclick="checkQuiz(this, true, '正確，這就是 Stack 的行為。')">是</button>
+                <button class="btn" onclick="checkQuiz(this, false, '不對喔，想想看你剛看完的網頁按返回是不是就回去了？')">否</button>
+            </div>
+            <div class="quiz-feedback"></div>
+        </div>
+
+        <div class="quiz-item">
+            <p>3. 如果改用 Queue (排隊) 來做返回功能，會發生什麼？</p>
+            <div class="quiz-options">
+                <button class="btn" onclick="checkQuiz(this, true, '沒錯！會回到遠古時代開的第一個分頁，超難用！')">會回到最早開啟的頁面</button>
+                <button class="btn" onclick="checkQuiz(this, false, 'Queue 是先進先出，不會先回到最近的頁面喔。')">會回到最近的頁面</button>
+            </div>
+            <div class="quiz-feedback"></div>
+        </div>
+    </div>
+
+    <!-- H. 口訣與陷阱 -->
+    <div class="card mnemonic-box">
+        <div class="mnemonic-title">★ 老師的私房筆記</div>
+        
+        <div style="margin-bottom: 15px;">
+            <strong>【記憶口訣】</strong>
+            <p style="font-size: 1.2rem; color: #1f2937; margin-top: 5px;">「最後來的，先回去」</p>
+        </div>
+
+        <div>
+            <strong>【常見陷阱】</strong>
+            <ul class="pitfall-list">
+                <li>看到「很多資料」就選 Array (Array 只是倉庫，沒規定進出順序)。</li>
+                <li>把 Queue 與 Stack 的順序搞反 (去超商排隊是 Queue，疊盤子是 Stack)。</li>
+                <li>以為 Hash Table 什麼都能做 (它是查資料快，不是存順序的)。</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- I. 正確答案揭曉 -->
+    <div class="reveal-area">
+        <button class="btn btn-primary" style="padding: 15px 30px; font-size: 1.1rem;" onclick="revealAnswer()">點我看正確答案</button>
+        
+        <div class="answer-box" id="final-answer">
+            <span class="big-letter">B</span>
+            <p><strong>一句話理由：</strong><br>瀏覽器返回上一頁是「最後進入的頁面先回來」，符合 Stack (LIFO) 後進先出的特性。</p>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // C. 關鍵字互動邏輯
+    function highlight(key) {
+        // 清除所有高亮
+        document.querySelectorAll('.kw-span').forEach(el => el.classList.remove('kw-highlight'));
+        
+        const display = document.getElementById('definition-display');
+        let text = "";
+
+        if (key === 'browser') {
+            document.getElementById('kw-browser').classList.add('kw-highlight');
+            text = "<strong>瀏覽器返回：</strong>就是你按左上角那個「←」箭頭。想一想，按下去是回到「最早」看的網頁，還是「剛剛才」看的網頁？";
+        } else if (key === 'stack') {
+            document.getElementById('kw-stack-opt').classList.add('kw-highlight');
+            text = "<strong>Stack (堆疊)：</strong>就像疊盤子或是疊書本。你要拿書時，一定是先拿「最後放上去」的那一本。<br>(特性：LIFO)";
+        } else if (key === 'queue') {
+            document.getElementById('kw-queue-opt').classList.add('kw-highlight');
+            text = "<strong>Queue (佇列)：</strong>就像排隊買飲料。先來的人先買，後來的人排後面。<br>(特性：FIFO)";
+        } else if (key === 'lifo') {
+            document.getElementById('kw-stack-opt').classList.add('kw-highlight'); // Stack也是LIFO
+            text = "<strong>LIFO (Last In First Out)：</strong>中文叫「後進先出」。最後進來的資料，最先被拿出去。";
+        } else if (key === 'fifo') {
+            document.getElementById('kw-queue-opt').classList.add('kw-highlight'); // Queue也是FIFO
+            text = "<strong>FIFO (First In First Out)：</strong>中文叫「先進先出」。最先進來的資料，最先被拿出去。";
+        }
+
+        display.innerHTML = text;
+    }
+
+    // D. Accordion 邏輯
+    function toggleAccordion(btn) {
+        btn.classList.toggle("active");
+        var panel = btn.nextElementSibling;
+        if (panel.style.maxHeight) {
+            panel.style.maxHeight = null;
+        } else {
+            panel.style.maxHeight = panel.scrollHeight + "px";
+        }
+    }
+
+    // E. 模擬器邏輯
+    let historyStack = ['Home']; // 初始狀態只有 Home，但在這個模擬中，Stack 存放的是「歷史紀錄」，目前頁面是獨立顯示
+    // 修正邏輯：為了更直觀，我們定義：
+    // 目前畫面 = current
+    // Stack = 被壓在下面的頁面 (Back History)
+    
+    let stackData = []; // 這是 Back Stack
+    let currentPage = "首頁 Home";
+    let pageCount = 0;
+    const pages = ["Page A", "Page B", "Page C", "Page D", "Page E"];
+
+    function updateVisuals() {
+        // 更新目前頁面文字
+        document.getElementById('current-page').innerText = currentPage;
+        
+        // 更新 Stack 視覺
+        const container = document.getElementById('stack-container');
+        container.innerHTML = ''; // 清空
+
+        // Stack 視覺化：由下往上堆疊
+        // 在 HTML flex-direction: column-reverse，所以 DOM 第一個是視覺最下面
+        // 我們依序 append
+        stackData.forEach(page => {
+            let div = document.createElement('div');
+            div.className = 'stack-item';
+            div.innerText = page;
+            container.appendChild(div);
+        });
+    }
+
+    function simPush() {
+        if (pageCount >= pages.length) {
+            alert("模擬器頁面用完囉！請重置。");
+            return;
+        }
+        
+        // 動作：把目前頁面推進 Stack，然後跳轉到新頁面
+        stackData.push(currentPage);
+        
+        // 產生新頁面
+        let newPage = pages[pageCount];
+        currentPage = newPage;
+        pageCount++;
+
+        updateVisuals();
+    }
+
+    function simPop() {
+        if (stackData.length === 0) {
+            alert("已經是第一頁了，不能再返回囉 (Stack Empty)！");
+            return;
+        }
+
+        // 動作：取出 Stack 最上面的頁面，變成目前頁面
+        let prevPage = stackData.pop();
+        currentPage = prevPage;
+        
+        // 為了模擬真實感，讓 pageCount 稍微退回 (非必要，但為了邏輯一致)
+        // 這裡簡化，不回推 pageCount，只管 Stack 行為
+        
+        updateVisuals();
+    }
+
+    function simReset() {
+        stackData = [];
+        currentPage = "首頁 Home";
+        pageCount = 0;
+        updateVisuals();
+    }
+
+    // F. 選項卡片翻牌
+    function toggleOption(card) {
+        const content = card.querySelector('.opt-content');
+        if (content.style.display === 'block') {
+            content.style.display = 'none';
+        } else {
+            content.style.display = 'block';
+        }
+    }
+
+    // G. 小測驗邏輯
+    function checkQuiz(btn, isCorrect, msg) {
+        const parent = btn.parentElement;
+        const feedback = parent.nextElementSibling;
+        
+        // 重置該題按鈕樣式
+        const buttons = parent.querySelectorAll('button');
+        buttons.forEach(b => {
+            b.style.background = '#e5e7eb';
+            b.style.color = '#1f2937';
+        });
+
+        // 設定當前按鈕樣式
+        if (isCorrect) {
+            btn.style.background = 'var(--success-color)';
+            btn.style.color = 'white';
+            feedback.style.color = 'var(--success-color)';
+            feedback.innerHTML = "✅ " + msg;
+        } else {
+            btn.style.background = 'var(--error-color)';
+            btn.style.color = 'white';
+            feedback.style.color = 'var(--error-color)';
+            feedback.innerHTML = "❌ " + msg;
+        }
+    }
+
+    // I. 揭曉答案
+    function revealAnswer() {
+        document.getElementById('final-answer').style.display = 'block';
+        // 自動捲動到底部
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+
+    // 初始化模擬器
+    updateVisuals();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NET_Q27_OSI_Router_Layer_v1</title>
+    <style>
+        :root {
+            --primary-color: #2563eb; /* 專業藍 */
+            --accent-color: #f97316;  /* 亮眼橘 */
+            --success-color: #16a34a; /* 正確綠 */
+            --error-color: #dc2626;   /* 錯誤紅 */
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+            --highlight: #fef08a;    /* 螢光筆黃 */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding-bottom: 40px;
+        }
+
+        /* --- Layout --- */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        /* --- Header --- */
+        header {
+            background: var(--primary-color);
+            color: white;
+            padding: 20px 16px;
+            border-radius: 0 0 16px 16px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+        }
+
+        header .subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header .badge {
+            background: rgba(255,255,255,0.2);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        /* --- Section Styling --- */
+        section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border: 1px solid #e2e8f0;
+        }
+
+        h2 {
+            font-size: 1.25rem;
+            color: var(--primary-color);
+            margin-bottom: 16px;
+            border-left: 4px solid var(--accent-color);
+            padding-left: 10px;
+        }
+
+        /* --- Question Card --- */
+        .question-box {
+            font-size: 1.15rem;
+            font-weight: 500;
+            margin-bottom: 20px;
+            line-height: 1.8;
+        }
+
+        .highlight-text {
+            background-color: transparent;
+            transition: background-color 0.3s;
+            padding: 0 2px;
+            border-radius: 2px;
+        }
+
+        .highlight-text.active {
+            background-color: var(--highlight);
+            font-weight: bold;
+            color: #000;
+            box-shadow: 0 0 0 2px var(--highlight);
+        }
+
+        /* --- Keywords Area --- */
+        .keyword-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .kw-btn {
+            background: #e0f2fe;
+            color: var(--primary-color);
+            border: 1px solid #bae6fd;
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .kw-btn:hover, .kw-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .term-explanation {
+            background: #f1f5f9;
+            padding: 12px;
+            border-radius: 8px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            font-size: 0.95rem;
+            color: var(--text-main);
+            border-left: 4px solid var(--text-sub);
+        }
+
+        /* --- Accordion (White Talk) --- */
+        .accordion-header {
+            width: 100%;
+            text-align: left;
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .accordion-content {
+            display: none;
+            padding: 16px;
+            border: 1px solid #cbd5e1;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            background: #fff;
+            color: var(--text-sub);
+        }
+
+        .accordion-content.show {
+            display: block;
+        }
+
+        /* --- OSI Layer Mapping --- */
+        .osi-container {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            max-width: 400px;
+            margin: 0 auto 20px auto;
+        }
+
+        .osi-layer {
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            background: #fff;
+            text-align: center;
+            border-radius: 4px;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .osi-layer.layer-target {
+            background: #fff7ed; /* Light orange */
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        .osi-layer.active {
+            background: var(--accent-color);
+            color: white;
+            transform: scale(1.02);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-color: var(--accent-color);
+        }
+
+        .device-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .device-btn {
+            background: #fff;
+            border: 2px solid var(--text-sub);
+            color: var(--text-sub);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .device-btn.active {
+            border-color: var(--accent-color);
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .mapping-info {
+            text-align: center;
+            margin-top: 10px;
+            font-weight: bold;
+            color: var(--primary-color);
+            min-height: 1.5em;
+        }
+
+        /* --- Option Cards --- */
+        .option-card {
+            border: 1px solid #e2e8f0;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .option-card:active {
+            transform: scale(0.99);
+        }
+
+        .option-header {
+            padding: 12px 16px;
+            background: #fff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+        }
+
+        .option-body {
+            padding: 12px 16px;
+            background: #f1f5f9;
+            display: none;
+            font-size: 0.9rem;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .option-body.correct {
+            background: #dcfce7;
+            color: #14532d;
+        }
+
+        .option-body.wrong {
+            background: #fee2e2;
+            color: #7f1d1d;
+        }
+
+        .status-tag {
+            font-size: 0.8rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        
+        .toggle-hint {
+            font-size: 0.8rem;
+            color: var(--primary-color);
+            text-decoration: underline;
+        }
+
+        /* --- Mini Quiz --- */
+        .quiz-item {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 15px;
+        }
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .quiz-options {
+            display: flex;
+            gap: 10px;
+        }
+        .quiz-btn {
+            padding: 6px 12px;
+            border: 1px solid #cbd5e1;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            flex: 1;
+        }
+        .quiz-result {
+            margin-top: 8px;
+            font-size: 0.9rem;
+            padding: 8px;
+            border-radius: 4px;
+            display: none;
+        }
+
+        /* --- Mnemonic Box --- */
+        .mnemonic-box {
+            background: #fffbeb;
+            border: 2px dashed #f59e0b;
+            padding: 16px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .mnemonic-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #b45309;
+            margin: 10px 0;
+        }
+
+        .pitfall-list {
+            text-align: left;
+            margin-top: 15px;
+            font-size: 0.95rem;
+        }
+        .pitfall-list li {
+            margin-bottom: 6px;
+            list-style-type: none;
+            position: relative;
+            padding-left: 20px;
+        }
+        .pitfall-list li::before {
+            content: "!";
+            position: absolute;
+            left: 0;
+            color: var(--error-color);
+            font-weight: bold;
+        }
+
+        /* --- Answer Reveal --- */
+        .reveal-section {
+            text-align: center;
+        }
+
+        .reveal-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+            transition: transform 0.2s;
+        }
+
+        .reveal-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .answer-box {
+            margin-top: 20px;
+            padding: 20px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 12px;
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        .answer-big {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* RWD Adjustments */
+        @media (max-width: 600px) {
+            header h1 { font-size: 1.3rem; }
+            .kw-btn { flex: 1 1 40%; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- A. 頁首區 -->
+        <header>
+            <h1>Router 在 OSI 哪一層？考試一定要會</h1>
+            <div class="subtitle">
+                <span>OSI Model 基礎觀念（新手友善）</span>
+                <span class="badge">題號：27</span>
+            </div>
+        </header>
+
+        <!-- B & C. 題目區與關鍵字互動 -->
+        <section>
+            <h2>題目解析</h2>
+            <div class="question-box">
+                27. 在 <span id="txt-osi" class="highlight-text">OSI 模型</span>中，<span id="txt-router" class="highlight-text">Router</span>（<span id="txt-router-cn" class="highlight-text">路由器</span>）主要工作在哪一層？
+            </div>
+            
+            <div class="keyword-buttons">
+                <button class="kw-btn" onclick="handleKeyword('osi', 'OSI 模型', '把網路通訊分成 7 層來理解與管理，是網路通訊的基礎架構。')">OSI 模型</button>
+                <button class="kw-btn" onclick="handleKeyword('router', 'Router / 路由器', '幫資料封包找「下一條路」的設備，就像是網路世界的交通警察。')">Router</button>
+                <button class="kw-btn" onclick="handleKeyword('ip', 'IP 位址', '每一台電腦在網路上的門牌號碼，Router 就是看這個送資料。')">IP 位址</button>
+                <button class="kw-btn" onclick="handleKeyword('link', '資料連結層', 'Data Link Layer，主要處理 MAC 位址，是 Switch (交換器) 的工作範圍。')">資料連結層</button>
+                <button class="kw-btn" onclick="handleKeyword('network', '網路層', 'Network Layer，負責處理 IP 位址與路徑選擇 (Routing)，是 Router 的家。')">網路層</button>
+                <button class="kw-btn" onclick="handleKeyword('transport', '傳輸層', 'Transport Layer，負責 TCP/UDP 連線，確保資料傳送品質，不是設備轉送層級。')">傳輸層</button>
+            </div>
+
+            <div id="term-display" class="term-explanation">
+                點擊上方關鍵字，這裡會顯示白話解釋喔！
+            </div>
+        </section>
+
+        <!-- D. 白話翻譯 -->
+        <section>
+            <div class="accordion-header" onclick="toggleAccordion('plain-text')">
+                <span>白話翻譯與考點（點我展開）</span>
+                <span>▼</span>
+            </div>
+            <div id="plain-text" class="accordion-content">
+                <p style="margin-bottom: 15px;"><strong>【白話翻譯】</strong><br>
+                「路由器（Router）在網路架構中，主要是在做『幫資料封包找路』這件事，那『找路』這功能歸在 OSI 的哪一層負責？」</p>
+                <p><strong>【這題在考什麼】</strong><br>
+                「你是否能把『設備功能（硬體）』正確對應到『OSI 層級（理論）』。」</p>
+            </div>
+        </section>
+
+        <!-- E. OSI 層級對照互動示意 -->
+        <section>
+            <h2>設備與層級對照</h2>
+            <p style="text-align: center; margin-bottom: 15px; color: var(--text-sub);">點擊下方設備，看看它對應哪一層</p>
+            
+            <div class="device-controls">
+                <button class="device-btn" onclick="showDeviceLayer('hub')">Hub</button>
+                <button class="device-btn" onclick="showDeviceLayer('switch')">Switch</button>
+                <button class="device-btn" onclick="showDeviceLayer('router')">Router</button>
+            </div>
+
+            <div class="osi-container">
+                <div class="osi-layer">7. 應用層 (Application)</div>
+                <div class="osi-layer">6. 表現層 (Presentation)</div>
+                <div class="osi-layer">5. 會議層 (Session)</div>
+                <div class="osi-layer">4. 傳輸層 (Transport)</div>
+                <div id="layer-3" class="osi-layer layer-target">3. 網路層 (Network)</div>
+                <div id="layer-2" class="osi-layer layer-target">2. 資料連結層 (Data Link)</div>
+                <div id="layer-1" class="osi-layer layer-target">1. 實體層 (Physical)</div>
+            </div>
+
+            <div id="mapping-msg" class="mapping-info">請選擇上方設備進行對照</div>
+        </section>
+
+        <!-- F. 選項逐一解析 -->
+        <section>
+            <h2>選項詳細解析</h2>
+            
+            <div class="option-card" onclick="toggleOption('opt-a')">
+                <div class="option-header">
+                    <span>(A) 資料連結層</span>
+                    <span class="toggle-hint">顯示解析</span>
+                </div>
+                <div id="opt-a" class="option-body wrong">
+                    <strong>✕ 錯誤</strong><br>
+                    這一層主要是 Switch (交換器) 在用的，它看的是 MAC 位址 (實體位址)，只管區網內的傳送。
+                </div>
+            </div>
+
+            <div class="option-card" onclick="toggleOption('opt-b')">
+                <div class="option-header">
+                    <span>(B) 網路層</span>
+                    <span class="toggle-hint">顯示解析</span>
+                </div>
+                <div id="opt-b" class="option-body correct">
+                    <strong>○ 正確！</strong><br>
+                    Router 的核心功能是「路由 (Routing)」，也就是根據 IP 位址幫封包找最佳路徑，這正是網路層 (Network Layer) 的定義。
+                </div>
+            </div>
+
+            <div class="option-card" onclick="toggleOption('opt-c')">
+                <div class="option-header">
+                    <span>(C) 傳輸層</span>
+                    <span class="toggle-hint">顯示解析</span>
+                </div>
+                <div id="opt-c" class="option-body wrong">
+                    <strong>✕ 錯誤</strong><br>
+                    這一層負責端到端的連線品質與流量控制 (如 TCP / UDP 協定)，不是 Router 轉送封包的主要層級。
+                </div>
+            </div>
+
+            <div class="option-card" onclick="toggleOption('opt-d')">
+                <div class="option-header">
+                    <span>(D) 應用層</span>
+                    <span class="toggle-hint">顯示解析</span>
+                </div>
+                <div id="opt-d" class="option-body wrong">
+                    <strong>✕ 錯誤</strong><br>
+                    這是最上層，直接接觸使用者與應用程式 (如 HTTP, FTP, Email)，不是網路設備的工作層。
+                </div>
+            </div>
+        </section>
+
+        <!-- G. 快速小測驗 -->
+        <section>
+            <h2>快速觀念檢測</h2>
+            
+            <div class="quiz-item">
+                <div class="quiz-question">1. 哪一個設備會看 IP 位址來決定路徑？</div>
+                <div class="quiz-options">
+                    <button class="quiz-btn" onclick="checkQuiz(this, 'correct', '沒錯！Router 就是看 IP 的。')">Router</button>
+                    <button class="quiz-btn" onclick="checkQuiz(this, 'wrong', '不對喔，Switch 看的是 MAC 位址。')">Switch</button>
+                </div>
+                <div class="quiz-result"></div>
+            </div>
+
+            <div class="quiz-item">
+                <div class="quiz-question">2. Switch (交換器) 主要工作在哪一層？</div>
+                <div class="quiz-options">
+                    <button class="quiz-btn" onclick="checkQuiz(this, 'wrong', '網路層是 Router 的地盤喔。')">網路層</button>
+                    <button class="quiz-btn" onclick="checkQuiz(this, 'correct', '正確！Switch 負責資料連結層。')">資料連結層</button>
+                </div>
+                <div class="quiz-result"></div>
+            </div>
+
+            <div class="quiz-item">
+                <div class="quiz-question">3. Router 的主要工作是負責建立 TCP 連線嗎？</div>
+                <div class="quiz-options">
+                    <button class="quiz-btn" onclick="checkQuiz(this, 'wrong', '陷阱題！TCP 連線是「傳輸層」的事，Router 只負責「轉送封包」。')">是</button>
+                    <button class="quiz-btn" onclick="checkQuiz(this, 'correct', '答對了！Router 只負責轉送，TCP 連線是電腦(主機)傳輸層的事。')">否</button>
+                </div>
+                <div class="quiz-result"></div>
+            </div>
+        </section>
+
+        <!-- H. 口訣與陷阱 -->
+        <section>
+            <h2>口訣與常見陷阱</h2>
+            <div class="mnemonic-box">
+                <p>【記憶口訣】</p>
+                <div class="mnemonic-text">「找路靠 IP，Router 在第三」</div>
+                <p>（第三層 ＝ 網路層）</p>
+            </div>
+
+            <ul class="pitfall-list">
+                <li><strong>陷阱 1：</strong>把 Router (L3) 和 Switch (L2) 層級搞混。記住：Switch 只有 MAC，Router 才有 IP。</li>
+                <li><strong>陷阱 2：</strong>看到「封包」就亂選傳輸層。傳輸層管的是「連線」，網路層管的是「路徑」。</li>
+                <li><strong>陷阱 3：</strong>OSI 七層順序不熟。請由下往上背：實體、資結、網路、傳輸...。</li>
+            </ul>
+        </section>
+
+        <!-- I. 正確答案揭曉 -->
+        <div class="reveal-section">
+            <button class="reveal-btn" onclick="revealAnswer()">點擊查看正確答案</button>
+            <div id="final-answer" class="answer-box">
+                <div class="answer-big">答案：(B)</div>
+                <p>一句話理由：Router 依 IP 位址決定封包路徑，屬於網路層 (Network Layer) 的核心功能。</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Script 邏輯區 -->
+    <script>
+        // C. 關鍵字互動
+        function handleKeyword(key, title, desc) {
+            // 重置所有高亮
+            document.querySelectorAll('.highlight-text').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.kw-btn').forEach(btn => btn.classList.remove('active'));
+            
+            // 設置按鈕狀態
+            event.target.classList.add('active');
+
+            // 根據關鍵字高亮對應文本
+            const map = {
+                'osi': ['txt-osi'],
+                'router': ['txt-router', 'txt-router-cn'],
+                'ip': [], // 題目無此字，僅顯示解釋
+                'link': [],
+                'network': [],
+                'transport': []
+            };
+
+            if (map[key]) {
+                map[key].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.classList.add('active');
+                });
+            }
+
+            // 更新解釋文字
+            const display = document.getElementById('term-display');
+            display.innerHTML = `<strong>${title}</strong>：${desc}`;
+            display.style.backgroundColor = '#fffbeb';
+            setTimeout(() => display.style.backgroundColor = '#f1f5f9', 300);
+        }
+
+        // D. Accordion Toggle
+        function toggleAccordion(id) {
+            const content = document.getElementById(id);
+            content.classList.toggle('show');
+        }
+
+        // E. OSI Layer Mapping
+        function showDeviceLayer(device) {
+            // 重置
+            document.querySelectorAll('.osi-layer').forEach(l => l.classList.remove('active'));
+            document.querySelectorAll('.device-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+
+            const msg = document.getElementById('mapping-msg');
+            
+            if (device === 'hub') {
+                document.getElementById('layer-1').classList.add('active');
+                msg.innerText = "Hub 是最笨的設備，只負責訊號放大，屬於 L1 實體層";
+            } else if (device === 'switch') {
+                document.getElementById('layer-2').classList.add('active');
+                msg.innerText = "Switch 認得 MAC 位址，負責區網交換，屬於 L2 資料連結層";
+            } else if (device === 'router') {
+                document.getElementById('layer-3').classList.add('active');
+                msg.innerText = "Router 認得 IP 位址，負責跨網找路，屬於 L3 網路層";
+            }
+        }
+
+        // F. Option Toggle
+        function toggleOption(id) {
+            const body = document.getElementById(id);
+            const parent = body.parentElement;
+            
+            // 簡單的展開收合，若要互斥展開可先關閉其他
+            if (body.style.display === 'block') {
+                body.style.display = 'none';
+                parent.querySelector('.toggle-hint').innerText = "顯示解析";
+            } else {
+                body.style.display = 'block';
+                parent.querySelector('.toggle-hint').innerText = "收合";
+            }
+        }
+
+        // G. Mini Quiz
+        function checkQuiz(btn, status, text) {
+            const parent = btn.parentElement.parentElement;
+            const resultBox = parent.querySelector('.quiz-result');
+            
+            // 鎖定按鈕避免連點 (簡單處理)
+            const buttons = parent.querySelectorAll('.quiz-btn');
+            buttons.forEach(b => {
+                b.disabled = true;
+                b.style.opacity = '0.6';
+            });
+            btn.style.opacity = '1';
+            btn.style.border = '2px solid #333';
+
+            resultBox.style.display = 'block';
+            if (status === 'correct') {
+                resultBox.style.background = '#dcfce7';
+                resultBox.style.color = '#14532d';
+                resultBox.innerHTML = `<strong>✅ 答對了！</strong> ${text}`;
+            } else {
+                resultBox.style.background = '#fee2e2';
+                resultBox.style.color = '#7f1d1d';
+                resultBox.innerHTML = `<strong>❌ 答錯囉！</strong> ${text}`;
+            }
+        }
+
+        // I. Reveal Answer
+        function revealAnswer() {
+            const box = document.getElementById('final-answer');
+            box.style.display = 'block';
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

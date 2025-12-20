@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>互動教學：佇列 (Queue) 與 FIFO</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+            --warning-color: #f1c40f;
+            --light-bg: #f8f9fa;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #eef2f3;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .header-note {
+            font-size: 0.8rem;
+            color: #666;
+            text-align: center;
+            border-bottom: 1px dashed #ccc;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        h1, h2, h3 {
+            color: var(--primary-color);
+        }
+
+        h2 {
+            border-left: 5px solid var(--accent-color);
+            padding-left: 10px;
+            margin-top: 30px;
+        }
+
+        /* Section Styling */
+        .section {
+            margin-bottom: 30px;
+            padding: 15px;
+            background: var(--light-bg);
+            border-radius: 8px;
+        }
+
+        /* Introduction */
+        .analogy-box {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .analogy-icon {
+            font-size: 3rem;
+            text-align: center;
+            min-width: 80px;
+        }
+
+        .highlight {
+            color: #d35400;
+            font-weight: bold;
+            background: #fff3cd;
+            padding: 2px 5px;
+            border-radius: 4px;
+        }
+
+        /* Quiz Area */
+        .question-box {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #fff;
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+        }
+
+        .options {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .option-btn {
+            flex: 1;
+            padding: 15px;
+            font-size: 1.2rem;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .option-btn:hover {
+            border-color: var(--accent-color);
+            background: #f0f8ff;
+        }
+
+        .option-btn.selected {
+            background: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-submit { background: var(--success-color); color: white; }
+        .btn-submit:hover { background: #219150; }
+        
+        .btn-hint { background: var(--warning-color); color: #333; }
+        .btn-hint:hover { background: #f39c12; }
+        
+        .btn-reset { background: #95a5a6; color: white; }
+        .btn-reset:hover { background: #7f8c8d; }
+
+        /* Feedback Area */
+        #feedback-area {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            animation: fadeIn 0.5s;
+        }
+
+        .correct-feedback {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .wrong-feedback {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        #hint-box {
+            margin-top: 10px;
+            font-style: italic;
+            color: #555;
+            min-height: 1.5em;
+        }
+
+        /* Visualization */
+        .queue-container {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            position: relative;
+            min-height: 100px;
+            border: 2px dashed #ccc;
+        }
+
+        .queue-item {
+            width: 50px;
+            height: 50px;
+            background: var(--accent-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-weight: bold;
+            border-radius: 5px;
+            position: relative;
+            flex-shrink: 0;
+            transition: all 0.5s ease;
+        }
+
+        .queue-label {
+            position: absolute;
+            bottom: -25px;
+            font-size: 0.8rem;
+            color: #666;
+            width: 100%;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .arrow-flow {
+            font-size: 20px;
+            color: #999;
+            margin: 0 5px;
+        }
+
+        .viz-controls {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .viz-btn {
+            background: #6c757d;
+            color: white;
+            padding: 5px 10px;
+            font-size: 0.9rem;
+        }
+
+        /* Comparison Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            background: white;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        /* Accordion */
+        details {
+            background: #fff;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+
+        summary {
+            font-weight: bold;
+            color: var(--primary-color);
+            list-style: none; /* Hide default triangle in some browsers */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        summary::after {
+            content: '+';
+            font-size: 1.2rem;
+        }
+        
+        details[open] summary::after {
+            content: '-';
+        }
+
+        /* Quick Quiz */
+        .quick-qa-item {
+            margin-bottom: 10px;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 4px solid var(--warning-color);
+        }
+        
+        .answer-hidden {
+            display: none;
+            margin-top: 5px;
+            color: var(--success-color);
+            font-weight: bold;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 600px) {
+            .options { flex-direction: column; }
+            .analogy-box { flex-direction: column; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-note">檔名建議：queue_fifo_true_false_q9.html</div>
+
+    <!-- 1. 教學導入 -->
+    <div class="section">
+        <h2>🛍️ 生活情境：超商排隊</h2>
+        <div class="analogy-box">
+            <div class="analogy-icon">🏪</div>
+            <div>
+                <p>想像你在超商排隊結帳，或是在餐廳領號碼牌：</p>
+                <ul>
+                    <li>這就是一個 <strong>佇列（Queue）</strong> 結構。</li>
+                    <li>它有兩個端點：<strong>前端（Front）</strong>與 <strong>後端（Rear）</strong>。</li>
+                    <li>新來的客人，一定從 <span class="highlight">後端加入（enqueue）</span>。</li>
+                    <li>最早來的客人，一定從 <span class="highlight">前端離開（dequeue）</span> 去結帳。</li>
+                </ul>
+                <p><strong>核心結論：</strong>先進來的先處理，這就是 <span class="highlight">FIFO (First-In First-Out)</span>。</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. & 3. 互動作答設計 -->
+    <div class="section">
+        <h2>📝 觀念挑戰</h2>
+        <div class="question-box">
+            9. 佇列（Queue）適合用來模擬「排隊」的行為，因此遵循「先進先出」（FIFO）。
+        </div>
+
+        <div class="options">
+            <div class="option-btn" id="optA" onclick="selectOption('A')">
+                (A) O <br><small>（正確）</small>
+            </div>
+            <div class="option-btn" id="optB" onclick="selectOption('B')">
+                (B) X <br><small>（錯誤）</small>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn-submit" onclick="submitAnswer()">送出答案</button>
+            <button class="btn-hint" onclick="showNextHint()">💡 看提示</button>
+            <button class="btn-reset" onclick="resetQuiz()">🔄 重作一次</button>
+        </div>
+
+        <div id="hint-box"></div>
+
+        <!-- 4. 送出後即時解析 -->
+        <div id="feedback-area">
+            <!-- JS will populate this -->
+        </div>
+    </div>
+
+    <!-- 5. 視覺化流程示意 -->
+    <div class="section">
+        <h2>👀 視覺化模擬</h2>
+        <p>資料流向示意：</p>
+        <div class="queue-container" id="viz-queue">
+            <div class="queue-item" id="itemA">A<div class="queue-label">Front</div></div>
+            <div class="arrow-flow">→</div>
+            <div class="queue-item" id="itemB">B</div>
+            <div class="arrow-flow">→</div>
+            <div class="queue-item" id="itemC">C<div class="queue-label">Rear</div></div>
+        </div>
+        <div style="margin-top: 5px; color: #666; font-size: 0.9rem;">註：箭頭表示排隊順序 (Next)</div>
+        
+        <div class="viz-controls">
+            <button class="viz-btn" onclick="vizEnqueue()">➕ 加入 (Enqueue D)</button>
+            <button class="viz-btn" onclick="vizDequeue()">➖ 離開 (Dequeue)</button>
+            <button class="viz-btn" onclick="vizReset()">🔄 重置</button>
+        </div>
+        <p id="viz-desc"><strong>A 最早進來，所以在最前面（Front），會最先出去。</strong></p>
+    </div>
+
+    <!-- 6. Queue vs Stack 對照表 -->
+    <div class="section">
+        <h2>📊 必考比較表：Queue vs Stack</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>資料結構</th>
+                    <th>中文</th>
+                    <th>存取規則</th>
+                    <th>生活譬喻</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="background-color: #e8f6f3; font-weight: bold;">
+                    <td>Queue</td>
+                    <td>佇列</td>
+                    <td style="color: var(--success-color);">FIFO（先進先出）</td>
+                    <td>排隊買票</td>
+                </tr>
+                <tr>
+                    <td>Stack</td>
+                    <td>堆疊</td>
+                    <td style="color: var(--error-color);">LIFO（後進先出）</td>
+                    <td>疊盤子、網頁上一頁</td>
+                </tr>
+            </tbody>
+        </table>
+        <p style="text-align: center; margin-top: 10px; font-weight: bold;">
+            <span style="color: var(--success-color);">排隊 → Queue → FIFO</span><br>
+            <span style="color: #e74c3c;">疊盤子 → Stack → LIFO</span>
+        </p>
+    </div>
+
+    <!-- 7. 記憶技巧 (Accordion) -->
+    <div class="section">
+        <h2>🧠 考前 3 秒記憶法</h2>
+        <details>
+            <summary>點擊展開口訣</summary>
+            <div style="margin-top: 10px;">
+                <p><strong>口訣：</strong>「排隊一定是先來先走」</p>
+                <hr style="border: 0; border-top: 1px solid #eee; margin: 10px 0;">
+                <p><strong>考試陷阱提醒：</strong></p>
+                <p>只要題目出現「排隊」、「先來先處理」、「Buffer（緩衝區）」等關鍵字，<br>
+                答案幾乎 100% 都是選 <strong>Queue (FIFO)</strong>。</p>
+            </div>
+        </details>
+    </div>
+
+    <!-- 8. 延伸快問快答 -->
+    <div class="section">
+        <h2>⚡ 快問快答 (點擊看答案)</h2>
+        
+        <div class="quick-qa-item" onclick="toggleAnswer('ans1')">
+            <strong>Q1：印表機接收多個列印工作時，通常是用哪一種資料結構？</strong>
+            <div id="ans1" class="answer-hidden">A：Queue (FIFO)。先按列印的文件要先印出來。</div>
+        </div>
+
+        <div class="quick-qa-item" onclick="toggleAnswer('ans2')">
+            <strong>Q2：電話客服系統依「來電順序」接聽，這屬於 FIFO 還是 LIFO？</strong>
+            <div id="ans2" class="answer-hidden">A：FIFO (先進先出)。先打進來的人先被服務。</div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // --- 變數設定 ---
+    let selectedOption = null;
+    let hintLevel = 0;
+    const hints = [
+        "提示 1：排在最前面的人，會不會最後才結帳？（想想超商排隊）",
+        "提示 2：誰先進佇列，誰就應該先離開（被服務）。",
+        "提示 3：Queue 就是排隊，排隊就是 FIFO。"
+    ];
+
+    // --- 答題功能 ---
+    function selectOption(opt) {
+        selectedOption = opt;
+        
+        // 視覺切換
+        document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
+        document.getElementById('opt' + opt).classList.add('selected');
+        
+        // 隱藏之前的回饋
+        document.getElementById('feedback-area').style.display = 'none';
+    }
+
+    function showNextHint() {
+        const hintBox = document.getElementById('hint-box');
+        if (hintLevel < hints.length) {
+            hintBox.innerHTML = hints[hintLevel];
+            hintLevel++;
+        } else {
+            hintBox.innerHTML = "提示已顯示完畢：Queue = FIFO (先進先出)。";
+        }
+    }
+
+    function submitAnswer() {
+        const feedbackArea = document.getElementById('feedback-area');
+        
+        if (!selectedOption) {
+            alert('請先選擇一個答案 (A 或 B)！');
+            return;
+        }
+
+        feedbackArea.style.display = 'block';
+
+        if (selectedOption === 'A') {
+            // 正確
+            feedbackArea.className = 'correct-feedback';
+            feedbackArea.innerHTML = `
+                <h3>✅ 判斷正確！答案是 (A) O</h3>
+                <strong>原因說明：</strong>
+                <ul>
+                    <li><strong>佇列（Queue）</strong> 就是用來模擬現實生活中的「排隊」行為。</li>
+                    <li>它嚴格遵循 <strong>先進先出（FIFO, First-In First-Out）</strong> 原則。</li>
+                    <li>先加入佇列的資料 (Front)，一定會最先被取出處理。</li>
+                </ul>
+            `;
+        } else {
+            // 錯誤
+            feedbackArea.className = 'wrong-feedback';
+            feedbackArea.innerHTML = `
+                <h3>❌ 判斷錯誤，答案應為 (A) O</h3>
+                <strong>常見誤解：</strong>
+                <ul>
+                    <li>你可能把 Queue 和 <strong>Stack (堆疊)</strong> 搞混了。</li>
+                    <li><strong>Stack</strong> 像是疊盤子，是 <strong>後進先出 (LIFO)</strong>。</li>
+                    <li>本題是「排隊」，所以必須是 <strong>先進先出 (FIFO)</strong>。</li>
+                </ul>
+            `;
+        }
+    }
+
+    function resetQuiz() {
+        selectedOption = null;
+        hintLevel = 0;
+        document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
+        document.getElementById('feedback-area').style.display = 'none';
+        document.getElementById('hint-box').innerHTML = '';
+        
+        // 順便重置視覺化
+        vizReset();
+    }
+
+    // --- 視覺化功能 ---
+    let queueData = ['A', 'B', 'C'];
+    
+    function renderQueue() {
+        const container = document.getElementById('viz-queue');
+        container.innerHTML = ''; // Clear
+
+        if(queueData.length === 0) {
+            container.innerHTML = '<div style="color:#999; padding:10px;">(佇列為空 Empty)</div>';
+            document.getElementById('viz-desc').innerText = "佇列目前沒有資料。";
+            return;
+        }
+
+        queueData.forEach((item, index) => {
+            const div = document.createElement('div');
+            div.className = 'queue-item';
+            div.innerText = item;
+            
+            // Front label
+            if (index === 0) {
+                div.innerHTML += '<div class="queue-label">Front</div>';
+            }
+            // Rear label
+            if (index === queueData.length - 1) {
+                div.innerHTML += '<div class="queue-label">Rear</div>';
+            }
+
+            container.appendChild(div);
+
+            // Add arrow if not last item
+            if (index < queueData.length - 1) {
+                const arrow = document.createElement('div');
+                arrow.className = 'arrow-flow';
+                arrow.innerText = '→';
+                container.appendChild(arrow);
+            }
+        });
+    }
+
+    function vizEnqueue() {
+        if (!queueData.includes('D')) {
+            queueData.push('D');
+            document.getElementById('viz-desc').innerText = "操作：enqueue(D) → D 從後端 (Rear) 加入了排隊隊伍。";
+            renderQueue();
+        } else {
+            alert('D 已經在隊伍裡囉！請先重置或進行 dequeue。');
+        }
+    }
+
+    function vizDequeue() {
+        if (queueData.length > 0) {
+            const removed = queueData.shift(); // Remove first
+            document.getElementById('viz-desc').innerText = `操作：dequeue() → 最早來的 ${removed} 從前端 (Front) 離開了。`;
+            renderQueue();
+        } else {
+            alert('佇列已經空了 (Empty)！無法再取出了。');
+        }
+    }
+
+    function vizReset() {
+        queueData = ['A', 'B', 'C'];
+        document.getElementById('viz-desc').innerHTML = "<strong>A 最早進來，所以在最前面（Front），會最先出去。</strong>";
+        renderQueue();
+    }
+
+    // --- 快問快答 ---
+    function toggleAnswer(id) {
+        const ans = document.getElementById(id);
+        if (ans.style.display === 'block') {
+            ans.style.display = 'none';
+        } else {
+            ans.style.display = 'block';
+        }
+    }
+
+    // 初始化渲染
+    renderQueue();
+
+</script>
+
+</body>
+</html>

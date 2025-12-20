@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>資料結構互動教學：陣列記憶體配置</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --success-color: #16a34a;
+            --error-color: #dc2626;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .filename-header {
+            font-size: 0.8rem;
+            color: #64748b;
+            text-align: center;
+            margin-bottom: 20px;
+            font-family: monospace;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* 卡片通用樣式 */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+        }
+
+        h2 {
+            border-left: 5px solid var(--primary-color);
+            padding-left: 12px;
+            color: var(--primary-color);
+            margin-top: 0;
+        }
+
+        h3 {
+            color: #334155;
+            margin-bottom: 12px;
+        }
+
+        /* 導入區塊 */
+        .analogy-box {
+            background-color: #eff6ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        
+        .highlight {
+            font-weight: bold;
+            color: var(--error-color);
+            background-color: #fef2f2;
+            padding: 0 4px;
+        }
+
+        /* 題目區 */
+        .question-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .options-group {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .option-btn {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .option-btn:hover {
+            background-color: #f1f5f9;
+            border-color: var(--primary-color);
+        }
+
+        .option-btn.selected {
+            background-color: #eff6ff;
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: opacity 0.2s;
+        }
+
+        .btn-submit { background-color: var(--primary-color); color: white; }
+        .btn-hint { background-color: #f59e0b; color: white; }
+        .btn-reset { background-color: #64748b; color: white; }
+        
+        button:hover { opacity: 0.9; }
+
+        /* 提示區 */
+        #hint-display {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #fffbeb;
+            border-left: 4px solid #f59e0b;
+            display: none;
+        }
+
+        /* 解析區 */
+        #result-area {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .result-correct { background-color: #dcfce7; border: 1px solid #86efac; }
+        .result-wrong { background-color: #fee2e2; border: 1px solid #fca5a5; }
+
+        .explanation-list {
+            margin-left: 20px;
+        }
+        
+        .formula {
+            font-family: monospace;
+            background: #e2e8f0;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        /* 視覺化記憶體 */
+        .memory-container {
+            display: flex;
+            justify-content: center;
+            overflow-x: auto;
+            padding: 20px 0;
+            align-items: flex-start;
+        }
+
+        .memory-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-right: -2px; /* 連接方塊 */
+            position: relative;
+        }
+
+        .block-box {
+            width: 70px;
+            height: 70px;
+            border: 2px solid #475569;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #e0f2fe;
+            font-weight: bold;
+            font-size: 1.2rem;
+            z-index: 1;
+        }
+
+        .block-index {
+            margin-bottom: 5px;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .block-addr {
+            margin-top: 5px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        .memory-arrow {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: var(--success-color);
+            font-weight: bold;
+        }
+
+        /* 表格區 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            border: 1px solid #cbd5e1;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f1f5f9;
+            color: #334155;
+        }
+
+        tr:nth-child(even) { background-color: #f8fafc; }
+
+        /* Accordion */
+        details {
+            background-color: #f1f5f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+
+        summary {
+            font-weight: bold;
+            color: var(--primary-color);
+            list-style: none; /* 隱藏預設箭頭 */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        summary::after {
+            content: '+';
+            font-size: 1.5rem;
+        }
+
+        details[open] summary::after {
+            content: '-';
+        }
+
+        /* 快問快答 */
+        .quick-qa-item {
+            margin-bottom: 15px;
+            border-bottom: 1px dashed #cbd5e1;
+            padding-bottom: 15px;
+        }
+
+        .qa-answer {
+            display: none;
+            margin-top: 10px;
+            color: var(--success-color);
+            font-weight: bold;
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 600px) {
+            .options-group { flex-direction: column; }
+            .memory-container { justify-content: flex-start; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="filename-header">檔名建議：array_contiguous_memory_true_false_q11.html</div>
+
+    <div class="container">
+
+        <!-- 1. 教學導入 -->
+        <section class="card" id="intro">
+            <h2>教學導入：記憶體配置</h2>
+            <div class="analogy-box">
+                <h3>🎒 置物櫃比喻</h3>
+                <p>想像學校的一排置物櫃。如果是<strong>陣列（Array）</strong>，就像是申請了「10 個<strong>連號</strong>的櫃子」。</p>
+                <ul>
+                    <li><strong>連續空間：</strong> 101, 102, 103... 中間不會斷開。</li>
+                    <li><strong>快速查找：</strong> 只要知道第一個櫃子是 101 號，你想找第 5 個櫃子，直接算 $101 + 5$ 就到了！</li>
+                </ul>
+            </div>
+            <p><strong>核心結論（考試關鍵）：</strong></p>
+            <p>陣列的所有元素，在記憶體中是<span class="highlight">連續（contiguous）配置</span>的。</p>
+            <p>正因如此，電腦可以用數學公式瞬間算出位置，這就是陣列能達到 <strong>O(1) 隨機存取</strong> 的原因。</p>
+        </section>
+
+        <!-- 2. 互動作答區 -->
+        <section class="card" id="quiz">
+            <h2>第 11 題：觀念是非題</h2>
+            <div class="question-text">
+                題目：陣列（Array）中的元素在記憶體中是連續排列的。
+            </div>
+
+            <div class="options-group">
+                <div class="option-btn" onclick="selectOption('A')" id="btn-A">
+                    (A) O（正確）
+                </div>
+                <div class="option-btn" onclick="selectOption('B')" id="btn-B">
+                    (B) X（錯誤）
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn-submit" onclick="submitAnswer()">送出答案</button>
+                <button class="btn-hint" onclick="showHint()">看提示</button>
+                <button class="btn-reset" onclick="resetQuiz()">重作一次</button>
+            </div>
+
+            <div id="hint-display"></div>
+        </section>
+
+        <!-- 3. 解析區 -->
+        <section class="card" id="result-area">
+            <!-- 內容由 JS 動態填入 -->
+        </section>
+
+        <!-- 4. 視覺化記憶體示意 -->
+        <section class="card" id="visualization">
+            <h2>視覺化記憶體示意圖</h2>
+            <p>假設這是一個整數陣列 <code>int arr[5]</code>，起始位址為 1000，每個整數佔 4 bytes：</p>
+            
+            <div class="memory-container">
+                <!-- Block 0 -->
+                <div class="memory-block">
+                    <span class="block-index">[0]</span>
+                    <div class="block-box">10</div>
+                    <span class="block-addr">1000</span>
+                </div>
+                <!-- Block 1 -->
+                <div class="memory-block">
+                    <span class="block-index">[1]</span>
+                    <div class="block-box">25</div>
+                    <span class="block-addr">1004</span>
+                </div>
+                <!-- Block 2 -->
+                <div class="memory-block">
+                    <span class="block-index">[2]</span>
+                    <div class="block-box">33</div>
+                    <span class="block-addr">1008</span>
+                </div>
+                <!-- Block 3 -->
+                <div class="memory-block">
+                    <span class="block-index">[3]</span>
+                    <div class="block-box">18</div>
+                    <span class="block-addr">1012</span>
+                </div>
+                <!-- Block 4 -->
+                <div class="memory-block">
+                    <span class="block-index">[4]</span>
+                    <div class="block-box">99</div>
+                    <span class="block-addr">1016</span>
+                </div>
+            </div>
+            
+            <div class="memory-arrow">
+                ↑ 位址連續，一格接一格，無空隙 ↑
+                <br>
+                <span style="color: #64748b; font-size: 0.9em;">(所以可以用公式直接算出位址！)</span>
+            </div>
+        </section>
+
+        <!-- 5. 陣列 vs 鏈結串列對照表 -->
+        <section class="card" id="comparison">
+            <h2>重點比較：必考題型</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>特性</th>
+                        <th>陣列 (Array)</th>
+                        <th>鏈結串列 (Linked List)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>記憶體配置</strong></td>
+                        <td style="color: var(--success-color); font-weight: bold;">連續 (Contiguous)</td>
+                        <td style="color: var(--error-color);">不連續 (分散)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>第 k 個元素存取</strong></td>
+                        <td><strong>O(1)</strong> (快)</td>
+                        <td>O(n) (慢，要從頭找)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>插入 / 刪除</strong></td>
+                        <td>慢 (因為要搬移資料)</td>
+                        <td>快 (只要改指標)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>是否有 Index</strong></td>
+                        <td>有 (可隨機存取)</td>
+                        <td>無 (只能循序存取)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- 6. 記憶技巧 -->
+        <section class="card" id="memory-tricks">
+            <h2>考前 3 秒記憶法</h2>
+            <details>
+                <summary>💡 口訣記憶（點擊展開）</summary>
+                <p style="font-size: 1.2rem; text-align: center; margin: 15px 0;">
+                    「陣列<strong>連在一起</strong>，才能<strong>直接跳</strong>」
+                </p>
+                <p>想像跳格子，格子連在一起你才知道第 5 格在哪；如果格子散落在操場各處（像 Linked List），你就得一個一個去找了。</p>
+            </details>
+            
+            <details>
+                <summary>⚠️ 考試陷阱提醒（點擊展開）</summary>
+                <p>如果題目出現關鍵字：</p>
+                <ul>
+                    <li>「記憶體中<strong>連續排列</strong>」</li>
+                    <li>「支援<strong>隨機存取 (Random Access)</strong>」</li>
+                    <li>「計算位址公式」</li>
+                </ul>
+                <p>👉 答案幾乎 100% 都是在考 <strong>Array (陣列)</strong>，千萬不要選成 Linked List。</p>
+            </details>
+        </section>
+
+        <!-- 7. 延伸快問快答 -->
+        <section class="card" id="quick-quiz">
+            <h2>⚡ 延伸快問快答</h2>
+            
+            <div class="quick-qa-item">
+                <p><strong>Q1：為什麼陣列能做到 O(1) 的時間存取？</strong></p>
+                <button onclick="toggleAnswer('ans1')">看解答</button>
+                <p id="ans1" class="qa-answer">因為記憶體是「連續」的，電腦可以直接用公式算位置，不用一個一個找。</p>
+            </div>
+
+            <div class="quick-qa-item">
+                <p><strong>Q2：哪一種資料結構的記憶體配置通常是「不連續」的？</strong></p>
+                <button onclick="toggleAnswer('ans2')">看解答</button>
+                <p id="ans2" class="qa-answer">鏈結串列 (Linked List)。它透過指標 (Pointer) 連接分散的記憶體區塊。</p>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        let selectedAns = null;
+        let hintLevel = 0;
+        const hints = [
+            "第一次提示：想一想，如果我宣告 int a[100]，為什麼電腦可以直接找到 a[50]？是不是因為它們排得很整齊？",
+            "第二次提示：觀察一下上面的圖示，記憶體位址 1000, 1004, 1008... 是不是一格接一格沒有中斷？",
+            "第三次提示（終極）：因為是「連續配置」，我們才能用 Index 直接算出記憶體位置。如果不連續，就需要像 Linked List 一樣存下一個人的地址了。"
+        ];
+
+        function selectOption(option) {
+            selectedAns = option;
+            // 清除之前的選擇樣式
+            document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
+            // 加入新的選擇樣式
+            document.getElementById('btn-' + option).classList.add('selected');
+        }
+
+        function showHint() {
+            const hintDisplay = document.getElementById('hint-display');
+            
+            if (hintLevel < hints.length) {
+                hintDisplay.style.display = 'block';
+                hintDisplay.innerHTML = `<strong>💡 ${hints[hintLevel]}</strong>`;
+                hintLevel++;
+            } else {
+                hintDisplay.innerHTML = `<strong>💡 ${hints[2]}</strong>`;
+            }
+        }
+
+        function submitAnswer() {
+            const resultArea = document.getElementById('result-area');
+            
+            if (!selectedAns) {
+                alert('請先選擇一個答案！');
+                return;
+            }
+
+            resultArea.style.display = 'block';
+
+            if (selectedAns === 'A') {
+                // 正確
+                resultArea.className = 'card result-correct';
+                resultArea.innerHTML = `
+                    <h3 style="color: var(--success-color);">✅ 判斷結果：正確！</h3>
+                    <div class="explanation-list">
+                        <p><strong>本題正確答案是 O (A)</strong></p>
+                        <p>原因說明：</p>
+                        <ul>
+                            <li>陣列在記憶體中絕對是<strong>連續配置</strong>的。</li>
+                            <li>正因為連續，電腦可以用公式秒算位址：<br>
+                                <span class="formula">第 k 個位址 = 起始位址 + k × 元素大小</span>
+                            </li>
+                            <li>因此存取時間複雜度為 <strong>O(1)</strong>。</li>
+                        </ul>
+                    </div>
+                `;
+            } else {
+                // 錯誤
+                resultArea.className = 'card result-wrong';
+                resultArea.innerHTML = `
+                    <h3 style="color: var(--error-color);">❌ 判斷結果：錯誤</h3>
+                    <div class="explanation-list">
+                        <p><strong>正確答案應該是 O (A)</strong></p>
+                        <p>常見錯誤提醒：</p>
+                        <ul>
+                            <li>選 X 的同學，通常是把「陣列」和「鏈結串列 (Linked List)」搞混了。</li>
+                            <li>鏈結串列才是「不連續」的，它需要指標指來指去。</li>
+                            <li><strong>陣列 (Array)</strong> 就像一排固定的座位，一定是連號且連續的喔！</li>
+                        </ul>
+                    </div>
+                `;
+            }
+        }
+
+        function resetQuiz() {
+            selectedAns = null;
+            hintLevel = 0;
+            document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
+            document.getElementById('hint-display').style.display = 'none';
+            document.getElementById('result-area').style.display = 'none';
+            // 捲動回題目區
+            document.getElementById('quiz').scrollIntoView({behavior: 'smooth'});
+        }
+
+        function toggleAnswer(id) {
+            const el = document.getElementById(id);
+            if (el.style.display === 'block') {
+                el.style.display = 'none';
+            } else {
+                el.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>

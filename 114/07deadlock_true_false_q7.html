@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>作業系統入門：死結 (Deadlock) 解析</title>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --success-color: #2ecc71;
+            --error-color: #e74c3c;
+            --warning-color: #f1c40f;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* 檔案名稱標示 */
+        .file-header {
+            font-size: 0.8em;
+            color: #777;
+            text-align: center;
+            margin-bottom: 20px;
+            font-family: monospace;
+        }
+
+        /* 通用卡片樣式 */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        h1, h2, h3 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+
+        h1 { text-align: center; border-bottom: 2px solid var(--primary-color); padding-bottom: 15px; }
+        h2 { font-size: 1.4em; border-left: 5px solid var(--primary-color); padding-left: 10px; }
+
+        /* 比喻區塊 */
+        .analogy-box {
+            background-color: #e8f4fd;
+            border-left: 5px solid #2980b9;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .definition-box {
+            background-color: #fff8e1;
+            border: 2px solid #ffe082;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        /* 互動答題區 */
+        .quiz-section { text-align: center; }
+        
+        .question-text {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            text-align: left;
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .options-group {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .option-btn {
+            display: inline-block;
+            padding: 15px 30px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.2em;
+            transition: all 0.3s;
+            user-select: none;
+        }
+
+        .option-btn:hover { border-color: var(--primary-color); background: #f0f8ff; }
+        .option-btn.selected { background-color: var(--primary-color); color: white; border-color: var(--primary-color); }
+        
+        input[type="radio"] { display: none; }
+
+        .btn-group { margin-top: 15px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;}
+        
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: opacity 0.2s;
+        }
+        
+        button:hover { opacity: 0.9; }
+        .btn-submit { background-color: var(--success-color); color: white; }
+        .btn-hint { background-color: var(--warning-color); color: #333; }
+        .btn-reset { background-color: #95a5a6; color: white; }
+        .btn-anim { background-color: var(--primary-color); color: white; font-weight: bold; margin-top: 10px; width: 100%;}
+
+        /* 提示與解析 */
+        .hint-box {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #fff3cd;
+            color: #856404;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .result-box {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: left;
+            display: none;
+        }
+        .result-correct { background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .result-wrong { background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+
+        .key-point-list li { margin-bottom: 8px; }
+
+        /* 互動動畫模擬 */
+        .simulation-area {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            background: #2c3e50;
+            padding: 30px;
+            border-radius: 8px;
+            margin-top: 20px;
+            color: white;
+            position: relative;
+            min-height: 250px;
+        }
+
+        .process-node {
+            width: 100px;
+            height: 100px;
+            background: #3498db;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+            transition: all 0.5s;
+        }
+
+        .resource-node {
+            width: 80px;
+            height: 80px;
+            background: #e67e22;
+            border-radius: 8px; /* 方塊代表資源 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: absolute;
+            z-index: 1;
+            transition: all 0.5s;
+        }
+
+        /* 資源位置 */
+        #r1 { top: 20px; left: 50%; transform: translateX(-50%); }
+        #r2 { bottom: 20px; left: 50%; transform: translateX(-50%); }
+
+        .arrow {
+            position: absolute;
+            height: 4px;
+            background-color: transparent;
+            transform-origin: left center;
+            transition: all 0.5s;
+        }
+        
+        /* 動畫狀態文字 */
+        .status-text {
+            font-size: 0.8em;
+            margin-top: 5px;
+            color: #ecf0f1;
+        }
+        
+        .deadlock-alert {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(231, 76, 60, 0.9);
+            color: white;
+            padding: 15px 30px;
+            font-size: 1.5em;
+            font-weight: bold;
+            border-radius: 10px;
+            display: none;
+            z-index: 10;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.1); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+
+        /* 延伸知識區塊 */
+        .conditions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .condition-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-left: 4px solid var(--primary-color);
+            border-radius: 4px;
+        }
+        .condition-card h4 { margin: 0 0 5px 0; color: #333; }
+        .condition-card small { color: #666; font-style: italic; }
+
+        /* Accordion */
+        details {
+            background-color: #f1f1f1;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        summary { cursor: pointer; font-weight: bold; padding: 5px; }
+        details p { padding: 10px; background: white; margin: 5px 0 0 0; border-radius: 3px; }
+
+        /* 常見誤區 */
+        .mistake-box {
+            border: 1px dashed #e74c3c;
+            padding: 15px;
+            border-radius: 8px;
+            background: #fff5f5;
+        }
+
+        /* 底部測驗 */
+        .mini-quiz { background: #eef2f3; padding: 20px; border-radius: 8px; }
+        .mini-quiz-option {
+            display: block;
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border: 1px solid #ccc;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .mini-quiz-option:hover { background: #e0e0e0; }
+        .correct-answer { background: #d4edda !important; border-color: #28a745 !important; }
+        .wrong-answer { background: #f8d7da !important; border-color: #dc3545 !important; }
+
+    </style>
+</head>
+<body>
+
+    <div class="file-header">檔名建議：deadlock_true_false_q7.html</div>
+
+    <div class="container">
+        <h1>作業系統：死結 (Deadlock) 互動教學</h1>
+
+        <!-- 1. 教學導入 -->
+        <div class="card">
+            <h2>1. 什麼是死結？</h2>
+            <div class="analogy-box">
+                <strong>生活比喻 - 「拿筷子吃飯」：</strong><br>
+                想像圓桌上有兩個行程（人），但桌上只有兩支筷子（資源）。<br>
+                <ul>
+                    <li>如果 A 拿了左手邊的一支筷子（持有資源）。</li>
+                    <li>同時 B 拿了右手邊的一支筷子（持有資源）。</li>
+                    <li>兩人都還想拿對方的筷子才能吃飯（請求資源）。</li>
+                    <li>結果：誰都不願意先放下手上的筷子，兩個人都永遠吃不到飯，卡在原地。</li>
+                </ul>
+            </div>
+            <div class="definition-box">
+                死結（Deadlock）是指多個行程彼此等待對方釋放資源，形成循環等待，導致全部都無法繼續執行。
+            </div>
+        </div>
+
+        <!-- 2. 互動作答設計 -->
+        <div class="card quiz-section">
+            <h2>2. 觀念檢測</h2>
+            <div class="question-text">
+                <strong>題目：</strong><br>
+                當兩個行程互相等待對方釋放資源，而都無法繼續時，這種現象稱為「死結（Deadlock）」。
+            </div>
+
+            <div class="options-group">
+                <label class="option-btn" onclick="selectOption('O')">
+                    <input type="radio" name="mainQuiz" value="O"> ☐ O (正確)
+                </label>
+                <label class="option-btn" onclick="selectOption('X')">
+                    <input type="radio" name="mainQuiz" value="X"> ☐ X (錯誤)
+                </label>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn-submit" onclick="checkAnswer()">送出答案</button>
+                <button class="btn-hint" onclick="showHint()">看提示 (<span id="hint-count">0</span>/3)</button>
+                <button class="btn-reset" onclick="resetQuiz()">重作一次</button>
+            </div>
+
+            <div id="hint-display" class="hint-box"></div>
+
+            <div id="result-display" class="result-box">
+                <!-- 解析內容將由 JS 插入 -->
+            </div>
+        </div>
+
+        <!-- 3. 互動動畫示意 -->
+        <div class="card">
+            <h2>3. 互動實驗室：死結是如何發生的？</h2>
+            <p>請點擊下方按鈕，觀察資源分配過程。</p>
+            
+            <div class="simulation-area">
+                <div class="deadlock-alert" id="deadlock-msg">Deadlock 發生！</div>
+
+                <!-- Process 1 -->
+                <div class="process-node" id="p1">
+                    <strong>P1</strong>
+                    <div class="status-text" id="p1-status">閒置</div>
+                </div>
+
+                <!-- Resource 1 -->
+                <div class="resource-node" id="r1">R1</div>
+
+                <!-- Resource 2 -->
+                <div class="resource-node" id="r2">R2</div>
+
+                <!-- Process 2 -->
+                <div class="process-node" id="p2">
+                    <strong>P2</strong>
+                    <div class="status-text" id="p2-status">閒置</div>
+                </div>
+            </div>
+
+            <button class="btn-anim" onclick="nextStep()">下一步 (目前的步驟：<span id="step-num">0</span>/4)</button>
+            <button class="btn-reset" onclick="resetSim()" style="margin-top: 10px; width: 100%;">重置模擬</button>
+        </div>
+
+        <!-- 4. 延伸知識：死結四要件 -->
+        <div class="card">
+            <h2>4. 死結發生的四個必要條件 (Coffman Conditions)</h2>
+            <p>只要這四個條件<b>同時存在</b>，死結就會發生。反之，只要<b>破壞其中一個</b>，就可以避免死結。</p>
+            
+            <div class="conditions-grid">
+                <div class="condition-card">
+                    <h4>1. 互斥</h4>
+                    <small>Mutual Exclusion</small>
+                    <p>資源一次只能被一個行程使用，不能共用。</p>
+                </div>
+                <div class="condition-card">
+                    <h4>2. 佔有且等待</h4>
+                    <small>Hold and Wait</small>
+                    <p>行程拿了一個資源，還在等別的資源，且不放手。</p>
+                </div>
+                <div class="condition-card">
+                    <h4>3. 不可搶奪</h4>
+                    <small>No Preemption</small>
+                    <p>資源不能被強制搶走，只能由持有者自願釋放。</p>
+                </div>
+                <div class="condition-card">
+                    <h4>4. 循環等待</h4>
+                    <small>Circular Wait</small>
+                    <p>P1 等 P2，P2 等 P3 ... Pn 等 P1，形成一個圈。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. 記憶技巧與常見錯誤 -->
+        <div class="card">
+            <h2>5. 考試秘籍</h2>
+            
+            <!-- Accordion -->
+            <details open>
+                <summary>💡 考前死結 10 秒口訣 (點擊收合)</summary>
+                <p>
+                    <strong>「互佔不循」</strong><br><br>
+                    1. <strong>互</strong>：互斥 (Mutual Exclusion)<br>
+                    2. <strong>佔</strong>：佔有且等待 (Hold & Wait)<br>
+                    3. <strong>不</strong>：不可搶奪 (No Preemption)<br>
+                    4. <strong>循</strong>：循環等待 (Circular Wait)<br>
+                    <br>
+                    <span style="color: #e74c3c;">★ 考試陷阱：題目看到「互相等待」、「都無法繼續」就是 Deadlock！</span>
+                </p>
+            </details>
+
+            <div class="mistake-box" style="margin-top: 20px;">
+                <h3>⚠️ 常見誤區 (Don't make these mistakes!)</h3>
+                <ul class="key-point-list">
+                    <li>
+                        <strong>誤區 1：把死結當成當機 (Crash/Infinite Loop)</strong><br>
+                        修正：當機通常是程式錯誤或硬體故障；死結是邏輯上的資源互卡，系統還活著但動不了。
+                    </li>
+                    <li>
+                        <strong>誤區 2：把死結當成飢餓 (Starvation)</strong><br>
+                        修正：死結是「大家都卡住」；飢餓是「只有我一直拿不到，別人還在順利執行」。
+                    </li>
+                    <li>
+                        <strong>誤區 3：以為只要有等待就一定是死結</strong><br>
+                        修正：必須要形成「圓圈（循環）」才是死結。如果只是排隊，那只是單純的等待。
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 6. 最後小測驗 -->
+        <div class="card">
+            <h2>6. 隨堂小測驗</h2>
+            <div class="mini-quiz">
+                <p><strong>題目：下列何者一定是死結的必要條件？</strong></p>
+                <div id="mini-options">
+                    <div class="mini-quiz-option" onclick="checkMiniQuiz(this, 'A')">(A) 循環等待（Circular Wait）</div>
+                    <div class="mini-quiz-option" onclick="checkMiniQuiz(this, 'B')">(B) 行程很多（Many processes）</div>
+                    <div class="mini-quiz-option" onclick="checkMiniQuiz(this, 'C')">(C) CPU 使用率很高（High CPU usage）</div>
+                    <div class="mini-quiz-option" onclick="checkMiniQuiz(this, 'D')">(D) 記憶體不足（Low memory）</div>
+                </div>
+                <div id="mini-feedback" style="margin-top: 15px; font-weight: bold;"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- 1. 互動答題區邏輯 ---
+        let currentHint = 0;
+        const hints = [
+            "關鍵字：互相等待、資源、無法繼續。",
+            "如果兩個行程都拿著一部分資源，又都不放手，會怎樣？",
+            "這就是 deadlock。"
+        ];
+
+        function selectOption(val) {
+            // 清除之前的選擇樣式
+            document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
+            // 加上選中樣式
+            event.currentTarget.classList.add('selected');
+            // 設定 Radio 值
+            document.querySelector(`input[name="mainQuiz"][value="${val}"]`).checked = true;
+        }
+
+        function showHint() {
+            const hintBox = document.getElementById('hint-display');
+            if (currentHint < hints.length) {
+                hintBox.style.display = 'block';
+                hintBox.innerHTML += `<p>提示 ${currentHint + 1}：${hints[currentHint]}</p>`;
+                currentHint++;
+                document.getElementById('hint-count').innerText = currentHint;
+            }
+        }
+
+        function checkAnswer() {
+            const selected = document.querySelector('input[name="mainQuiz"]:checked');
+            const resultBox = document.getElementById('result-display');
+
+            if (!selected) {
+                alert("請先選擇一個答案！");
+                return;
+            }
+
+            resultBox.style.display = 'block';
+            resultBox.innerHTML = ""; // 清空
+
+            if (selected.value === 'O') {
+                resultBox.className = "result-box result-correct";
+                resultBox.innerHTML = `
+                    <h3>🎉 答對了！結果：正確 (O)</h3>
+                    <p><strong>重點解析：</strong></p>
+                    <ul class="key-point-list">
+                        <li>這段敘述完全符合死結的三個關鍵特徵：</li>
+                        <li>1. <strong>互相等待</strong>（Mutually waiting）</li>
+                        <li>2. <strong>等待資源釋放</strong>（Wait for resource release）</li>
+                        <li>3. <strong>都無法繼續</strong>（No progress/Hang）</li>
+                    </ul>
+                    <hr style="border: 0; border-top: 1px solid #c3e6cb; margin: 10px 0;">
+                    <p><strong>💡 易混淆概念釐清：</strong></p>
+                    <p>死結 vs 飢餓 (Starvation)：<br>
+                    死結是「大家都卡死，沒人在動」；飢餓是「只有某人運氣不好一直搶輸，但系統其他人還在動」。</p>
+                `;
+            } else {
+                resultBox.className = "result-box result-wrong";
+                resultBox.innerHTML = `
+                    <h3>❌ 答錯了，請再想一想。</h3>
+                    <p>提示：題目描述的是兩個行程「互相卡住」的狀況。</p>
+                    <p>這不是單純的等待，而是沒有人能夠退讓，導致大家都動不了。</p>
+                `;
+            }
+        }
+
+        function resetQuiz() {
+            document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
+            const radios = document.querySelectorAll('input[name="mainQuiz"]');
+            radios.forEach(r => r.checked = false);
+            
+            document.getElementById('result-display').style.display = 'none';
+            document.getElementById('hint-display').style.display = 'none';
+            document.getElementById('hint-display').innerHTML = '';
+            currentHint = 0;
+            document.getElementById('hint-count').innerText = 0;
+        }
+
+        // --- 2. 互動動畫邏輯 ---
+        let simStep = 0;
+        
+        function nextStep() {
+            const p1 = document.getElementById('p1');
+            const p2 = document.getElementById('p2');
+            const r1 = document.getElementById('r1');
+            const r2 = document.getElementById('r2');
+            const msg = document.getElementById('deadlock-msg');
+            const stepDisplay = document.getElementById('step-num');
+            const p1Status = document.getElementById('p1-status');
+            const p2Status = document.getElementById('p2-status');
+
+            if (simStep >= 4) return; // 動畫結束
+
+            simStep++;
+            stepDisplay.innerText = simStep;
+
+            switch(simStep) {
+                case 1:
+                    // P1 取得 R1
+                    // 在視覺上我們可以用 border 顏色或文字表示持有
+                    r1.style.border = "4px solid #3498db"; // R1 變藍
+                    r1.innerText = "R1 (P1)";
+                    p1Status.innerText = "持有 R1";
+                    break;
+                case 2:
+                    // P2 取得 R2
+                    r2.style.border = "4px solid #3498db"; // R2 變藍
+                    r2.innerText = "R2 (P2)";
+                    p2Status.innerText = "持有 R2";
+                    break;
+                case 3:
+                    // P1 請求 R2
+                    // 畫一條紅線或改變 P1 狀態
+                    p1.style.border = "4px dashed #e74c3c";
+                    p1Status.innerHTML = "持有 R1<br><span style='color:#ff7675'>等待 R2...</span>";
+                    break;
+                case 4:
+                    // P2 請求 R1
+                    p2.style.border = "4px dashed #e74c3c";
+                    p2Status.innerHTML = "持有 R2<br><span style='color:#ff7675'>等待 R1...</span>";
+                    
+                    // 觸發 Deadlock
+                    setTimeout(() => {
+                        msg.style.display = "block";
+                        // 稍微改變背景色示意凍結
+                        document.querySelector('.simulation-area').style.background = "#222";
+                    }, 500);
+                    break;
+            }
+        }
+
+        function resetSim() {
+            simStep = 0;
+            document.getElementById('step-num').innerText = 0;
+            document.getElementById('deadlock-msg').style.display = "none";
+            document.querySelector('.simulation-area').style.background = "#2c3e50";
+
+            // Reset P1
+            const p1 = document.getElementById('p1');
+            p1.style.border = "none";
+            document.getElementById('p1-status').innerText = "閒置";
+
+            // Reset P2
+            const p2 = document.getElementById('p2');
+            p2.style.border = "none";
+            document.getElementById('p2-status').innerText = "閒置";
+
+            // Reset R1
+            const r1 = document.getElementById('r1');
+            r1.style.border = "none";
+            r1.innerText = "R1";
+
+            // Reset R2
+            const r2 = document.getElementById('r2');
+            r2.style.border = "none";
+            r2.innerText = "R2";
+        }
+
+        // --- 3. 底部測驗邏輯 ---
+        let miniQuizAnswered = false;
+
+        function checkMiniQuiz(element, answer) {
+            if (miniQuizAnswered) return; // 防止重複作答
+            
+            const feedback = document.getElementById('mini-feedback');
+            const options = document.querySelectorAll('.mini-quiz-option');
+
+            miniQuizAnswered = true;
+
+            if (answer === 'A') {
+                element.classList.add('correct-answer');
+                feedback.style.color = "#155724";
+                feedback.innerHTML = "⭕ 正確！「循環等待」是死結發生的四個必要條件之一。只有形成封閉的等待圓圈，才會真正鎖死。";
+            } else {
+                element.classList.add('wrong-answer');
+                // 標記正確答案
+                options[0].classList.add('correct-answer');
+                feedback.style.color = "#721c24";
+                feedback.innerHTML = "❌ 錯誤。正確答案是 (A)。(B)(C)(D) 只是系統繁忙或資源不足的現象，不一定會造成死結（Deadlock）。";
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CPU 排程：飢餓現象互動教學</title>
+    <style>
+        /* 基礎設定 */
+        :root {
+            --primary-color: #4a90e2;
+            --success-color: #2ecc71;
+            --warning-color: #f1c40f;
+            --danger-color: #e74c3c;
+            --text-color: #333;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .file-header {
+            font-size: 12px;
+            color: #888;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* 卡片樣式 */
+        .card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 25px;
+            margin-bottom: 25px;
+            border-left: 5px solid var(--primary-color);
+        }
+
+        h1, h2, h3 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+
+        h1 { text-align: center; font-size: 1.8rem; }
+        h2 { font-size: 1.4rem; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        h3 { font-size: 1.1rem; }
+
+        /* 導入區塊強調 */
+        .highlight-box {
+            background-color: #e8f4fd;
+            border-left: 5px solid #2980b9;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .definition {
+            font-weight: bold;
+            color: #c0392b;
+            font-size: 1.1em;
+        }
+
+        /* 作答區 */
+        .quiz-options label {
+            display: block;
+            padding: 10px;
+            margin: 5px 0;
+            background: #f8f9fa;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .quiz-options label:hover {
+            background: #e9ecef;
+        }
+
+        .quiz-options input[type="radio"] {
+            margin-right: 10px;
+        }
+
+        .btn-group {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: opacity 0.2s;
+        }
+
+        button:hover { opacity: 0.9; }
+
+        .btn-submit { background-color: var(--primary-color); color: white; }
+        .btn-hint { background-color: var(--warning-color); color: #333; }
+        .btn-reset { background-color: #95a5a6; color: white; }
+        .btn-sim { background-color: var(--danger-color); color: white; }
+
+        /* 提示與結果 */
+        #hint-area {
+            margin-top: 15px;
+            font-style: italic;
+            color: #d35400;
+        }
+
+        #result-area {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        .result-correct { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .result-wrong { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+        /* 表格樣式 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            color: #333;
+        }
+
+        tr:nth-child(even) { background-color: #f9f9f9; }
+
+        /* 老化機制 */
+        .aging-box {
+            background-color: #d4edda;
+            border-left: 5px solid #28a745;
+            padding: 15px;
+        }
+
+        /* 模擬區塊 */
+        .sim-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+            background: #333;
+            padding: 15px;
+            border-radius: 5px;
+            color: white;
+        }
+
+        .queue {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 5px;
+            border-bottom: 1px dashed #555;
+        }
+
+        .process {
+            width: 80px;
+            height: 30px;
+            line-height: 30px;
+            text-align: center;
+            border-radius: 3px;
+            font-size: 0.8rem;
+            animation: fadeIn 0.5s;
+        }
+
+        .high-p { background-color: var(--danger-color); }
+        .low-p { background-color: var(--primary-color); opacity: 0.5; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Accordion */
+        .accordion {
+            background-color: #eee;
+            color: #444;
+            cursor: pointer;
+            padding: 18px;
+            width: 100%;
+            text-align: left;
+            border: none;
+            outline: none;
+            transition: 0.4s;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .active, .accordion:hover {
+            background-color: #ccc;
+        }
+
+        .panel {
+            padding: 0 18px;
+            background-color: white;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.2s ease-out;
+            margin-bottom: 10px;
+        }
+
+        /* 快問快答 */
+        .qa-item {
+            margin-bottom: 10px;
+            cursor: pointer;
+            border-bottom: 1px dashed #ccc;
+            padding-bottom: 10px;
+        }
+        .qa-answer {
+            display: none;
+            color: var(--primary-color);
+            font-weight: bold;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="file-header">檔名建議：cpu_scheduling_starvation_mcq_q18.html</div>
+
+    <div class="container">
+        <h1>CPU 排程與飢餓 (Starvation)</h1>
+
+        <!-- 1. 教學導入 -->
+        <div class="card">
+            <h2>1. 什麼是飢餓 (Starvation)？</h2>
+            <p>想像你在熱門餐廳排隊，但餐廳規定：「只要有 VIP 客人來，VIP 可以直接插隊先吃。」</p>
+            <div class="highlight-box">
+                <p><strong>生活化比喻：排隊永遠輪不到你</strong></p>
+                <ul>
+                    <li>VIP (高優先權) 一直來，一直插隊。</li>
+                    <li>你 (低優先權) 即使在隊伍裡，卻只能眼睜睜看著別人先吃。</li>
+                    <li>結果：你可能餓到天荒地老，甚至永遠吃不到。</li>
+                </ul>
+            </div>
+            <p><strong>考試等級定義：</strong></p>
+            <p class="definition">飢餓 (Starvation) 是指：某些行程因排程策略設計，長時間無法獲得 CPU 資源。</p>
+        </div>
+
+        <!-- 2. 互動作答區 -->
+        <div class="card">
+            <h2>2. 隨堂測驗 (Q18)</h2>
+            <p><strong>題目：哪一種排程策略最容易造成「飢餓 (Starvation)」？</strong></p>
+            
+            <div class="quiz-options">
+                <label><input type="radio" name="q18" value="A"> (A) 先來先服務 (FCFS, First Come First Serve)</label>
+                <label><input type="radio" name="q18" value="B"> (B) 時間片輪轉 (Round Robin)</label>
+                <label><input type="radio" name="q18" value="C"> (C) 最短剩餘時間優先 (SRTF, Shortest Remaining Time First)</label>
+                <label><input type="radio" name="q18" value="D"> (D) 多層隊列排程 (Multilevel Queue)</label>
+            </div>
+
+            <div id="hint-area"></div>
+
+            <div class="btn-group">
+                <button class="btn-submit" onclick="checkAnswer()">送出答案</button>
+                <button class="btn-hint" onclick="showHint()">看提示</button>
+                <button class="btn-reset" onclick="resetQuiz()">重作一次</button>
+            </div>
+
+            <!-- 3. 解析區 -->
+            <div id="result-area"></div>
+        </div>
+
+        <!-- 4. 排程策略對照表 -->
+        <div class="card">
+            <h2>3. 各種排程策略風險比較</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>排程策略</th>
+                        <th>是否容易造成飢餓</th>
+                        <th>原因</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>FCFS (先來先服務)</td>
+                        <td><span style="color:green">否</span></td>
+                        <td>先來的必定先執行，雖然可能慢，但一定會輪到。</td>
+                    </tr>
+                    <tr>
+                        <td>Round Robin (輪轉)</td>
+                        <td><span style="color:green">否</span></td>
+                        <td>每個行程都有公平的「時間片」，不會被永久忽略。</td>
+                    </tr>
+                    <tr>
+                        <td>SRTF (最短剩餘時間)</td>
+                        <td><span style="color:orange">可能</span></td>
+                        <td>長工作可能一直被短工作插隊 (但通常會搭配 Aging 改善)。</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Multilevel Queue</strong></td>
+                        <td><span style="color:red; font-weight:bold">是 (最嚴重)</span></td>
+                        <td><strong>固定優先權</strong>，若上層隊列一直有工作，低層永遠排不到。</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 5. 老化機制 -->
+        <div class="card aging-box">
+            <h2>4. 關鍵救星：老化 (Aging)</h2>
+            <p>如果多層隊列排程 (Multilevel Queue) 這麼容易造成飢餓，該怎麼辦？</p>
+            <p><strong>解決方案：老化 (Aging)</strong></p>
+            <ul>
+                <li><strong>機制：</strong>隨著等待時間增加，系統會逐漸「提高」該行程的優先權。</li>
+                <li><strong>目的：</strong>避免飢餓 (Starvation)。</li>
+            </ul>
+            <p><em>注意：若題目強調「沒有老化機制」的多層隊列，那就是 100% 的飢餓陷阱題。</em></p>
+        </div>
+
+        <!-- 6. 情境模擬 -->
+        <div class="card">
+            <h2>5. 簡易情境模擬</h2>
+            <p>觀察：當高優先權隊列一直有新工作時，低優先權會發生什麼事？</p>
+            
+            <div class="sim-container">
+                <div class="queue" id="high-queue">
+                    <span>高優先權 (System)：</span>
+                    <div class="process high-p">Sys-Job1</div>
+                </div>
+                <div class="queue" id="low-queue">
+                    <span>低優先權 (User)：</span>
+                    <div class="process low-p" id="user-job">User-Job</div>
+                </div>
+                <div id="sim-status" style="margin-top: 10px; color: #f1c40f;">狀態：準備開始...</div>
+            </div>
+            
+            <div style="margin-top: 15px;">
+                <button class="btn-sim" onclick="runSimulation()">執行下一個排程</button>
+            </div>
+        </div>
+
+        <!-- 7. 記憶技巧 (Accordion) -->
+        <div class="card">
+            <h2>6. 考前 10 秒記憶法</h2>
+            
+            <button class="accordion">點我展開：記憶口訣與陷阱</button>
+            <div class="panel">
+                <br>
+                <h3>口訣：</h3>
+                <p style="font-size: 1.2em; color: var(--primary-color);">「固定分層、不會調整，下面一定餓」</p>
+                <hr>
+                <h3>考試陷阱提醒：</h3>
+                <p>題目只要問「最容易飢餓 (Starvation)」，且選項中有以下幾個，請依照順序優先選擇：</p>
+                <ol>
+                    <li><strong>Multilevel Queue (多層隊列)</strong> <span style="color:red">← 首選</span></li>
+                    <li>Priority Scheduling (優先權排程)</li>
+                    <li>SRTF (最短剩餘時間優先)</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- 8. 延伸快問快答 -->
+        <div class="card">
+            <h2>7. 延伸快問快答 (點擊看答案)</h2>
+            
+            <div class="qa-item" onclick="toggleQA(this)">
+                <strong>Q1：哪一種機制可以避免 starvation？</strong>
+                <div class="qa-answer">A: 老化 (Aging)</div>
+            </div>
+
+            <div class="qa-item" onclick="toggleQA(this)">
+                <strong>Q2：Round Robin 為什麼不容易造成 starvation？</strong>
+                <div class="qa-answer">A: 因為它強制每個行程輪流執行固定的時間片 (Time Quantum)，人人有機會。</div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- 互動問答邏輯 ---
+        const hints = [
+            "提示 1：哪一種排程，會讓某一類行程『永遠排在後面』？",
+            "提示 2：如果高優先權的行程一直存在，低優先權會怎樣？",
+            "提示 3：固定優先權、不會調整 → 最容易餓死。"
+        ];
+        let currentHint = 0;
+
+        function showHint() {
+            const hintArea = document.getElementById('hint-area');
+            if (currentHint < hints.length) {
+                hintArea.innerHTML += `<p>${hints[currentHint]}</p>`;
+                currentHint++;
+            } else {
+                alert("已經沒有更多提示囉！");
+            }
+        }
+
+        function checkAnswer() {
+            const options = document.getElementsByName('q18');
+            let selected = null;
+            for (let op of options) {
+                if (op.checked) selected = op.value;
+            }
+
+            const resultArea = document.getElementById('result-area');
+            
+            if (!selected) {
+                alert("請先選擇一個答案！");
+                return;
+            }
+
+            resultArea.style.display = "block";
+            
+            if (selected === 'D') {
+                resultArea.className = "result-correct";
+                resultArea.innerHTML = `
+                    <h3>🎉 答對了！</h3>
+                    <p><strong>正確選項解析：(D) 多層隊列排程（Multilevel Queue）</strong></p>
+                    <ul>
+                        <li>不同隊列有「固定優先權」。</li>
+                        <li>高優先權隊列 (如系統行程) 若長期佔用 CPU，低優先權隊列 (如使用者行程) 可能永遠得不到執行機會。</li>
+                        <li>因此這最容易造成「飢餓」。</li>
+                    </ul>
+                    <hr>
+                    <p><strong>其他選項為何錯誤？</strong></p>
+                    <ul>
+                        <li>(A) FCFS：雖然慢，但依照順序，最終一定會輪到，不會餓死。</li>
+                        <li>(B) Round Robin：強制輪流，每個行程都有時間片，不會被忽略。</li>
+                        <li>(C) SRTF：雖然可能因長工作被插隊而飢餓，但比起「固定優先權」的 Multilevel Queue，Multilevel Queue 的結構性飢餓更直接且常見。</li>
+                    </ul>
+                `;
+            } else {
+                resultArea.className = "result-wrong";
+                resultArea.innerHTML = `
+                    <h3>❌ 答錯了，再想一下！</h3>
+                    <p>你選擇了 (${selected})，但這不是最容易造成飢餓的選項。</p>
+                    <p>試著思考：哪一種排程是<strong>「完全看身分地位 (優先權)」</strong>且<strong>「不會變通」</strong>的？</p>
+                    <p>建議點擊「看提示」或參考上方的導入說明。</p>
+                `;
+            }
+        }
+
+        function resetQuiz() {
+            const options = document.getElementsByName('q18');
+            for (let op of options) op.checked = false;
+            
+            document.getElementById('result-area').style.display = "none";
+            document.getElementById('hint-area').innerHTML = "";
+            currentHint = 0;
+        }
+
+        // --- 模擬互動邏輯 ---
+        let simCount = 0;
+        function runSimulation() {
+            simCount++;
+            const highQueue = document.getElementById('high-queue');
+            const statusText = document.getElementById('sim-status');
+            const userJob = document.getElementById('user-job');
+
+            // 新增一個高優先權工作
+            const newJob = document.createElement('div');
+            newJob.className = 'process high-p';
+            newJob.innerText = `Job-${simCount}`;
+            highQueue.appendChild(newJob);
+
+            // 保持高優先權隊列不要太長 (視覺清理)
+            if(highQueue.children.length > 5) {
+                highQueue.removeChild(highQueue.children[1]); // 移除舊的
+            }
+
+            // 更新狀態
+            statusText.innerHTML = `
+                CPU 正在執行：<span style="color:#ff6b6b">高優先權 Job-${simCount}</span><br>
+                低優先權狀態：Wait Time = ${simCount}... <span style="color:red; font-weight:bold">STARVATION (飢餓中)</span>
+            `;
+            
+            // 讓低優先權工作看起來越來越透明 (快餓死了)
+            let opacity = Math.max(0.1, 0.5 - (simCount * 0.05));
+            userJob.style.opacity = opacity;
+        }
+
+        // --- Accordion 邏輯 ---
+        const acc = document.getElementsByClassName("accordion");
+        for (let i = 0; i < acc.length; i++) {
+            acc[i].addEventListener("click", function() {
+                this.classList.toggle("active");
+                const panel = this.nextElementSibling;
+                if (panel.style.maxHeight) {
+                    panel.style.maxHeight = null;
+                } else {
+                    panel.style.maxHeight = panel.scrollHeight + "px";
+                }
+            });
+        }
+
+        // --- 快問快答邏輯 ---
+        function toggleQA(element) {
+            const answer = element.querySelector('.qa-answer');
+            if (answer.style.display === "block") {
+                answer.style.display = "none";
+            } else {
+                answer.style.display = "block";
+            }
+        }
+    </script>
+</body>
+</html>

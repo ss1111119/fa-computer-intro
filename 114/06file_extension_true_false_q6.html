@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>作業系統觀念解析：副檔名的角色</title>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --secondary-color: #f5f7fa;
+            --success-color: #2ecc71;
+            --error-color: #e74c3c;
+            --text-color: #333;
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .file-name-header {
+            font-size: 0.8rem;
+            color: #666;
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            font-family: monospace;
+        }
+
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+
+        h1 {
+            text-align: center;
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+
+        /* Section Styling */
+        section {
+            margin-bottom: 40px;
+            padding: 20px;
+            background: #fff;
+            border: 1px solid #e1e4e8;
+            border-radius: var(--border-radius);
+        }
+
+        /* Intro Analogy */
+        .analogy-box {
+            background-color: #e8f4fd;
+            border-left: 5px solid var(--primary-color);
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .concept-highlight {
+            font-weight: bold;
+            color: #d35400;
+        }
+
+        /* Quiz Section */
+        .quiz-container {
+            background-color: #fafafa;
+            border: 2px solid #ddd;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .question {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .options {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 15px 30px;
+            border: 2px solid #ddd;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1.2rem;
+            background: white;
+        }
+
+        .option-label:hover {
+            border-color: var(--primary-color);
+            background-color: #f0f7ff;
+        }
+
+        input[type="radio"] {
+            margin-right: 10px;
+            transform: scale(1.5);
+        }
+
+        /* Buttons */
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }
+
+        .btn-submit {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        .btn-submit:hover { background-color: #357abd; }
+
+        .btn-hint {
+            background-color: #f39c12;
+            color: white;
+        }
+        .btn-hint:hover { background-color: #d68910; }
+
+        .btn-reset {
+            background-color: #95a5a6;
+            color: white;
+        }
+        .btn-reset:hover { background-color: #7f8c8d; }
+
+        /* Hints */
+        #hint-box {
+            margin-top: 15px;
+            font-style: italic;
+            color: #555;
+            background: #fff3cd;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        /* Feedback Section */
+        #feedback-section {
+            display: none;
+            margin-top: 20px;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-header {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .correct {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .incorrect {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .explanation {
+            background: #fff;
+            padding: 15px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        /* Comparison Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        /* OS Difference Box */
+        .os-diff-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .os-box {
+            flex: 1;
+            min-width: 250px;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        .win-box { background: #eef2f3; border-top: 4px solid #00adef; }
+        .linux-box { background: #fffbe6; border-top: 4px solid #f39c12; }
+
+        /* Accordion */
+        details {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+
+        summary {
+            background-color: #e9ecef;
+            padding: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            list-style: none; /* Hide default triangle */
+            position: relative;
+        }
+
+        summary:after {
+            content: "+";
+            position: absolute;
+            right: 20px;
+            font-size: 1.2rem;
+        }
+        
+        details[open] summary:after {
+            content: "-";
+        }
+
+        .accordion-content {
+            padding: 15px;
+            border-top: 1px solid #ccc;
+        }
+
+        /* Quick Quiz */
+        .quick-quiz-item {
+            margin-bottom: 15px;
+            border-bottom: 1px dashed #ccc;
+            padding-bottom: 15px;
+        }
+        .quick-quiz-btn {
+            background: #6c757d;
+            color: white;
+            padding: 5px 15px;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+        .quick-answer {
+            display: none;
+            margin-top: 10px;
+            color: var(--success-color);
+            font-weight: bold;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .options {
+                flex-direction: column;
+            }
+            .os-diff-container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="file-name-header">檔名建議：file_extension_true_false_q6.html</div>
+
+    <h1>作業系統入門：檔案與副檔名的關係</h1>
+
+    <!-- 1. 教學導入 -->
+    <section>
+        <h2>第一步：建立正確觀念</h2>
+        <div class="analogy-box">
+            <h3>🏷️ 標籤 vs 內容 🥫</h3>
+            <p>想像一個裝滿糖果的罐子：</p>
+            <ul>
+                <li><strong>檔案內容 (File Content)</strong>：就像罐子裡的「糖果」，這是真正儲存的資料。</li>
+                <li><strong>副檔名 (File Extension)</strong>：就像貼在罐子外面的「標籤」（寫著 Sugar）。</li>
+            </ul>
+            <p>如果你把「Sugar」的標籤撕掉，罐子裡的糖果會消失嗎？<strong>不會！</strong></p>
+            <p>如果你把裝鹽巴的罐子貼上「Sugar」的標籤，鹽巴會變甜嗎？<strong>不會！</strong></p>
+        </div>
+        <p class="concept-highlight" style="text-align: center; font-size: 1.1rem;">
+            核心觀念：副檔名只是給人或系統「參考」用的，並不決定檔案的本質。
+        </p>
+    </section>
+
+    <!-- 2. 互動作答區 -->
+    <section class="quiz-container">
+        <div class="question">
+            6. 在作業系統中，檔案（File）必須要有副檔名（如 .txt、.jpg）才能被使用。
+        </div>
+        
+        <form id="quizForm">
+            <div class="options">
+                <label class="option-label" for="optA">
+                    <input type="radio" name="answer" id="optA" value="A">
+                    (A) O (正確)
+                </label>
+                <label class="option-label" for="optB">
+                    <input type="radio" name="answer" id="optB" value="B">
+                    (B) X (錯誤)
+                </label>
+            </div>
+
+            <div id="hint-box"></div>
+
+            <div class="btn-group">
+                <button type="button" class="btn-submit" onclick="submitAnswer()">送出答案</button>
+                <button type="button" class="btn-hint" onclick="showHint()">看提示 (💡)</button>
+                <button type="button" class="btn-reset" onclick="resetQuiz()">重作一次</button>
+            </div>
+        </form>
+
+        <!-- 3. 解析區 -->
+        <div id="feedback-section">
+            <div id="result-header" class="result-header"></div>
+            
+            <div class="explanation">
+                <h3>重點解析</h3>
+                <ul>
+                    <li><strong>本題正確答案是：(B) X</strong></li>
+                    <li><strong>原因說明：</strong>
+                        <ul>
+                            <li>檔案能否被使用，取決於<strong>檔案內容是否完整</strong>以及使用者是否有<strong>權限 (Permission)</strong>。</li>
+                            <li>副檔名只是用來幫助作業系統判斷「預設要用哪個程式開啟」。</li>
+                            <li>如果檔案沒有副檔名，只要你強制用正確的軟體開啟它（例如用記事本開一個沒副檔名的文字檔），依然可以正常使用！</li>
+                        </ul>
+                    </li>
+                </ul>
+                <div style="background: #fff3cd; padding: 10px; border-radius: 5px; margin-top: 10px;">
+                    <strong>常見錯誤提醒：</strong>選 O 的同學通常誤以為沒有副檔名，作業系統就「讀不到」或「壞掉了」，這是錯誤的迷思喔！
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. 作業系統比較 -->
+    <section>
+        <h2>💡 不同作業系統的處理方式</h2>
+        <div class="os-diff-container">
+            <div class="os-box win-box">
+                <h3>🪟 Windows</h3>
+                <p><strong>習慣：</strong>高度依賴副檔名。</p>
+                <p><strong>行為：</strong>如果把 `.txt` 刪掉，Windows 會警告你「檔案可能無法使用」，並變成一張白紙圖示。</p>
+                <p><strong>真相：</strong>這只是因為 Windows <strong>不知道該用誰來開</strong>，並不是檔案壞了。</p>
+            </div>
+            <div class="os-box linux-box">
+                <h3>🐧 Linux / Unix</h3>
+                <p><strong>習慣：</strong>幾乎不看副檔名。</p>
+                <p><strong>行為：</strong>很多系統檔案完全沒有副檔名（如 `/bin/ls`）。</p>
+                <p><strong>真相：</strong>Linux 判斷檔案能不能執行，是看檔案屬性裡的<strong>「權限 (x, executable)」</strong>，與名字無關。</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. 概念對照表 -->
+    <section>
+        <h2>📊 概念對照表</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>項目</th>
+                    <th>是否與副檔名有關？</th>
+                    <th>備註</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>檔案是否真正存在</td>
+                    <td>❌ 否</td>
+                    <td>有內容就有檔案</td>
+                </tr>
+                <tr>
+                    <td>檔案內容是否完好</td>
+                    <td>❌ 否</td>
+                    <td>改檔名不會影響內容</td>
+                </tr>
+                <tr>
+                    <td>檔案是否可被使用/執行</td>
+                    <td>❌ 否</td>
+                    <td>主要看權限與內容格式</td>
+                </tr>
+                <tr>
+                    <td>預設開啟程式 (關聯)</td>
+                    <td>⭕ 是 (多半)</td>
+                    <td>方便系統幫你選工具</td>
+                </tr>
+                <tr>
+                    <td>使用者辨識用途</td>
+                    <td>⭕ 是</td>
+                    <td>讓人一眼看出是圖片還是文字</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- 6. 記憶技巧 -->
+    <section>
+        <details>
+            <summary>🧠 考試快速判斷口訣 (點擊展開)</summary>
+            <div class="accordion-content">
+                <h3>考試必殺技</h3>
+                <p style="font-size: 1.2rem; color: var(--primary-color); font-weight: bold;">
+                    「副檔名是提示，不是資格！」
+                </p>
+                <p><strong>解題技巧：</strong></p>
+                <ul>
+                    <li>只要題目看到<strong>「必須」</strong>要有副檔名<strong>「才能」</strong>使用 → <strong>99% 是錯的</strong>。</li>
+                    <li>想到 Linux 系統裡一堆沒有 `.exe` 的檔案照樣能跑，就能秒殺這題。</li>
+                </ul>
+            </div>
+        </details>
+    </section>
+
+    <!-- 7. 快問快答 -->
+    <section id="extra-quiz">
+        <h2>⚡ 延伸快問快答</h2>
+        
+        <div class="quick-quiz-item">
+            <p><strong>Q1：</strong>如果你把一張照片 `photo.jpg` 的副檔名改成 `.txt`，照片內容會變成文字嗎？</p>
+            <button class="quick-quiz-btn" onclick="toggleQuickAns('ans1')">看答案</button>
+            <div id="ans1" class="quick-answer">
+                不會！內容還是二進位的圖片資料，只是電腦會笨笨地用記事本打開它，然後顯示一堆亂碼。
+            </div>
+        </div>
+
+        <div class="quick-quiz-item">
+            <p><strong>Q2：</strong>在 Linux 系統中，要讓一個檔案可以被「執行」，關鍵是設定什麼？</p>
+            <button class="quick-quiz-btn" onclick="toggleQuickAns('ans2')">看答案</button>
+            <div id="ans2" class="quick-answer">
+                看「權限 (Permission)」。必須賦予檔案 `x` (executable) 的權限，它才能執行，而不是靠 `.exe` 副檔名。
+            </div>
+        </div>
+    </section>
+
+</div>
+
+<script>
+    // 狀態變數
+    let currentHintLevel = 0;
+    const hints = [
+        "提示 1：想一想，你用過的手機或 Linux 系統，裡面的檔案真的每一個都有 .txt 或 .jpg 嗎？",
+        "提示 2：副檔名主要是給「人」方便辨識，還是系統運作的絕對必要條件？",
+        "提示 3：如果檔案沒有副檔名，資料還是存在磁碟上對吧？既然存在，是不是只要用對方法就能打開？"
+    ];
+
+    // 顯示提示功能
+    function showHint() {
+        const hintBox = document.getElementById('hint-box');
+        if (currentHintLevel < hints.length) {
+            hintBox.style.display = "block";
+            // 累加顯示提示
+            hintBox.innerHTML += `<p>${hints[currentHintLevel]}</p>`;
+            currentHintLevel++;
+        } else {
+            alert("已經沒有更多提示囉！試著選選看吧！");
+        }
+    }
+
+    // 送出答案判斷
+    function submitAnswer() {
+        const selected = document.querySelector('input[name="answer"]:checked');
+        const feedbackSection = document.getElementById('feedback-section');
+        const resultHeader = document.getElementById('result-header');
+
+        if (!selected) {
+            alert("請先選擇一個答案 (A) 或 (B) 喔！");
+            return;
+        }
+
+        feedbackSection.style.display = "block";
+
+        if (selected.value === "B") {
+            // 正確
+            resultHeader.className = "result-header correct";
+            resultHeader.innerHTML = "🎉 答對了！觀念正確！";
+        } else {
+            // 錯誤
+            resultHeader.className = "result-header incorrect";
+            resultHeader.innerHTML = "⚠️ 答錯囉！請看下方解析";
+        }
+        
+        // 自動捲動到解析區
+        feedbackSection.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // 重置功能
+    function resetQuiz() {
+        // 清空選單
+        const radios = document.querySelectorAll('input[name="answer"]');
+        radios.forEach(radio => radio.checked = false);
+
+        // 隱藏解析與提示
+        document.getElementById('feedback-section').style.display = "none";
+        document.getElementById('hint-box').style.display = "none";
+        document.getElementById('hint-box').innerHTML = "";
+        
+        // 重置提示層級
+        currentHintLevel = 0;
+
+        // 隱藏快問快答
+        document.getElementById('ans1').style.display = "none";
+        document.getElementById('ans2').style.display = "none";
+
+        // 捲動回題目
+        document.querySelector('.quiz-container').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // 快問快答切換
+    function toggleQuickAns(id) {
+        const ans = document.getElementById(id);
+        if (ans.style.display === "block") {
+            ans.style.display = "none";
+        } else {
+            ans.style.display = "block";
+        }
+    }
+</script>
+
+</body>
+</html>

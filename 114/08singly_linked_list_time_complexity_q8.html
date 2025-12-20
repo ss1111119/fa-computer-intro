@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>單向鏈結串列時間複雜度教學</title>
+    <style>
+        :root {
+            --primary-color: #4A90E2;
+            --success-color: #2ECC71;
+            --error-color: #E74C3C;
+            --warning-color: #F39C12;
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --border-radius: 12px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .filename-hint {
+            font-size: 0.8rem;
+            color: #888;
+            text-align: center;
+            margin-bottom: 20px;
+            font-family: monospace;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+
+        h2 {
+            border-bottom: 2px solid var(--bg-color);
+            padding-bottom: 10px;
+            margin-top: 30px;
+        }
+
+        /* Analogy Section */
+        .analogy-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .analogy-box {
+            flex: 1;
+            min-width: 300px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .analogy-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .concept-highlight {
+            font-weight: bold;
+            color: var(--error-color);
+        }
+
+        /* Quiz Section */
+        .quiz-area {
+            background: #eef2f7;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .question {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .options label {
+            display: block;
+            margin: 10px 0;
+            padding: 15px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .options label:hover {
+            border-color: var(--primary-color);
+        }
+
+        .options input[type="radio"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+
+        .btn-group {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .btn-submit { background-color: var(--primary-color); color: white; }
+        .btn-hint { background-color: var(--warning-color); color: white; }
+        .btn-reset { background-color: #95a5a6; color: white; }
+
+        #hint-display {
+            margin-top: 15px;
+            padding: 10px;
+            background: #fff3cd;
+            color: #856404;
+            border-radius: 6px;
+            display: none;
+        }
+
+        /* Feedback Section */
+        #result-area {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-correct { background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .result-wrong { background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+
+        /* Visualization */
+        .visual-chain {
+            display: flex;
+            align-items: center;
+            overflow-x: auto;
+            padding: 20px 0;
+        }
+
+        .node-wrapper {
+            display: flex;
+            align-items: center;
+        }
+
+        .node {
+            width: 50px;
+            height: 50px;
+            background: white;
+            border: 3px solid var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            position: relative;
+            z-index: 2;
+        }
+
+        .arrow {
+            width: 40px;
+            height: 2px;
+            background: #333;
+            position: relative;
+        }
+
+        .arrow::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: -4px;
+            border: solid #333;
+            border-width: 0 2px 2px 0;
+            padding: 3px;
+            transform: rotate(-45deg);
+        }
+
+        .highlight-path {
+            background-color: #FAD02E; /* Highlight color */
+            border-color: #F39C12;
+            transition: background 0.5s;
+        }
+
+        /* Code Block */
+        pre {
+            background: #2d3436;
+            color: #dfe6e9;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+        }
+        
+        .code-comment { color: #81ecec; }
+        .code-keyword { color: #ff7675; }
+
+        /* Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        tr:nth-child(even) { background-color: #f2f2f2; }
+
+        /* Accordion */
+        details {
+            background: #eee;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+
+        summary {
+            padding: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            background: #e0e0e0;
+        }
+
+        summary:hover { background: #d0d0d0; }
+
+        .details-content {
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #ccc;
+        }
+
+        /* Quick Q&A */
+        .qa-item {
+            margin-bottom: 10px;
+        }
+        .qa-answer {
+            display: none;
+            margin-top: 5px;
+            padding: 10px;
+            background-color: #e8f4fd;
+            border-left: 4px solid var(--primary-color);
+            border-radius: 4px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="filename-hint">檔名建議：singly_linked_list_time_complexity_q8.html</div>
+
+    <div class="container">
+        <!-- 1. 教學導入 -->
+        <h1>單向鏈結串列 vs 陣列：存取速度大對決</h1>
+        
+        <div class="analogy-container">
+            <div class="analogy-box">
+                <span class="analogy-icon">📚 陣列 (Array)</span>
+                <p>就像圖書館的<strong>書架</strong>，每本書都有編號（Index）。</p>
+                <p>要找第 100 本書？根據編號<strong>一跳就到</strong>，不需要經過前面 99 本。</p>
+                <p>👉 <strong>隨機存取 (Random Access) OK!</strong></p>
+            </div>
+            <div class="analogy-box">
+                <span class="analogy-icon">📿 單向鏈結串列 (Linked List)</span>
+                <p>就像一串<strong>珠子</strong>，線串著線。</p>
+                <p>要找第 k 顆珠子？你只能拿著頭（Head），<strong>一顆一顆往下數</strong>。</p>
+                <p>👉 <span class="concept-highlight">不能直接跳</span>，必須慢慢走。</p>
+            </div>
+        </div>
+
+        <div style="background: #fff3cd; padding: 10px; border-left: 5px solid #ffc107; margin-bottom: 20px;">
+            <strong>核心結論：</strong>單向鏈結串列必須從頭節點（head）一路走到第 k 個，所以時間複雜度是 <strong>O(n)</strong>，不是 O(1)。
+        </div>
+
+        <!-- 2. 互動作答區 -->
+        <div class="quiz-area">
+            <div class="question">Q8. 在單向鏈結串列（Singly Linked List）中，存取第 k 個節點時，其時間複雜度為 O(1)。</div>
+            
+            <div class="options">
+                <label onclick="selectOption('A')">
+                    <input type="radio" name="answer" value="A"> (A) O （正確）
+                </label>
+                <label onclick="selectOption('B')">
+                    <input type="radio" name="answer" value="B"> (B) X （錯誤）
+                </label>
+            </div>
+
+            <div id="hint-display"></div>
+
+            <div class="btn-group">
+                <button class="btn-submit" onclick="submitAnswer()">送出答案</button>
+                <button class="btn-hint" onclick="showHint()">看提示 (<span id="hint-count">0</span>/3)</button>
+                <button class="btn-reset" onclick="resetQuiz()">重作一次</button>
+            </div>
+        </div>
+
+        <!-- 3. 解析與結果區 -->
+        <div id="result-area">
+            <h3 id="result-title"></h3>
+            <div id="result-content"></div>
+            
+            <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ccc;">
+            
+            <h4>重點解析：</h4>
+            <ul>
+                <li><strong>本題正確答案是 X (False)</strong></li>
+                <li>單向鏈結串列沒有索引 (Index)，無法隨機存取。</li>
+                <li>要到第 k 個位置，必須從 Head 開始，執行 k 次 next 指標移動。</li>
+                <li>最差情況（找最後一個）要走過全部 n 個節點，故為 <strong>O(n)</strong>。</li>
+            </ul>
+
+            <div style="background: #f8d7da; padding: 10px; border-radius: 5px; color: #721c24;">
+                <strong>⚠️ 常見錯誤來源：</strong> 把鏈結串列誤當成陣列，看到「第 k 個」就直覺以為是一瞬間 (O(1)) 就能拿到。
+            </div>
+        </div>
+
+        <!-- 4. 視覺化流程 -->
+        <div class="visual-section" style="margin-top: 30px;">
+            <h3>👁️ 視覺化：為什麼這麼慢？</h3>
+            <p>情境：我們要存取 <strong>Node 4</strong> (k=4)</p>
+            
+            <div class="visual-chain">
+                <!-- Head Label -->
+                <div style="margin-right: 10px; font-weight: bold; color: #666;">HEAD &rarr;</div>
+                
+                <div class="node-wrapper">
+                    <div class="node" id="n1">1</div>
+                    <div class="arrow"></div>
+                </div>
+                <div class="node-wrapper">
+                    <div class="node" id="n2">2</div>
+                    <div class="arrow"></div>
+                </div>
+                <div class="node-wrapper">
+                    <div class="node" id="n3">3</div>
+                    <div class="arrow"></div>
+                </div>
+                <div class="node-wrapper">
+                    <div class="node" id="n4" style="border-style: dashed;">4</div>
+                    <div class="arrow"></div>
+                </div>
+                <div class="node-wrapper">
+                    <div class="node" id="n5">5</div>
+                </div>
+            </div>
+            <p style="font-size: 0.9rem; color: #666;">
+                路徑：<span id="path-text">必須經過 Node1 &rarr; Node2 &rarr; Node3 &rarr; 才能到達 Node4</span>
+            </p>
+        </div>
+
+        <!-- 5. 程式碼對照 -->
+        <h3>💻 C 語言概念程式碼</h3>
+        <pre><code>Node* current = head;
+<span class="code-keyword">for</span> (int i = 0; i < k; i++) {
+    <span class="code-comment">// 必須跑 k 次迴圈才能到達目標</span>
+    current = current->next;
+}</code></pre>
+        <p>因為迴圈次數與 k (或 n) 成正比，所以是 <strong>O(n)</strong>。</p>
+
+        <!-- 6. 比較表 -->
+        <h3>📊 複雜度超級比一比</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>資料結構</th>
+                    <th>存取第 k 個元素</th>
+                    <th>隨機存取</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="font-weight: bold;">陣列 (Array)</td>
+                    <td style="color: green; font-weight: bold;">O(1)</td>
+                    <td>✅ 支援</td>
+                </tr>
+                <tr>
+                    <td>單向鏈結串列</td>
+                    <td style="color: red; font-weight: bold;">O(n)</td>
+                    <td>❌ 不支援</td>
+                </tr>
+                <tr>
+                    <td>雙向鏈結串列</td>
+                    <td style="color: red; font-weight: bold;">O(n)</td>
+                    <td>❌ 不支援</td>
+                </tr>
+            </tbody>
+        </table>
+        <p style="text-align: center; font-size: 0.9rem; color: #666;">只有陣列擁有連續記憶體空間，算一下記憶體位址就能直接跳過去。</p>
+
+        <!-- 7. 記憶技巧 -->
+        <details>
+            <summary>🧠 考前 5 秒記憶法 (點擊展開)</summary>
+            <div class="details-content">
+                <h4 style="margin-top:0;">口訣：「鏈結要走路，不能用跳的」</h4>
+                <p>想像你在玩大富翁：</p>
+                <ul>
+                    <li>陣列是<strong>任意門</strong>：想去哪直接傳送 (O(1))。</li>
+                    <li>鏈結串列是<strong>走路</strong>：要一步一步走格子 (O(n))。</li>
+                </ul>
+                <p><strong>考試陷阱：</strong>只要題目出現「Linked List」+「第 k 個」，答案幾乎一定<strong>不是 O(1)</strong>。</p>
+            </div>
+        </details>
+
+        <!-- 8. 延伸快問快答 -->
+        <h3 style="margin-top: 30px;">⚡ 延伸快問快答</h3>
+        
+        <div class="qa-item">
+            <button onclick="toggleQA('qa1')" style="background:#6c5ce7; color:white; width:100%; text-align:left;">Q1：哪一種資料結構支援 Random Access (隨機存取)？</button>
+            <div id="qa1" class="qa-answer">
+                <strong>A1：陣列 (Array)。</strong><br>
+                因為資料在記憶體中是連續排列的，可以用 Index 直接計算位址。
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <button onclick="toggleQA('qa2')" style="background:#6c5ce7; color:white; width:100%; text-align:left;">Q2：為什麼 Linked List 插入快，但存取慢？</button>
+            <div id="qa2" class="qa-answer">
+                <strong>A2：</strong><br>
+                <strong>插入快 (O(1))：</strong> 只要改變指標 (Next) 的指向，不需要像陣列一樣搬移大量資料。<br>
+                <strong>存取慢 (O(n))：</strong> 因為資料散落在記憶體各處，必須順著指標一顆一顆找。
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // 變數設定
+        let currentHintIndex = 0;
+        const hints = [
+            "第一次提示：你能不能直接用 index 跳到第 k 個節點？（像陣列那樣？）",
+            "第二次提示：單向鏈結串列有沒有『往前』的指標？還是只能單向走？",
+            "第三次提示：一定要從 head 開始，根據指標一個一個往下走喔。"
+        ];
+
+        // 選擇選項時的效果（非必要，但增加互動感）
+        function selectOption(val) {
+            // 目前僅處理選取樣式，實際判斷在 submitAnswer
+        }
+
+        // 顯示提示功能
+        function showHint() {
+            const hintDisplay = document.getElementById('hint-display');
+            const hintCountSpan = document.getElementById('hint-count');
+            
+            if (currentHintIndex < hints.length) {
+                // 如果是第一條提示，先清空內容
+                if (currentHintIndex === 0) hintDisplay.innerHTML = "";
+                
+                // 插入新提示
+                let newHint = document.createElement('div');
+                newHint.style.marginBottom = "5px";
+                newHint.innerText = hints[currentHintIndex];
+                hintDisplay.appendChild(newHint);
+                
+                hintDisplay.style.display = 'block';
+                currentHintIndex++;
+                hintCountSpan.innerText = currentHintIndex;
+            } else {
+                alert("已經沒有更多提示了！請嘗試作答。");
+            }
+        }
+
+        // 送出答案與解析
+        function submitAnswer() {
+            const radios = document.getElementsByName('answer');
+            let selectedValue = null;
+            
+            for (const radio of radios) {
+                if (radio.checked) {
+                    selectedValue = radio.value;
+                    break;
+                }
+            }
+
+            if (!selectedValue) {
+                alert("請先選擇一個答案！");
+                return;
+            }
+
+            const resultArea = document.getElementById('result-area');
+            const resultTitle = document.getElementById('result-title');
+            const resultContent = document.getElementById('result-content');
+
+            resultArea.style.display = 'block';
+
+            if (selectedValue === 'B') {
+                // 正確
+                resultArea.className = 'result-correct';
+                resultTitle.innerText = "🎉 答對了！";
+                resultContent.innerText = "觀念正確！單向鏈結串列的存取就是需要一步一步走。";
+                animatePath(); // 觸發視覺化動畫
+            } else {
+                // 錯誤
+                resultArea.className = 'result-wrong';
+                resultTitle.innerText = "❌ 答錯了，別氣餒！";
+                resultContent.innerText = "你可能選到了 O(1)。記住，只有陣列因為有 Index 才能 O(1)。鏈結串列像串珠子，不能跳著拿。";
+            }
+        }
+
+        // 重作一次
+        function resetQuiz() {
+            // 清除 Radio
+            const radios = document.getElementsByName('answer');
+            for (const radio of radios) radio.checked = false;
+
+            // 隱藏結果區
+            document.getElementById('result-area').style.display = 'none';
+            
+            // 重置提示
+            currentHintIndex = 0;
+            document.getElementById('hint-display').style.display = 'none';
+            document.getElementById('hint-display').innerText = "";
+            document.getElementById('hint-count').innerText = "0";
+
+            // 重置動畫
+            resetAnimation();
+        }
+
+        // 視覺化動畫效果
+        function animatePath() {
+            const nodes = ['n1', 'n2', 'n3', 'n4'];
+            let delay = 0;
+            
+            nodes.forEach((id, index) => {
+                setTimeout(() => {
+                    document.getElementById(id).classList.add('highlight-path');
+                }, delay);
+                delay += 500; // 每 0.5 秒亮一個
+            });
+        }
+
+        function resetAnimation() {
+            const nodes = ['n1', 'n2', 'n3', 'n4', 'n5'];
+            nodes.forEach(id => {
+                document.getElementById(id).classList.remove('highlight-path');
+            });
+        }
+
+        // 快問快答 Toggle
+        function toggleQA(id) {
+            const el = document.getElementById(id);
+            if (el.style.display === 'block') {
+                el.style.display = 'none';
+            } else {
+                el.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>

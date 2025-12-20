@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>互動教學：二元搜尋樹的排序規則</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+            --bg-color: #f5f7fa;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif;
+            line-height: 1.6;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .file-name-hint {
+            font-size: 0.8em;
+            color: #7f8c8d;
+            text-align: center;
+            margin-bottom: 20px;
+            font-family: monospace;
+        }
+
+        /* Card Styles */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid #e1e8ed;
+        }
+
+        h1, h2, h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 1.8em;
+            margin-bottom: 10px;
+        }
+
+        .highlight {
+            color: var(--error-color);
+            font-weight: bold;
+        }
+
+        .correct-text {
+            color: var(--success-color);
+            font-weight: bold;
+        }
+
+        /* Section 2: Intro */
+        .analogy-box {
+            background-color: #e8f4f8;
+            border-left: 5px solid var(--accent-color);
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .definition-box {
+            background-color: #fff8e1;
+            border: 1px solid #ffe0b2;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        /* Section 3: Quiz */
+        .question-box {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .options label {
+            display: block;
+            padding: 15px;
+            margin: 10px 0;
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1.1em;
+        }
+
+        .options label:hover {
+            background: #e9ecef;
+            border-color: var(--accent-color);
+        }
+
+        .options input[type="radio"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+
+        .btn-group {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        .btn-submit { background-color: var(--accent-color); color: white; }
+        .btn-submit:hover { background-color: #2980b9; }
+
+        .btn-hint { background-color: #f39c12; color: white; }
+        .btn-hint:hover { background-color: #d35400; }
+
+        .btn-retry { background-color: #95a5a6; color: white; display: none; }
+        .btn-retry:hover { background-color: #7f8c8d; }
+
+        .hint-area {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #fff3cd;
+            color: #856404;
+            border-radius: 6px;
+            display: none;
+        }
+
+        /* Section 4: Result */
+        .result-area {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .result-correct { background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .result-wrong { background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+
+        /* Section 5: Visualization */
+        .viz-controls {
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .rule-display {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 6px;
+            background: #eee;
+            display: inline-block;
+        }
+
+        #tree-svg {
+            width: 100%;
+            height: 350px;
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            user-select: none;
+        }
+
+        .node-circle {
+            fill: white;
+            stroke: var(--primary-color);
+            stroke-width: 2px;
+            cursor: pointer;
+            transition: fill 0.3s;
+        }
+        
+        .node-circle:hover {
+            fill: #e3f2fd;
+            stroke: var(--accent-color);
+        }
+
+        .node-text {
+            font-size: 14px;
+            font-weight: bold;
+            text-anchor: middle;
+            dominant-baseline: middle;
+            pointer-events: none;
+        }
+
+        .link {
+            stroke: #bdc3c7;
+            stroke-width: 2px;
+        }
+
+        .node-info-panel {
+            margin-top: 10px;
+            padding: 15px;
+            background: #fafafa;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            min-height: 80px;
+        }
+
+        /* Section 6: Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        /* Section 7: Accordion */
+        .accordion {
+            background-color: #eee;
+            color: #444;
+            cursor: pointer;
+            padding: 18px;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-size: 1.1em;
+            transition: 0.4s;
+            border-radius: 6px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .active, .accordion:hover {
+            background-color: #ccc; 
+        }
+
+        .panel {
+            padding: 0 18px;
+            background-color: white;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.2s ease-out;
+            border-radius: 0 0 6px 6px;
+        }
+
+        /* Section 8: Quick Q&A */
+        .qa-item {
+            margin-bottom: 10px;
+        }
+        .qa-question {
+            cursor: pointer;
+            color: var(--accent-color);
+            text-decoration: underline;
+            font-weight: bold;
+        }
+        .qa-answer {
+            display: none;
+            margin-top: 5px;
+            padding: 10px;
+            background: #f1f1f1;
+            border-left: 4px solid var(--success-color);
+        }
+
+        @media (max-width: 600px) {
+            .btn-group { flex-direction: column; }
+            h1 { font-size: 1.5em; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="file-name-hint">檔名建議：bst_left_right_rule_true_false_q10.html</div>
+
+    <div class="container">
+        <!-- Header -->
+        <h1>二元搜尋樹 (BST) 排序規則大破解</h1>
+
+        <!-- Section 2: Teaching Intro -->
+        <div class="card">
+            <h2>📚 觀念導入：大家來排隊</h2>
+            <div class="analogy-box">
+                <p>想像體育課排隊，老師指定了一位同學當「班長（根節點）」站在中間：</p>
+                <ul>
+                    <li>比班長<strong>矮（小）</strong>的同學，請通通站到班長的<strong>左邊</strong>。</li>
+                    <li>比班長<strong>高（大）</strong>的同學，請通通站到班長的<strong>右邊</strong>。</li>
+                </ul>
+                <p>這就是二元搜尋樹的生活化規則：<strong>「小的往左站，大的往右站」</strong>。</p>
+            </div>
+            
+            <div class="definition-box">
+                <h3>🎓 考試等級定義 (BST Property)</h3>
+                <p>在二元搜尋樹中，對任何一個節點（Node）而言：</p>
+                <ul>
+                    <li><strong>左子樹 (Left Subtree)</strong> 的所有鍵值，一定 <strong>小於 (<)</strong> 該節點的鍵值。</li>
+                    <li><strong>右子樹 (Right Subtree)</strong> 的所有鍵值，一定 <strong>大於 (>)</strong> 該節點的鍵值。</li>
+                </ul>
+                <p style="text-align: center; font-weight: bold; color: var(--primary-color);">
+                    結論：左 < 根 < 右
+                </p>
+            </div>
+        </div>
+
+        <!-- Section 3: Quiz -->
+        <div class="card" id="quiz-section">
+            <h2>📝 觀念挑戰題</h2>
+            <p class="question-box">10. 在二元搜尋樹（Binary Search Tree, BST）中，左子樹的所有鍵值一定都比右子樹的所有鍵值大。</p>
+            
+            <div class="options">
+                <label>
+                    <input type="radio" name="bst_q10" value="A"> (A) O (正確)
+                </label>
+                <label>
+                    <input type="radio" name="bst_q10" value="B"> (B) X (錯誤)
+                </label>
+            </div>
+
+            <div class="hint-area" id="hint-box"></div>
+
+            <div class="btn-group">
+                <button class="btn-submit" onclick="checkAnswer()">送出答案</button>
+                <button class="btn-hint" onclick="showHint()">💡 看提示 (<span id="hint-count">0</span>/3)</button>
+                <button class="btn-retry" onclick="resetQuiz()">🔄 重作一次</button>
+            </div>
+
+            <!-- Section 4: Result Analysis -->
+            <div id="result-box" class="result-area">
+                <h3 id="result-title"></h3>
+                <div id="result-content"></div>
+            </div>
+        </div>
+
+        <!-- Section 5: Interactive Visualization -->
+        <div class="card">
+            <h2>🌲 互動實驗室：親自檢查規則</h2>
+            <p>點擊下方的圓圈節點，看看它的左邊與右邊是否符合規則。</p>
+            
+            <div class="viz-controls">
+                <button onclick="toggleRuleDisplay()">切換顯示規則</button>
+                <div id="rule-text" class="rule-display" style="color: var(--success-color);">目前規則：正確（左小右大）</div>
+            </div>
+
+            <div style="position: relative;">
+                <svg id="tree-svg" viewBox="0 0 600 300">
+                    <!-- Lines (Edges) -->
+                    <!-- Root to L/R -->
+                    <line x1="300" y1="40" x2="150" y2="100" class="link" />
+                    <line x1="300" y1="40" x2="450" y2="100" class="link" />
+                    <!-- L to LL/LR -->
+                    <line x1="150" y1="100" x2="75" y2="160" class="link" />
+                    <line x1="150" y1="100" x2="225" y2="160" class="link" />
+                    <!-- R to RL/RR -->
+                    <line x1="450" y1="100" x2="375" y2="160" class="link" />
+                    <line x1="450" y1="100" x2="525" y2="160" class="link" />
+
+                    <!-- Nodes -->
+                    <!-- Root -->
+                    <g onclick="inspectNode(10)" class="node-group">
+                        <circle cx="300" cy="40" r="20" class="node-circle" id="node-10" />
+                        <text x="300" y="40" class="node-text">10</text>
+                    </g>
+                    <!-- Left Child -->
+                    <g onclick="inspectNode(5)" class="node-group">
+                        <circle cx="150" cy="100" r="20" class="node-circle" id="node-5" />
+                        <text x="150" y="100" class="node-text">5</text>
+                    </g>
+                    <!-- Right Child -->
+                    <g onclick="inspectNode(15)" class="node-group">
+                        <circle cx="450" cy="100" r="20" class="node-circle" id="node-15" />
+                        <text x="450" y="100" class="node-text">15</text>
+                    </g>
+                    <!-- LL -->
+                    <g onclick="inspectNode(2)" class="node-group">
+                        <circle cx="75" cy="160" r="20" class="node-circle" id="node-2" />
+                        <text x="75" y="160" class="node-text">2</text>
+                    </g>
+                    <!-- LR -->
+                    <g onclick="inspectNode(7)" class="node-group">
+                        <circle cx="225" cy="160" r="20" class="node-circle" id="node-7" />
+                        <text x="225" y="160" class="node-text">7</text>
+                    </g>
+                    <!-- RL -->
+                    <g onclick="inspectNode(12)" class="node-group">
+                        <circle cx="375" cy="160" r="20" class="node-circle" id="node-12" />
+                        <text x="375" y="160" class="node-text">12</text>
+                    </g>
+                    <!-- RR -->
+                    <g onclick="inspectNode(18)" class="node-group">
+                        <circle cx="525" cy="160" r="20" class="node-circle" id="node-18" />
+                        <text x="525" y="160" class="node-text">18</text>
+                    </g>
+                </svg>
+            </div>
+
+            <div id="node-info" class="node-info-panel">
+                <strong>狀態面板：</strong> 請點擊上方的圓圈節點進行驗證。
+            </div>
+        </div>
+
+        <!-- Section 6: Summary Table -->
+        <div class="card">
+            <h2>📊 BST 規則總整理</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>位置</th>
+                        <th>BST 規則</th>
+                        <th>關係</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>左子樹 (Left Subtree)</td>
+                        <td>全部鍵值 <strong>&lt;</strong> 根節點</td>
+                        <td>小的在左邊</td>
+                    </tr>
+                    <tr>
+                        <td>根節點 (Root)</td>
+                        <td>基準點</td>
+                        <td>中間</td>
+                    </tr>
+                    <tr>
+                        <td>右子樹 (Right Subtree)</td>
+                        <td>全部鍵值 <strong>&gt;</strong> 根節點</td>
+                        <td>大的在右邊</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p style="text-align: center; margin-top: 15px; font-weight: bold;">總結：「左小右大（Left smaller, Right larger）。」</p>
+        </div>
+
+        <!-- Section 7: Memory Trick -->
+        <div class="card">
+            <button class="accordion">🧠 考前 5 秒口訣 (點擊展開)</button>
+            <div class="panel">
+                <br>
+                <h3>口訣：</h3>
+                <p style="font-size: 1.2em; color: var(--accent-color); font-weight: bold;">
+                    「左邊小，右邊大；找資料，跑得快」
+                </p>
+                <hr>
+                <h3>⚠️ 考試陷阱提醒：</h3>
+                <p>題目非常喜歡故意把「左小右大」寫成「左大右小」來騙人（就像本題一樣），看到「左大」兩個字連在一起，警鈴就要響起來！</p>
+                <br>
+            </div>
+        </div>
+
+        <!-- Section 8: Quick Q&A -->
+        <div class="card">
+            <h2>⚡ 延伸快問快答</h2>
+            
+            <div class="qa-item">
+                <div class="qa-question" onclick="toggleQA(this)">Q1：BST 的中序走訪（In-order traversal）輸出會是什麼順序？(點擊看答案)</div>
+                <div class="qa-answer">
+                    <strong>答案：由小到大排序。</strong><br>
+                    解析：因為中序走訪順序是「左 -> 根 -> 右」，剛好符合 BST 「小 -> 中 -> 大」的特性。
+                </div>
+            </div>
+
+            <div class="qa-item">
+                <div class="qa-question" onclick="toggleQA(this)">Q2：BST 搜尋平均時間複雜度約是多少？(點擊看答案)</div>
+                <div class="qa-answer">
+                    <strong>答案：O(log n)。</strong><br>
+                    解析：每次比較都能排除掉一半的資料（往左或往右）。但在最差情況（變成一直線）時會退化成 O(n)。
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- 1. Quiz Logic ---
+        let currentHint = 0;
+        const hints = [
+            "BST 的口訣是：左小右大（Left smaller, Right larger）。",
+            "題目說『左比右大』，是不是把規則反過來了？",
+            "BST 正確規則：左 < 根 < 右。"
+        ];
+
+        function showHint() {
+            if (currentHint < hints.length) {
+                const hintBox = document.getElementById('hint-box');
+                hintBox.style.display = 'block';
+                // Add new hint
+                const p = document.createElement('p');
+                p.textContent = `提示 ${currentHint + 1}：${hints[currentHint]}`;
+                hintBox.appendChild(p);
+                
+                currentHint++;
+                document.getElementById('hint-count').textContent = currentHint;
+            } else {
+                alert("已顯示所有提示！");
+            }
+        }
+
+        function checkAnswer() {
+            const options = document.getElementsByName('bst_q10');
+            let selectedValue = null;
+            for (const option of options) {
+                if (option.checked) {
+                    selectedValue = option.value;
+                    break;
+                }
+            }
+
+            if (!selectedValue) {
+                alert("請先選擇一個答案 (A) 或 (B)！");
+                return;
+            }
+
+            const resultBox = document.getElementById('result-box');
+            const resultTitle = document.getElementById('result-title');
+            const resultContent = document.getElementById('result-content');
+            const btnSubmit = document.querySelector('.btn-submit');
+            const btnRetry = document.querySelector('.btn-retry');
+
+            resultBox.style.display = 'block';
+            
+            if (selectedValue === 'B') {
+                // Correct
+                resultBox.className = 'result-area result-correct';
+                resultTitle.textContent = '🎉 判斷正確！';
+                resultContent.innerHTML = `
+                    <h4>重點解析：</h4>
+                    <ul>
+                        <li>本題正確答案是 <strong>X</strong>。</li>
+                        <li>題幹錯在說「左子樹比右子樹大」。</li>
+                        <li><strong>正確應是：</strong>
+                            <ul>
+                                <li>左子樹鍵值 < 根節點鍵值</li>
+                                <li>右子樹鍵值 > 根節點鍵值</li>
+                            </ul>
+                        </li>
+                        <li>所以整體關係可寫成：<span class="correct-text">左 < 根 < 右</span></li>
+                    </ul>
+                    <p>⚠️ <strong>常見陷阱：</strong>把「左小右大」記反，是 BST 考試最常見的錯誤之一。</p>
+                `;
+            } else {
+                // Wrong
+                resultBox.className = 'result-area result-wrong';
+                resultTitle.textContent = '❌ 判斷錯誤';
+                resultContent.innerHTML = `
+                    <p>您選擇了 O (正確)，但這題的敘述其實是<strong>錯誤</strong>的。</p>
+                    <p>題目說「左子樹比右子樹大」，這違背了二元搜尋樹的基本定義。</p>
+                    <p>請記得口訣：<strong>「小的往左，大的往右」</strong>。</p>
+                    <p>請再試一次！</p>
+                `;
+            }
+
+            btnSubmit.style.display = 'none';
+            btnRetry.style.display = 'inline-block';
+        }
+
+        function resetQuiz() {
+            // Reset logic
+            const options = document.getElementsByName('bst_q10');
+            for (const option of options) option.checked = false;
+            
+            document.getElementById('result-box').style.display = 'none';
+            document.getElementById('hint-box').innerHTML = '';
+            document.getElementById('hint-box').style.display = 'none';
+            document.querySelector('.btn-submit').style.display = 'inline-block';
+            document.querySelector('.btn-retry').style.display = 'none';
+            currentHint = 0;
+            document.getElementById('hint-count').textContent = '0';
+        }
+
+        // --- 2. Visualization Logic ---
+        // Tree Data: Root: 10, L: 5, R: 15, LL: 2, LR: 7, RL: 12, RR: 18
+        const nodeData = {
+            10: { val: 10, leftMax: 7, rightMin: 12 },
+            5:  { val: 5,  leftMax: 2, rightMin: 7 },
+            15: { val: 15, leftMax: 12, rightMin: 18 },
+            2:  { val: 2,  leftMax: null, rightMin: null }, // Leaf
+            7:  { val: 7,  leftMax: null, rightMin: null }, // Leaf
+            12: { val: 12, leftMax: null, rightMin: null }, // Leaf
+            18: { val: 18, leftMax: null, rightMin: null }  // Leaf
+        };
+
+        let isCorrectRuleMode = true; // true = Left Small, Right Big
+
+        function toggleRuleDisplay() {
+            isCorrectRuleMode = !isCorrectRuleMode;
+            const ruleText = document.getElementById('rule-text');
+            const panel = document.getElementById('node-info');
+            
+            if (isCorrectRuleMode) {
+                ruleText.textContent = "目前規則：正確（左小右大）";
+                ruleText.style.color = "var(--success-color)";
+            } else {
+                ruleText.textContent = "目前規則：錯誤（左大右小）";
+                ruleText.style.color = "var(--error-color)";
+            }
+            // Reset panel
+            panel.innerHTML = "<strong>狀態面板：</strong> 規則已切換，請點擊節點重新驗證。";
+        }
+
+        function inspectNode(id) {
+            const data = nodeData[id];
+            const panel = document.getElementById('node-info');
+            
+            let html = `<strong>目前選中節點：<span style="font-size:1.2em; color:blue;">${data.val}</span></strong><br>`;
+            
+            if (data.leftMax === null && data.rightMin === null) {
+                html += `此為葉節點 (Leaf Node)，無子樹可比較。<br>`;
+                html += `<span style="color:green;">✔ 符合定義 (無違反)</span>`;
+            } else {
+                // Determine text based on subtree existence
+                const leftText = data.leftMax !== null ? data.leftMax : "無";
+                const rightText = data.rightMin !== null ? data.rightMin : "無";
+
+                html += `左子樹 (Max): ${leftText} | 右子樹 (Min): ${rightText}<br>`;
+                
+                if (isCorrectRuleMode) {
+                    // Check logic for Correct Rule (Left < Node < Right)
+                    // Simplified visual check logic for this specific tree structure
+                    html += `驗證規則 (左 < ${data.val} < 右)：`;
+                    html += `<span style="color:green; font-weight:bold;">✔ 符合！</span>`;
+                    html += `<br><small>(正確規則：左邊都比 ${data.val} 小，右邊都比 ${data.val} 大)</small>`;
+                } else {
+                    // Check logic for Incorrect Rule (Left > Node > Right)
+                    html += `驗證規則 (左 > ${data.val} > 右)：`;
+                    html += `<span style="color:red; font-weight:bold;">✘ 不符合！</span>`;
+                    html += `<br><small>(錯誤原因：${leftText} 沒有比 ${data.val} 大，且 ${rightText} 沒有比 ${data.val} 小)</small>`;
+                }
+            }
+            panel.innerHTML = html;
+        }
+
+        // --- 3. Accordion Logic ---
+        const acc = document.getElementsByClassName("accordion");
+        for (let i = 0; i < acc.length; i++) {
+            acc[i].addEventListener("click", function() {
+                this.classList.toggle("active");
+                var panel = this.nextElementSibling;
+                if (panel.style.maxHeight) {
+                    panel.style.maxHeight = null;
+                } else {
+                    panel.style.maxHeight = panel.scrollHeight + "px";
+                } 
+            });
+        }
+
+        // --- 4. Quick Q&A Logic ---
+        function toggleQA(element) {
+            const answer = element.nextElementSibling;
+            if (answer.style.display === "block") {
+                answer.style.display = "none";
+            } else {
+                answer.style.display = "block";
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>遞迴 (Recursion) 概念互動教學</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --accent-color: #e67e22;
+            --success-color: #27ae60;
+            --error-color: #c0392b;
+            --light-bg: #f9f9f9;
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+        }
+
+        .filename-header {
+            background-color: #333;
+            color: #fff;
+            font-size: 0.8rem;
+            text-align: center;
+            padding: 5px;
+            font-family: monospace;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background: white;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1, h2, h3 {
+            color: var(--secondary-color);
+        }
+
+        h2 {
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-top: 30px;
+        }
+
+        /* Introduction Section */
+        .intro-box {
+            background-color: #e8f4fd;
+            border-left: 5px solid var(--primary-color);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 0 var(--border-radius) var(--border-radius) 0;
+        }
+
+        .analogy {
+            font-size: 1.1em;
+            margin-bottom: 15px;
+        }
+
+        .definition {
+            background: #fff;
+            padding: 15px;
+            border: 1px dashed var(--secondary-color);
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        /* Quiz Section */
+        .quiz-area {
+            background-color: var(--light-bg);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-top: 20px;
+        }
+
+        .question {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .options label {
+            display: block;
+            padding: 12px;
+            margin: 8px 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .options label:hover {
+            background-color: #f0f8ff;
+            border-color: var(--primary-color);
+        }
+
+        .options input[type="radio"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+
+        .btn-group {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: opacity 0.2s;
+        }
+
+        .btn-submit { background-color: var(--primary-color); color: white; }
+        .btn-hint { background-color: var(--accent-color); color: white; }
+        .btn-reset { background-color: var(--secondary-color); color: white; }
+        button:hover { opacity: 0.9; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+
+        .hint-box {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #fff3e0;
+            border-left: 4px solid var(--accent-color);
+            display: none;
+        }
+
+        /* Feedback Section */
+        .feedback-area {
+            margin-top: 20px;
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-header {
+            padding: 15px;
+            border-radius: var(--border-radius);
+            color: white;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .correct { background-color: var(--success-color); }
+        .incorrect { background-color: var(--error-color); }
+
+        .explanation-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #fff;
+            border-bottom: 1px solid #eee;
+        }
+
+        .explanation-item.correct-opt {
+            background-color: #e8f8f5;
+            border-left: 4px solid var(--success-color);
+        }
+
+        /* Code Block */
+        pre {
+            background-color: #282c34;
+            color: #abb2bf;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            overflow-x: auto;
+            font-size: 0.95em;
+        }
+        
+        code span.comment { color: #98c379; }
+        code span.keyword { color: #c678dd; }
+        code span.func { color: #61afef; }
+
+        /* Requirements Box */
+        .req-box {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+
+        .req-card {
+            flex: 1;
+            min-width: 250px;
+            background: white;
+            border: 2px solid var(--primary-color);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            text-align: center;
+        }
+
+        .req-card h3 { color: var(--primary-color); margin-top: 0; }
+
+        .warning-text {
+            color: var(--error-color);
+            font-weight: bold;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        /* Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        tr:nth-child(even) { background-color: #f2f2f2; }
+
+        /* Accordion */
+        .accordion {
+            background-color: #fff;
+            color: #444;
+            cursor: pointer;
+            padding: 18px;
+            width: 100%;
+            text-align: left;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            outline: none;
+            transition: 0.4s;
+            font-weight: bold;
+            font-size: 1.1em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .accordion:after {
+            content: '\002B'; /* Plus sign */
+            font-size: 20px;
+        }
+
+        .active:after {
+            content: "\2212"; /* Minus sign */
+        }
+
+        .panel {
+            padding: 0 18px;
+            background-color: white;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.2s ease-out;
+            border-radius: 0 0 var(--border-radius) var(--border-radius);
+            border: 1px solid #ddd;
+            border-top: none;
+        }
+
+        /* QA Section */
+        .qa-item {
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+        
+        .qa-question {
+            background: #eee;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .qa-answer {
+            padding: 10px;
+            color: var(--primary-color);
+            display: none;
+            background: #fff;
+            border-left: 3px solid var(--primary-color);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="filename-header">檔名建議：recursion_concept_mcq_q16.html</div>
+
+    <div class="container">
+        
+        <!-- 二、教學導入 -->
+        <section>
+            <h1><span style="font-size: 1.5em;">🪆</span> 什麼是遞迴 (Recursion)？</h1>
+            <div class="intro-box">
+                <div class="analogy">
+                    <p>想像一組<strong>「俄羅斯娃娃」</strong>：打開一個娃娃，裡面還有一個長得一模一樣、但比較小的娃娃。再打開，裡面還有更小的...</p>
+                    <p>這就是遞迴的核心精神：<strong>一個問題裡面，包含一個規模更小、結構相同的問題。</strong></p>
+                </div>
+                <div class="definition">
+                    考試定義：<br>
+                    遞迴（Recursion）是指：函式在執行過程中，直接或間接<span style="color: var(--primary-color);">呼叫自己</span>，並且必須有<span style="color: var(--error-color);">結束條件</span>。
+                </div>
+            </div>
+        </section>
+
+        <!-- 三、互動作答設計 -->
+        <section class="quiz-area">
+            <div class="question">16. 下列哪一個敘述最接近「遞迴（recursion）」的概念？</div>
+            <div class="options">
+                <label>
+                    <input type="radio" name="q16" value="A"> (A) 函式在執行過程中呼叫自己
+                </label>
+                <label>
+                    <input type="radio" name="q16" value="B"> (B) 程式碼重複貼上很多次
+                </label>
+                <label>
+                    <input type="radio" name="q16" value="C"> (C) 同一行程式碼同時在多個 CPU 上執行
+                </label>
+                <label>
+                    <input type="radio" name="q16" value="D"> (D) 使用者多次輸入相同資料
+                </label>
+            </div>
+            
+            <div class="hint-box" id="hintBox"></div>
+
+            <div class="btn-group">
+                <button class="btn-submit" onclick="checkAnswer()">送出答案</button>
+                <button class="btn-hint" onclick="showNextHint()" id="hintBtn">看提示</button>
+                <button class="btn-reset" onclick="resetQuiz()">重作一次</button>
+            </div>
+        </section>
+
+        <!-- 四、送出後即時解析 -->
+        <section id="feedbackArea" class="feedback-area">
+            <div id="resultHeader" class="result-header"></div>
+            
+            <h3>📝 完整解析</h3>
+            <div class="explanation-item correct-opt">
+                <strong>(A) 函式在執行過程中呼叫自己 ✅</strong><br>
+                這是教科書與考試的標準描述。遞迴就是函式透過呼叫自己來解決子問題，直到遇到結束條件為止。
+            </div>
+            <div class="explanation-item">
+                <strong>(B) 程式碼重複貼上很多次 ❌</strong><br>
+                這只是單純的「複製貼上 (Copy-Paste)」，會讓程式碼變得很長且難以維護，不是遞迴。
+            </div>
+            <div class="explanation-item">
+                <strong>(C) 同一行程式碼同時在多個 CPU 上執行 ❌</strong><br>
+                這是「平行處理 / 平行運算 (Parallel Processing)」，目的是加快速度，與遞迴的結構無關。
+            </div>
+            <div class="explanation-item">
+                <strong>(D) 使用者多次輸入相同資料 ❌</strong><br>
+                這是「重複輸入」或「迴圈讀取」，跟函式自己呼叫自己完全無關。
+            </div>
+        </section>
+
+        <!-- 五、遞迴必要條件 -->
+        <section>
+            <h2>⚠️ 遞迴兩大必要條件 (必考)</h2>
+            <div class="req-box">
+                <div class="req-card">
+                    <h3>1. 遞迴呼叫<br>(Recursive Call)</h3>
+                    <p>函式必須包含呼叫自己的程式碼。</p>
+                </div>
+                <div class="req-card">
+                    <h3>2. 結束條件<br>(Base Case)</h3>
+                    <p>必須設定停止呼叫的條件，否則不會停下來。</p>
+                </div>
+            </div>
+            <p class="warning-text">☠️ 警告：沒有結束條件的遞迴，會造成無限遞迴 (Infinite Recursion)，導致程式當機！</p>
+        </section>
+
+        <!-- 六、簡易程式碼示意 -->
+        <section>
+            <h2>💻 程式碼範例</h2>
+            <p>這是一個計算階乘 (Factorial) 的遞迴範例：</p>
+            <pre><code><span class="keyword">int</span> <span class="func">factorial</span>(<span class="keyword">int</span> n) {
+    <span class="keyword">if</span> (n == 0) <span class="keyword">return</span> 1;      <span class="comment">// ★ 結束條件 (Base Case)</span>
+    <span class="keyword">return</span> n * <span class="func">factorial</span>(n-1); <span class="comment">// ★ 呼叫自己 (Recursive Call)</span>
+}</code></pre>
+        </section>
+
+        <!-- 七、遞迴 vs 其他概念對照表 -->
+        <section>
+            <h2>📊 概念對照表</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>選項概念</th>
+                        <th>是否為遞迴</th>
+                        <th>關鍵差異</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="font-weight:bold; color:var(--primary-color);">函式呼叫自己 (Recursion)</td>
+                        <td style="color:var(--success-color); font-weight:bold;">是</td>
+                        <td>結構包含自我參照，有結束條件</td>
+                    </tr>
+                    <tr>
+                        <td>重複貼程式碼 (Copy-Paste)</td>
+                        <td style="color:var(--error-color);">否</td>
+                        <td>程式碼變長，邏輯重複</td>
+                    </tr>
+                    <tr>
+                        <td>多 CPU 同時執行 (Parallel)</td>
+                        <td style="color:var(--error-color);">否</td>
+                        <td>硬體層面的同時運算</td>
+                    </tr>
+                    <tr>
+                        <td>重複輸入資料 (User Input)</td>
+                        <td style="color:var(--error-color);">否</td>
+                        <td>單純的資料輸入行為</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- 八、記憶技巧 (Accordion) -->
+        <section>
+            <button class="accordion">🧠 考前 3 秒記憶法 (點擊展開)</button>
+            <div class="panel">
+                <div style="padding: 15px;">
+                    <h3 style="margin-top:0;">⚡ 口訣：</h3>
+                    <p style="font-size: 1.2em; color: var(--primary-color); font-weight: bold;">「遞迴就是自己叫自己」</p>
+                    <hr>
+                    <h3>🚫 考試陷阱：</h3>
+                    <p>題目常用「重複」、「很多次」來誤導你選迴圈或複製貼上。</p>
+                    <p>看到題目問遞迴，請直接掃描選項中有沒有<strong>「呼叫自己 (call itself)」</strong>這個關鍵字！</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 九、延伸快問快答 -->
+        <section style="margin-top: 30px;">
+            <h2>🚀 延伸快問快答 (點擊看答案)</h2>
+            
+            <div class="qa-item" onclick="toggleQA(this)">
+                <div class="qa-question">Q1：沒有結束條件的遞迴會發生什麼事？ ▶</div>
+                <div class="qa-answer">答：會發生「無限遞迴」，導致堆疊溢位 (Stack Overflow)，程式會直接當機或報錯。</div>
+            </div>
+
+            <div class="qa-item" onclick="toggleQA(this)">
+                <div class="qa-question">Q2：遞迴一定比迴圈快嗎？ ▶</div>
+                <div class="qa-answer">答：不一定，通常比較慢！因為函式呼叫需要消耗記憶體空間與時間。使用遞迴是為了讓程式碼邏輯更簡潔、易讀（例如處理樹狀結構），而不是為了效能。</div>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        // 提示內容陣列
+        const hints = [
+            "第一次提示：遞迴一定跟『函式』有關。",
+            "第二次提示：不是貼很多次程式碼，而是『自己叫自己』。",
+            "第三次提示：關鍵字：呼叫自己（call itself）。"
+        ];
+        let currentHintIndex = 0;
+
+        // 檢查答案
+        function checkAnswer() {
+            const options = document.getElementsByName('q16');
+            let selectedValue = null;
+
+            for (const option of options) {
+                if (option.checked) {
+                    selectedValue = option.value;
+                    break;
+                }
+            }
+
+            if (!selectedValue) {
+                alert("請先選擇一個答案！");
+                return;
+            }
+
+            // 顯示結果區域
+            const feedbackArea = document.getElementById('feedbackArea');
+            const resultHeader = document.getElementById('resultHeader');
+            feedbackArea.style.display = 'block';
+
+            if (selectedValue === 'A') {
+                resultHeader.className = 'result-header correct';
+                resultHeader.innerHTML = '🎉 答對了！你已經掌握了遞迴的核心概念。';
+            } else {
+                resultHeader.className = 'result-header incorrect';
+                resultHeader.innerHTML = '❌ 答錯了，別氣餒！請看下方的解析。';
+            }
+
+            // 滾動到解析區
+            feedbackArea.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // 顯示提示
+        function showNextHint() {
+            const hintBox = document.getElementById('hintBox');
+            const hintBtn = document.getElementById('hintBtn');
+
+            if (currentHintIndex < hints.length) {
+                hintBox.style.display = 'block';
+                // 累加顯示提示
+                const newHint = document.createElement('div');
+                newHint.textContent = hints[currentHintIndex];
+                newHint.style.marginBottom = "5px";
+                newHint.style.fontWeight = "bold";
+                hintBox.appendChild(newHint);
+                
+                currentHintIndex++;
+            }
+
+            if (currentHintIndex >= hints.length) {
+                hintBtn.disabled = true;
+                hintBtn.textContent = "提示已用完";
+            }
+        }
+
+        // 重作一次
+        function resetQuiz() {
+            // 清除選項
+            const options = document.getElementsByName('q16');
+            for (const option of options) {
+                option.checked = false;
+            }
+
+            // 隱藏解析
+            document.getElementById('feedbackArea').style.display = 'none';
+
+            // 重置提示
+            currentHintIndex = 0;
+            const hintBox = document.getElementById('hintBox');
+            hintBox.innerHTML = '';
+            hintBox.style.display = 'none';
+            
+            const hintBtn = document.getElementById('hintBtn');
+            hintBtn.disabled = false;
+            hintBtn.textContent = "看提示";
+
+            // 滾動回頂部
+            document.querySelector('.quiz-area').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // 手風琴效果 (Accordion)
+        const acc = document.getElementsByClassName("accordion");
+        for (let i = 0; i < acc.length; i++) {
+            acc[i].addEventListener("click", function() {
+                this.classList.toggle("active");
+                const panel = this.nextElementSibling;
+                if (panel.style.maxHeight) {
+                    panel.style.maxHeight = null;
+                } else {
+                    panel.style.maxHeight = panel.scrollHeight + "px";
+                }
+            });
+        }
+
+        // 快問快答切換
+        function toggleQA(element) {
+            const answer = element.querySelector('.qa-answer');
+            if (answer.style.display === 'block') {
+                answer.style.display = 'none';
+            } else {
+                answer.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>

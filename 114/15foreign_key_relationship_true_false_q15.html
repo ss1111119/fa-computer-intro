@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>資料庫外鍵教學 - 互動練習</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --success-color: #27ae60;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Header Note */
+        .file-name-header {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+            text-align: right;
+            margin-bottom: 10px;
+            font-family: monospace;
+        }
+
+        /* Card Style */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        h1, h2, h3 {
+            color: var(--primary-color);
+            margin-top: 0;
+        }
+
+        h2 {
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 10px;
+            font-size: 1.5rem;
+        }
+
+        /* Intro Section */
+        .analogy-box {
+            background-color: #e8f4fc;
+            border-left: 5px solid var(--secondary-color);
+            padding: 15px;
+            border-radius: 4px;
+        }
+        .key-point {
+            font-weight: bold;
+            color: var(--accent-color);
+            background: #fff0f0;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+
+        /* Quiz Section */
+        .quiz-option {
+            display: block;
+            margin: 15px 0;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1.2rem;
+        }
+
+        .quiz-option:hover {
+            border-color: var(--secondary-color);
+            background-color: #f0f8ff;
+        }
+
+        input[type="radio"] {
+            transform: scale(1.5);
+            margin-right: 10px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            font-weight: bold;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .btn-submit { background-color: var(--success-color); color: white; }
+        .btn-hint { background-color: #f39c12; color: white; }
+        .btn-reset { background-color: #95a5a6; color: white; }
+
+        /* Hints */
+        .hint-box {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            border-radius: 6px;
+            color: #856404;
+            display: none;
+        }
+
+        /* Result Section */
+        .result-box {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            display: none;
+        }
+        .result-correct { background-color: #d4edda; border: 2px solid #c3e6cb; color: #155724; }
+        .result-wrong { background-color: #f8d7da; border: 2px solid #f5c6cb; color: #721c24; }
+
+        /* SQL Code */
+        pre {
+            background-color: #282c34;
+            color: #abb2bf;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-family: 'Consolas', monospace;
+        }
+        .sql-keyword { color: #c678dd; }
+        .sql-type { color: #e5c07b; }
+        .sql-comment { color: #5c6370; font-style: italic; }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            background: white;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        tr:nth-child(even) { background-color: #f2f2f2; }
+
+        /* Accordion */
+        .accordion {
+            background-color: var(--primary-color);
+            color: white;
+            cursor: pointer;
+            padding: 18px;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-size: 1.1rem;
+            border-radius: 6px;
+            margin-bottom: 5px;
+        }
+        .active, .accordion:hover { background-color: #1a252f; }
+        .panel {
+            padding: 0 18px;
+            display: none;
+            background-color: white;
+            overflow: hidden;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-bottom-left-radius: 6px;
+            border-bottom-right-radius: 6px;
+        }
+
+        /* Quickfire */
+        .quickfire-item {
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .quickfire-q {
+            background: #eee;
+            padding: 12px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .quickfire-a {
+            padding: 15px;
+            display: none;
+            background: #fff;
+            color: var(--success-color);
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .btn-group { flex-direction: column; }
+            button { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- 頁首 -->
+        <div class="file-name-header">檔名建議：foreign_key_relationship_true_false_q15.html</div>
+
+        <!-- 教學導入 -->
+        <section class="card">
+            <h2>二、觀念導入：資料庫的紅線</h2>
+            <div class="analogy-box">
+                <p>我們用<strong>「學生」</strong>與<strong>「選課」</strong>來比喻：</p>
+                <ul>
+                    <li><strong>🔑 主鍵（Primary Key）：</strong> 就像學生的<strong>身分證字號</strong>（或學號），唯一識別這個人，絕對不能重複。</li>
+                    <li><strong>🔗 外鍵（Foreign Key）：</strong> 就像選課單上填寫的<strong>「學號欄位」</strong>，它用來指向（參照）學生資料表中的某個學生。</li>
+                </ul>
+                <p><strong>核心結論（考試關鍵）：</strong><br>
+                外鍵的主要功能是 <span class="key-point">建立資料表之間的關聯</span>，並確保資料不會「亂連」（例如：選課單上填了一個不存在的學號），以維持 <span class="key-point">資料一致性（Referential Integrity）</span>。</p>
+            </div>
+        </section>
+
+        <!-- 互動作答區 -->
+        <section class="card">
+            <h2>三、觀念檢測</h2>
+            <p style="font-size: 1.1rem; font-weight: bold;">題目 15：外鍵（Foreign Key）用來建立資料表間的關聯，並維持資料一致性。</p>
+            
+            <form id="quizForm">
+                <label class="quiz-option">
+                    <input type="radio" name="answer" value="A"> (A) O（正確）
+                </label>
+                <label class="quiz-option">
+                    <input type="radio" name="answer" value="B"> (B) X（錯誤）
+                </label>
+
+                <div class="btn-group">
+                    <button type="button" class="btn-submit" onclick="checkAnswer()">送出答案</button>
+                    <button type="button" class="btn-hint" onclick="showNextHint()">看提示 <span id="hintCount">(0/3)</span></button>
+                    <button type="button" class="btn-reset" onclick="resetQuiz()">重作一次</button>
+                </div>
+            </form>
+
+            <div id="hintArea" class="hint-box">
+                <strong>💡 提示：</strong>
+                <ul id="hintList"></ul>
+            </div>
+
+            <div id="resultArea" class="result-box"></div>
+        </section>
+
+        <!-- 詳解區（預設隱藏，答題後透過 JS 顯示內容） -->
+        <div id="explanationContent" style="display: none;">
+            <!-- 這部分的內容會被 JS 複製到 resultArea -->
+            <h4>📊 重點解析：</h4>
+            <ul>
+                <li><strong>本題正確答案是 O</strong></li>
+                <li>題幹敘述完全符合外鍵的兩大核心功能：
+                    <ol>
+                        <li><strong>建立關聯：</strong>串聯不同資料表（如：訂單與客戶）。</li>
+                        <li><strong>維持一致性：</strong>防止無效資料（例如：訂單上不能出現一個「不存在的客戶 ID」）。</li>
+                    </ol>
+                </li>
+            </ul>
+            <h4>⚠️ 常見誤解提醒：</h4>
+            <p>有些學生以為外鍵只是「拿來連表查詢用（JOIN）」的欄位，但其實它更重要的是具有<strong>約束（Constraint）功能</strong>，若違反規則（填入不存在的值），資料庫會報錯拒絕存檔。</p>
+        </div>
+
+        <!-- 範例區 -->
+        <section class="card">
+            <h2>五、SQL 範例示範</h2>
+            <p>請看以下如何在建立資料表時設定外鍵：</p>
+            <pre><code class="sql-code">
+<span class="sql-keyword">CREATE TABLE</span> Student (
+  StudentID <span class="sql-type">INT</span> <span class="sql-keyword">PRIMARY KEY</span>,  <span class="sql-comment">-- 主鍵：唯一識別學生</span>
+  Name <span class="sql-type">VARCHAR</span>(50)
+);
+
+<span class="sql-keyword">CREATE TABLE</span> Enrollment (
+  EnrollmentID <span class="sql-type">INT</span> <span class="sql-keyword">PRIMARY KEY</span>,
+  StudentID <span class="sql-type">INT</span>,
+  <span class="sql-comment">-- 設定外鍵：將本表的 StudentID 連到 Student 表的主鍵</span>
+  <span class="sql-keyword">FOREIGN KEY</span> (StudentID) <span class="sql-keyword">REFERENCES</span> Student(StudentID)
+);
+            </code></pre>
+            <div style="background: #f9f9f9; padding: 10px; border-left: 4px solid #666; margin-top: 10px;">
+                <strong>📌 說明重點：</strong>
+                <ul>
+                    <li><code>Enrollment.StudentID</code> 是外鍵。</li>
+                    <li>這裡<strong>只能</strong>填入 <code>Student</code> 表中已經存在的 <code>StudentID</code>。</li>
+                    <li>若填入不存在的值（例如 Student 表只有 1, 2 號，你卻在選課表填 99 號），資料庫會拒絕寫入（Constraint Violation）。</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- 比較表 -->
+        <section class="card">
+            <h2>六、必考！主鍵 vs 外鍵</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th width="20%">項目</th>
+                        <th width="40%">主鍵（Primary Key）</th>
+                        <th width="40%">外鍵（Foreign Key）</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>功能</strong></td>
+                        <td>唯一識別一筆資料</td>
+                        <td>連結到另一張表</td>
+                    </tr>
+                    <tr>
+                        <td><strong>是否唯一</strong></td>
+                        <td><span style="color:red; font-weight:bold;">必須唯一</span></td>
+                        <td>不一定唯一（一個學生可選多門課）</td>
+                    </tr>
+                    <tr>
+                        <td><strong>可否 NULL</strong></td>
+                        <td>不可</td>
+                        <td>可（視設計而定）</td>
+                    </tr>
+                    <tr>
+                        <td><strong>主要目的</strong></td>
+                        <td>辨識身分</td>
+                        <td><strong>關聯 + 一致性</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- 資料一致性 -->
+        <section class="card">
+            <h2>七、什麼是資料一致性？</h2>
+            <div style="background: #fff8e1; padding: 15px; border-radius: 6px; border: 1px solid #ffe082;">
+                <h3 style="margin-top:0; color: #f57f17;">資料一致性（Referential Integrity）</h3>
+                <p>簡單來說就是：<strong>「子表的外鍵值，一定對得到父表的主鍵。」</strong></p>
+                <hr style="border:0; border-top:1px dashed #ccc;">
+                <p><strong>🚨 如果沒有外鍵限制的風險：</strong></p>
+                <ul>
+                    <li>出現<strong>「孤兒資料（Orphan Records）」</strong>：例如有一張選課單，上面的學號是 999，但學生資料表裡根本沒有 999 號學生，這筆選課資料就變成了無效的孤兒。</li>
+                    <li>資料表之間的關聯會失真，導致查詢結果錯誤。</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- 記憶技巧 -->
+        <section class="card">
+            <h2>八、考前 5 秒記憶法</h2>
+            <button class="accordion">🧠 點擊展開記憶口訣</button>
+            <div class="panel">
+                <div style="padding: 15px;">
+                    <p style="font-size: 1.2rem; text-align: center; background: #e8f5e9; padding: 10px; border-radius: 8px;">
+                        <strong>「主鍵管身分，外鍵管關係」</strong>
+                    </p>
+                    <p><strong>💣 考試陷阱提醒：</strong><br>
+                    題目只要看到關鍵字 <strong>「建立關聯」</strong> 加上 <strong>「維持一致性」</strong>，幾乎一定是在考 <strong>Foreign Key (外鍵)</strong>。</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 快問快答 -->
+        <section class="card">
+            <h2>九、延伸快問快答</h2>
+            <div class="quickfire-item">
+                <div class="quickfire-q" onclick="toggleAnswer(this)">Q1：外鍵一定要指向另一張表的主鍵嗎？（點擊看答案）</div>
+                <div class="quickfire-a">
+                    <strong>答：通常是。</strong><br>標準 SQL 規範要求外鍵必須參照另一張表的 Primary Key 或是 Unique Key（唯一鍵），以確保參照的目標是明確唯一的。
+                </div>
+            </div>
+            <div class="quickfire-item">
+                <div class="quickfire-q" onclick="toggleAnswer(this)">Q2：如果沒有設定外鍵，資料庫還能不能存資料？（點擊看答案）</div>
+                <div class="quickfire-a">
+                    <strong>答：可以，但是很危險。</strong><br>沒有外鍵約束，資料庫會允許你存入「亂填」的資料（例如不存在的學號），這完全依賴程式設計師在寫程式時自己檢查，容易產生髒資料。
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        let hintLevel = 0;
+        const hints = [
+            "第一次提示：子資料表裡的資料（例如選課單上的學號），能不能隨便亂填一個「不存在」的學生編號？",
+            "第二次提示：外鍵的功能就是為了確保「參照」是有效的，一定要對得到另一張表的主鍵。",
+            "第三次提示：回想口訣，「外鍵 = 關聯 + 一致性」。"
+        ];
+
+        function showNextHint() {
+            const hintArea = document.getElementById('hintArea');
+            const hintList = document.getElementById('hintList');
+            const hintCountSpan = document.getElementById('hintCount');
+
+            if (hintLevel < hints.length) {
+                hintArea.style.display = 'block';
+                const li = document.createElement('li');
+                li.innerText = hints[hintLevel];
+                hintList.appendChild(li);
+                hintLevel++;
+                hintCountSpan.innerText = `(${hintLevel}/3)`;
+            } else {
+                alert("已經沒有更多提示囉！請嘗試作答。");
+            }
+        }
+
+        function checkAnswer() {
+            const options = document.getElementsByName('answer');
+            let selectedValue = null;
+            for (const option of options) {
+                if (option.checked) {
+                    selectedValue = option.value;
+                    break;
+                }
+            }
+
+            if (!selectedValue) {
+                alert("請先選擇一個答案！");
+                return;
+            }
+
+            const resultArea = document.getElementById('resultArea');
+            const explanationSource = document.getElementById('explanationContent');
+            resultArea.style.display = 'block';
+            resultArea.innerHTML = ''; // 清空舊結果
+
+            if (selectedValue === 'A') {
+                // Correct
+                resultArea.className = 'result-box result-correct';
+                resultArea.innerHTML = `<h3>🎉 答對了！</h3>` + explanationSource.innerHTML;
+            } else {
+                // Wrong
+                resultArea.className = 'result-box result-wrong';
+                resultArea.innerHTML = `
+                    <h3>❌ 答錯了，請再想一想。</h3>
+                    <p>外鍵的主要目的就是為了防止資料不一致。如果沒有外鍵，資料庫就無法幫我們檢查關聯是否正確。</p>
+                    <p>建議您可以點擊「看提示」按鈕，或往下滑動複習一下觀念。</p>
+                `;
+            }
+        }
+
+        function resetQuiz() {
+            // 重置選項
+            const options = document.getElementsByName('answer');
+            for (const option of options) option.checked = false;
+
+            // 重置提示
+            hintLevel = 0;
+            document.getElementById('hintArea').style.display = 'none';
+            document.getElementById('hintList').innerHTML = '';
+            document.getElementById('hintCount').innerText = '(0/3)';
+
+            // 重置結果
+            document.getElementById('resultArea').style.display = 'none';
+            document.getElementById('resultArea').innerHTML = '';
+            
+            // 捲動回題目區
+            document.getElementById('quizForm').scrollIntoView({behavior: 'smooth'});
+        }
+
+        // Accordion Logic
+        const acc = document.getElementsByClassName("accordion");
+        for (let i = 0; i < acc.length; i++) {
+            acc[i].addEventListener("click", function() {
+                this.classList.toggle("active");
+                const panel = this.nextElementSibling;
+                if (panel.style.display === "block") {
+                    panel.style.display = "none";
+                } else {
+                    panel.style.display = "block";
+                }
+            });
+        }
+
+        // Quickfire Logic
+        function toggleAnswer(element) {
+            const answerDiv = element.nextElementSibling;
+            if (answerDiv.style.display === "block") {
+                answerDiv.style.display = "none";
+            } else {
+                answerDiv.style.display = "block";
+            }
+        }
+    </script>
+</body>
+</html>

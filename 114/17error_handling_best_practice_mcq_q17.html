@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>錯誤處理最佳實務 - 互動教學</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --success-color: #27ae60;
+            --error-color: #c0392b;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Noto Sans TC", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .filename-header {
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: #7f8c8d;
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 1px dashed #ccc;
+            padding-bottom: 5px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        h1, h2, h3 {
+            color: var(--primary-color);
+        }
+
+        h1 {
+            text-align: center;
+            border-bottom: 3px solid var(--accent-color);
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+
+        /* Introduction Section */
+        .intro-box {
+            background-color: #e8f6f3;
+            border-left: 5px solid var(--success-color);
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+
+        .comparison {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .comp-item {
+            flex: 1;
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            min-width: 280px;
+        }
+
+        .comp-title {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .key-concept {
+            background-color: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: center;
+            font-weight: bold;
+            border: 2px dashed #ffeeba;
+        }
+
+        /* Quiz Section */
+        .quiz-section {
+            background-color: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+            margin-bottom: 30px;
+        }
+
+        .question {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .options label {
+            display: block;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            background: #fff;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .options label:hover {
+            border-color: var(--accent-color);
+            background-color: #f0f7fb;
+        }
+
+        .options input[type="radio"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+
+        .btn-group {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-submit { background-color: var(--accent-color); color: white; }
+        .btn-submit:hover { background-color: #2980b9; }
+        
+        .btn-hint { background-color: #f39c12; color: white; }
+        .btn-hint:hover { background-color: #d35400; }
+
+        .btn-reset { background-color: #95a5a6; color: white; }
+        .btn-reset:hover { background-color: #7f8c8d; }
+
+        .hint-box {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #fff8e1;
+            border-left: 4px solid #f39c12;
+            display: none;
+        }
+
+        /* Result Section */
+        .result-section {
+            display: none;
+            margin-top: 30px;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-header {
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .result-correct { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .result-wrong { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+        .explanation-card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .option-analysis {
+            margin-top: 15px;
+        }
+        
+        .option-item {
+            margin-bottom: 8px;
+            padding: 8px;
+            border-radius: 4px;
+        }
+        
+        .opt-correct { background-color: #e8f5e9; border-left: 4px solid var(--success-color); }
+        .opt-wrong { background-color: #ffebee; border-left: 4px solid var(--error-color); }
+
+        /* Common Methods Section */
+        .methods-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .method-card {
+            background: #fdfdfd;
+            border: 1px solid #eee;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .method-title {
+            font-weight: bold;
+            color: var(--accent-color);
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        /* Code Block */
+        pre {
+            background-color: #282c34;
+            color: #abb2bf;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-family: Consolas, Monaco, "Andale Mono", monospace;
+        }
+        .code-keyword { color: #c678dd; }
+        .code-function { color: #61afef; }
+        .code-comment { color: #7f8c8d; font-style: italic; }
+
+        /* Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: #fff;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        tr:hover { background-color: #f5f5f5; }
+
+        /* Accordion */
+        details {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+
+        summary {
+            padding: 15px;
+            background: #ecf0f1;
+            cursor: pointer;
+            font-weight: bold;
+            list-style: none; /* Hide default arrow */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        summary::after {
+            content: "+";
+            font-size: 1.2em;
+        }
+        
+        details[open] summary::after {
+            content: "-";
+        }
+
+        .accordion-content {
+            padding: 15px;
+            border-top: 1px solid #ddd;
+        }
+
+        /* Quick Q&A */
+        .qa-box {
+            margin-top: 10px;
+        }
+        .qa-btn {
+            background: none;
+            border: 2px solid var(--accent-color);
+            color: var(--accent-color);
+            padding: 5px 15px;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+        .qa-btn:hover {
+            background: var(--accent-color);
+            color: white;
+        }
+        .qa-answer {
+            display: none;
+            padding: 10px;
+            background: #eaf2f8;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="filename-header">
+        檔名建議：error_handling_best_practice_mcq_q17.html
+    </div>
+
+    <div class="container">
+        <h1>程式設計觀念：大型系統的錯誤處理</h1>
+
+        <!-- 1. 教學導入 -->
+        <div class="intro-box">
+            <h2>🛒 大型商場 vs 🍢 路邊攤</h2>
+            <div class="comparison">
+                <div class="comp-item">
+                    <span class="comp-title">🍢 小型程式 (路邊攤)</span>
+                    <p>邏輯簡單、使用者少。如果算錯錢或東西掉了，當場停下來重算就好 (出錯重跑)，影響不大。</p>
+                </div>
+                <div class="comp-item">
+                    <span class="comp-title">🛒 大型程式 (大型商場)</span>
+                    <p>例如銀行、學校選課系統。使用者成千上萬，資料非常重要。如果廁所壞了，不能把整間百貨公司關閉趕人 (不能隨便當掉)。</p>
+                </div>
+            </div>
+            <div class="key-concept">
+                💡 考試關鍵：在大型程式中，重點不是「避免所有錯誤」，而是如何被偵測、被處理、被記錄。
+            </div>
+        </div>
+
+        <!-- 2. 互動作答區 -->
+        <div class="quiz-section">
+            <h3>📝 題目 17</h3>
+            <div class="question">
+                關於錯誤處理（error handling），下列哪一項做法在大型程式中通常較佳？
+            </div>
+            <div class="options">
+                <label>
+                    <input type="radio" name="q17" value="A"> (A) 完全忽略錯誤訊息
+                </label>
+                <label>
+                    <input type="radio" name="q17" value="B"> (B) 發生錯誤就立刻強制結束程式，不做任何處理
+                </label>
+                <label>
+                    <input type="radio" name="q17" value="C"> (C) 使用適當的錯誤處理機制，例如例外（exception）或回傳錯誤碼
+                </label>
+                <label>
+                    <input type="radio" name="q17" value="D"> (D) 把所有錯誤訊息都隱藏不給開發者看
+                </label>
+            </div>
+            
+            <div class="hint-box" id="hintBox"></div>
+
+            <div class="btn-group">
+                <button class="btn-submit" onclick="submitAnswer()">送出答案</button>
+                <button class="btn-hint" onclick="showHint()">💡 看提示 (<span id="hintCount">0</span>/3)</button>
+                <button class="btn-reset" onclick="resetQuiz()">🔄 重作一次</button>
+            </div>
+        </div>
+
+        <!-- 3. 解析區 (送出後顯示) -->
+        <div id="resultSection" class="result-section">
+            <div id="resultHeader" class="result-header"></div>
+            
+            <div class="explanation-card">
+                <h3>🔍 正確選項解析</h3>
+                <div class="opt-correct option-item">
+                    <strong>(C) 使用適當的錯誤處理機制，例如例外或回傳錯誤碼</strong>
+                    <p>這是符合大型程式設計原則的做法。這讓程式能夠：</p>
+                    <ul>
+                        <li>✅ 正常回報錯誤（而不是假裝沒事）</li>
+                        <li>✅ 視情況決定是「繼續執行」還是「安全結束」</li>
+                        <li>✅ 留下紀錄，方便開發者除錯與維護</li>
+                    </ul>
+                </div>
+
+                <h3>🚫 錯誤選項逐一說明</h3>
+                <div class="option-analysis">
+                    <div class="opt-wrong option-item">
+                        <strong>(A) 完全忽略錯誤訊息</strong>
+                        <p>就像車子儀表板亮紅燈你卻貼膠帶蓋住。錯誤會累積，最後導致系統崩潰或資料損毀。</p>
+                    </div>
+                    <div class="opt-wrong option-item">
+                        <strong>(B) 立刻強制結束程式</strong>
+                        <p>想像你在銀行轉帳轉一半，系統突然關閉程式？這對使用者體驗極差，且資料可能只存了一半（不一致）。</p>
+                    </div>
+                    <div class="opt-wrong option-item">
+                        <strong>(D) 把錯誤訊息都隱藏</strong>
+                        <p>如果發生錯誤卻沒有任何訊息，開發者將無法知道哪裡出錯，這會讓除錯變成不可能的任務。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. 常見方式 -->
+            <div class="explanation-card">
+                <h3>🛠️ 錯誤處理常見方式 (考試必懂)</h3>
+                <p>大型系統通常「多種方式並用」：</p>
+                <div class="methods-grid">
+                    <div class="method-card">
+                        <span class="method-title">例外處理<br>(Exception Handling)</span>
+                        <small>try / catch / throw</small>
+                        <p>捕獲預期外的狀況，避免程式崩潰。</p>
+                    </div>
+                    <div class="method-card">
+                        <span class="method-title">回傳錯誤碼<br>(Error Code)</span>
+                        <small>return -1</small>
+                        <p>用函式回傳值表示成功(0)或失敗(-1)。</p>
+                    </div>
+                    <div class="method-card">
+                        <span class="method-title">錯誤紀錄<br>(Logging)</span>
+                        <small>Log files</small>
+                        <p>將錯誤寫入檔案或資料庫，供日後分析。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. 程式碼示意 -->
+            <div class="explanation-card">
+                <h3>💻 簡易程式碼示意</h3>
+                <p>這就是「有處理錯誤」，不是忽略，也不是直接當掉。</p>
+                
+                <h4>方式一：回傳錯誤碼 (C 語言風格)</h4>
+<pre>
+<span class="code-keyword">if</span> (file == <span class="code-keyword">NULL</span>) {
+    <span class="code-keyword">return</span> -1; <span class="code-comment">// 回傳錯誤碼，讓呼叫者知道開檔失敗</span>
+}</pre>
+
+                <h4>方式二：例外處理 (Java/C# 風格)</h4>
+<pre>
+<span class="code-keyword">try</span> {
+    <span class="code-function">readFile</span>();
+} <span class="code-keyword">catch</span> (IOException e) {
+    <span class="code-comment">// 捕捉到錯誤，印出訊息而不是讓程式當機</span>
+    System.out.println(<span class="code-string">"File error: "</span> + e.getMessage());
+}</pre>
+            </div>
+
+            <!-- 6. 對照表 -->
+            <div class="explanation-card">
+                <h3>📊 錯誤處理做法對照表</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>做法</th>
+                            <th>是否適合大型程式</th>
+                            <th>後果</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>忽略錯誤</td>
+                            <td style="color:red; font-weight:bold;">否</td>
+                            <td>資料錯亂、隨時崩潰</td>
+                        </tr>
+                        <tr>
+                            <td>直接強制結束</td>
+                            <td style="color:red; font-weight:bold;">否</td>
+                            <td>使用者體驗極差</td>
+                        </tr>
+                        <tr>
+                            <td>使用例外 / 錯誤碼</td>
+                            <td style="color:green; font-weight:bold;">是</td>
+                            <td>穩定、可控、安全</td>
+                        </tr>
+                        <tr>
+                            <td>隱藏錯誤訊息</td>
+                            <td style="color:red; font-weight:bold;">否</td>
+                            <td>開發者無法維修</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 7. 記憶技巧 -->
+            <details>
+                <summary>🧠 考前 5 秒記憶法 (點擊展開)</summary>
+                <div class="accordion-content">
+                    <h4>口訣：</h4>
+                    <p style="font-size: 1.2em; color: var(--accent-color); font-weight: bold;">「大型程式，錯誤要管」</p>
+                    <h4>考試陷阱提醒：</h4>
+                    <p>看到題目選項有 <span style="background: #ffebee; color: #c0392b; padding: 2px 5px;">「忽略」</span>、<span style="background: #ffebee; color: #c0392b; padding: 2px 5px;">「隱藏」</span>、<span style="background: #ffebee; color: #c0392b; padding: 2px 5px;">「不處理」</span>，幾乎一定是錯的選項！</p>
+                </div>
+            </details>
+
+            <!-- 8. 延伸快問快答 -->
+            <div class="explanation-card">
+                <h3>⚡ 延伸快問快答</h3>
+                <div class="qa-box">
+                    <button class="qa-btn" onclick="toggleQA(this)">Q1：為什麼大型系統不能隨便當掉？</button>
+                    <div class="qa-answer">
+                        A：因為使用者眾多且資料重要（如銀行轉帳），當掉會造成巨大損失與信用問題。
+                    </div>
+                </div>
+                <div class="qa-box">
+                    <button class="qa-btn" onclick="toggleQA(this)">Q2：例外處理的好處是什麼？</button>
+                    <div class="qa-answer">
+                        A：可以把「正常邏輯」和「錯誤處理邏輯」分開，並且避免程式直接崩潰。
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // 提示資料庫
+        const hints = [
+            "第一次提示：大型程式需要維護、除錯與追蹤問題。",
+            "第二次提示：忽略或隱藏錯誤，會讓問題更難找。",
+            "第三次提示：考試關鍵字：例外、錯誤碼。"
+        ];
+        let currentHintIndex = 0;
+
+        // 顯示提示
+        function showHint() {
+            const hintBox = document.getElementById('hintBox');
+            const hintCount = document.getElementById('hintCount');
+            
+            if (currentHintIndex < hints.length) {
+                hintBox.style.display = 'block';
+                // 增加新的提示文字
+                const p = document.createElement('p');
+                p.textContent = hints[currentHintIndex];
+                p.style.margin = "5px 0";
+                p.style.borderBottom = "1px dashed #ccc";
+                hintBox.appendChild(p);
+                
+                currentHintIndex++;
+                hintCount.textContent = currentHintIndex;
+            } else {
+                alert("已經沒有更多提示了！加油！");
+            }
+        }
+
+        // 送出答案檢查
+        function submitAnswer() {
+            const options = document.getElementsByName('q17');
+            let selectedValue = null;
+            
+            for (const option of options) {
+                if (option.checked) {
+                    selectedValue = option.value;
+                    break;
+                }
+            }
+
+            if (!selectedValue) {
+                alert("請先選擇一個答案喔！");
+                return;
+            }
+
+            const resultSection = document.getElementById('resultSection');
+            const resultHeader = document.getElementById('resultHeader');
+            
+            resultSection.style.display = 'block';
+
+            if (selectedValue === 'C') {
+                resultHeader.textContent = "🎉 答對了！觀念非常正確！";
+                resultHeader.className = "result-header result-correct";
+            } else {
+                resultHeader.textContent = "❌ 答錯了，請看下方解析修正觀念。";
+                resultHeader.className = "result-header result-wrong";
+            }
+
+            // 自動捲動到解析區
+            resultSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // 重置測驗
+        function resetQuiz() {
+            // 清除選項
+            const options = document.getElementsByName('q17');
+            for (const option of options) {
+                option.checked = false;
+            }
+
+            // 隱藏結果與提示
+            document.getElementById('resultSection').style.display = 'none';
+            document.getElementById('hintBox').style.display = 'none';
+            document.getElementById('hintBox').innerHTML = ''; // 清空提示內容
+            
+            // 重置計數器
+            currentHintIndex = 0;
+            document.getElementById('hintCount').textContent = '0';
+
+            // 捲動回頂部
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // 快問快答切換
+        function toggleQA(btn) {
+            const answer = btn.nextElementSibling;
+            if (answer.style.display === 'block') {
+                answer.style.display = 'none';
+            } else {
+                answer.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -6,10 +6,12 @@
     <title>農會電腦概論 - 歷年筆記彙整</title>
     <style>
         body { font-family: system-ui, sans-serif; background: #f4f7f9; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .container { background: white; padding: 2rem; border-radius: 12px; shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; width: 90%; max-width: 500px; }
+        .container { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; width: 90%; max-width: 500px; }
         h1 { color: #0366d6; margin-bottom: 1.5rem; }
         .year-btn { display: block; background: #0366d6; color: white; text-decoration: none; padding: 15px; margin: 10px 0; border-radius: 8px; font-weight: bold; transition: 0.3s; }
         .year-btn:hover { background: #024ea3; transform: scale(1.02); }
+        .year-btn.new { background: #28a745; } /* 114年使用綠色標註 */
+        .year-btn.new:hover { background: #218838; }
         .year-btn.disabled { background: #ccc; cursor: not-allowed; }
     </style>
 </head>
@@ -17,6 +19,7 @@
     <div class="container">
         <h1>📂 農會電腦概論筆記</h1>
         <p>請選擇考試年度：</p>
+        <a href="114/index.html" class="year-btn new">🚀 114 年度 (最新筆記)</a>
         <a href="112/index.html" class="year-btn">📅 112 年度筆記</a>
         <a href="#" class="year-btn disabled">📅 111 年度 (資料整理中)</a>
         <a href="#" class="year-btn disabled">📅 110 年度 (資料整理中)</a>

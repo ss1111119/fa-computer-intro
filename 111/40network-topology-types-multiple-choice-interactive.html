@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電腦概論 - 複選題 40：網路拓樸類型</title>
+    <style>
+        /* --- 全域設定 --- */
+        :root {
+            --primary-color: #2c3e50; /* 深藍 - 專業感 */
+            --accent-color: #e74c3c; /* 紅色 - 重點 */
+            --success-color: #27ae60; /* 綠色 - 正確 */
+            --highlight-bg: #ecf0f1; /* 淺灰 - 背景 */
+            --text-color: #333;
+            --card-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            background-color: #f4f7f6;
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        /* --- 標題區 --- */
+        header {
+            text-align: center;
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin: 0;
+            font-size: 1.8rem;
+        }
+
+        .sub-title {
+            color: #7f8c8d;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        /* --- 章節通用樣式 --- */
+        section {
+            margin-bottom: 40px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            background-color: #fff;
+        }
+
+        h2 {
+            color: var(--primary-color);
+            border-left: 5px solid var(--accent-color);
+            padding-left: 10px;
+            margin-top: 0;
+        }
+
+        .highlight-box {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .term {
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
+        /* --- 互動一：拖放辨識 --- */
+        .drag-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .source-zone {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            min-height: 60px;
+        }
+
+        .draggable-item {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: move;
+            user-select: none;
+            transition: transform 0.2s;
+            box-shadow: var(--card-shadow);
+        }
+
+        .draggable-item:hover {
+            transform: scale(1.05);
+            background-color: #34495e;
+        }
+
+        .target-zone {
+            width: 100%;
+            max-width: 400px;
+            height: 150px;
+            border: 3px dashed #bdc3c7;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #f9f9f9;
+            transition: background 0.3s;
+        }
+
+        .target-zone.drag-over {
+            background-color: #d5f5e3;
+            border-color: var(--success-color);
+        }
+
+        .target-zone h3 {
+            margin: 0;
+            color: #7f8c8d;
+            pointer-events: none;
+        }
+
+        /* --- 互動二：複選題 --- */
+        .question-box {
+            background-color: var(--highlight-bg);
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .options-list label {
+            display: block;
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .options-list label:hover {
+            background-color: #eaf2f8;
+        }
+
+        .options-list input[type="checkbox"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+
+        .btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #c0392b;
+        }
+
+        .feedback {
+            margin-top: 15px;
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .feedback.success {
+            background-color: #d4edda;
+            color: #155724;
+            display: block;
+        }
+
+        .feedback.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+
+        /* --- 概念點擊互動 --- */
+        .concept-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .concept-btn {
+            padding: 10px;
+            background: white;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .concept-btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .concept-display {
+            background: #fdfefe;
+            border: 1px solid #eee;
+            padding: 15px;
+            border-radius: 8px;
+            min-height: 80px;
+        }
+
+        /* --- 陷阱卡片 --- */
+        .trap-container {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .trap-card {
+            flex: 1;
+            min-width: 200px;
+            background: #ffe6e6;
+            border: 1px solid #ffcccc;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            position: relative;
+            transition: opacity 0.5s;
+        }
+
+        .trap-card:hover {
+            background: #ffcccc;
+        }
+
+        .trap-card h4 {
+            margin-top: 0;
+            color: #c0392b;
+        }
+
+        .trap-dismiss {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+            text-align: right;
+            margin-top: 10px;
+            font-style: italic;
+        }
+
+        /* --- 自我檢測 --- */
+        .quiz-item {
+            margin-bottom: 15px;
+            border-bottom: 1px dashed #ccc;
+            padding-bottom: 10px;
+        }
+        
+        .hint-text {
+            display: none;
+            color: var(--success-color);
+            margin-top: 5px;
+            font-weight: bold;
+        }
+
+        /* --- 底部控制 --- */
+        .footer-controls {
+            text-align: center;
+            margin-top: 40px;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+        }
+
+        .reset-btn {
+            background-color: #95a5a6;
+        }
+        
+        .reset-btn:hover {
+            background-color: #7f8c8d;
+        }
+
+        /* --- 隱藏區塊 (解析用) --- */
+        .analysis-detail {
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #e8f8f5;
+            border-left: 4px solid var(--success-color);
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>電腦概論 - 複選題 40</h1>
+        <div class="sub-title">單元：電腦網路的拓樸結構 (Network Topology)</div>
+    </header>
+
+    <!-- 1. 核心觀念區 -->
+    <section id="concept-section">
+        <h2>1. 核心觀念建立</h2>
+        <p>在做這一題之前，先搞懂三個名詞（補教名師口訣）：</p>
+        <ul>
+            <li><span class="term">網路拓樸 (Network Topology)</span>：描述電腦怎麼「連線」的結構圖（形狀）。</li>
+            <li><span class="term">節點 (Node)</span>：就是電腦、印表機或集線器等設備。</li>
+            <li><span class="term">連線 (Link)</span>：設備之間的連接線路。</li>
+        </ul>
+
+        <div class="highlight-box">
+            <strong>🔥 超重要考點：</strong><br>
+            只要能描述「設備如何連接」的形狀，就可以稱為一種拓樸！<br>
+            考試不一定只考標準名稱（如星狀），只要是有邏輯的形狀（如直條狀），<br>
+            <strong>能夠畫得出結構圖的，通常都算！</strong>
+        </div>
+
+        <div class="concept-grid">
+            <div class="concept-btn" onclick="showConcept('tree', this)">樹狀 (Tree)</div>
+            <div class="concept-btn" onclick="showConcept('ring', this)">環狀 (Ring)</div>
+            <div class="concept-btn" onclick="showConcept('star', this)">星狀 (Star)</div>
+            <div class="concept-btn" onclick="showConcept('linear', this)">直條狀 (Linear)</div>
+            <div class="concept-btn" onclick="showConcept('mesh', this)">網狀 (Mesh)</div>
+        </div>
+        <div id="concept-display-area" class="concept-display">
+            請點選上方按鈕，查看該拓樸的結構與比喻。
+        </div>
+    </section>
+
+    <!-- 2. 拓樸辨識互動 (Drag and Drop) -->
+    <section id="interactive-section">
+        <h2>2. 觀念實戰：哪些是拓樸？</h2>
+        <p>請將下方的卡片，拖拉（或點擊選取）到「可作為網路拓樸」的框框中。</p>
+        
+        <div class="drag-container">
+            <div class="source-zone" id="source-zone">
+                <div class="draggable-item" draggable="true" id="item-A">樹狀</div>
+                <div class="draggable-item" draggable="true" id="item-B">環狀</div>
+                <div class="draggable-item" draggable="true" id="item-C">星狀</div>
+                <div class="draggable-item" draggable="true" id="item-D">直條狀</div>
+                <div class="draggable-item" draggable="true" id="item-E">網狀</div>
+            </div>
+
+            <div class="target-zone" id="target-zone">
+                <h3>👇 拖放到這裡 👇</h3>
+                <div id="target-content" style="display:flex; flex-wrap:wrap; gap:5px; justify-content:center; width:100%;"></div>
+            </div>
+            
+            <button class="btn" onclick="checkDragAnswer()">檢查分類答案</button>
+            <div id="drag-feedback" class="feedback"></div>
+        </div>
+    </section>
+
+    <!-- 3. 複選題作答區 -->
+    <section id="quiz-section">
+        <h2>3. 複選題 40 (模擬考題)</h2>
+        <div class="question-box">
+            <p><strong>題目：下列何者可作為電腦網路的拓樸圖？（本題可複選）</strong></p>
+            <div class="options-list">
+                <label><input type="checkbox" name="q40" value="A"> (A) 樹狀</label>
+                <label><input type="checkbox" name="q40" value="B"> (B) 環狀</label>
+                <label><input type="checkbox" name="q40" value="C"> (C) 星狀</label>
+                <label><input type="checkbox" name="q40" value="D"> (D) 直條狀</label>
+                <label><input type="checkbox" name="q40" value="E"> (E) 網狀</label>
+            </div>
+            <button class="btn" onclick="checkQuizAnswer()">送出答案</button>
+            <div id="quiz-feedback" class="feedback"></div>
+        </div>
+
+        <!-- 4. 選項解析 (作答後可參考) -->
+        <div style="margin-top: 30px;">
+            <h3>🔎 選項詳細解析（點擊展開）</h3>
+            <div class="options-list">
+                <div onclick="toggleAnalysis('analysis-A')" style="cursor:pointer; padding:5px; border-bottom:1px solid #eee;">👉 (A) 樹狀</div>
+                <div id="analysis-A" class="analysis-detail">⭕ <strong>可以！</strong>像家族樹或公司組織圖，由上往下分支，結構清晰。</div>
+
+                <div onclick="toggleAnalysis('analysis-B')" style="cursor:pointer; padding:5px; border-bottom:1px solid #eee;">👉 (B) 環狀</div>
+                <div id="analysis-B" class="analysis-detail">⭕ <strong>可以！</strong>所有電腦手牽手圍成一圈，資料單向繞圈傳送。</div>
+
+                <div onclick="toggleAnalysis('analysis-C')" style="cursor:pointer; padding:5px; border-bottom:1px solid #eee;">👉 (C) 星狀</div>
+                <div id="analysis-C" class="analysis-detail">⭕ <strong>可以！</strong>最常見！中間有一台集線器(Hub)，大家呈放射狀連到中間。</div>
+
+                <div onclick="toggleAnalysis('analysis-D')" style="cursor:pointer; padding:5px; border-bottom:1px solid #eee;">👉 (D) 直條狀</div>
+                <div id="analysis-D" class="analysis-detail">⭕ <strong>可以！</strong>雖然名字很白話（學術常稱匯流排 Bus），但確實描述了「一條主幹線連貫大家」的結構。</div>
+
+                <div onclick="toggleAnalysis('analysis-E')" style="cursor:pointer; padding:5px; border-bottom:1px solid #eee;">👉 (E) 網狀</div>
+                <div id="analysis-E" class="analysis-detail">⭕ <strong>可以！</strong>最複雜也最可靠，大家彼此亂連，像蜘蛛網一樣。</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. 考試陷阱卡 -->
+    <section>
+        <h2>4. 常見考試陷阱 (點擊卡片消除恐懼)</h2>
+        <div class="trap-container">
+            <div class="trap-card" onclick="dismissTrap(this)">
+                <h4>陷阱 1：名詞迷思</h4>
+                <p>以為只有課本上的「標準英文名詞」才算？<br>❌ 錯！只要能畫出結構圖就算。</p>
+                <div class="trap-dismiss">點擊我懂了</div>
+            </div>
+            <div class="trap-card" onclick="dismissTrap(this)">
+                <h4>陷阱 2：直條狀恐懼症</h4>
+                <p>看到「直條狀」覺得太口語不敢選？<br>❌ 錯！它是匯流排(Bus)的形狀描述。</p>
+                <div class="trap-dismiss">點擊我懂了</div>
+            </div>
+            <div class="trap-card" onclick="dismissTrap(this)">
+                <h4>陷阱 3：複選題不敢全選</h4>
+                <p>覺得答案是 (A)(B)(C)(D)(E) 很奇怪？<br>❌ 錯！這題就是在考觀念廣度。</p>
+                <div class="trap-dismiss">點擊我懂了</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. 自我檢測 -->
+    <section>
+        <h2>5. 自我檢測 (不給答案，請思考)</h2>
+        
+        <div class="quiz-item">
+            <p><strong>Q1：什麼情況下會使用成本最高的「網狀拓樸」？</strong></p>
+            <button onclick="toggleHint('hint1')">顯示提示</button>
+            <div id="hint1" class="hint-text">💡 提示：當這個網路絕對不能斷線，需要極高可靠度時（如軍事、核心伺服器）。</div>
+        </div>
+
+        <div class="quiz-item">
+            <p><strong>Q2：為什麼家裡或辦公室最常看到「星狀拓樸」？</strong></p>
+            <button onclick="toggleHint('hint2')">顯示提示</button>
+            <div id="hint2" class="hint-text">💡 提示：因為維修最方便！一台電腦壞掉不會影響其他人，只看中間那台集線器/交換器就好。</div>
+        </div>
+
+        <div class="quiz-item">
+            <p><strong>Q3：考試看到「可作為拓樸」，判斷依據是什麼？</strong></p>
+            <button onclick="toggleHint('hint3')">顯示提示</button>
+            <div id="hint3" class="hint-text">💡 提示：問自己「這個名詞能不能畫出一種連線的形狀？」如果可以，就選！</div>
+        </div>
+    </section>
+
+    <div class="footer-controls">
+        <button class="btn reset-btn" onclick="resetAll()">🔄 重置所有練習</button>
+    </div>
+
+</div>
+
+<script>
+    // --- 1. 概念展示邏輯 ---
+    const concepts = {
+        'tree': {
+            desc: '層級式結構，像倒過來的樹。上方是根節點，下方是分支。',
+            metaphor: '🌳 生活比喻：家族族譜、公司組織圖（總經理 -> 經理 -> 員工）。'
+        },
+        'ring': {
+            desc: '封閉式圓環結構，訊號單向傳輸。若斷一點，全網癱瘓（除非有雙環）。',
+            metaphor: '💍 生活比喻：大風吹遊戲，大家手牽手圍成一圈。'
+        },
+        'star': {
+            desc: '中央控制結構。所有節點都連到中間的集線器(Hub)或交換器(Switch)。',
+            metaphor: '⭐ 生活比喻：自行車輪（輻射狀）、太陽系（行星繞太陽）。'
+        },
+        'linear': {
+            desc: '所有設備共用一條主幹線（骨幹）。頭尾需有終端電阻。又稱匯流排(Bus)拓樸。',
+            metaphor: '📏 生活比喻：一條高速公路，沿路有不同的交流道出口。'
+        },
+        'mesh': {
+            desc: '節點之間有多重連線。可靠度最高，但線路成本最貴。',
+            metaphor: '🕸️ 生活比喻：蜘蛛網、人際關係網（朋友的朋友也是朋友）。'
+        }
+    };
+
+    function showConcept(type, btnElement) {
+        // 更新顯示文字
+        const display = document.getElementById('concept-display-area');
+        display.innerHTML = `<strong>結構說明：</strong>${concepts[type].desc}<br><br><strong>${concepts[type].metaphor}</strong>`;
+        
+        // 更新按鈕樣式
+        document.querySelectorAll('.concept-btn').forEach(btn => btn.classList.remove('active'));
+        btnElement.classList.add('active');
+    }
+
+    // --- 2. 拖放邏輯 (支援滑鼠與簡易點擊) ---
+    const draggables = document.querySelectorAll('.draggable-item');
+    const dropZone = document.getElementById('target-zone');
+    const sourceZone = document.getElementById('source-zone');
+    const targetContent = document.getElementById('target-content');
+
+    // 為每個項目添加事件
+    draggables.forEach(draggable => {
+        draggable.addEventListener('dragstart', () => {
+            draggable.classList.add('dragging');
+        });
+
+        draggable.addEventListener('dragend', () => {
+            draggable.classList.remove('dragging');
+        });
+
+        // 點擊移動模式 (適合手機操作不易拖拉時)
+        draggable.addEventListener('click', () => {
+            if (draggable.parentElement.id === 'source-zone') {
+                targetContent.appendChild(draggable);
+            } else {
+                sourceZone.appendChild(draggable);
+            }
+        });
+    });
+
+    dropZone.addEventListener('dragover', e => {
+        e.preventDefault();
+        dropZone.classList.add('drag-over');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('drag-over');
+    });
+
+    dropZone.addEventListener('drop', e => {
+        e.preventDefault();
+        dropZone.classList.remove('drag-over');
+        const draggable = document.querySelector('.dragging');
+        if(draggable) {
+            targetContent.appendChild(draggable);
+        }
+    });
+
+    function checkDragAnswer() {
+        const feedback = document.getElementById('drag-feedback');
+        const itemsInTarget = targetContent.children.length;
+        
+        if (itemsInTarget === 5) {
+            feedback.textContent = "🎉 完全正確！這五種全部都是常見的網路拓樸結構。記住：只要能描述結構，就是拓樸！";
+            feedback.className = "feedback success";
+        } else {
+            feedback.textContent = `⚠️ 還沒找全喔！目前只有 ${itemsInTarget} 個。提示：不要懷疑，每一張卡片都是！`;
+            feedback.className = "feedback error";
+        }
+    }
+
+    // --- 3. 複選題邏輯 ---
+    function checkQuizAnswer() {
+        const checkboxes = document.querySelectorAll('input[name="q40"]:checked');
+        const feedback = document.getElementById('quiz-feedback');
+        const userAnswers = Array.from(checkboxes).map(cb => cb.value);
+        
+        // 正確答案是 A, B, C, D, E (長度為 5)
+        if (userAnswers.length === 5) {
+            feedback.innerHTML = "🏆 <strong>完全正確！</strong><br>這是一道觀念題，(A)到(E)每一個選項都代表一種電腦連線的形狀，所以全部皆可作為拓樸圖。";
+            feedback.className = "feedback success";
+        } else if (userAnswers.length === 0) {
+            feedback.textContent = "尚未作答喔，請勾選您認為正確的選項。";
+            feedback.className = "feedback error";
+        } else {
+            feedback.innerHTML = "💡 <strong>差一點點！</strong><br>本題是觀念題。請問問自己：沒被你選到的那個形狀，能不能用來連接電腦？如果可以，它就是拓樸！(提示：全選)";
+            feedback.className = "feedback error";
+        }
+    }
+
+    function toggleAnalysis(id) {
+        const el = document.getElementById(id);
+        if (el.style.display === "block") {
+            el.style.display = "none";
+        } else {
+            el.style.display = "block";
+        }
+    }
+
+    // --- 4. 陷阱卡邏輯 ---
+    function dismissTrap(card) {
+        card.style.opacity = '0';
+        setTimeout(() => {
+            card.style.display = 'none';
+        }, 500);
+    }
+
+    // --- 5. 自我檢測提示 ---
+    function toggleHint(id) {
+        const hint = document.getElementById(id);
+        hint.style.display = (hint.style.display === 'block') ? 'none' : 'block';
+    }
+
+    // --- 6. 重置功能 ---
+    function resetAll() {
+        // 重置拖放
+        const items = document.querySelectorAll('.draggable-item');
+        items.forEach(item => sourceZone.appendChild(item));
+        document.getElementById('drag-feedback').style.display = 'none';
+        
+        // 重置複選題
+        document.querySelectorAll('input[name="q40"]').forEach(cb => cb.checked = false);
+        document.getElementById('quiz-feedback').style.display = 'none';
+        
+        // 收起解析
+        document.querySelectorAll('.analysis-detail').forEach(el => el.style.display = 'none');
+        
+        // 恢復陷阱卡
+        document.querySelectorAll('.trap-card').forEach(card => {
+            card.style.display = 'block';
+            card.style.opacity = '1';
+        });
+
+        // 恢復提示
+        document.querySelectorAll('.hint-text').forEach(hint => hint.style.display = 'none');
+
+        // 清空概念區
+        document.getElementById('concept-display-area').innerHTML = '請點選上方按鈕，查看該拓樸的結構與比喻。';
+        document.querySelectorAll('.concept-btn').forEach(btn => btn.classList.remove('active'));
+
+        // 捲動到頂部
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+</script>
+
+</body>
+</html>

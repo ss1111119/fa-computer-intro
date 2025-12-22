@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>題目 16：分時系統與程序狀態 - 互動教學講義</title>
+    <style>
+        /* --- 全域設定 --- */
+        :root {
+            --primary-color: #3b82f6; /* 補習班藍 */
+            --accent-color: #f59e0b;  /* 重點黃 */
+            --success-color: #10b981; /* 正確綠 */
+            --danger-color: #ef4444;  /* 錯誤紅 */
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-light: #6b7280;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        h1, h2, h3 {
+            margin-top: 0;
+            color: #111827;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* --- 卡片式設計 --- */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: 24px;
+            margin-bottom: 20px;
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .card.interactive {
+            border-left-color: var(--accent-color);
+        }
+
+        /* --- 題目區塊 --- */
+        .question-header {
+            background-color: #e0f2fe;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .question-tag {
+            background: var(--primary-color);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+
+        .highlight {
+            color: var(--danger-color);
+            font-weight: bold;
+            background-color: #fee2e2;
+            padding: 0 4px;
+        }
+
+        /* --- 詞彙表 --- */
+        .vocab-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 10px;
+        }
+        .vocab-item {
+            background: #f9fafb;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.95em;
+        }
+        .vocab-term {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        /* --- 互動按鈕通用樣式 --- */
+        button {
+            cursor: pointer;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 20px;
+            font-size: 1em;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        
+        .btn-primary { background: var(--primary-color); color: white; }
+        .btn-primary:hover { background: #2563eb; }
+        
+        .btn-reset { background: var(--text-light); color: white; margin-top: 20px;}
+        
+        .btn-option {
+            display: block;
+            width: 100%;
+            text-align: left;
+            background: white;
+            border: 2px solid #e5e7eb;
+            margin-bottom: 8px;
+            color: var(--text-main);
+        }
+        .btn-option:hover { border-color: var(--primary-color); background: #eff6ff; }
+
+        /* --- (A) 狀態圖互動區 --- */
+        #state-diagram-container {
+            position: relative;
+            height: 350px;
+            background: #fff;
+            border: 1px dashed #ccc;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .state-circle {
+            position: absolute;
+            width: 100px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 30px;
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            z-index: 2;
+        }
+
+        #st-new { top: 20px; left: 20px; background: #9ca3af; } /* Create */
+        #st-ready { top: 120px; left: 100px; background: var(--accent-color); }
+        #st-running { top: 120px; right: 100px; background: var(--success-color); border: 3px solid #000;} /* Running 重點 */
+        #st-waiting { bottom: 20px; left: 50%; transform: translateX(-50%); background: #6366f1; }
+        #st-terminated { top: 20px; right: 20px; background: #9ca3af; }
+
+        .arrow-line {
+            position: absolute;
+            cursor: pointer;
+            stroke: #9ca3af;
+            stroke-width: 3;
+            fill: none;
+            transition: stroke 0.3s;
+            z-index: 1;
+        }
+        .arrow-line:hover { stroke: var(--primary-color); stroke-width: 5; }
+        
+        .arrow-label {
+            position: absolute;
+            background: white;
+            border: 1px solid #ddd;
+            padding: 2px 6px;
+            font-size: 0.8em;
+            border-radius: 4px;
+            pointer-events: none; /* 讓點擊穿透到 SVG */
+        }
+
+        #diagram-explainer {
+            min-height: 40px;
+            margin-top: 10px;
+            padding: 10px;
+            background: #ecfdf5;
+            color: var(--success-color);
+            border-radius: 6px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        /* --- (C) 排隊模擬區 --- */
+        .queue-viz {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin: 20px 0;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+        .cpu-box {
+            width: 80px;
+            height: 80px;
+            border: 4px solid var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #dbeafe;
+            font-weight: bold;
+        }
+        .ready-queue {
+            flex: 1;
+            border-bottom: 3px solid #ccc;
+            display: flex;
+            gap: 10px;
+            padding: 10px;
+            min-height: 60px;
+            position: relative;
+        }
+        .ready-queue::before {
+            content: "Ready Queue (排隊區)";
+            position: absolute;
+            bottom: -25px;
+            left: 0;
+            font-size: 0.8em;
+            color: #666;
+        }
+        .process-node {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            box-shadow: 2px 2px 0 #b45309;
+        }
+        .process-running {
+            background: var(--success-color);
+            box-shadow: 2px 2px 0 #047857;
+            transform: scale(1.2);
+        }
+
+        /* --- (E) 重點小卡 --- */
+        .cheat-sheet {
+            background: #374151;
+            color: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .cheat-title {
+            padding: 15px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            background: #1f2937;
+        }
+        .cheat-content {
+            padding: 15px;
+            display: none; /* 預設收合 */
+        }
+        .cheat-content.show { display: block; }
+
+        /* --- (F) 自我檢測 --- */
+        .hint-box {
+            display: none;
+            background: #fffbeb;
+            border-left: 4px solid #f59e0b;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #92400e;
+        }
+
+        /* --- 響應式調整 --- */
+        @media (max-width: 600px) {
+            #state-diagram-container { height: 450px; }
+            .state-circle { width: 80px; font-size: 0.9em; }
+            #st-ready { left: 50%; transform: translateX(-50%); top: 80px; }
+            #st-running { left: 50%; transform: translateX(-50%); top: 200px; right: auto; }
+            #st-waiting { top: 320px; bottom: auto;}
+            /* 手機版箭頭重繪邏輯複雜，此處為保持HTML單檔簡潔，建議在JS中處理或透過CSS Grid Stack */
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- 標題區 -->
+    <header style="text-align: center; margin-bottom: 30px;">
+        <h1 style="color: var(--primary-color);">作業系統小教室</h1>
+        <p>單元：分時系統與程序狀態</p>
+    </header>
+
+    <!-- 題目區 -->
+    <div class="card">
+        <div class="question-header">
+            <span class="question-tag">題目 16</span>
+            <h3>分時系統 (Time-Sharing) 狀態切換</h3>
+        </div>
+        <p style="font-size: 1.1em;">
+            在分時（time-sharing）作業系統中，如果程序 A 的<span class="highlight">時間區段（time slot）耗盡</span>，因而將執行切換至另一程序 B 時，程序 A 將會進入何種狀態（state）？
+        </p>
+        <p style="color: var(--text-light); font-size: 0.9em;">(請先思考一下，再往下看互動教學)</p>
+    </div>
+
+    <!-- 觀念講解區 -->
+    <div class="card">
+        <h2>📚 補教名師：白話文翻譯機</h2>
+        <div class="vocab-grid">
+            <div class="vocab-item"><span class="vocab-term">分時 (Time-Sharing)</span><br>大家輪流用 CPU，每人分一小段時間，感覺像同時在跑。</div>
+            <div class="vocab-item"><span class="vocab-term">時間片 (Time Slot)</span><br>CPU 借你用的那一小段時間（例如 0.1 秒）。</div>
+            <div class="vocab-item"><span class="vocab-term">程序 (Process)</span><br>正在執行中的程式，像「排隊等上台表演的人」。</div>
+            <div class="vocab-item"><span class="vocab-term">排程 (Scheduling)</span><br>裁判決定下一個換誰用 CPU。</div>
+            <div class="vocab-item"><span class="vocab-term">Ready State</span><br>萬事俱備，只欠 CPU（在排隊等叫號）。</div>
+            <div class="vocab-item"><span class="vocab-term">Running State</span><br>正在使用 CPU（正在台上表演）。</div>
+            <div class="vocab-item"><span class="vocab-term">Waiting State</span><br>卡住了（等鍵盤輸入、讀磁碟），給 CPU 也沒用，要去旁邊等。</div>
+            <div class="vocab-item"><span class="vocab-term">Terminated State</span><br>表演結束，下台鞠躬。</div>
+        </div>
+    </div>
+
+    <!-- 互動功能 A: 狀態圖 -->
+    <div class="card interactive">
+        <h2>🎮 互動 A：點擊箭頭看發生什麼事？</h2>
+        <p>請點擊下圖中的「灰色箭頭」，看看程序為什麼會變換狀態。</p>
+        
+        <div id="state-diagram-container">
+            <!-- 狀態圓圈 -->
+            <div class="state-circle" id="st-new">New</div>
+            <div class="state-circle" id="st-ready">Ready<br>(就緒)</div>
+            <div class="state-circle" id="st-running">Running<br>(執行)</div>
+            <div class="state-circle" id="st-waiting">Waiting<br>(等待)</div>
+            <div class="state-circle" id="st-terminated">Terminated</div>
+
+            <!-- SVG 箭頭繪製區 (寬高設為 100% 覆蓋父層) -->
+            <svg width="100%" height="100%" style="position:absolute; top:0; left:0; z-index:1;">
+                <defs>
+                    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#9ca3af" />
+                    </marker>
+                    <marker id="arrowhead-hover" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#3b82f6" />
+                    </marker>
+                </defs>
+
+                <!-- 1. Ready -> Running -->
+                <path d="M 210,150 L 590,150" class="arrow-line" onclick="explainState('dispatch')" id="line-dispatch"></path>
+                
+                <!-- 2. Running -> Ready (本題重點) -->
+                <path d="M 600,140 Q 400,80 200,140" class="arrow-line" onclick="explainState('timeout')" id="line-timeout" style="stroke: var(--danger-color); stroke-dasharray: 5,5;"></path>
+
+                <!-- 3. Running -> Waiting -->
+                <path d="M 640,180 Q 640,300 450,330" class="arrow-line" onclick="explainState('io-request')"></path>
+
+                <!-- 4. Waiting -> Ready -->
+                <path d="M 350,330 Q 160,300 160,180" class="arrow-line" onclick="explainState('io-complete')"></path>
+
+                <!-- 5. Running -> Terminated -->
+                <path d="M 690,130 L 730,70" class="arrow-line" onclick="explainState('exit')"></path>
+            </svg>
+            
+            <!-- 標籤 (輔助閱讀) -->
+            <div class="arrow-label" style="top: 155px; left: 400px;">被選到 (Dispatch)</div>
+            <div class="arrow-label" style="top: 90px; left: 400px; color:red;">時間到 (Timeout)</div>
+            <div class="arrow-label" style="top: 250px; right: 100px;">I/O 請求</div>
+            <div class="arrow-label" style="top: 250px; left: 100px;">I/O 完成</div>
+        </div>
+
+        <div id="diagram-explainer">💡 點擊上方箭頭或線條，這裡會出現名師解析！</div>
+    </div>
+
+    <!-- 互動功能 C: 分時排隊模擬 -->
+    <div class="card interactive">
+        <h2>⏳ 互動 C：分時系統排隊模擬 (Time Slicing)</h2>
+        <p>看看 CPU 怎麼把時間切給 A、B、C 三個人。</p>
+        
+        <div class="queue-viz">
+            <div class="cpu-box">
+                <div>CPU</div>
+                <div id="cpu-content" style="margin-top:5px;">(空)</div>
+            </div>
+            <div class="ready-queue" id="queue-content">
+                <!-- JS 動態生成 -->
+            </div>
+        </div>
+
+        <div style="background: #f0fdf4; padding: 10px; border-radius: 6px; margin-bottom: 10px;" id="sim-status">
+            準備開始模擬...
+        </div>
+
+        <button class="btn-primary" onclick="nextTimeSlice()">⏱️ 下一個時間片 (Next Time Slice)</button>
+    </div>
+
+    <!-- 互動功能 B: 情境選擇器 -->
+    <div class="card interactive">
+        <h2>🤔 互動 B：情境反應訓練</h2>
+        <p>把觀念變成直覺反應！請根據情境選擇正確的「下一個狀態」。</p>
+
+        <div style="margin-bottom: 15px;">
+            <label><strong>當前情境：</strong></label>
+            <select id="scenario-select" style="padding: 8px; font-size: 1em;">
+                <option value="timeout">時間片 (Time Slot) 用完</option>
+                <option value="io_req">程式需要讀取檔案 (I/O 請求)</option>
+                <option value="io_done">硬碟資料讀取完成 (I/O 完成)</option>
+                <option value="exit">程式執行完畢 (Exit)</option>
+            </select>
+        </div>
+
+        <div>
+            <label><strong>程序將進入哪個 State？</strong></label><br>
+            <div style="margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap;">
+                <button onclick="checkScenarioAns('Ready')" style="background:var(--accent-color); color:white;">Ready</button>
+                <button onclick="checkScenarioAns('Running')" style="background:var(--success-color); color:white;">Running</button>
+                <button onclick="checkScenarioAns('Waiting')" style="background:#6366f1; color:white;">Waiting</button>
+                <button onclick="checkScenarioAns('Terminated')" style="background:#9ca3af; color:white;">Terminated</button>
+            </div>
+        </div>
+
+        <div id="scenario-feedback" style="margin-top: 15px; font-weight: bold; min-height: 24px;"></div>
+    </div>
+
+    <!-- 互動功能 D: 題目 16 解析 -->
+    <div class="card">
+        <h2>📝 題目 16 選項解析</h2>
+        <p>回到正題，這題答案選什麼？點擊選項看解析。</p>
+        
+        <button class="btn-option" onclick="checkOption('A')">(A) waiting state</button>
+        <button class="btn-option" onclick="checkOption('B')">(B) ready state</button>
+        <button class="btn-option" onclick="checkOption('C')">(C) terminated state</button>
+        <button class="btn-option" onclick="checkOption('D')">(D) running state</button>
+
+        <div id="option-feedback" style="margin-top: 15px; padding: 10px; border-radius: 6px; display: none;"></div>
+    </div>
+
+    <!-- 互動功能 E: 重點小卡 -->
+    <div class="cheat-sheet">
+        <div class="cheat-title" onclick="toggleCheatSheet()">
+            <span>🔑 重點速記小卡 (點擊展開/收合)</span>
+            <span>▼</span>
+        </div>
+        <div class="cheat-content" id="cheat-content">
+            <h4 style="margin-top:0;">四大狀態一句話對照：</h4>
+            <ul>
+                <li><strong>Ready：</strong>能跑但沒 CPU（在排隊）。</li>
+                <li><strong>Running：</strong>正在用 CPU（爽用中）。</li>
+                <li><strong>Waiting：</strong>在等 I/O（不能用 CPU）。</li>
+                <li><strong>Terminated：</strong>再見掰掰。</li>
+            </ul>
+            <h4>🔥 超常考轉換表：</h4>
+            <ul>
+                <li>Running → Ready：<span style="color:#fcd34d">時間片用完</span>、被高優先權插隊。</li>
+                <li>Running → Waiting：自己要 I/O (讀檔/網路)。</li>
+                <li>Waiting → Ready：I/O 做完了。</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 互動功能 F: 自我檢測 -->
+    <div class="card">
+        <h2>🧠 自我檢測 (不給答案，自己想！)</h2>
+        
+        <div style="margin-bottom: 20px;">
+            <p><strong>Q1. 如果 A 是因為「讀取磁碟」被換下來，會進入哪個狀態？</strong></p>
+            <button onclick="toggleHint('h1')" style="font-size: 0.8em; padding: 5px 10px;">顯示提示</button>
+            <div id="h1" class="hint-box">提示：讀磁碟是 I/O 行為。CPU 不能幫你讀磁碟，你要去旁邊等磁碟轉好。關鍵字：Waiting。</div>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <p><strong>Q2. Ready 與 Waiting 最大的差別是什麼？(一句話)</strong></p>
+            <button onclick="toggleHint('h2')" style="font-size: 0.8em; padding: 5px 10px;">顯示提示</button>
+            <div id="h2" class="hint-box">提示：給他 CPU 他能跑嗎？Ready 給 CPU 就能跑；Waiting 給 CPU 也不能跑（因為還在等資料）。</div>
+        </div>
+
+        <div>
+            <p><strong>Q3. 程序結束 (Terminated) 後還會回到 Ready 嗎？</strong></p>
+            <button onclick="toggleHint('h3')" style="font-size: 0.8em; padding: 5px 10px;">顯示提示</button>
+            <div id="h3" class="hint-box">提示：人死不能復生，程式結束就從記憶體清除了。不會回去了。</div>
+        </div>
+    </div>
+
+    <button class="btn-reset" onclick="resetAll()">🔄 全部重置 / 清除練習紀錄</button>
+    
+    <footer style="text-align: center; margin-top: 40px; color: #9ca3af; font-size: 0.8em;">
+        &copy; 2024 作業系統互動講義 | Designed for High School Learners
+    </footer>
+
+</div>
+
+<!-- JavaScript 邏輯 -->
+<script>
+    // --- (A) 狀態圖解釋 ---
+    const explanations = {
+        'dispatch': 'Ready → Running (Dispatch)：<br>排程器 (Scheduler) 覺得輪到你了，把你叫上台使用 CPU。',
+        'timeout': 'Running → Ready (Timeout)：<br>【本題重點】你的時間片 (Time Slot) 用完了！雖然你還沒做完，但要把 CPU 讓給別人，乖乖回去 Ready 排隊。',
+        'io-request': 'Running → Waiting (I/O Request)：<br>程式需要讀檔案或等鍵盤輸入，主動放棄 CPU，去旁邊慢慢等。',
+        'io-complete': 'Waiting → Ready (I/O Complete)：<br>檔案讀到了！但不能直接插隊用 CPU，要先去 Ready 排隊等叫號。',
+        'exit': 'Running → Terminated (Exit)：<br>程式執行完畢，釋放所有資源。'
+    };
+
+    function explainState(key) {
+        const box = document.getElementById('diagram-explainer');
+        box.innerHTML = explanations[key];
+        box.style.backgroundColor = '#fff7ed'; // 淡淡的橘色提醒
+        setTimeout(() => { box.style.backgroundColor = '#ecfdf5'; }, 300);
+    }
+
+    // --- (B) 情境選擇器 ---
+    const scenarioAnswers = {
+        'timeout': 'Ready',
+        'io_req': 'Waiting',
+        'io_done': 'Ready',
+        'exit': 'Terminated'
+    };
+
+    const scenarioReasons = {
+        'timeout': '正確！時間用完只是「暫停」，隨時準備再跑，所以回 Ready 排隊。',
+        'io_req': '正確！要等周邊裝置 (I/O)，CPU 幫不上忙，所以去 Waiting。',
+        'io_done': '正確！I/O 做完了變回「可執行狀態」，但要先排隊，所以是 Ready。',
+        'exit': '正確！任務結束。'
+    };
+
+    function checkScenarioAns(userChoice) {
+        const scenario = document.getElementById('scenario-select').value;
+        const correctAns = scenarioAnswers[scenario];
+        const feedback = document.getElementById('scenario-feedback');
+
+        if (userChoice === correctAns) {
+            feedback.innerHTML = `<span style="color:var(--success-color)">✅ ${scenarioReasons[scenario]}</span>`;
+        } else {
+            feedback.innerHTML = `<span style="color:var(--danger-color)">❌ 答錯囉。想一下：${getWrongHint(scenario, userChoice)}</span>`;
+        }
+    }
+
+    function getWrongHint(scenario, choice) {
+        if (scenario === 'timeout') return '時間用完代表你還「能跑」，只是被換下來。不是在等 I/O (Waiting)，也不是結束 (Terminated)。';
+        if (scenario === 'io_req') return '他在等硬碟資料，給他 CPU 他也不能跑，所以不是 Ready，是 Waiting。';
+        if (scenario === 'io_done') return 'I/O 做完就可以跑了，但不能直接變成 Running (要排隊)，也不是 Waiting 了。';
+        return '程式都跑完了，當然是 Terminated。';
+    }
+
+    // --- (C) 排隊模擬 ---
+    let queueState = {
+        running: null,
+        queue: ['A', 'B', 'C'], // 初始 A, B, C 都在排隊
+        step: 0
+    };
+
+    function renderQueue() {
+        const cpuDiv = document.getElementById('cpu-content');
+        const queueDiv = document.getElementById('queue-content');
+        const statusDiv = document.getElementById('sim-status');
+        
+        // 渲染 CPU
+        if (queueState.running) {
+            cpuDiv.innerHTML = `<div class="process-node process-running">${queueState.running}</div>`;
+        } else {
+            cpuDiv.innerHTML = '(空闲)';
+        }
+
+        // 渲染 Queue
+        queueDiv.innerHTML = '';
+        queueState.queue.forEach(p => {
+            const node = document.createElement('div');
+            node.className = 'process-node';
+            node.innerText = p;
+            queueDiv.appendChild(node);
+        });
+
+        // 狀態文字
+        if (queueState.step === 0) statusDiv.innerHTML = "Step 0: 大家都在 Ready Queue 排隊，CPU 是空的。";
+        else if (queueState.step === 1) statusDiv.innerHTML = `Step 1: <strong>${queueState.running}</strong> 搶到 CPU (Running)。B, C 繼續等。`;
+        else {
+             statusDiv.innerHTML = `Step ${queueState.step}: 
+             <span style="color:var(--danger-color)">時間片到！</span> 
+             剛跑完的回到 Queue 尾端排隊 (Ready)，
+             換 <strong>${queueState.running}</strong> 上台 (Running)。`;
+        }
+    }
+
+    function nextTimeSlice() {
+        // 邏輯：
+        // 1. 如果有人在 Running，把他丟回 Queue 尾端
+        // 2. 從 Queue 頭部拿出一個放進 Running
+        
+        if (queueState.running) {
+            queueState.queue.push(queueState.running); // 舊的回去排隊
+        }
+        
+        if (queueState.queue.length > 0) {
+            queueState.running = queueState.queue.shift(); // 新的出來
+        }
+
+        queueState.step++;
+        renderQueue();
+    }
+
+    // 初始化渲染
+    renderQueue();
+
+    // --- (D) 選項解析 ---
+    function checkOption(opt) {
+        const feedback = document.getElementById('option-feedback');
+        feedback.style.display = 'block';
+        
+        if (opt === 'B') {
+            feedback.style.background = '#d1fae5';
+            feedback.style.color = '#065f46';
+            feedback.innerHTML = `
+                <strong>✅ (B) Ready state 正確！</strong><br>
+                解析：時間片用完 (Time-out) 代表程式還沒執行完，但被迫交出 CPU。<br>
+                既然還沒做完且沒有要等 I/O，它就是「準備好隨時可執行」，所以回到 Ready Queue 排隊。
+            `;
+        } else {
+            feedback.style.background = '#fee2e2';
+            feedback.style.color = '#991b1b';
+            let reason = "";
+            if (opt === 'A') reason = "Waiting 是在等 I/O (如讀檔、輸入)，題目只是時間到，不是要 I/O。";
+            if (opt === 'C') reason = "Terminated 是程式執行結束，題目說只是時間用完切換而已。";
+            if (opt === 'D') reason = "CPU 已經切給程序 B 了，所以 A 不會繼續在 Running。";
+            feedback.innerHTML = `<strong>❌ (${opt}) 錯誤。</strong><br>${reason}`;
+        }
+    }
+
+    // --- (E) 重點小卡開關 ---
+    function toggleCheatSheet() {
+        const content = document.getElementById('cheat-content');
+        content.classList.toggle('show');
+    }
+
+    // --- (F) 自我檢測提示 ---
+    function toggleHint(id) {
+        const el = document.getElementById(id);
+        el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+    }
+
+    // --- 全域重置 ---
+    function resetAll() {
+        // 重置圖解文字
+        document.getElementById('diagram-explainer').innerHTML = '💡 點擊上方箭頭或線條，這裡會出現名師解析！';
+        
+        // 重置模擬
+        queueState = { running: null, queue: ['A', 'B', 'C'], step: 0 };
+        renderQueue();
+        
+        // 重置情境回饋
+        document.getElementById('scenario-select').value = 'timeout';
+        document.getElementById('scenario-feedback').innerHTML = '';
+        
+        // 重置選項解析
+        document.getElementById('option-feedback').style.display = 'none';
+        
+        // 收合提示與小卡
+        document.querySelectorAll('.hint-box').forEach(el => el.style.display = 'none');
+        document.getElementById('cheat-content').classList.remove('show');
+        
+        alert('已重置所有練習狀態！');
+    }
+</script>
+
+</body>
+</html>

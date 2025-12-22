@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CO_TF_Q06_ASCII_Bit_And_Language_v1</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50; /* 深藍，專業感 */
+            --accent-color: #e74c3c; /* 紅色，重點強調 */
+            --highlight-bg: #f1c40f; /* 螢光筆黃 */
+            --light-bg: #ecf0f1;
+            --text-color: #333;
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7f6;
+            color: var(--text-color);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* A. 頁首區 */
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        header .subtitle {
+            font-size: 0.9rem;
+            color: #bdc3c7;
+            margin-top: 5px;
+        }
+
+        header .badge {
+            display: inline-block;
+            background-color: var(--accent-color);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-bottom: 5px;
+        }
+
+        /* B. 題目區 */
+        .question-card {
+            background: white;
+            padding: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            border-left: 5px solid var(--accent-color);
+        }
+
+        .question-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .options {
+            list-style: none;
+            padding: 0;
+        }
+
+        .options li {
+            margin: 10px 0;
+            font-size: 1.1rem;
+            padding: 10px;
+            background-color: var(--light-bg);
+            border-radius: 5px;
+        }
+
+        /* C. 關鍵字螢光筆互動 */
+        .keyword-section {
+            background: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+        }
+
+        .keyword-btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .keyword-btn {
+            background-color: white;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 5px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .keyword-btn:hover, .keyword-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .explanation-box {
+            background-color: #fcf8e3;
+            border: 1px solid #faebcc;
+            padding: 15px;
+            border-radius: 5px;
+            min-height: 40px;
+            font-size: 0.95rem;
+        }
+
+        .highlight-text {
+            transition: background-color 0.3s;
+            padding: 0 2px;
+            border-radius: 3px;
+        }
+
+        .active-highlight {
+            background-color: var(--highlight-bg);
+            font-weight: bold;
+        }
+
+        /* D. 白話翻譯 accordion */
+        .accordion {
+            background-color: white;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .accordion-header {
+            background-color: #e0e6ed;
+            padding: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .accordion-content {
+            padding: 15px;
+            display: none;
+            border-top: 1px solid #dcdcdc;
+        }
+
+        .accordion-content.show {
+            display: block;
+        }
+
+        /* E. 觀念教學 */
+        .concept-section, .analysis-section, .mistakes-section {
+            background: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            font-size: 1.1rem;
+            color: var(--primary-color);
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        .concept-list dt {
+            font-weight: bold;
+            color: var(--accent-color);
+            margin-top: 10px;
+        }
+
+        .concept-list dd {
+            margin-left: 0;
+            margin-bottom: 10px;
+            padding-left: 15px;
+            border-left: 3px solid #eee;
+        }
+
+        /* H. 記憶口訣 */
+        .mnemonic-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        /* I. 正確答案 */
+        .answer-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .reveal-btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            transition: transform 0.1s;
+        }
+
+        .reveal-btn:active {
+            transform: scale(0.98);
+        }
+
+        .answer-content {
+            display: none;
+            margin-top: 20px;
+            background: white;
+            padding: 20px;
+            border: 2px solid var(--accent-color);
+            border-radius: var(--border-radius);
+            text-align: left;
+        }
+
+        .answer-big {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            display: block;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        /* RWD */
+        @media (max-width: 600px) {
+            header h1 { font-size: 1.2rem; }
+            .question-text { font-size: 1.1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- A. 頁首區 -->
+    <header>
+        <div class="badge">題號：6（是非題）</div>
+        <h1>ASCII 夠不夠用？先搞懂它能表示什麼</h1>
+        <div class="subtitle">字元編碼必考陷阱題</div>
+    </header>
+
+    <!-- B. 題目區 -->
+    <div class="question-card">
+        <div class="question-text">
+            6. <span id="q-ascii" class="highlight-text">ASCII</span> 是使用 <span id="q-16bit" class="highlight-text">16 位元</span>，而且足以呈現許多當今的<span id="q-lang" class="highlight-text">主要文字語言</span>。
+        </div>
+        <ul class="options">
+            <li>(A) O</li>
+            <li>(B) X</li>
+        </ul>
+    </div>
+
+    <!-- C. 關鍵字互動 -->
+    <div class="keyword-section">
+        <h3><span style="border-bottom: 3px solid var(--highlight-bg);">點擊關鍵字</span>查看白話文解釋：</h3>
+        <div class="keyword-btn-group">
+            <button class="keyword-btn" onclick="explain('ascii')">ASCII</button>
+            <button class="keyword-btn" onclick="explain('16bit')">16 位元</button>
+            <button class="keyword-btn" onclick="explain('lang')">主要文字語言</button>
+            <button class="keyword-btn" onclick="explain('unicode')">Unicode</button>
+            <button class="keyword-btn" onclick="explain('utf')">UTF-8 / UTF-16</button>
+        </div>
+        <div id="explanation-display" class="explanation-box">
+            請點擊上方按鈕，老師會把專有名詞翻譯成白話文給你聽！
+        </div>
+    </div>
+
+    <!-- D. 白話翻譯 -->
+    <div class="accordion">
+        <div class="accordion-header" onclick="toggleAccordion('plain-lang')">
+            <span>老師幫你翻譯題目（點擊展開）</span>
+            <span id="icon-plain-lang">+</span>
+        </div>
+        <div id="content-plain-lang" class="accordion-content">
+            <p><strong>【白話翻譯】</strong><br>
+            「ASCII 這個編碼系統是不是用 16 個 0與1 組成的？而且它的容量大到能放入現在很多國家的語言（像中文、日文、韓文等）？」</p>
+            <p><strong>【這題在考什麼】</strong><br>
+            考你是否能分清楚：<br>
+            1. ASCII（早期、美國用、英文為主）<br>
+            2. Unicode（現代、全球用、各國語言）<br>
+            這兩個標準的差異。</p>
+        </div>
+    </div>
+
+    <!-- E. 觀念教學 -->
+    <div class="concept-section">
+        <h2>觀念教學：ASCII 到底是多少位元？</h2>
+        <dl class="concept-list">
+            <dt>1. ASCII 的位元數（必考）</dt>
+            <dd>標準 ASCII 是 <strong>7 位元</strong>（7 bits），可以表示 2<sup>7</sup> = 128 個符號。</dd>
+            <dd>常見的「擴充 ASCII」則是使用 <strong>8 位元</strong>（1 byte），表示 256 個符號。</dd>
+            <dd style="color:red;">重點：絕對不是 16 位元。</dd>
+
+            <dt>2. ASCII 能表示哪些文字？</dt>
+            <dd>主要是：英文大小寫（A-Z, a-z）、阿拉伯數字（0-9）、常用標點符號與控制字元。</dd>
+            <dd>它<strong>不能</strong>完整表示中文、日文、韓文（CJK）這些字數成千上萬的語言。</dd>
+
+            <dt>3. 16 位元比較接近什麼？</dt>
+            <dd>通常提到 16 位元，指的是早期 Unicode 的實作或是 UTF-16 編碼，這才是用來解決全球語言問題的方案。</dd>
+        </dl>
+    </div>
+
+    <!-- F. 解析 -->
+    <div class="analysis-section">
+        <h2>是非題判斷解析</h2>
+        <p><strong>(A) O</strong> <br>
+        → <span style="color:red;">錯</span>。錯在兩點：<br>
+        1. ASCII 不是 16 位元（是 7 或 8 位元）。<br>
+        2. ASCII 容量太小，不足以表示多數語言。</p>
+        
+        <p><strong>(B) X</strong> <br>
+        → <span style="color:green;">正確</span>。題目敘述把 ASCII 與 Unicode 的特色混在一起了，這是典型的張冠李戴。</p>
+    </div>
+
+    <!-- G. 常見錯誤 -->
+    <div class="mistakes-section">
+        <h2>常見錯誤提醒（陷阱區）</h2>
+        <ul style="padding-left: 20px;">
+            <li>看到「能表示很多語言」就直覺選 O，忘記 ASCII 其實很「小」。</li>
+            <li>誤以為「位元數越大越好」，所以覺得 16 位元應該就是 ASCII（事實上 ASCII 是電腦發展早期的產物，比較精簡）。</li>
+            <li>把「字元集（Unicode）」與「編碼方式（UTF-8）」搞混，但這題主要是考最基本的 ASCII 規格。</li>
+        </ul>
+    </div>
+
+    <!-- H. 記憶口訣 -->
+    <div class="mnemonic-section">
+        【記憶口訣】<br>
+        ASCII 英文小集合（7 bit），<br>
+        Unicode 全球大集合。
+    </div>
+
+    <!-- I. 答案揭曉 -->
+    <div class="answer-section">
+        <button class="reveal-btn" onclick="showAnswer()">這題答案是？（點擊揭曉）</button>
+        <div id="answer-box" class="answer-content">
+            <span class="answer-big">答案：(B) X</span>
+            <p><strong>一句話理由：</strong><br>
+            ASCII 標準為 7 位元（擴充為 8 位元），且主要用於表示英文，空間太小，不足以涵蓋多數主要文字語言（如中文）。</p>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // 關鍵字解釋資料庫
+    const explanations = {
+        'ascii': '<strong>ASCII：</strong>美國標準資訊交換碼。是一種早期的編碼標準，標準版只用 <strong>7 個位元</strong>，主要用來存英文、數字和符號。',
+        '16bit': '<strong>16 位元：</strong>長度為 16 個 0 或 1。能表示 2<sup>16</sup> (65,536) 種變化。這通常是 Unicode (UTF-16) 的特徵，<strong>不是 ASCII</strong>。',
+        'lang': '<strong>主要文字語言：</strong>指中文、日文、韓文、阿拉伯文等。這些語言的字元數量遠超過 ASCII 能負荷的 128 或 256 個。',
+        'unicode': '<strong>Unicode：</strong>萬國碼（統一碼）。這才是用來解決「全球各種文字」都能在電腦顯示的標準集合。',
+        'utf': '<strong>UTF-8 / UTF-16：</strong>這些是 Unicode 的「編碼實作方式」。UTF-8 是目前網頁最常用的編碼。'
+    };
+
+    // 關鍵字互動功能
+    function explain(key) {
+        // 1. 更新解釋文字
+        const display = document.getElementById('explanation-display');
+        display.innerHTML = explanations[key];
+
+        // 2. 清除所有按鈕的 active 狀態
+        const buttons = document.querySelectorAll('.keyword-btn');
+        buttons.forEach(btn => btn.classList.remove('active'));
+        
+        // 3. 設定當前按鈕為 active
+        event.target.classList.add('active');
+
+        // 4. 清除題目中的螢光筆
+        const highlights = document.querySelectorAll('.highlight-text');
+        highlights.forEach(span => span.classList.remove('active-highlight'));
+
+        // 5. 針對特定關鍵字，點亮題目中的對應文字
+        if (key === 'ascii') {
+            document.getElementById('q-ascii').classList.add('active-highlight');
+        } else if (key === '16bit') {
+            document.getElementById('q-16bit').classList.add('active-highlight');
+        } else if (key === 'lang') {
+            document.getElementById('q-lang').classList.add('active-highlight');
+        }
+    }
+
+    // 手風琴展開功能
+    function toggleAccordion(id) {
+        const content = document.getElementById('content-' + id);
+        const icon = document.getElementById('icon-' + id);
+        
+        if (content.classList.contains('show')) {
+            content.classList.remove('show');
+            icon.innerText = '+';
+        } else {
+            content.classList.add('show');
+            icon.innerText = '-';
+        }
+    }
+
+    // 顯示答案功能
+    function showAnswer() {
+        const answerBox = document.getElementById('answer-box');
+        const btn = document.querySelector('.reveal-btn');
+        
+        if (answerBox.style.display === 'block') {
+            answerBox.style.display = 'none';
+            btn.innerText = '這題答案是？（點擊揭曉）';
+        } else {
+            answerBox.style.display = 'block';
+            btn.innerText = '隱藏答案';
+            // 平滑捲動到答案區
+            answerBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+</script>
+
+</body>
+</html>

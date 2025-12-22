@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>題目 30：URL 與通訊協定互動教學</title>
+    <style>
+        /* --- 基礎設定 (Reset & Base) --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+        }
+
+        body {
+            background-color: #f4f7f6; /* 柔和背景色 */
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        /* --- 容器與版面配置 (Layout) --- */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-top: 5px solid #2c3e50; /* 補習班講義風格的頂部線條 */
+        }
+
+        /* --- 通用標題樣式 (Typography) --- */
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+            text-align: center;
+        }
+
+        h2 {
+            color: #2980b9;
+            border-left: 5px solid #2980b9;
+            padding-left: 10px;
+            margin: 25px 0 15px 0;
+            font-size: 1.4rem;
+        }
+
+        h3 {
+            color: #16a085;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        p {
+            margin-bottom: 15px;
+        }
+
+        .highlight {
+            color: #e74c3c;
+            font-weight: bold;
+            background-color: #fff5f5;
+            padding: 0 4px;
+        }
+
+        .note-box {
+            background-color: #fff8e1;
+            border: 1px solid #ffe0b2;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+
+        /* --- 互動區域 A: URL 拆解 (Interactive URL) --- */
+        .url-display {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            background-color: #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-family: monospace;
+            font-size: 1.3rem;
+            cursor: pointer;
+        }
+
+        .url-part {
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .url-part:hover {
+            background-color: #d5dbdb;
+            border-color: #bdc3c7;
+        }
+
+        .url-part.active {
+            background-color: #2980b9;
+            color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        #url-explanation {
+            min-height: 60px;
+            background-color: #e8f6f3;
+            color: #16a085;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        /* --- 互動區域 B: HTTP vs HTTPS 對照 (Comparison Cards) --- */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: white;
+            border: 2px solid #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .card:hover {
+            border-color: #3498db;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .card h4 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .card-content {
+            display: none; /* 預設隱藏 */
+            margin-top: 10px;
+            color: #555;
+            font-size: 0.9rem;
+            animation: fadeIn 0.5s;
+        }
+
+        /* --- 題目 30 互動區 (Quiz Section) --- */
+        .quiz-box {
+            border: 2px solid #2c3e50;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            background-color: #fff;
+        }
+
+        .question-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        .options-grid {
+            display: grid;
+            gap: 10px;
+        }
+
+        .option-btn {
+            padding: 15px;
+            text-align: left;
+            background-color: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .option-btn:hover {
+            background-color: #e2e6ea;
+            border-color: #adb5bd;
+        }
+
+        /* 作答回饋樣式 */
+        .feedback {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+        .feedback.correct {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+        .feedback.wrong {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        /* --- 陷阱卡 (Trap Cards) --- */
+        .trap-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .trap-card {
+            background-color: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 4px;
+            transition: opacity 0.5s;
+        }
+
+        .trap-btn {
+            background-color: #ffc107;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            color: #333;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .trap-btn:hover {
+            background-color: #ffca2c;
+        }
+
+        /* --- 自我檢測區 (Self Check) --- */
+        .check-item {
+            background-color: #f1f8e9;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+        }
+        
+        .hint-btn {
+            background-color: #81c784;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .hint-text {
+            display: none;
+            margin-top: 10px;
+            color: #2e7d32;
+            font-weight: bold;
+        }
+
+        /* --- 底部控制 (Footer) --- */
+        .controls {
+            margin-top: 40px;
+            text-align: center;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+
+        .reset-btn {
+            background-color: #34495e;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .reset-btn:hover {
+            background-color: #2c3e50;
+        }
+
+        /* --- 動畫 (Animations) --- */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* RWD 調整 */
+        @media (max-width: 600px) {
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+            .container {
+                padding: 15px;
+            }
+            .url-display {
+                font-size: 0.9rem; /* 手機上縮小字體 */
+                flex-direction: column;
+                align-items: center;
+                gap: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- 頁首與老師開場 -->
+        <header>
+            <h1>題目 30：URL 結構解析互動講義</h1>
+            <div class="note-box">
+                <strong>👩‍🏫 老師的話：</strong><br>
+                各位同學好！這是電腦概論非常經典的考題。很多人看到 http 就以為是「網頁格式」，或是覺得它只是裝飾用的。
+                <br>其實，它是最重要的「通訊協定」，也就是瀏覽器跟伺服器溝通的「語言規則」。我們今天就來把它徹底搞懂！
+            </div>
+        </header>
+
+        <!-- 核心觀念說明區 -->
+        <section id="concept">
+            <h2>一、核心觀念整理</h2>
+            <p>在我們打開網頁時，必須輸入或點擊一串文字，我們稱為 <strong>URL</strong>（網頁的完整位址）。</p>
+            <p>一個標準的 URL 就像是現實生活中的地址，例如：<br>
+               <code>http://www.example.com/index.html</code>
+            </p>
+            <ul>
+                <li><strong>URL</strong>：Uniform Resource Locator，統一資源定位器（告訴瀏覽器資料在哪裡）。</li>
+                <li><strong>http://</strong>：這是 <span class="highlight">通訊協定 (Protocol)</span>。就像是規定「我們要講中文還是英文」，這裡規定瀏覽器與伺服器要用什麼規則來傳輸資料。</li>
+                <li><strong>HTML</strong>：這才是「網頁內容的格式」。HTTP 是運送車，HTML 是車上載的貨。</li>
+            </ul>
+        </section>
+
+        <!-- 互動功能 A：URL 結構拆解 -->
+        <section id="url-interactive">
+            <h2>二、動手拆解 URL (請點擊下方區塊)</h2>
+            <p style="text-align: center; color: #7f8c8d; font-size: 0.9rem;">試著點選 URL 的不同部分，看看它們代表什麼意思：</p>
+            
+            <div class="url-display">
+                <span class="url-part" onclick="explainURL('protocol', this)" id="part-protocol">http://</span>
+                <span class="url-part" onclick="explainURL('domain', this)">www.example.com</span>
+                <span class="url-part" onclick="explainURL('path', this)">/index.html</span>
+            </div>
+
+            <div id="url-explanation">
+                👆 請點擊上方 URL 的任一部分來查看說明
+            </div>
+        </section>
+
+        <!-- 互動功能 B：HTTP vs HTTPS -->
+        <section id="protocol-comparison">
+            <h2>三、HTTP vs HTTPS (點擊卡片翻看)</h2>
+            <div class="comparison-grid">
+                <div class="card" onclick="toggleCard(this)">
+                    <h4>HTTP</h4>
+                    <div style="font-size: 2rem; margin: 10px;">🔓</div>
+                    <p>超文字傳輸協定</p>
+                    <div class="card-content">
+                        <strong>HyperText Transfer Protocol</strong><br>
+                        早期的標準，資料傳輸時「沒有加密」。如果傳送密碼，容易被駭客半路攔截看光光。
+                    </div>
+                </div>
+                <div class="card" onclick="toggleCard(this)">
+                    <h4>HTTPS</h4>
+                    <div style="font-size: 2rem; margin: 10px;">🔒</div>
+                    <p>安全的 HTTP</p>
+                    <div class="card-content">
+                        <strong>HTTP Secure</strong><br>
+                        後面多了一個 <strong>S (Secure)</strong>。<br>
+                        這是「加密版」的通訊協定，現在大部分網站（如 Google、Facebook）都用這個來保護你的資料安全。
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 題目 30 互動解析區 -->
+        <section id="quiz-section">
+            <h2>四、實戰演練：題目 30</h2>
+            <div class="quiz-box">
+                <div class="question-text">題目 30：URL 中開頭的「http://」所指為何？</div>
+                <div class="options-grid" id="options-container">
+                    <button class="option-btn" onclick="checkAnswer('A')">(A) 指定開啟的網頁必須是 HTML 格式</button>
+                    <button class="option-btn" onclick="checkAnswer('B')">(B) 一種通訊協定</button>
+                    <button class="option-btn" onclick="checkAnswer('C')">(C) URL 固定的開頭字串</button>
+                    <button class="option-btn" onclick="checkAnswer('D')">(D) 瀏覽器版本</button>
+                </div>
+                <div id="quiz-feedback" class="feedback"></div>
+            </div>
+        </section>
+
+        <!-- 常見陷阱卡 -->
+        <section id="traps">
+            <h2>五、常見考試陷阱 (點擊消除錯誤觀念)</h2>
+            <div class="trap-container" id="trap-list">
+                <div class="trap-card">
+                    <div>
+                        <strong>💥 陷阱 1：</strong> 看到 HTML 就以為跟 http 有關？
+                        <br><small>解析：HTML 是檔案格式，HTTP 是傳送規則，完全不同。</small>
+                    </div>
+                    <button class="trap-btn" onclick="removeTrap(this)">我懂了</button>
+                </div>
+                <div class="trap-card">
+                    <div>
+                        <strong>💥 陷阱 2：</strong> http 只是網址習慣寫法，沒意義？
+                        <br><small>解析：錯！它是告訴電腦要用哪種方式連線，不能亂寫。</small>
+                    </div>
+                    <button class="trap-btn" onclick="removeTrap(this)">我懂了</button>
+                </div>
+                <div class="trap-card">
+                    <div>
+                        <strong>💥 陷阱 3：</strong> http 就是瀏覽器版本？
+                        <br><small>解析：瀏覽器版本是 Chrome 120 之類的，跟這個無關。</small>
+                    </div>
+                    <button class="trap-btn" onclick="removeTrap(this)">我懂了</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 自我檢測 -->
+        <section id="self-check">
+            <h2>六、課後思考 (自我檢測)</h2>
+            
+            <div class="check-item">
+                <p><strong>Q1：如果把 http:// 換成 https://，差別在哪？</strong></p>
+                <button class="hint-btn" onclick="toggleHint('hint1')">顯示提示</button>
+                <div id="hint1" class="hint-text">提示：多了一個 S，代表 Secure (安全)，資料會被「加密」。</div>
+            </div>
+
+            <div class="check-item">
+                <p><strong>Q2：FTP:// 開頭代表什麼？</strong></p>
+                <button class="hint-btn" onclick="toggleHint('hint2')">顯示提示</button>
+                <div id="hint2" class="hint-text">提示：FTP 是「檔案傳輸協定」，專門用來傳送檔案，不是用來瀏覽網頁的喔！</div>
+            </div>
+
+            <div class="check-item">
+                <p><strong>Q3：考試中看到「://」前面的字串，第一個要想到什麼關鍵字？</strong></p>
+                <button class="hint-btn" onclick="toggleHint('hint3')">顯示提示</button>
+                <div id="hint3" class="hint-text">提示：正確答案就是 (B) 選項的「通訊協定 (Protocol)」！</div>
+            </div>
+        </section>
+
+        <!-- 底部重置 -->
+        <div class="controls">
+            <button class="reset-btn" onclick="resetAll()">🔄 重置所有練習</button>
+        </div>
+
+    </div>
+
+    <script>
+        // --- 互動 A: URL 解釋邏輯 ---
+        const explanations = {
+            'protocol': '【通訊協定 Protocol】<br>這一段最重要！它告訴瀏覽器要用「HTTP 規則」來跟伺服器溝通。就像是規定雙方都要講中文一樣。',
+            'domain': '【網域名稱 Domain Name】<br>這是主機的地址，告訴瀏覽器要去網路上哪一台電腦找資料。',
+            'path': '【路徑與檔名 Path】<br>這是告訴主機，我想要看這台電腦裡面的哪一個資料夾或檔案（例如 index.html）。'
+        };
+
+        function explainURL(part, element) {
+            // 移除所有 active 樣式
+            document.querySelectorAll('.url-part').forEach(el => el.classList.remove('active'));
+            // 加上當前點擊的 active 樣式
+            element.classList.add('active');
+            // 更新解釋文字
+            document.getElementById('url-explanation').innerHTML = explanations[part];
+        }
+
+        // --- 互動 B: 卡片翻轉邏輯 ---
+        function toggleCard(cardElement) {
+            const content = cardElement.querySelector('.card-content');
+            if (content.style.display === "block") {
+                content.style.display = "none";
+            } else {
+                content.style.display = "block";
+            }
+        }
+
+        // --- 互動 C: 題目 30 檢查邏輯 ---
+        function checkAnswer(option) {
+            const feedbackBox = document.getElementById('quiz-feedback');
+            // 清除之前的樣式
+            feedbackBox.className = 'feedback'; 
+            
+            if (option === 'B') {
+                feedbackBox.innerHTML = '<strong>✅ 答對了！</strong><br>http (HyperText Transfer Protocol) 正是一種「通訊協定」。它定義了瀏覽器如何向網站伺服器請求資料。';
+                feedbackBox.classList.add('correct');
+            } else {
+                let msg = '';
+                if (option === 'A') msg = '❌ 錯誤！HTML 才是網頁的格式（副檔名），http 是傳送的方法。';
+                if (option === 'C') msg = '❌ 錯誤！開頭並不是固定的，也可以是 https:// 或 ftp:// 等其他協定。';
+                if (option === 'D') msg = '❌ 錯誤！瀏覽器版本通常可以在「關於」裡面看到，跟網址開頭無關。';
+                
+                feedbackBox.innerHTML = msg + '<br>👉 <strong>請再想一想，或是回去點擊上方的 URL 拆解練習！</strong>';
+                feedbackBox.classList.add('wrong');
+            }
+        }
+
+        // --- 互動 D: 消除陷阱卡 ---
+        function removeTrap(btnElement) {
+            const card = btnElement.parentElement;
+            card.style.opacity = '0';
+            setTimeout(() => {
+                card.style.display = 'none';
+            }, 500); // 等待動畫結束後隱藏
+        }
+
+        // --- 互動 E: 顯示提示 ---
+        function toggleHint(id) {
+            const hint = document.getElementById(id);
+            if (hint.style.display === "block") {
+                hint.style.display = "none";
+            } else {
+                hint.style.display = "block";
+            }
+        }
+
+        // --- 全站重置 ---
+        function resetAll() {
+            // 重置 URL 區
+            document.querySelectorAll('.url-part').forEach(el => el.classList.remove('active'));
+            document.getElementById('url-explanation').innerHTML = '👆 請點擊上方 URL 的任一部分來查看說明';
+
+            // 重置卡片區
+            document.querySelectorAll('.card-content').forEach(el => el.style.display = 'none');
+
+            // 重置題目區
+            const feedbackBox = document.getElementById('quiz-feedback');
+            feedbackBox.style.display = 'none';
+            feedbackBox.className = 'feedback';
+
+            // 重置陷阱卡 (重新顯示)
+            const traps = document.querySelectorAll('.trap-card');
+            traps.forEach(trap => {
+                trap.style.display = 'flex';
+                setTimeout(() => { trap.style.opacity = '1'; }, 10);
+            });
+
+            // 重置提示
+            document.querySelectorAll('.hint-text').forEach(el => el.style.display = 'none');
+
+            // 滾動到頂部
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

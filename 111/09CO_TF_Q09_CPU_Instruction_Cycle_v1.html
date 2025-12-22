@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CPU 是先做哪一步？ - Instruction Cycle 順序判斷</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --highlight-color: #f1c40f;
+            --text-color: #333;
+            --light-bg: #f8f9fa;
+            --border-color: #e0e0e0;
+            --correct-color: #27ae60;
+            --wrong-color: #c0392b;
+            --card-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Helvetica Neue", Arial, "PingFang TC", "Heiti TC", "Microsoft JhengHei", sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #ecf0f1;
+            padding-bottom: 50px;
+        }
+
+        /* Container */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        header .badge {
+            display: inline-block;
+            background-color: var(--accent-color);
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            margin-top: 10px;
+        }
+
+        /* Sections */
+        .section-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--card-shadow);
+        }
+
+        h2 {
+            font-size: 1.3rem;
+            border-left: 5px solid var(--accent-color);
+            padding-left: 10px;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        h3 {
+            font-size: 1.1rem;
+            margin-top: 15px;
+            margin-bottom: 8px;
+            color: var(--primary-color);
+        }
+
+        /* Question Area */
+        .question-text {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            line-height: 1.8;
+        }
+
+        .highlightable {
+            padding: 2px 4px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .highlighted {
+            background-color: var(--highlight-color);
+            color: black;
+        }
+
+        .options {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .option-btn {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid var(--border-color);
+            background: white;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .option-btn:hover {
+            border-color: var(--accent-color);
+            background-color: #f0f8ff;
+        }
+
+        /* Interactive Keywords */
+        .keyword-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .keyword-btn {
+            background-color: white;
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+
+        .keyword-btn:hover, .keyword-btn.active {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .explanation-box {
+            background-color: var(--light-bg);
+            border-left: 4px solid var(--highlight-color);
+            padding: 15px;
+            border-radius: 4px;
+            min-height: 60px;
+            font-size: 1rem;
+        }
+
+        /* Accordion */
+        .accordion-btn {
+            background-color: #e9ecef;
+            color: var(--text-color);
+            cursor: pointer;
+            padding: 15px;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-size: 1.1rem;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .accordion-btn:after {
+            content: '+';
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .accordion-btn.active:after {
+            content: '-';
+        }
+
+        .panel {
+            padding: 0 15px;
+            background-color: white;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.2s ease-out;
+            border-radius: 0 0 5px 5px;
+        }
+
+        .panel-content {
+            padding: 15px 0;
+        }
+
+        /* Concept Steps */
+        .step-list {
+            list-style: none;
+            counter-reset: step-counter;
+        }
+
+        .step-list li {
+            position: relative;
+            padding-left: 40px;
+            margin-bottom: 15px;
+        }
+
+        .step-list li::before {
+            counter-increment: step-counter;
+            content: counter(step-counter);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 30px;
+            height: 30px;
+            background-color: var(--accent-color);
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            font-weight: bold;
+        }
+
+        .analogy-box {
+            background-color: #fff8e1;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px dashed #ffa000;
+            margin-top: 15px;
+        }
+
+        .quote-box {
+            margin-top: 15px;
+            font-weight: bold;
+            color: var(--wrong-color);
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        /* Answer Reveal */
+        .reveal-btn {
+            width: 100%;
+            padding: 15px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+
+        .reveal-btn:hover {
+            background-color: #34495e;
+        }
+
+        .answer-content {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            border: 2px solid var(--correct-color);
+            border-radius: 8px;
+            background-color: #e8f8f5;
+            animation: fadeIn 0.5s;
+        }
+
+        .answer-large {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--correct-color);
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        .answer-large.wrong {
+             color: var(--wrong-color);
+        }
+
+        /* Common Mistakes & Mnemonic */
+        .mistake-list li {
+            margin-bottom: 10px;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .mistake-list li:before {
+            content: "!";
+            position: absolute;
+            left: 0;
+            color: var(--wrong-color);
+            font-weight: bold;
+        }
+
+        .mnemonic-card {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            text-align: center;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        
+        .mnemonic-text {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            header h1 { font-size: 1.5rem; }
+            .question-text { font-size: 1.1rem; }
+            .option-btn { padding: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- A. 頁首區 -->
+    <header>
+        <h1>CPU 是先做哪一步？</h1>
+        <p>Instruction Cycle 必考順序</p>
+        <span class="badge">題號：9（是非題）</span>
+    </header>
+
+    <!-- B. 題目區 -->
+    <section class="section-card">
+        <h2>題目</h2>
+        <div class="question-text">
+            9. 計算機 <span id="txt-cpu" class="highlightable">CPU</span> 執行程式的三個步驟之順序為<br>
+            「<span id="txt-decode" class="highlightable">解碼</span> → <span id="txt-fetch" class="highlightable">擷取</span> → <span id="txt-execute" class="highlightable">執行</span>」
+        </div>
+        <div class="options">
+            <button class="option-btn" onclick="scrollToReveal()">(A) O</button>
+            <button class="option-btn" onclick="scrollToReveal()">(B) X</button>
+        </div>
+    </section>
+
+    <!-- C. 關鍵字螢光筆互動 -->
+    <section class="section-card">
+        <h2>關鍵字點點看</h2>
+        <p style="margin-bottom: 10px; font-size: 0.9rem; color: #666;">點擊下方按鈕，了解題目中的專有名詞：</p>
+        <div class="keyword-container">
+            <button class="keyword-btn" onclick="highlight('cpu')">CPU</button>
+            <button class="keyword-btn" onclick="highlight('fetch')">擷取 (Fetch)</button>
+            <button class="keyword-btn" onclick="highlight('decode')">解碼 (Decode)</button>
+            <button class="keyword-btn" onclick="highlight('execute')">執行 (Execute)</button>
+            <button class="keyword-btn" onclick="highlight('cycle')">指令週期</button>
+        </div>
+        <div id="explanation-display" class="explanation-box">
+            請點擊上方關鍵字，白話解釋會顯示在這裡...
+        </div>
+    </section>
+
+    <!-- D. 白話翻譯 -->
+    <section class="section-card">
+        <button class="accordion-btn">白話翻譯與考點（點擊展開）</button>
+        <div class="panel">
+            <div class="panel-content">
+                <h3>【白話翻譯】</h3>
+                <p>「CPU 做事情時，是不是先解碼（看懂），再擷取（拿來），最後才執行（去做）？」</p>
+                
+                <h3>【這題在考什麼】</h3>
+                <p>「你是否記得 CPU 處理一個指令的『先後順序』。」</p>
+                <p style="color: #666; font-size: 0.9rem; margin-top: 5px;">提示：就像你要煮菜，得先去買菜吧？</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- E. 觀念教學 -->
+    <section class="section-card">
+        <h2>觀念教學：正確順序</h2>
+        <p>CPU 是一個很聽話但很死板的工人，它做事一定嚴格遵守這個 SOP：</p>
+        
+        <br>
+        <ul class="step-list">
+            <li>
+                <strong>擷取 (Fetch)</strong><br>
+                把指令從記憶體「抓」進 CPU 的暫存器。
+            </li>
+            <li>
+                <strong>解碼 (Decode)</strong><br>
+                由控制單元負責翻譯，看懂這個指令到底要算數學還是搬資料。
+            </li>
+            <li>
+                <strong>執行 (Execute)</strong><br>
+                實際去運算或搬移資料。
+            </li>
+        </ul>
+
+        <div class="analogy-box">
+            <strong>生活化比喻（寫作業）：</strong><br>
+            1. 擷取：從老師那邊<strong>拿到作業單</strong>。<br>
+            2. 解碼：讀題，<strong>看懂題目</strong>在問什麼。<br>
+            3. 執行：動筆<strong>開始寫答案</strong>。
+        </div>
+
+        <div class="quote-box">
+            「沒有先拿到指令，不可能先解碼！」
+        </div>
+    </section>
+
+    <!-- F. 是非題判斷解析 -->
+    <section class="section-card">
+        <h2>選項解析</h2>
+        <div style="margin-bottom: 15px;">
+            <strong>(A) O</strong><br>
+            <span style="color: var(--wrong-color);">→ 錯！</span> 題目說「先解碼再擷取」，這是不可能的。你手上沒有東西，要解碼什麼？
+        </div>
+        <div>
+            <strong>(B) X</strong><br>
+            <span style="color: var(--correct-color);">→ 正確！</span> 題目敘述的順序錯誤，正確應該是擷取在最前面。
+        </div>
+    </section>
+
+    <!-- G. 常見錯誤提醒 -->
+    <section class="section-card">
+        <h2 style="border-left-color: var(--wrong-color);">常見錯誤提醒</h2>
+        <ul class="mistake-list" style="list-style: none;">
+            <li><strong>把「解碼」和「擷取」記反：</strong> 這是最常見的錯誤，請記得「巧婦難為無米之炊」，沒有米（擷取指令）怎麼煮飯（解碼與執行）？</li>
+            <li><strong>被專有名詞嚇到：</strong> 看到 Instruction Cycle 就慌了，其實只是「拿 → 懂 → 做」而已。</li>
+        </ul>
+    </section>
+
+    <!-- H. 記憶口訣 -->
+    <section class="section-card">
+        <h2>記憶口訣</h2>
+        <div class="mnemonic-card">
+            <p>口訣：</p>
+            <div class="mnemonic-text">「先拿、再懂、才做」</div>
+            <p>（擷取 Fetch → 解碼 Decode → 執行 Execute）</p>
+        </div>
+    </section>
+
+    <!-- I. 正確答案揭曉 -->
+    <section class="section-card" id="reveal">
+        <h2>答案揭曉</h2>
+        <button class="reveal-btn" onclick="showAnswer()">點擊顯示正確答案</button>
+        
+        <div id="answer-box" class="answer-content">
+            <div class="answer-large wrong">X</div>
+            <p><strong>正確答案是 (B)</strong></p>
+            <hr style="margin: 10px 0; border: 0; border-top: 1px solid #ccc;">
+            <p><strong>一句話理由：</strong></p>
+            <p>CPU 指令週期正確順序是「擷取 → 解碼 → 執行」，題目寫反了，所以選 X。</p>
+        </div>
+    </section>
+
+</div>
+
+<script>
+    // 關鍵字資料庫
+    const terms = {
+        'cpu': {
+            targetIds: ['txt-cpu'],
+            text: '<strong>CPU (中央處理器)：</strong> 電腦的大腦，負責執行所有的運算和指令。'
+        },
+        'fetch': {
+            targetIds: ['txt-fetch'],
+            text: '<strong>擷取 (Fetch)：</strong> 第一步。從記憶體把指令「拿」進 CPU 裡面。就像去信箱拿信。'
+        },
+        'decode': {
+            targetIds: ['txt-decode'],
+            text: '<strong>解碼 (Decode)：</strong> 第二步。控制單元負責「翻譯」，看懂這個指令是要做加法還是存檔。就像拆開信封看內容。'
+        },
+        'execute': {
+            targetIds: ['txt-execute'],
+            text: '<strong>執行 (Execute)：</strong> 第三步。算術邏輯單元(ALU)實際去「做」這個工作。就像依照信件內容去辦事。'
+        },
+        'cycle': {
+            targetIds: ['txt-fetch', 'txt-decode', 'txt-execute'], // 同時標示三個
+            text: '<strong>指令週期 (Instruction Cycle)：</strong> CPU 完成一個任務的完整流程，一定要照順序來，不能跳步。'
+        }
+    };
+
+    // 關鍵字互動功能
+    function highlight(key) {
+        // 1. 清除所有現有的 highlight
+        document.querySelectorAll('.highlightable').forEach(el => {
+            el.classList.remove('highlighted');
+        });
+
+        // 2. 清除按鈕 active 狀態
+        document.querySelectorAll('.keyword-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+
+        // 3. 標示選中的文字
+        const data = terms[key];
+        if (data && data.targetIds) {
+            data.targetIds.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.classList.add('highlighted');
+            });
+        }
+
+        // 4. 更新解釋文字
+        const display = document.getElementById('explanation-display');
+        display.innerHTML = data ? data.text : '請點擊上方關鍵字...';
+        
+        // 5. 設定按鈕 active
+        event.target.classList.add('active');
+    }
+
+    // 手風琴 (Accordion) 功能
+    document.querySelector('.accordion-btn').addEventListener('click', function() {
+        this.classList.toggle('active');
+        const panel = this.nextElementSibling;
+        if (panel.style.maxHeight) {
+            panel.style.maxHeight = null;
+        } else {
+            panel.style.maxHeight = panel.scrollHeight + "px";
+        }
+    });
+
+    // 顯示答案功能
+    function showAnswer() {
+        const answerBox = document.getElementById('answer-box');
+        const btn = document.querySelector('.reveal-btn');
+        
+        answerBox.style.display = 'block';
+        btn.style.display = 'none'; // 隱藏按鈕
+        
+        // 平滑捲動到答案區
+        answerBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    // 點擊選項引導至下方
+    function scrollToReveal() {
+        const revealSection = document.getElementById('reveal');
+        revealSection.scrollIntoView({ behavior: 'smooth' });
+    }
+</script>
+
+</body>
+</html>

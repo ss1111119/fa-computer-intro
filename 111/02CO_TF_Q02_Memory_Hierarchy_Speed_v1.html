@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CO_TF_Q02_Memory_Hierarchy_Speed_v1</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #4338ca;
+            --accent-color: #f59e0b;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --bg-color: #f3f4f6;
+            --text-color: #1f2937;
+            --card-bg: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* A. Header */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        header h2 {
+            font-size: 1.2rem;
+            font-weight: normal;
+            opacity: 0.9;
+        }
+
+        .badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+
+        /* Card Style */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border: 1px solid #e5e7eb;
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            color: var(--secondary-color);
+            margin-bottom: 16px;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 8px;
+            font-weight: bold;
+        }
+
+        /* B. Question Area */
+        .question-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            line-height: 1.8;
+        }
+
+        .options {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .option-box {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            cursor: default; /* 非作答點擊，僅展示 */
+            background: #f9fafb;
+        }
+
+        /* C. Highlights Interaction */
+        .highlight-span {
+            transition: background-color 0.3s, color 0.3s;
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+
+        .highlight-active {
+            background-color: var(--accent-color);
+            color: white;
+            font-weight: bold;
+        }
+
+        .keyword-btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .btn-keyword {
+            padding: 8px 16px;
+            background-color: white;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+        }
+
+        .btn-keyword:hover, .btn-keyword.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .explanation-display {
+            background-color: #eff6ff;
+            border-left: 4px solid var(--primary-color);
+            padding: 15px;
+            margin-top: 15px;
+            min-height: 60px;
+            font-size: 1rem;
+            color: var(--text-color);
+        }
+
+        /* D. Accordion */
+        details {
+            background: #f8fafc;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+
+        summary {
+            padding: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--secondary-color);
+            list-style: none; /* Hide default triangle */
+            position: relative;
+        }
+        
+        summary::after {
+            content: "+";
+            position: absolute;
+            right: 20px;
+            font-weight: bold;
+        }
+
+        details[open] summary::after {
+            content: "-";
+        }
+
+        .details-content {
+            padding: 15px;
+            border-top: 1px solid #e2e8f0;
+            background: white;
+        }
+
+        /* E. Concept Visual */
+        .hierarchy-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 20px 0;
+            align-items: center;
+        }
+
+        .hierarchy-item {
+            width: 100%;
+            max-width: 400px;
+            padding: 12px;
+            text-align: center;
+            color: white;
+            border-radius: 6px;
+            position: relative;
+            font-weight: bold;
+        }
+
+        /* Pyramid effect visual widths */
+        .h-top { 
+            background-color: #ef4444; 
+            width: 60%; 
+        } /* Red - Fast */
+        
+        .h-mid { 
+            background-color: #f59e0b; 
+            width: 80%; 
+        } /* Orange - Medium */
+        
+        .h-bot { 
+            background-color: #10b981; 
+            width: 100%; 
+        } /* Green - Slow */
+
+        .hierarchy-arrow {
+            font-size: 1.5rem;
+            color: #9ca3af;
+            line-height: 0.5;
+        }
+
+        .analogy-text {
+            font-size: 0.9rem;
+            margin-top: 4px;
+            font-weight: normal;
+            opacity: 0.9;
+        }
+
+        /* G. Common Mistakes */
+        .mistake-box {
+            background-color: #fef2f2;
+            border: 1px solid #fecaca;
+            padding: 15px;
+            border-radius: 8px;
+            color: #991b1b;
+        }
+        
+        .mistake-list li {
+            margin-bottom: 8px;
+            list-style-type: none;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .mistake-list li::before {
+            content: "!";
+            position: absolute;
+            left: 0;
+            color: var(--danger-color);
+            font-weight: bold;
+        }
+
+        /* H. Mnemonic */
+        .mnemonic-box {
+            background-color: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            padding: 20px;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #065f46;
+            border-radius: 8px;
+        }
+
+        /* I. Answer Reveal */
+        .answer-section {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .btn-reveal {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+        }
+
+        .btn-reveal:active {
+            transform: scale(0.98);
+        }
+
+        .answer-content {
+            display: none;
+            margin-top: 20px;
+            animation: fadeIn 0.5s;
+            border: 2px solid var(--success-color);
+            padding: 20px;
+            border-radius: 12px;
+            background-color: #f0fdf4;
+        }
+
+        .big-o {
+            font-size: 4rem;
+            color: var(--success-color);
+            font-weight: bold;
+            line-height: 1;
+            margin-bottom: 10px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            header h1 { font-size: 1.5rem; }
+            .question-text { font-size: 1.1rem; }
+            .h-top, .h-mid, .h-bot { width: 100%; } /* Stack fully on mobile */
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- A. 頁首區 -->
+    <header>
+        <h1>資料離 CPU 越近，速度越快</h1>
+        <h2>記憶體階層必考觀念</h2>
+        <div class="badge">題號：2（是非題）</div>
+    </header>
+
+    <!-- B. 題目區 -->
+    <div class="card">
+        <div class="card-title">題目</div>
+        <div class="question-text" id="questionArea">
+            2. 計算機中的<span class="highlight-span" data-term="main">主記憶體（main memory）</span>、<br>
+            <span class="highlight-span" data-term="flash">快閃記憶體（flash memory）</span>、<br>
+            <span class="highlight-span" data-term="cache">快取記憶體（cache memory）</span><br>
+            的<span class="highlight-span" data-term="speed">存取速度</span>由快到慢依序排列為：<br>
+            「<span class="highlight-span" data-term="cache">快取記憶體</span> → <span class="highlight-span" data-term="main">主記憶體</span> → <span class="highlight-span" data-term="flash">快閃記憶體</span>」
+        </div>
+        
+        <div class="options">
+            <div class="option-box">(A) O</div>
+            <div class="option-box">(B) X</div>
+        </div>
+    </div>
+
+    <!-- C. 關鍵字互動 -->
+    <div class="card">
+        <div class="card-title">關鍵字解析（點擊按鈕）</div>
+        <div class="keyword-btn-group">
+            <button class="btn-keyword" onclick="highlight('cache')">快取記憶體</button>
+            <button class="btn-keyword" onclick="highlight('main')">主記憶體</button>
+            <button class="btn-keyword" onclick="highlight('flash')">快閃記憶體</button>
+            <button class="btn-keyword" onclick="highlight('speed')">存取速度</button>
+            <button class="btn-keyword" onclick="highlight('hierarchy')">記憶體階層</button>
+        </div>
+        <div class="explanation-display" id="explanationText">
+            請點擊上方按鈕，查看該名詞的重點觀念。
+        </div>
+    </div>
+
+    <!-- D. 白話翻譯 -->
+    <div class="card">
+        <details>
+            <summary>【白話翻譯】這題在問什麼？</summary>
+            <div class="details-content">
+                <p>「這三種記憶體，誰離 CPU 最近、誰反應最快？題目列出的『快取 → 主記憶體 → 快閃』這個順序，是不是正確的？」</p>
+            </div>
+        </details>
+        <details>
+            <summary>【這題在考什麼】核心觀念</summary>
+            <div class="details-content">
+                <p>這題在考你是否理解「記憶體階層（Memory Hierarchy）」中，速度、容量與距離 CPU 遠近的關係。</p>
+            </div>
+        </details>
+    </div>
+
+    <!-- E. 圖像式說明 -->
+    <div class="card">
+        <div class="card-title">記憶體階層（速度由快到慢）</div>
+        <div class="hierarchy-list">
+            <div class="hierarchy-item h-top">
+                1. 快取記憶體 (Cache)
+                <div class="analogy-text">比喻：書桌上的便條紙 (隨手可得)</div>
+            </div>
+            <div class="hierarchy-arrow">↓</div>
+            <div class="hierarchy-item h-mid">
+                2. 主記憶體 (RAM)
+                <div class="analogy-text">比喻：書桌抽屜 (需打開拿取)</div>
+            </div>
+            <div class="hierarchy-arrow">↓</div>
+            <div class="hierarchy-item h-bot">
+                3. 快閃記憶體 (Flash/SSD)
+                <div class="analogy-text">比喻：倉庫或書櫃 (需走過去拿)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- F. 解析與 G. 常見錯誤 -->
+    <div class="card">
+        <div class="card-title">詳細解析</div>
+        <p><strong>(A) O → 正確</strong></p>
+        <p>這正是計算機組織中標準的「記憶體階層」排列。離 CPU 越近的元件，速度必須越快，才能跟上 CPU 的運算速度。</p>
+        <br>
+        <p><strong>(B) X → 錯誤</strong></p>
+        <p>題目敘述完全正確，因此選 X 是錯的。</p>
+
+        <br><hr><br>
+
+        <div class="mistake-box">
+            <h3 style="margin-bottom:10px;">老師提醒：常見錯誤</h3>
+            <ul class="mistake-list">
+                <li>以為 SSD 開機很快，就覺得它比 RAM 快（錯！RAM 還是比 SSD 快非常多）。</li>
+                <li>把「容量大」誤當成「速度快」（通常容量越大的，速度反而越慢）。</li>
+                <li>搞混記憶體（斷電資料消失）與儲存裝置（斷電資料還在，如 Flash）。</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- H. 記憶口訣 -->
+    <div class="card">
+        <div class="card-title">口訣記憶</div>
+        <div class="mnemonic-box">
+            「離 CPU 越近，跑得越快！」
+        </div>
+    </div>
+
+    <!-- I. 答案揭曉 -->
+    <div class="answer-section">
+        <button class="btn-reveal" onclick="showAnswer()">點擊查看答案</button>
+        <div id="answerContent" class="answer-content">
+            <div class="big-o">O</div>
+            <p style="font-size: 1.2rem; font-weight: bold;">正確答案：(A)</p>
+            <p style="margin-top: 10px; color: #555;">理由：快取記憶體最快，其次是主記憶體，最後才是快閃記憶體。</p>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // 定義各個關鍵字的解釋資料
+    const explanations = {
+        'cache': '<strong>快取記憶體（Cache Memory）</strong><br>特色：離 CPU 最近、速度最快、容量最小、價格最貴。<br>比喻：就像你手邊的「便條紙」，隨時紀錄馬上要用的資料。',
+        'main': '<strong>主記憶體（Main Memory / RAM）</strong><br>特色：速度中等，是程式執行時的主要工作區。<br>比喻：就像你的「書桌抽屜」，容量比便條紙大，但存取要花一點時間。',
+        'flash': '<strong>快閃記憶體（Flash Memory）</strong><br>特色：速度最慢（在此比較中），但斷電後資料不會消失（非揮發性），如 SSD、隨身碟。<br>比喻：就像「倉庫」或「書櫃」，可以放很多東西，但拿取最花時間。',
+        'speed': '<strong>存取速度（Access Time）</strong><br>定義：CPU 拿到資料所需的時間。<br>規則：距離 CPU 越近，傳輸路徑越短，技術越高級，速度越快。',
+        'hierarchy': '<strong>記憶體階層（Memory Hierarchy）</strong><br>概念：電腦為了同時滿足「速度快」跟「容量大」，所以分層設計。<br>結構：金字塔型，頂端快而小，底端慢而大。'
+    };
+
+    function highlight(key) {
+        // 1. 清除所有按鈕的 active 狀態
+        document.querySelectorAll('.btn-keyword').forEach(btn => {
+            btn.classList.remove('active');
+        });
+
+        // 2. 清除文中所有的螢光標示
+        document.querySelectorAll('.highlight-span').forEach(span => {
+            span.classList.remove('highlight-active');
+        });
+
+        // 3. 設定被點擊按鈕的樣式
+        // 找出觸發此函數的按鈕 (透過 event.target 比較複雜，這裡直接用遍歷找對應 onclick 屬性較簡單，或是直接在 UI 上看效果即可)
+        // 為了簡單實作，這裡讓使用者點擊會有視覺回饋
+        const clickedBtn = Array.from(document.querySelectorAll('.btn-keyword')).find(b => b.getAttribute('onclick').includes(`'${key}'`));
+        if(clickedBtn) clickedBtn.classList.add('active');
+
+        // 4. 標示題目中對應的文字
+        // 若 key 是 hierarchy，因為題目文字沒有直接對應詞，我們全亮或不亮，這裡設計為顯示解釋即可
+        if (key !== 'hierarchy') {
+            document.querySelectorAll(`.highlight-span[data-term="${key}"]`).forEach(span => {
+                span.classList.add('highlight-active');
+            });
+        }
+
+        // 5. 更新解釋區塊
+        const display = document.getElementById('explanationText');
+        display.innerHTML = explanations[key];
+    }
+
+    function showAnswer() {
+        const answerDiv = document.getElementById('answerContent');
+        const btn = document.querySelector('.btn-reveal');
+        
+        if (answerDiv.style.display === 'block') {
+            // 如果已經顯示，就隱藏
+            answerDiv.style.display = 'none';
+            btn.textContent = '點擊查看答案';
+        } else {
+            // 顯示
+            answerDiv.style.display = 'block';
+            btn.textContent = '隱藏答案';
+            // 自動捲動到答案區
+            answerDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+    }
+</script>
+
+</body>
+</html>

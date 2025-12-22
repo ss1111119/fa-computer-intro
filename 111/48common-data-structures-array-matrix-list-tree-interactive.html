@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電腦概論 - 複選題 48：常見資料結構</title>
+    <style>
+        /* --- 全域設定 --- */
+        :root {
+            --primary-color: #2563eb;    /* 補習班藍 */
+            --secondary-color: #10b981;  /* 正確綠 */
+            --danger-color: #ef4444;     /* 錯誤紅 */
+            --bg-color: #f3f4f6;         /* 淺灰底 */
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-sub: #6b7280;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding-bottom: 50px;
+        }
+
+        /* --- 標題區 --- */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #1e40af, #3b82f6);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        h1 { margin: 0; font-size: 1.8rem; }
+        .subtitle { font-size: 1rem; opacity: 0.9; margin-top: 5px; }
+
+        /* --- 區塊通用樣式 --- */
+        .section-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border: 1px solid #e5e7eb;
+        }
+
+        h2 {
+            border-left: 5px solid var(--primary-color);
+            padding-left: 10px;
+            font-size: 1.4rem;
+            margin-top: 0;
+            color: var(--text-main);
+        }
+
+        h3 { color: #374151; margin-bottom: 10px; }
+
+        /* --- 題目區 --- */
+        .question-box {
+            background-color: #eff6ff;
+            border: 2px solid #bfdbfe;
+            padding: 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .option-list {
+            list-style: none;
+            padding: 0;
+            margin: 15px 0;
+        }
+
+        .option-list li {
+            margin-bottom: 8px;
+            padding: 8px;
+            background: white;
+            border-radius: 6px;
+        }
+
+        /* --- 核心觀念強調 --- */
+        .core-concept {
+            background-color: #fffbeb;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .highlight-red { color: #dc2626; font-weight: bold; }
+        .highlight-blue { color: #2563eb; font-weight: bold; }
+
+        /* --- 互動功能 (A)：拖拉分類 --- */
+        .drag-area {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .draggable-item {
+            background: white;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 10px 15px;
+            border-radius: 20px;
+            cursor: move;
+            font-weight: bold;
+            user-select: none;
+            transition: transform 0.2s;
+        }
+
+        .draggable-item:hover {
+            transform: scale(1.05);
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .drop-zone {
+            margin-top: 20px;
+            border: 3px dashed #9ca3af;
+            border-radius: 12px;
+            min-height: 120px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background-color: #f9fafb;
+            transition: background 0.3s;
+            position: relative;
+        }
+        
+        .drop-zone::after {
+            content: "請將上方屬於「資料結構」的卡片拖曳至此";
+            color: #9ca3af;
+            position: absolute;
+            z-index: 0;
+        }
+
+        .drop-zone.active {
+            background-color: #d1fae5;
+            border-color: var(--secondary-color);
+        }
+        
+        .drop-zone .draggable-item {
+            z-index: 1; /* 確保卡片蓋過文字 */
+            background: var(--secondary-color);
+            color: white;
+            border-color: var(--secondary-color);
+        }
+
+        /* --- 互動功能 (B)：複選題作答 --- */
+        .quiz-interface {
+            margin-top: 20px;
+        }
+        
+        .checkbox-group label {
+            display: block;
+            padding: 12px;
+            margin-bottom: 8px;
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .checkbox-group label:hover {
+            background-color: #f3f4f6;
+            border-color: var(--primary-color);
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+
+        .quiz-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 15px;
+            width: 100%;
+        }
+
+        .quiz-btn:hover { background-color: #1d4ed8; }
+
+        .result-message {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            display: none; /* 預設隱藏 */
+            text-align: center;
+        }
+        .result-success { background-color: #d1fae5; color: #065f46; }
+        .result-error { background-color: #fee2e2; color: #991b1b; }
+
+        /* --- 互動功能 (C)：用途與分類 --- */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .info-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .info-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-color: var(--primary-color);
+        }
+
+        .info-detail {
+            display: none;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #4b5563;
+            text-align: left;
+            background: #f9fafb;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        /* --- 互動功能 (E)：陷阱卡 --- */
+        .trap-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .trap-card {
+            flex: 1;
+            min-width: 250px;
+            background: #fff;
+            border-left: 5px solid var(--danger-color);
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .trap-btn {
+            display: block;
+            margin-top: 10px;
+            background: #e5e7eb;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            width: 100%;
+        }
+        
+        .trap-btn:hover { background: #d1d5db; }
+
+        /* --- 自我檢測 --- */
+        .self-check-item {
+            margin-bottom: 15px;
+            border-bottom: 1px dashed #e5e7eb;
+            padding-bottom: 15px;
+        }
+        
+        .hint-btn {
+            background: none;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 5px 10px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        
+        .hint-text {
+            display: none;
+            margin-top: 8px;
+            color: #059669;
+            font-weight: bold;
+        }
+
+        /* --- 底部重置 --- */
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 20px;
+        }
+
+        .reset-btn {
+            background-color: #6b7280;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        .reset-btn:hover { background-color: #4b5563; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <!-- 標題 -->
+    <header>
+        <h1>電腦概論 - 複選題 48 模擬試題</h1>
+        <div class="subtitle">高中資訊科技 / APCS 先修觀念</div>
+    </header>
+
+    <!-- 題目展示區 -->
+    <div class="section-card">
+        <h2>📜 題目 48 (可複選)</h2>
+        <div class="question-box">
+            <p>程式設計時，下列何者是常被使用到的資料結構？</p>
+            <ul class="option-list">
+                <li>(A) 序列（array）</li>
+                <li>(B) 矩陣（matrix）</li>
+                <li>(C) 串列（linked list）</li>
+                <li>(D) 樹（tree）</li>
+                <li>(E) 三角形結構（triangle）</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 觀念導入 -->
+    <div class="section-card">
+        <h2>💡 核心觀念：什麼是資料結構？</h2>
+        <div class="core-concept">
+            <p>👨‍🏫 <strong>老師的話：</strong> 不要死背課本！<br>
+            <strong>資料結構 (Data Structure)</strong> 的白話定義是：「資料在電腦中<span class="highlight-blue">儲存</span>與<span class="highlight-blue">組織</span>的方式」。</p>
+            <p>只要能讓程式有效率地處理資料的「排法」，都算是資料結構。</p>
+            <p>👉 <strong>考試關鍵：</strong> 題目問的是「常被使用到的」，包含<span class="highlight-red">應用型結構</span> (如 Matrix, Triangle)，不只侷限於<span class="highlight-red">基本定義型</span> (如 Array, List)。</p>
+        </div>
+    </div>
+
+    <!-- 互動 A：拖拉分類 -->
+    <div class="section-card">
+        <h2>🎮 互動練習：誰是資料結構？</h2>
+        <p>請將下方你認為屬於「資料結構」的卡片，拖曳（或點擊）到下方的虛線框中。</p>
+        
+        <div class="drag-area" id="dragSource">
+            <div class="draggable-item" draggable="true" id="item-A" onclick="moveItem(this)">(A) Array 序列</div>
+            <div class="draggable-item" draggable="true" id="item-B" onclick="moveItem(this)">(B) Matrix 矩陣</div>
+            <div class="draggable-item" draggable="true" id="item-C" onclick="moveItem(this)">(C) Linked List 串列</div>
+            <div class="draggable-item" draggable="true" id="item-D" onclick="moveItem(this)">(D) Tree 樹</div>
+            <div class="draggable-item" draggable="true" id="item-E" onclick="moveItem(this)">(E) Triangle 三角形</div>
+        </div>
+
+        <div class="drop-zone" id="dropTarget">
+            <!-- 放置區 -->
+        </div>
+        <div id="drag-feedback" class="result-message"></div>
+    </div>
+
+    <!-- 資料結構詳解 -->
+    <div class="section-card">
+        <h2>📚 選項深度解析 (點擊查看用途)</h2>
+        <p>點擊下方卡片，了解為什麼它們都是資料結構：</p>
+        <div class="info-grid">
+            <div class="info-card" onclick="toggleDetail('detail-a')">
+                <h3>(A) Array 序列</h3>
+                <div class="info-detail" id="detail-a">
+                    <strong>白話：</strong>連續記憶體空間、用索引存取的格子。<br>
+                    <strong>用途：</strong>儲存學生成績、一週七天的溫度。<br>
+                    <strong>判定：</strong>最基本的資料結構 ✅
+                </div>
+            </div>
+            <div class="info-card" onclick="toggleDetail('detail-b')">
+                <h3>(B) Matrix 矩陣</h3>
+                <div class="info-detail" id="detail-b">
+                    <strong>白話：</strong>二維以上的陣列 (Row x Column)。<br>
+                    <strong>用途：</strong>影像處理(像素)、AI 權重計算、地圖座標。<br>
+                    <strong>判定：</strong>多維資料結構 ✅
+                </div>
+            </div>
+            <div class="info-card" onclick="toggleDetail('detail-c')">
+                <h3>(C) Linked List 串列</h3>
+                <div class="info-detail" id="detail-c">
+                    <strong>白話：</strong>像火車車廂，用指標(Pointer)串接節點。<br>
+                    <strong>用途：</strong>記憶體管理、音樂播放清單(上一首/下一首)。<br>
+                    <strong>判定：</strong>線性動態結構 ✅
+                </div>
+            </div>
+            <div class="info-card" onclick="toggleDetail('detail-d')">
+                <h3>(D) Tree 樹</h3>
+                <div class="info-detail" id="detail-d">
+                    <strong>白話：</strong>像倒過來的樹，有根與分支的階層關係。<br>
+                    <strong>用途：</strong>電腦檔案總管、網頁 HTML 結構(DOM)。<br>
+                    <strong>判定：</strong>非線性階層結構 ✅
+                </div>
+            </div>
+            <div class="info-card" onclick="toggleDetail('detail-e')">
+                <h3>(E) Triangle 三角形</h3>
+                <div class="info-detail" id="detail-e">
+                    <strong>白話：</strong>特殊的資料排列，如下三角矩陣或巴斯卡三角形。<br>
+                    <strong>用途：</strong>演算法優化(省空間)、數值分析。<br>
+                    <strong>判定：</strong>特殊應用結構 ✅
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 互動 B：複選題作答 -->
+    <div class="section-card" style="border: 2px solid var(--primary-color);">
+        <h2>✍️ 立即測驗：複選題 48</h2>
+        <p style="color: var(--danger-color); font-weight: bold;">⚠️ 請注意：本題為複選題 (可能全選)</p>
+        
+        <div class="quiz-interface">
+            <div class="checkbox-group">
+                <label><input type="checkbox" id="check-A"> (A) 序列（array）</label>
+                <label><input type="checkbox" id="check-B"> (B) 矩陣（matrix）</label>
+                <label><input type="checkbox" id="check-C"> (C) 串列（linked list）</label>
+                <label><input type="checkbox" id="check-D"> (D) 樹（tree）</label>
+                <label><input type="checkbox" id="check-E"> (E) 三角形結構（triangle）</label>
+            </div>
+            <button class="quiz-btn" onclick="checkAnswer()">送出答案</button>
+            <div id="quiz-result" class="result-message"></div>
+        </div>
+    </div>
+
+    <!-- 考試陷阱區 -->
+    <div class="section-card">
+        <h2>💣 常見考試陷阱 (點擊「我懂了」消除)</h2>
+        <div class="trap-container">
+            <div class="trap-card" id="trap1">
+                <h3>陷阱 1：刪去法心態</h3>
+                <p>以為考試一定會有一個錯誤選項，硬是要找出一個不選。</p>
+                <button class="trap-btn" onclick="removeTrap('trap1')">我懂了，這題全選！</button>
+            </div>
+            <div class="trap-card" id="trap2">
+                <h3>陷阱 2：只背課本目錄</h3>
+                <p>只選課本章節標題有出現的 (Array/List/Tree)，忽略了應用型結構。</p>
+                <button class="trap-btn" onclick="removeTrap('trap2')">我懂了，應用也是結構！</button>
+            </div>
+            <div class="trap-card" id="trap3">
+                <h3>陷阱 3：看到 Triangle 就怕</h3>
+                <p>以為 Triangle 只是幾何圖形。其實在程式中，它是一種省空間的儲存法。</p>
+                <button class="trap-btn" onclick="removeTrap('trap3')">我懂了，它是結構！</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 自我檢測 -->
+    <div class="section-card">
+        <h2>🤔 自我檢測 (不給答案，請思考)</h2>
+        
+        <div class="self-check-item">
+            <p><strong>Q1：</strong> 什麼情況下「所有選項都可能是答案」？</p>
+            <button class="hint-btn" onclick="showHint('hint1')">顯示提示</button>
+            <div id="hint1" class="hint-text">💡 當題目問的是「廣泛的定義」或「應用實例」時，不要侷限於狹義定義。</div>
+        </div>
+
+        <div class="self-check-item">
+            <p><strong>Q2：</strong> 資料結構與演算法的關係是什麼？</p>
+            <button class="hint-btn" onclick="showHint('hint2')">顯示提示</button>
+            <div id="hint2" class="hint-text">💡 資料結構是「食材的擺放方式」，演算法是「料理的步驟」。兩者密不可分。</div>
+        </div>
+
+        <div class="self-check-item">
+            <p><strong>Q3：</strong> 考試中如何判斷題目是「定義型」還是「應用型」？</p>
+            <button class="hint-btn" onclick="showHint('hint3')">顯示提示</button>
+            <div id="hint3" class="hint-text">💡 看到關鍵字「常被使用」、「應用」、「實作」時，通常屬於廣義的應用型題目。</div>
+        </div>
+    </div>
+
+    <footer>
+        <button class="reset-btn" onclick="resetAll()">🔄 重置所有互動與練習</button>
+        <p style="font-size: 0.8rem; margin-top: 10px; color: #9ca3af;">Designed by 電腦概論名師團隊 | HTML5 Only</p>
+    </footer>
+
+</div>
+
+<script>
+    // --- 互動功能 (A)：拖拉與點擊分類 ---
+    const draggables = document.querySelectorAll('.draggable-item');
+    const dropZone = document.getElementById('dropTarget');
+    const sourceZone = document.getElementById('dragSource');
+    const dragFeedback = document.getElementById('drag-feedback');
+    let droppedCount = 0;
+
+    // 拖曳事件綁定
+    draggables.forEach(draggable => {
+        draggable.addEventListener('dragstart', () => {
+            draggable.classList.add('dragging');
+        });
+
+        draggable.addEventListener('dragend', () => {
+            draggable.classList.remove('dragging');
+            checkDragCompletion();
+        });
+    });
+
+    dropZone.addEventListener('dragover', e => {
+        e.preventDefault(); // 允許放置
+        dropZone.classList.add('active');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('active');
+    });
+
+    dropZone.addEventListener('drop', e => {
+        e.preventDefault();
+        const draggable = document.querySelector('.dragging');
+        if (draggable) {
+            dropZone.appendChild(draggable);
+            dropZone.classList.remove('active');
+            checkDragCompletion();
+        }
+    });
+
+    // 點擊移動 (為了手機版或不習慣拖曳的學生)
+    function moveItem(element) {
+        if (element.parentElement === sourceZone) {
+            dropZone.appendChild(element);
+        } else {
+            sourceZone.appendChild(element);
+        }
+        checkDragCompletion();
+    }
+
+    function checkDragCompletion() {
+        const itemsInZone = dropZone.querySelectorAll('.draggable-item').length;
+        droppedCount = itemsInZone;
+
+        if (droppedCount === 5) {
+            dragFeedback.style.display = 'block';
+            dragFeedback.className = 'result-message result-success';
+            dragFeedback.innerHTML = '🎉 <strong>太棒了！</strong> 你發現了嗎？這五個全部都是資料結構！<br>本題就是「全選」題！';
+        } else if (droppedCount > 0 && droppedCount < 5) {
+            dragFeedback.style.display = 'none'; // 未完成前不干擾
+        } else {
+            dragFeedback.style.display = 'none';
+        }
+    }
+
+    // --- 互動功能 (B)：測驗檢查 ---
+    function checkAnswer() {
+        const answers = {
+            A: document.getElementById('check-A').checked,
+            B: document.getElementById('check-B').checked,
+            C: document.getElementById('check-C').checked,
+            D: document.getElementById('check-D').checked,
+            E: document.getElementById('check-E').checked
+        };
+
+        const resultDiv = document.getElementById('quiz-result');
+        resultDiv.style.display = 'block';
+
+        // 檢查是否全選
+        if (answers.A && answers.B && answers.C && answers.D && answers.E) {
+            resultDiv.className = 'result-message result-success';
+            resultDiv.innerHTML = '💯 <strong>完全正確！</strong><br>所有選項 (A)(B)(C)(D)(E) 皆為常被使用的資料結構。<br>恭喜你掌握了「廣義資料結構」的觀念！';
+        } else {
+            resultDiv.className = 'result-message result-error';
+            
+            let missing = [];
+            if (!answers.A) missing.push('Array');
+            if (!answers.B) missing.push('Matrix');
+            if (!answers.C) missing.push('Linked List');
+            if (!answers.D) missing.push('Tree');
+            if (!answers.E) missing.push('Triangle');
+
+            resultDiv.innerHTML = `❌ <strong>還差一點點！</strong><br>題目問的是「常被使用」，不要漏選喔！<br>你漏掉了：${missing.join(', ')}。<br>再試試看全選！`;
+        }
+    }
+
+    // --- 互動功能 (C)：切換詳解顯示 ---
+    function toggleDetail(id) {
+        const detail = document.getElementById(id);
+        if (detail.style.display === 'block') {
+            detail.style.display = 'none';
+        } else {
+            // 先關閉其他的 (Accordion 效果)
+            document.querySelectorAll('.info-detail').forEach(el => el.style.display = 'none');
+            detail.style.display = 'block';
+        }
+    }
+
+    // --- 互動功能 (E)：移除陷阱卡 ---
+    function removeTrap(id) {
+        const card = document.getElementById(id);
+        card.style.opacity = '0';
+        setTimeout(() => {
+            card.style.display = 'none';
+        }, 300); // 等待淡出動畫
+    }
+
+    // --- 自我檢測提示 ---
+    function showHint(id) {
+        const hint = document.getElementById(id);
+        hint.style.display = 'block';
+    }
+
+    // --- 全域重置 ---
+    function resetAll() {
+        // 重置拖曳區
+        const draggables = document.querySelectorAll('.draggable-item');
+        draggables.forEach(item => sourceZone.appendChild(item));
+        document.getElementById('drag-feedback').style.display = 'none';
+
+        // 重置 Checkbox
+        document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+        document.getElementById('quiz-result').style.display = 'none';
+
+        // 重置詳解
+        document.querySelectorAll('.info-detail').forEach(el => el.style.display = 'none');
+
+        // 重置陷阱卡
+        const traps = document.querySelectorAll('.trap-card');
+        traps.forEach(trap => {
+            trap.style.display = 'block';
+            trap.style.opacity = '1';
+        });
+
+        // 重置提示
+        document.querySelectorAll('.hint-text').forEach(hint => hint.style.display = 'none');
+
+        // 滾動回頂部
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+</script>
+
+</body>
+</html>

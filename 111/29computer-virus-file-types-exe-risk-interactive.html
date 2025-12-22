@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>題目 29：電腦病毒與檔案類型安全觀念</title>
+    <style>
+        /* ========== 全域設定 ========== */
+        :root {
+            --primary-color: #2c3e50;    /* 深藍色：專業感 */
+            --accent-color: #3498db;     /* 亮藍色：重點 */
+            --danger-color: #e74c3c;     /* 紅色：危險/錯誤/EXE */
+            --success-color: #27ae60;    /* 綠色：安全/正確 */
+            --bg-color: #f4f6f7;         /* 淺灰底色：護眼 */
+            --card-bg: #ffffff;          /* 卡片白底 */
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1, h2, h3 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            text-align: center;
+            border-bottom: 3px solid var(--accent-color);
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            border-left: 5px solid var(--accent-color);
+            padding-left: 10px;
+            margin-top: 30px;
+            font-size: 1.4em;
+        }
+
+        /* ========== 強調與說明區塊 ========== */
+        .highlight-box {
+            background-color: #ecf0f1;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px dashed var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .key-point {
+            color: var(--danger-color);
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .term-list dt {
+            font-weight: bold;
+            color: var(--accent-color);
+            margin-top: 10px;
+        }
+        .term-list dd {
+            margin-left: 20px;
+            margin-bottom: 5px;
+        }
+
+        /* ========== 題目顯示區 ========== */
+        .question-panel {
+            background-color: #fff8e1; /* 淡黃色像考卷 */
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #f1c40f;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .tag {
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            background: var(--danger-color);
+            color: white;
+            padding: 2px 10px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        /* ========== 互動 A: 檔案類型卡片 ========== */
+        .file-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .file-card {
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .file-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .file-card h3 {
+            margin: 0;
+            font-size: 2em;
+        }
+
+        .file-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .risk-reveal {
+            display: none; /* 預設隱藏 */
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+            font-size: 0.9em;
+            text-align: left;
+        }
+
+        .risk-high { color: var(--danger-color); font-weight: bold; }
+        .risk-low { color: var(--success-color); font-weight: bold; }
+
+        /* EXE 特效 */
+        .file-card.exe-card.revealed {
+            border-color: var(--danger-color);
+            background-color: #fff5f5;
+        }
+
+        /* ========== 互動 B: 執行 vs 開啟 ========== */
+        .action-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background 0.3s;
+            color: white;
+        }
+
+        .btn-open { background-color: var(--success-color); }
+        .btn-exec { background-color: var(--danger-color); }
+        
+        .btn-open:hover { background-color: #219150; }
+        .btn-exec:hover { background-color: #c0392b; }
+
+        .action-result {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #e8f6f3;
+            border-radius: 8px;
+            text-align: center;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ========== 互動 C: 題目選項 ========== */
+        .quiz-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .quiz-btn {
+            padding: 15px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            text-align: left;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        .quiz-btn:hover {
+            background-color: #f0f0f0;
+        }
+
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .feedback-correct {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .feedback-wrong {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* ========== 互動 D: 陷阱卡 ========== */
+        .trap-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .trap-card {
+            background-color: #fff;
+            border-left: 5px solid #e67e22; /* 橘色警告 */
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: opacity 0.5s;
+        }
+
+        .trap-dismiss {
+            background: #e67e22;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        /* ========== 互動 E: 自我檢測 ========== */
+        .self-check-item {
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .hint-btn {
+            background: none;
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .hint-text {
+            display: none;
+            margin-top: 10px;
+            color: #555;
+            background: #eef;
+            padding: 8px;
+            border-radius: 4px;
+        }
+
+        /* ========== 底部重置 ========== */
+        .reset-section {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px dashed #ccc;
+        }
+
+        .reset-btn {
+            background-color: #95a5a6;
+            color: white;
+            border: none;
+            padding: 10px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        .reset-btn:hover { background-color: #7f8c8d; }
+
+        /* RWD */
+        @media (max-width: 600px) {
+            .quiz-options { grid-template-columns: 1fr; }
+            .container { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>題目 29：資訊安全與電腦病毒</h1>
+
+    <!-- 題目區域 -->
+    <div class="question-panel">
+        <span class="tag">題目 29</span>
+        <p style="font-size: 1.2em; font-weight: bold;">下列哪種檔案最容易帶有電腦病毒？</p>
+        <ul style="list-style: none; padding: 0;">
+            <li>(A) JPG 檔</li>
+            <li>(B) EXE 檔</li>
+            <li>(C) MP3 檔</li>
+            <li>(D) TXT 檔</li>
+        </ul>
+        <div id="answer-reveal" style="display:none; margin-top:10px; font-weight:bold; color:var(--danger-color);">
+            正確答案：(B) EXE 檔
+        </div>
+    </div>
+
+    <!-- 1. 基礎名詞解釋 -->
+    <div class="highlight-box">
+        <h3>📚 老師的課前單字卡（先看懂再解題）</h3>
+        <dl class="term-list">
+            <dt>電腦病毒 (Computer Virus)</dt>
+            <dd>一種惡意程式，會偷偷執行、破壞檔案或竊取你的資料（白話：讓電腦生病的壞軟體）。</dd>
+            
+            <dt>可執行檔 (Executable File)</dt>
+            <dd>點兩下之後，電腦會直接「開始工作/執行」的檔案（白話：它是一個程式，不是單純看的資料）。</dd>
+            
+            <dt>EXE (Executable)</dt>
+            <dd>Windows 系統中最常見的「可執行檔」格式。</dd>
+            
+            <dt>JPG / MP3 / TXT</dt>
+            <dd>分別是圖片、音樂、純文字檔。它們是「資料」，通常需要搭配瀏覽軟體才能開啟（白話：只能看或聽，不能命令電腦做事）。</dd>
+        </dl>
+    </div>
+
+    <!-- 2. 互動 A: 檔案類型風險分類 -->
+    <h2>一、檔案類型風險大解密</h2>
+    <p>👇 點擊下方卡片，看看它們的肚子裡裝什麼：</p>
+    <div class="file-cards-grid">
+        <!-- JPG 卡片 -->
+        <div class="file-card" onclick="checkRisk('jpg', this)">
+            <span class="file-icon">🖼️</span>
+            <h3>JPG</h3>
+            <div class="risk-reveal">
+                <p>類型：圖片檔</p>
+                <p>可直接執行？ <span class="risk-low">否</span></p>
+                <p>風險等級：<span class="risk-low">低</span></p>
+                <p>理由：只能顯示影像，本身不含程式指令。</p>
+            </div>
+        </div>
+
+        <!-- EXE 卡片 -->
+        <div class="file-card exe-card" onclick="checkRisk('exe', this)">
+            <span class="file-icon">⚠️</span>
+            <h3>EXE</h3>
+            <div class="risk-reveal">
+                <p>類型：可執行程式</p>
+                <p>可直接執行？ <span class="risk-high">是！</span></p>
+                <p>風險等級：<span class="risk-high">高</span></p>
+                <p>理由：它是程式本體，病毒可以直接藏在裡面執行！</p>
+            </div>
+        </div>
+
+        <!-- MP3 卡片 -->
+        <div class="file-card" onclick="checkRisk('mp3', this)">
+            <span class="file-icon">🎵</span>
+            <h3>MP3</h3>
+            <div class="risk-reveal">
+                <p>類型：音樂檔</p>
+                <p>可直接執行？ <span class="risk-low">否</span></p>
+                <p>風險等級：<span class="risk-low">低</span></p>
+                <p>理由：只是數位聲音資料，播放器負責讀取。</p>
+            </div>
+        </div>
+
+        <!-- TXT 卡片 -->
+        <div class="file-card" onclick="checkRisk('txt', this)">
+            <span class="file-icon">📄</span>
+            <h3>TXT</h3>
+            <div class="risk-reveal">
+                <p>類型：純文字檔</p>
+                <p>可直接執行？ <span class="risk-low">否</span></p>
+                <p>風險等級：<span class="risk-low">低</span></p>
+                <p>理由：只包含純文字，完全沒有程式碼功能。</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. 核心觀念：執行 vs 開啟 -->
+    <h2>二、核心觀念：為什麼 EXE 危險？</h2>
+    <div class="highlight-box" style="border: 2px solid var(--danger-color); background-color: #fff;">
+        <p class="key-point">★ 考試必考觀念：病毒必須「被執行」才會發作！</p>
+        <p>這就是為什麼「可執行檔 (Executable File)」最危險。</p>
+    </div>
+
+    <div style="text-align: center;">
+        <p>試試看這兩個按鈕的差別：</p>
+        <div class="action-container">
+            <button class="action-btn btn-open" onclick="explainAction('open')">📂 開啟圖片/音樂</button>
+            <button class="action-btn btn-exec" onclick="explainAction('exec')">⚡ 執行程式 (EXE)</button>
+        </div>
+        <div id="action-feedback" class="action-result">
+            (請點選上方按鈕查看差異)
+        </div>
+    </div>
+
+    <!-- 4. 互動 C: 題目解析 -->
+    <h2>三、挑戰題目 29</h2>
+    <p>請根據剛才學到的觀念，選出正確答案：</p>
+    <div class="quiz-options">
+        <button class="quiz-btn" onclick="checkAnswer('A')">(A) JPG 檔</button>
+        <button class="quiz-btn" onclick="checkAnswer('B')">(B) EXE 檔</button>
+        <button class="quiz-btn" onclick="checkAnswer('C')">(C) MP3 檔</button>
+        <button class="quiz-btn" onclick="checkAnswer('D')">(D) TXT 檔</button>
+    </div>
+    
+    <div id="quiz-feedback-box" class="quiz-feedback"></div>
+
+    <!-- 5. 互動 D: 考試陷阱 -->
+    <h2>四、常見考試陷阱 (點擊「我懂了」清除)</h2>
+    <div class="trap-container">
+        <div class="trap-card" id="trap1">
+            <div>
+                <strong>陷阱 1：檔案很大就很危險？</strong>
+                <div style="font-size: 0.9em; color: #666;">錯！大檔案可能是高畫質影片。危險性看的是「能不能執行」，不是大小。</div>
+            </div>
+            <button class="trap-dismiss" onclick="dismissTrap('trap1')">我懂了</button>
+        </div>
+        
+        <div class="trap-card" id="trap2">
+            <div>
+                <strong>陷阱 2：網路下載的都一樣危險？</strong>
+                <div style="font-size: 0.9em; color: #666;">考試重點在「檔案類型」。雖然下載都要小心，但 EXE 絕對比 TXT 更容易直接造成破壞。</div>
+            </div>
+            <button class="trap-dismiss" onclick="dismissTrap('trap2')">我懂了</button>
+        </div>
+
+        <div class="trap-card" id="trap3">
+            <div>
+                <strong>陷阱 3：圖片一定完全安全？</strong>
+                <div style="font-size: 0.9em; color: #666;">考試觀念中視為「相對安全」。但在現實資安世界，圖片也可能藏漏洞代碼，只是考試通常選 EXE 為最危險。</div>
+            </div>
+            <button class="trap-dismiss" onclick="dismissTrap('trap3')">我懂了</button>
+        </div>
+    </div>
+
+    <!-- 6. 互動 E: 自我檢測 -->
+    <h2>五、回家作業與思考 (自我檢測)</h2>
+    
+    <div class="self-check-item">
+        <strong>題目 1：為什麼 EXE 檔一定要確認來源才可執行？</strong>
+        <br>
+        <button class="hint-btn" onclick="toggleHint('hint1')">顯示提示</button>
+        <div id="hint1" class="hint-text">
+            提示：因為它是「可執行檔」，一旦點開，電腦就會無條件聽從它的指令。如果它是病毒，你就等於親手把鑰匙交給小偷！
+        </div>
+    </div>
+
+    <div class="self-check-item">
+        <strong>題目 2：如果這檔名是 <code>photo.jpg.exe</code>，該不該打開？為什麼？</strong>
+        <br>
+        <button class="hint-btn" onclick="toggleHint('hint2')">顯示提示</button>
+        <div id="hint2" class="hint-text">
+            提示：絕對不要打開！這是一種欺騙手法。電腦只看「最後的副檔名」，所以它本質上還是個危險的 <strong>EXE 檔</strong>，只是假裝成圖片。
+        </div>
+    </div>
+
+    <div class="self-check-item">
+        <strong>題目 3：考試中判斷「最容易有病毒」最快的方法是什麼？</strong>
+        <br>
+        <button class="hint-btn" onclick="toggleHint('hint3')">顯示提示</button>
+        <div id="hint3" class="hint-text">
+            提示：找選項中哪一個是「程式」或「可執行檔」(如 EXE, COM, BAT)。只要是單純的資料檔 (JPG, TXT, MP3)，通常不是正確答案。
+        </div>
+    </div>
+
+    <!-- 重置按鈕 -->
+    <div class="reset-section">
+        <button class="reset-btn" onclick="resetAll()">🔄 重置所有練習</button>
+    </div>
+
+</div>
+
+<script>
+    // ========== 互動 A: 檔案卡片邏輯 ==========
+    function checkRisk(type, element) {
+        // 找到該卡片內部的說明區塊
+        const detail = element.querySelector('.risk-reveal');
+        
+        // 顯示說明
+        detail.style.display = 'block';
+        
+        // 如果是 EXE，加上特殊樣式表示強調
+        if (type === 'exe') {
+            element.classList.add('revealed');
+        }
+    }
+
+    // ========== 互動 B: 執行 vs 開啟邏輯 ==========
+    function explainAction(action) {
+        const feedback = document.getElementById('action-feedback');
+        if (action === 'open') {
+            feedback.innerHTML = "<strong>📂 開啟動作：</strong><br>就像用眼睛看書。電腦只是「讀取」內容並顯示給你看。病毒很難發作。<br><span style='color:green'>(相對安全)</span>";
+            feedback.style.backgroundColor = "#d4edda";
+        } else {
+            feedback.innerHTML = "<strong>⚡ 執行動作：</strong><br>就像命令機器人做事。電腦會完全照著檔案寫的指令去運作。<br><span style='color:red'>如果這是病毒，你的電腦就中毒了！(高風險)</span>";
+            feedback.style.backgroundColor = "#f8d7da";
+        }
+    }
+
+    // ========== 互動 C: 題目解析邏輯 ==========
+    function checkAnswer(option) {
+        const feedbackBox = document.getElementById('quiz-feedback-box');
+        const answerReveal = document.getElementById('answer-reveal');
+        
+        feedbackBox.style.display = 'block';
+        
+        if (option === 'B') {
+            // 答對了
+            feedbackBox.className = 'quiz-feedback feedback-correct';
+            feedbackBox.innerHTML = `
+                <strong>⭕ 答對了！</strong><br>
+                (B) EXE 檔是「可執行檔」，最容易被夾帶病毒程式碼。
+                <br>記住口訣：<strong>病毒要執行才會發作，EXE 就是拿來執行的！</strong>
+            `;
+            answerReveal.style.display = 'block';
+        } else {
+            // 答錯了
+            let reason = "";
+            if (option === 'A') reason = "JPG 是圖片檔，通常只是顯示畫面，不會執行指令。";
+            if (option === 'C') reason = "MP3 是聲音檔，只是用來播放聲音的資料。";
+            if (option === 'D') reason = "TXT 是純文字檔，完全沒有執行能力。";
+
+            feedbackBox.className = 'quiz-feedback feedback-wrong';
+            feedbackBox.innerHTML = `
+                <strong>❌ 答錯囉！</strong><br>
+                選項 (${option}) ${reason}<br>
+                請再想一想，哪一個檔案點了之後會讓電腦「執行程式」？
+            `;
+        }
+    }
+
+    // ========== 互動 D: 陷阱卡邏輯 ==========
+    function dismissTrap(id) {
+        const trapCard = document.getElementById(id);
+        // 淡出效果
+        trapCard.style.opacity = '0';
+        setTimeout(() => {
+            trapCard.style.display = 'none';
+        }, 500); // 等待 0.5 秒動畫結束
+    }
+
+    // ========== 互動 E: 自我檢測提示 ==========
+    function toggleHint(id) {
+        const hint = document.getElementById(id);
+        if (hint.style.display === 'block') {
+            hint.style.display = 'none';
+        } else {
+            hint.style.display = 'block';
+        }
+    }
+
+    // ========== 全頁重置 ==========
+    function resetAll() {
+        // 1. 重置卡片
+        document.querySelectorAll('.risk-reveal').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('.file-card').forEach(el => el.classList.remove('revealed'));
+
+        // 2. 重置動作說明
+        document.getElementById('action-feedback').innerHTML = "(請點選上方按鈕查看差異)";
+        document.getElementById('action-feedback').style.backgroundColor = "#e8f6f3";
+
+        // 3. 重置題目
+        document.getElementById('quiz-feedback-box').style.display = 'none';
+        document.getElementById('answer-reveal').style.display = 'none';
+
+        // 4. 重置陷阱卡
+        document.querySelectorAll('.trap-card').forEach(el => {
+            el.style.display = 'flex';
+            el.style.opacity = '1';
+        });
+
+        // 5. 重置提示
+        document.querySelectorAll('.hint-text').forEach(el => el.style.display = 'none');
+
+        // 捲動回頂端
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+</script>
+
+</body>
+</html>

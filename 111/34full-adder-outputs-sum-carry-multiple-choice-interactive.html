@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>複選題 34：全加法器輸出解析 - 互動式教學講義</title>
+    <style>
+        /* --- 全域設定 --- */
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #e74c3c; /* 重點紅 */
+            --highlight-color: #f1c40f; /* 重點黃 */
+            --success-color: #27ae60;
+            --bg-color: #f4f6f7;
+            --card-bg: #ffffff;
+            --border-radius: 10px;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* --- 標題與章節 --- */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 10px;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        h2 {
+            font-size: 1.4rem;
+            border-left: 5px solid var(--accent-color);
+            padding-left: 10px;
+            margin-top: 30px;
+            background: #eecbc833;
+            padding: 10px;
+            border-radius: 0 5px 5px 0;
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            font-weight: bold;
+        }
+
+        /* --- 重點提示卡 --- */
+        .concept-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .keyword {
+            color: var(--accent-color);
+            font-weight: bold;
+            background: #fff3cd;
+            padding: 2px 5px;
+            border-radius: 4px;
+        }
+
+        /* --- 全加法器視覺圖解 --- */
+        .diagram-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .wire-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .wire {
+            position: relative;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .wire::after {
+            content: '→';
+            font-size: 1.2rem;
+            margin-left: 5px;
+        }
+
+        .wire.output::after {
+            content: '';
+        }
+        
+        .wire.output::before {
+            content: '→';
+            font-size: 1.2rem;
+            margin-right: 5px;
+        }
+
+        .adder-box {
+            background: var(--primary-color);
+            color: white;
+            padding: 30px 20px;
+            border-radius: 8px;
+            margin: 0 20px;
+            text-align: center;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            min-width: 150px;
+            position: relative;
+        }
+        
+        .adder-box::before {
+            content: "全加法器 (FA)";
+            display: block;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            border-bottom: 1px dashed #aaa;
+            padding-bottom: 5px;
+        }
+
+        .highlight-output {
+            color: var(--highlight-color);
+            font-weight: 900;
+            font-size: 1.1em;
+            text-shadow: 1px 1px 0px #000;
+        }
+
+        /* --- 互動區 1: 拖放分類 --- */
+        .drag-area {
+            display: flex;
+            gap: 20px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .drop-zone {
+            flex: 1;
+            min-height: 150px;
+            border: 3px dashed #bdc3c7;
+            border-radius: var(--border-radius);
+            padding: 10px;
+            background: #fafafa;
+            position: relative;
+        }
+
+        .drop-zone h3 {
+            text-align: center;
+            margin-top: 0;
+            color: #7f8c8d;
+        }
+
+        .source-zone {
+            width: 100%;
+            min-height: 60px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            padding: 10px;
+            background: #e8e8e8;
+            border-radius: var(--border-radius);
+        }
+
+        .draggable-item {
+            background: white;
+            border: 2px solid var(--primary-color);
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: grab;
+            font-weight: bold;
+            user-select: none;
+            transition: transform 0.2s;
+        }
+
+        .draggable-item:active {
+            cursor: grabbing;
+            transform: scale(1.05);
+        }
+
+        /* --- 互動區 2: 複選題 --- */
+        .quiz-section {
+            background: #fff;
+            border: 2px solid var(--primary-color);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            position: relative;
+        }
+
+        .question-number {
+            background: var(--primary-color);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        .multi-choice-badge {
+            background: var(--accent-color);
+            color: white;
+            font-size: 0.8rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            vertical-align: middle;
+            margin-left: 10px;
+        }
+
+        .options label {
+            display: block;
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .options label:hover {
+            background: #f0f0f0;
+        }
+
+        .options input[type="checkbox"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+
+        /* --- 按鈕樣式 --- */
+        .btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #34495e;
+        }
+        
+        .btn-reset {
+            background: #95a5a6;
+        }
+
+        .feedback-box {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+            font-weight: bold;
+        }
+
+        .feedback-correct {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .feedback-wrong {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* --- 陷阱卡與解析 --- */
+        .analysis-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .analysis-btn {
+            padding: 10px;
+            border: 1px solid #bdc3c7;
+            background: white;
+            cursor: pointer;
+            text-align: center;
+            border-radius: 5px;
+        }
+
+        .analysis-btn:hover {
+            background: #ecf0f1;
+        }
+        
+        .analysis-detail {
+            margin-top: 10px;
+            padding: 10px;
+            background: #fff3cd;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .trap-cards {
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+
+        .trap-card {
+            min-width: 200px;
+            background: #ffe6e6;
+            border: 1px solid #ffcccc;
+            padding: 15px;
+            border-radius: 10px;
+            position: relative;
+        }
+
+        .trap-btn {
+            display: block;
+            width: 100%;
+            margin-top: 10px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        /* --- 自我檢測 --- */
+        .self-test-item {
+            border-bottom: 1px solid #ddd;
+            padding: 15px 0;
+        }
+        
+        .hint-text {
+            color: var(--success-color);
+            margin-top: 5px;
+            display: none;
+            font-weight: bold;
+        }
+
+        /* --- 手機版優化 --- */
+        @media (max-width: 600px) {
+            .diagram-container {
+                flex-direction: column;
+            }
+            .wire::after {
+                content: '↓';
+                margin-left: 0;
+            }
+            .wire.output::before {
+                content: '↓';
+                margin-right: 0;
+            }
+            .adder-box {
+                width: 80%;
+                margin: 10px 0;
+            }
+            .wire-group {
+                flex-direction: row;
+                gap: 20px;
+            }
+            .drag-area {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>電腦概論：數位邏輯與加法器</h1>
+        <div class="subtitle">高中職計算機概論 / 複選題 34 重點突破</div>
+    </header>
+
+    <!-- 1. 觀念教學區 -->
+    <section>
+        <h2>觀念 1：什麼是全加法器 (Full Adder)？</h2>
+        <div class="concept-card">
+            <p>在我們深入題目之前，先搞懂名詞定義：</p>
+            <ul>
+                <li><span class="keyword">加法器 (Adder)</span>：電腦內部用來做二進位加法的電路。</li>
+                <li><span class="keyword">半加法器 (Half Adder)</span>：只能處理兩個位元相加，<strong>沒辦法</strong>處理來自前一位的進位。</li>
+                <li><span class="keyword">全加法器 (Full Adder)</span>：升級版！除了兩個位元，還能處理<span class="keyword">前一位進位 (Cin)</span>。</li>
+            </ul>
+        </div>
+
+        <div class="concept-card" style="border: 2px solid var(--primary-color);">
+            <h3 style="text-align: center;">★ 全加法器的黑盒子 (Black Box) ★</h3>
+            <p style="text-align: center;">請記住：輸入有 3 個，輸出只有 2 個！</p>
+            
+            <div class="diagram-container">
+                <!-- 輸入端 -->
+                <div class="wire-group">
+                    <div class="wire">A (被加數)</div>
+                    <div class="wire">B (加數)</div>
+                    <div class="wire" style="color: blue;">Cin (前一位進位)</div>
+                </div>
+
+                <!-- 核心盒子 -->
+                <div class="adder-box">
+                    <div>運算處理中...</div>
+                </div>
+
+                <!-- 輸出端 -->
+                <div class="wire-group">
+                    <div class="wire output highlight-output">Sum (本位和)</div>
+                    <div class="wire output highlight-output">Carry (進位輸出)</div>
+                </div>
+            </div>
+            <div style="text-align: center; font-size: 0.9em; color: #666; margin-top: 10px;">
+                注意：Cin (前一位進位) 是<strong>輸入</strong>，因為我們要拿它來運算；<br>
+                Carry (進位) 才是算出來要給下一位的<strong>輸出</strong>。
+            </div>
+        </div>
+    </section>
+
+    <!-- 2. 半加法器 vs 全加法器 對照互動 -->
+    <section>
+        <h2>觀念 2：半加法器 vs 全加法器 差在哪？</h2>
+        <div class="concept-card" style="text-align: center;">
+            <div id="ha-fa-display">
+                <h3 id="ha-fa-title">目前顯示：全加法器 (Full Adder)</h3>
+                <p id="ha-fa-desc">輸入有 3 個 (A, B, Cin)，輸出有 2 個 (Sum, Carry)</p>
+            </div>
+            <button class="btn" onclick="toggleAdderType()">切換為半加法器/全加法器</button>
+            <p style="font-size: 0.9rem; color: #e74c3c; margin-top: 10px;">
+                💡 老師提示：不管哪種加法器，<strong>輸出永遠都是 Sum (和) 與 Carry (進位)</strong>，差別只在輸入端！
+            </p>
+        </div>
+    </section>
+
+    <!-- 3. 拖拉練習區 -->
+    <section>
+        <h2>互動練習：輸入與輸出大歸類</h2>
+        <div class="concept-card">
+            <p>請將下方的訊號卡片，拖拉到正確的分類框框中：</p>
+            
+            <div class="source-zone" id="sourceZone" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <div class="draggable-item" draggable="true" ondragstart="drag(event)" id="drag-A">A (位元)</div>
+                <div class="draggable-item" draggable="true" ondragstart="drag(event)" id="drag-Sum">Sum (和)</div>
+                <div class="draggable-item" draggable="true" ondragstart="drag(event)" id="drag-Cin">Cin (前一位進位)</div>
+                <div class="draggable-item" draggable="true" ondragstart="drag(event)" id="drag-Carry">Carry (進位)</div>
+                <div class="draggable-item" draggable="true" ondragstart="drag(event)" id="drag-B">B (位元)</div>
+            </div>
+
+            <div class="drag-area">
+                <div class="drop-zone" id="inputZone" ondrop="drop(event)" ondragover="allowDrop(event)">
+                    <h3>📥 輸入 (Input)</h3>
+                    <!-- 放置區 -->
+                </div>
+                <div class="drop-zone" id="outputZone" ondrop="drop(event)" ondragover="allowDrop(event)" style="border-color: var(--accent-color);">
+                    <h3>📤 輸出 (Output)</h3>
+                    <!-- 放置區 -->
+                </div>
+            </div>
+            
+            <div style="text-align: center;">
+                <button class="btn" onclick="checkDragAnswer()">檢查分類</button>
+                <button class="btn btn-reset" onclick="resetDragGame()">重置</button>
+            </div>
+            <div id="dragFeedback" class="feedback-box"></div>
+        </div>
+    </section>
+
+    <!-- 4. 核心題目區 -->
+    <section>
+        <h2>實戰演練：複選題 34</h2>
+        <div class="quiz-section">
+            <span class="question-number">題號 34</span>
+            <span class="multi-choice-badge">本題可複選</span>
+            
+            <p style="font-size: 1.1rem; font-weight: bold;">
+                下列何者為全加法器（full adder）的輸出？
+            </p>
+
+            <div class="options">
+                <label><input type="checkbox" name="q34" value="A"> (A) 和（sum）</label>
+                <label><input type="checkbox" name="q34" value="B"> (B) 差（difference）</label>
+                <label><input type="checkbox" name="q34" value="C"> (C) 積（product）</label>
+                <label><input type="checkbox" name="q34" value="D"> (D) 前一位元進位（p-carry）</label>
+                <label><input type="checkbox" name="q34" value="E"> (E) 進位（carry）</label>
+            </div>
+
+            <button class="btn" onclick="checkQuizAnswer()">送出答案</button>
+            <div id="quizFeedback" class="feedback-box"></div>
+        </div>
+    </section>
+
+    <!-- 5. 陷阱與解析 -->
+    <section>
+        <h2>選項深入解析 & 考場陷阱</h2>
+        
+        <div class="concept-card">
+            <h3>🔍 點擊選項看詳解：</h3>
+            <div class="analysis-options">
+                <div class="analysis-btn" onclick="showAnalysis('A')">(A) Sum</div>
+                <div class="analysis-btn" onclick="showAnalysis('B')">(B) Difference</div>
+                <div class="analysis-btn" onclick="showAnalysis('C')">(C) Product</div>
+                <div class="analysis-btn" onclick="showAnalysis('D')">(D) p-carry</div>
+                <div class="analysis-btn" onclick="showAnalysis('E')">(E) Carry</div>
+            </div>
+            <div id="analysisDisplay" class="analysis-detail">
+                請點選上方按鈕查看說明。
+            </div>
+        </div>
+
+        <h3>🚧 考場常見陷阱 (點擊「我懂了」消除)</h3>
+        <div class="trap-cards">
+            <div class="trap-card" onclick="this.style.opacity='0'; setTimeout(()=>this.style.display='none', 300);">
+                <h4>陷阱 1：看到「進位」就全選？</h4>
+                <p>錯！要分清楚是「輸入的進位 (p-carry/Cin)」還是「輸出的進位 (Carry)」。</p>
+                <button class="trap-btn">我懂了</button>
+            </div>
+            <div class="trap-card" onclick="this.style.opacity='0'; setTimeout(()=>this.style.display='none', 300);">
+                <h4>陷阱 2：搞混 p-carry</h4>
+                <p>p-carry (previous carry) 是上一位傳來的，對目前的加法器來說，它是<strong>原料 (輸入)</strong>！</p>
+                <button class="trap-btn">我懂了</button>
+            </div>
+            <div class="trap-card" onclick="this.style.opacity='0'; setTimeout(()=>this.style.display='none', 300);">
+                <h4>陷阱 3：複選題只選一個</h4>
+                <p>全加法器算完一定會有「本位和」跟「是否進位」兩個結果，缺一不可。</p>
+                <button class="trap-btn">我懂了</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. 自我檢測 -->
+    <section>
+        <h2>自我檢測 (不給答案，自己想！)</h2>
+        <div class="concept-card">
+            <div class="self-test-item">
+                <p><strong>問題 1：</strong>全加法器為什麼一定要有「前一位進位 (Cin)」當輸入？</p>
+                <button class="btn" style="padding: 5px 10px; font-size: 0.8rem;" onclick="toggleHint('hint1')">顯示提示</button>
+                <div id="hint1" class="hint-text">提示：想想看多位數直式加法，如果個位數相加超過 10，十位數運算時需要加上什麼？</div>
+            </div>
+            <div class="self-test-item">
+                <p><strong>問題 2：</strong>如果把全加法器的 Cin 拿掉，這個電路會退化成什麼？</p>
+                <button class="btn" style="padding: 5px 10px; font-size: 0.8rem;" onclick="toggleHint('hint2')">顯示提示</button>
+                <div id="hint2" class="hint-text">提示：輸入變回只有 A 與 B 兩個，這是哪種加法器？(參考觀念 2)</div>
+            </div>
+            <div class="self-test-item" style="border-bottom: none;">
+                <p><strong>問題 3：</strong>做 4 位元加法 (4-bit adder) 需要串連幾個全加法器？</p>
+                <button class="btn" style="padding: 5px 10px; font-size: 0.8rem;" onclick="toggleHint('hint3')">顯示提示</button>
+                <div id="hint3" class="hint-text">提示：每一個位元 (bit) 都需要一個全加法器來處理該位的 A、B 和進位。</div>
+            </div>
+        </div>
+    </section>
+
+    <footer style="text-align: center; margin-top: 40px; color: #7f8c8d;">
+        <p>加油！弄懂輸入與輸出，邏輯電路其實很簡單。</p>
+        <p>© 互動式教學講義</p>
+    </footer>
+
+</div>
+
+<script>
+    // --- 互動功能 1: 半加法器 vs 全加法器 切換 ---
+    let isFullAdder = true;
+    function toggleAdderType() {
+        const title = document.getElementById('ha-fa-title');
+        const desc = document.getElementById('ha-fa-desc');
+        isFullAdder = !isFullAdder;
+
+        if (isFullAdder) {
+            title.innerText = "目前顯示：全加法器 (Full Adder)";
+            title.style.color = "var(--primary-color)";
+            desc.innerHTML = "輸入有 3 個 (A, B, <span style='color:blue'>Cin</span>)，輸出有 2 個 (Sum, Carry)";
+        } else {
+            title.innerText = "目前顯示：半加法器 (Half Adder)";
+            title.style.color = "#d35400";
+            desc.innerHTML = "輸入只有 2 個 (A, B)，<span style='text-decoration:line-through'>沒有 Cin</span>，輸出還是 2 個 (Sum, Carry)";
+        }
+    }
+
+    // --- 互動功能 2: 拖放分類 (Drag & Drop) ---
+    function allowDrop(ev) {
+        ev.preventDefault();
+    }
+
+    function drag(ev) {
+        ev.dataTransfer.setData("text", ev.target.id);
+    }
+
+    function drop(ev) {
+        ev.preventDefault();
+        var data = ev.dataTransfer.getData("text");
+        var draggedElement = document.getElementById(data);
+        
+        // 確保放置目標是 drop-zone 或 source-zone，而不是裡面的 h3 或其他元素
+        let target = ev.target;
+        while (!target.classList.contains('drop-zone') && !target.classList.contains('source-zone')) {
+            target = target.parentNode;
+            if(!target) return; // 避免找不到層級
+        }
+        target.appendChild(draggedElement);
+    }
+
+    function checkDragAnswer() {
+        const inputZone = document.getElementById('inputZone');
+        const outputZone = document.getElementById('outputZone');
+        const feedback = document.getElementById('dragFeedback');
+        
+        // 正確解答
+        // Input: drag-A, drag-B, drag-Cin
+        // Output: drag-Sum, drag-Carry
+        
+        // 取得目前各區內的元素 ID
+        const inputs = Array.from(inputZone.children).map(el => el.id).filter(id => id);
+        const outputs = Array.from(outputZone.children).map(el => el.id).filter(id => id);
+
+        const correctInputs = ['drag-A', 'drag-B', 'drag-Cin'];
+        const correctOutputs = ['drag-Sum', 'drag-Carry'];
+
+        let isCorrect = true;
+        let msg = "";
+
+        // 檢查輸入區
+        correctInputs.forEach(id => {
+            if (!inputs.includes(id)) isCorrect = false;
+        });
+        // 檢查輸出區
+        correctOutputs.forEach(id => {
+            if (!outputs.includes(id)) isCorrect = false;
+        });
+        // 檢查是否有放錯的 (例如把 Output 放到 Input)
+        if (inputs.length !== 3 || outputs.length !== 2) isCorrect = false;
+
+        feedback.style.display = 'block';
+        if (isCorrect) {
+            feedback.className = 'feedback-box feedback-correct';
+            feedback.innerHTML = "🎉 完全正確！<br>輸入：A, B, Cin (前一位進位)<br>輸出：Sum (和), Carry (進位)";
+        } else {
+            feedback.className = 'feedback-box feedback-wrong';
+            feedback.innerHTML = "❌ 還有錯誤喔！提示：<br>1. Cin 是「前一位進位」，我們要拿它來算，所以是「輸入」。<br>2. 算出來的結果 (Sum, Carry) 才是「輸出」。";
+        }
+    }
+
+    function resetDragGame() {
+        const sourceZone = document.getElementById('sourceZone');
+        const items = ['drag-A', 'drag-B', 'drag-Cin', 'drag-Sum', 'drag-Carry'];
+        items.forEach(id => {
+            const el = document.getElementById(id);
+            if(el) sourceZone.appendChild(el);
+        });
+        document.getElementById('dragFeedback').style.display = 'none';
+    }
+
+    // --- 互動功能 3: 複選題檢查 ---
+    function checkQuizAnswer() {
+        const checkboxes = document.querySelectorAll('input[name="q34"]:checked');
+        const selected = Array.from(checkboxes).map(cb => cb.value);
+        const feedback = document.getElementById('quizFeedback');
+        
+        feedback.style.display = 'block';
+
+        // 排序以便比較
+        selected.sort();
+        const correct = ['A', 'E'];
+        
+        if (JSON.stringify(selected) === JSON.stringify(correct)) {
+            feedback.className = 'feedback-box feedback-correct';
+            feedback.innerHTML = "🎉 恭喜答對！<br>全加法器的輸出正是：(A) 和 (Sum) 與 (E) 進位 (Carry)。";
+        } else {
+            feedback.className = 'feedback-box feedback-wrong';
+            let errorMsg = "❌ 答案不完整或有誤：<br>";
+            
+            if (selected.includes('D')) {
+                errorMsg += "👉 (D) 前一位進位 (p-carry) 是拿來運算的「輸入」，不是輸出。<br>";
+            }
+            if (selected.includes('B') || selected.includes('C')) {
+                errorMsg += "👉 (B) 差是減法、(C) 積是乘法，這題是加法器喔。<br>";
+            }
+            if (selected.length === 1 && (selected.includes('A') || selected.includes('E'))) {
+                errorMsg += "👉 本題是「複選題」，輸出有兩個，你少選了一個！<br>";
+            }
+            if (selected.length === 0) {
+                errorMsg += "👉 你還沒有勾選任何選項喔！";
+            }
+            
+            feedback.innerHTML = errorMsg;
+        }
+    }
+
+    // --- 互動功能 4: 選項解析 ---
+    function showAnalysis(option) {
+        const display = document.getElementById('analysisDisplay');
+        display.style.display = 'block';
+        
+        let content = "";
+        switch(option) {
+            case 'A':
+                content = "<strong>(A) 和 (Sum)：✅ 正確輸出。</strong><br>這是該位元相加後的本位結果 (例如 1+1=10，0 就是 Sum)。";
+                break;
+            case 'B':
+                content = "<strong>(B) 差 (Difference)：❌ 錯誤。</strong><br>這是「減法器 (Subtractor)」的輸出術語。";
+                break;
+            case 'C':
+                content = "<strong>(C) 積 (Product)：❌ 錯誤。</strong><br>這是「乘法器 (Multiplier)」的輸出術語。";
+                break;
+            case 'D':
+                content = "<strong>(D) 前一位進位 (p-carry)：❌ 錯誤 (這是輸入)。</strong><br>這是從低位元傳過來的進位訊號，對於目前的加法器來說，是必須接收的原料 (Input)。";
+                break;
+            case 'E':
+                content = "<strong>(E) 進位 (Carry)：✅ 正確輸出。</strong><br>這是相加後產生要傳給下一位的進位 (例如 1+1=10，1 就是 Carry)。";
+                break;
+        }
+        display.innerHTML = content;
+    }
+
+    // --- 互動功能 5: 自我檢測提示 ---
+    function toggleHint(id) {
+        const el = document.getElementById(id);
+        if (el.style.display === 'block') {
+            el.style.display = 'none';
+        } else {
+            el.style.display = 'block';
+        }
+    }
+</script>
+
+</body>
+</html>

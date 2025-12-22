@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>題目 19：防火牆與網路攻擊大揭密</title>
+    <style>
+        /* 全站基礎設定：不依賴外部字型，使用系統預設黑體 */
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --success-color: #27ae60;
+            --danger-color: #c0392b;
+            --warning-color: #f39c12;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* 標題區 */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid var(--accent-color);
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2em;
+            color: var(--primary-color);
+        }
+
+        h2 {
+            border-left: 5px solid var(--accent-color);
+            padding-left: 10px;
+            margin-top: 40px;
+            background: #eaf2f8;
+            padding: 10px;
+            border-radius: 0 5px 5px 0;
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+
+        /* 重置按鈕 */
+        .reset-btn-container {
+            text-align: right;
+            margin-bottom: 10px;
+        }
+
+        .reset-btn {
+            background-color: #95a5a6;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        .reset-btn:hover {
+            background-color: #7f8c8d;
+        }
+
+        /* 名詞解釋區 */
+        .concept-box {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .term {
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
+        /* A. 防火牆互動卡片 */
+        .cards-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .firewall-card {
+            flex: 1;
+            min-width: 250px;
+            background: var(--card-bg);
+            border-radius: 10px;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+            border-top: 5px solid var(--accent-color);
+            transition: transform 0.2s;
+        }
+
+        .firewall-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            padding: 15px;
+            background: #ecf0f1;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .card-body {
+            padding: 15px;
+            display: none; /* 預設隱藏 */
+            font-size: 0.95em;
+        }
+
+        .card-body.show {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            margin-right: 5px;
+            margin-bottom: 5px;
+            color: white;
+        }
+        .tag-eye { background-color: #3498db; }
+        .tag-good { background-color: #27ae60; }
+        .tag-limit { background-color: #e74c3c; }
+
+        /* B. 拖拉配對遊戲 */
+        .drag-game-area {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .draggables-container {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 2px dashed #bdc3c7;
+        }
+
+        .draggable {
+            background: var(--primary-color);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: grab;
+            user-select: none;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .draggable:active {
+            cursor: grabbing;
+        }
+
+        .drop-zones {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .drop-zone {
+            flex: 1;
+            min-width: 200px;
+            min-height: 120px;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            background: #ecf0f1;
+            transition: background 0.3s;
+        }
+
+        .drop-zone h4 {
+            margin-top: 0;
+            font-size: 1em;
+            color: #555;
+        }
+
+        .drop-zone.drag-over {
+            background: #d5dbdb;
+            border-color: var(--accent-color);
+        }
+
+        .game-feedback {
+            margin-top: 15px;
+            font-weight: bold;
+            text-align: center;
+            min-height: 1.5em;
+        }
+
+        .check-btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin-top: 15px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        /* D. 流量滑桿 */
+        .slider-container {
+            background: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        input[type=range] {
+            width: 80%;
+            margin: 20px 0;
+            height: 10px;
+            border-radius: 5px;
+            background: #d3d3d3;
+            outline: none;
+        }
+
+        .traffic-viz {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #7f8c8d;
+        }
+
+        .slider-result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        /* C. 題目區 */
+        .question-box {
+            background: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            border: 2px solid var(--primary-color);
+            position: relative;
+        }
+
+        .question-text {
+            font-size: 1.1em;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-btn {
+            text-align: left;
+            padding: 15px;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .option-btn.correct {
+            background: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+
+        .option-btn.wrong {
+            background: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+
+        .answer-feedback {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e2e3e5;
+            border-radius: 5px;
+            display: none;
+        }
+
+        /* E. 記憶小卡 */
+        .cheat-sheet {
+            background: #fff;
+            border-left: 5px solid var(--warning-color);
+            padding: 15px;
+            margin-top: 20px;
+        }
+        
+        /* F. 自我檢測 */
+        .quiz-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .hint-btn {
+            background: none;
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+            padding: 5px 10px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 0.8em;
+            margin-top: 10px;
+        }
+        .hint-text {
+            display: none;
+            margin-top: 10px;
+            color: #d35400;
+            font-size: 0.9em;
+            background: #fae5d3;
+            padding: 8px;
+            border-radius: 5px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* 響應式 */
+        @media (max-width: 600px) {
+            .cards-container {
+                flex-direction: column;
+            }
+            .draggables-container {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .drop-zones {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="reset-btn-container">
+        <button class="reset-btn" onclick="resetAll()">↻ 重置所有練習</button>
+    </div>
+
+    <header>
+        <h1>題目 19：防火牆與網路攻擊大揭密</h1>
+        <p class="subtitle">高中資訊科補教講義 - 互動學習版</p>
+    </header>
+
+    <!-- 0. 基礎觀念與名詞解釋 -->
+    <section>
+        <div class="concept-box">
+            <h3>🎓 先修觀念：那些很長的名詞在說什麼？</h3>
+            <p><span class="term">防火牆 (Firewall)：</span> 放在網路出入口的門衛，負責檢查並決定放行或阻擋封包。</p>
+            <p><span class="term">封包 (Packet)：</span> 網路傳資料的「小包裹」。</p>
+            <p><span class="term">IP 位址偽裝 (Spoofing)：</span> 攻擊者把封包上的寄件人地址改成別人的，假裝自己是好人。</p>
+            <p><span class="term">阻斷服務 (DoS/DDoS)：</span> 用成千上萬的請求把伺服器或網路頻寬塞爆，讓正常使用者進不去（像是惡意讓一萬個人同時擠進補習班門口）。</p>
+        </div>
+    </section>
+
+    <!-- A. 三種防火牆互動卡 -->
+    <section>
+        <h2>A. 三大門衛：防火牆類型比較</h2>
+        <p>點擊卡片標題，看看它們負責檢查什麼！</p>
+        <div class="cards-container">
+            <!-- 卡片 1 -->
+            <div class="firewall-card">
+                <div class="card-header" onclick="toggleCard(this)">
+                    封包過濾防火牆<br>(Packet Filter)
+                    <span>▼</span>
+                </div>
+                <div class="card-body">
+                    <p><span class="tag tag-eye">看什麼</span> IP 位址、Port 埠號（像只看信封，不拆信）</p>
+                    <p><span class="tag tag-good">優點</span> 速度最快、成本低。</p>
+                    <p><span class="tag tag-limit">致命傷</span> <strong>難防 IP 偽裝</strong>（因為它只信賴信封上的地址），且無法檢查內容有沒有病毒。</p>
+                </div>
+            </div>
+
+            <!-- 卡片 2 -->
+            <div class="firewall-card">
+                <div class="card-header" onclick="toggleCard(this)">
+                    狀態檢查防火牆<br>(Stateful Inspection)
+                    <span>▼</span>
+                </div>
+                <div class="card-body">
+                    <p><span class="tag tag-eye">看什麼</span> 連線狀態表 (State Table) + 封包表頭。</p>
+                    <p><span class="tag tag-good">優點</span> <strong>有記憶力！</strong> 記得這是「正在進行中的連線」，安全性比單純封包過濾高。</p>
+                    <p><span class="tag tag-limit">限制</span> 主要還是看表頭與狀態，對應用層內容（如郵件內文）檢查能力有限。</p>
+                </div>
+            </div>
+
+            <!-- 卡片 3 -->
+            <div class="firewall-card">
+                <div class="card-header" onclick="toggleCard(this)">
+                    應用代理防火牆<br>(Application Proxy)
+                    <span>▼</span>
+                </div>
+                <div class="card-body">
+                    <p><span class="tag tag-eye">看什麼</span> <strong>完整的內容</strong>（像代收信件後，拆開來詳細檢查內文）。</p>
+                    <p><span class="tag tag-good">優點</span> 最安全！可以<strong>掃描電子郵件病毒</strong>、過濾特定指令。</p>
+                    <p><span class="tag tag-limit">致命傷</span> <strong>效能差、吃資源</strong>。容易成為 DoS 攻擊的瓶頸（檢查太慢被塞爆）。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- D. 流量 vs 內容 滑桿互動 -->
+    <section>
+        <h2>B. 直覺實驗室：內容檢查 vs 流量攻擊</h2>
+        <div class="slider-container">
+            <p>試著拖動滑桿，模擬攻擊流量變大時，<strong>應用代理防火牆</strong>的狀況：</p>
+            <label for="trafficRange">攻擊流量強度 (DoS 攻擊)</label><br>
+            <input type="range" id="trafficRange" min="1" max="10" value="1" oninput="updateSlider(this.value)">
+            
+            <div class="traffic-viz">
+                <span>正常流量 (1)</span>
+                <span>系統緊繃 (5)</span>
+                <span>系統崩潰 (10)</span>
+            </div>
+
+            <div id="sliderResult" class="slider-result" style="background-color: #d4edda; color: #155724;">
+                🟢 流量正常：應用代理防火牆正在仔細檢查每一個封包的內容，很安全。
+            </div>
+            
+            <div style="margin-top: 20px; border-top: 1px dashed #ccc; padding-top: 10px;">
+                <strong>老師的小結論：</strong>
+                DoS/DDoS 的核心是「量」。因為應用代理防火牆檢查內容很耗費 CPU，遇到大量流量時，反而會比簡單的封包過濾防火牆更容易當機！
+            </div>
+        </div>
+    </section>
+
+    <!-- B. 攻擊情境拖拉配對 -->
+    <section>
+        <h2>C. 實戰演練：攻擊 vs 弱點/強項</h2>
+        <p>請將上方的「攻擊情境」拖拉到下方最對應的描述框中：</p>
+        
+        <div class="drag-game-area">
+            <div class="draggables-container">
+                <div class="draggable" draggable="true" id="drag1" ondragstart="drag(event)">IP 偽裝攻擊</div>
+                <div class="draggable" draggable="true" id="drag2" ondragstart="drag(event)">惡意郵件附件</div>
+                <div class="draggable" draggable="true" id="drag3" ondragstart="drag(event)">DoS/DDoS 流量攻擊</div>
+            </div>
+
+            <div class="drop-zones">
+                <div class="drop-zone" id="zone1" ondrop="drop(event)" ondragover="allowDrop(event)" data-correct="drag1">
+                    <h4>封包過濾防火牆<br>(弱點區)</h4>
+                    <p style="font-size:0.8em; color:#7f8c8d;">只看信封來源，容易被騙...</p>
+                </div>
+                <div class="drop-zone" id="zone2" ondrop="drop(event)" ondragover="allowDrop(event)" data-correct="drag2">
+                    <h4>應用代理防火牆<br>(強項區)</h4>
+                    <p style="font-size:0.8em; color:#7f8c8d;">我看得懂內容，可以幫你掃毒...</p>
+                </div>
+                <div class="drop-zone" id="zone3" ondrop="drop(event)" ondragover="allowDrop(event)" data-correct="drag3">
+                    <h4>一般防火牆的限制<br>(觀念釐清)</h4>
+                    <p style="font-size:0.8em; color:#7f8c8d;">這主要是「頻寬與資源」被塞爆的問題，不是靠檢查內容就能擋住的...</p>
+                </div>
+            </div>
+
+            <button class="check-btn" onclick="checkDragGame()">檢查配對</button>
+            <div id="dragFeedback" class="game-feedback"></div>
+        </div>
+    </section>
+
+    <!-- C. 題目 19 本體 -->
+    <section>
+        <h2>D. 挑戰題目 19</h2>
+        <div class="question-box">
+            <div class="question-text">
+                題目 19：以下有關防火牆（firewall）的敘述，何者錯誤？
+            </div>
+            <div class="options">
+                <button class="option-btn" onclick="checkAnswer('A', this)">(A) 封包過濾防火牆（packet filter firewall）很難防禦「IP 位址偽裝」攻擊</button>
+                <button class="option-btn" onclick="checkAnswer('B', this)">(B) 應用代理防火牆（application-proxy gateway firewall）可以防禦「阻斷服務」攻擊</button>
+                <button class="option-btn" onclick="checkAnswer('C', this)">(C) 應用代理防火牆（application-proxy gateway firewall）可以掃描電子郵件</button>
+                <button class="option-btn" onclick="checkAnswer('D', this)">(D) 狀態檢查防火牆（stateful inspection firewall）依靠狀態記憶執行存取控制，不只依據靜態規則</button>
+            </div>
+            
+            <div id="answerFeedback" class="answer-feedback">
+                <!-- 解析內容會顯示在這裡 -->
+            </div>
+        </div>
+    </section>
+
+    <!-- E. 重點小卡 -->
+    <section>
+        <div class="cheat-sheet">
+            <h3>📝 考前速記公式</h3>
+            <ul>
+                <li><strong>封包過濾：</strong>只看 IP/Port (信封)，速度快，難防 IP 偽裝 (Spoofing)。</li>
+                <li><strong>狀態檢查：</strong>有記憶力 (State Table)，比封包過濾安全。</li>
+                <li><strong>應用代理：</strong>看內容 (拆信)，可掃毒，但慢、耗資源。</li>
+                <li><strong>DoS/DDoS：</strong>是「量」的攻擊，會耗盡資源。應用代理因為檢查細，反而更容易被塞爆 (所以 (B) 選項說是錯的)。</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- F. 自我檢測 -->
+    <section>
+        <h2>E. 自我檢測 (想一想，不給直接答案)</h2>
+        
+        <div class="quiz-item">
+            <strong>Q1: 為什麼封包過濾「只看 IP」會被 IP spoofing 騙？</strong>
+            <br>
+            <button class="hint-btn" onclick="toggleHint('hint1')">顯示提示</button>
+            <div id="hint1" class="hint-text">
+                提示：想像警衛只檢查你的「制服」是不是本校制服，但他沒有打電話去查證你這個人是不是真的學生。如果校外人士穿了假制服(偽造 IP header)，警衛會放行嗎？
+            </div>
+        </div>
+
+        <div class="quiz-item">
+            <strong>Q2: 既然應用代理防火牆這麼詳細，為什麼不全世界都只用它就好？</strong>
+            <br>
+            <button class="hint-btn" onclick="toggleHint('hint2')">顯示提示</button>
+            <div id="hint2" class="hint-text">
+                提示：回想剛剛的滑桿實驗。詳細檢查需要「時間」和「運算能力」。如果網路速度要求很快(例如看影片、玩遊戲)，每一封包都拆開檢查會發生什麼事？
+            </div>
+        </div>
+
+        <div class="quiz-item">
+            <strong>Q3: 狀態檢查防火牆 (Stateful) 所謂的「狀態」是指什麼？</strong>
+            <br>
+            <button class="hint-btn" onclick="toggleHint('hint3')">顯示提示</button>
+            <div id="hint3" class="hint-text">
+                提示：它記得「這個封包是屬於剛才建立的那個連線的」。例如：記得你剛剛發出請求，所以現在進來的這個回應是合法的，而不是突然闖入的陌生人。
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+    // 1. 卡片展開/收合功能
+    function toggleCard(header) {
+        const body = header.nextElementSibling;
+        body.classList.toggle('show');
+        const arrow = header.querySelector('span');
+        arrow.textContent = body.classList.contains('show') ? '▲' : '▼';
+    }
+
+    // 2. 流量滑桿邏輯
+    function updateSlider(val) {
+        const resultDiv = document.getElementById('sliderResult');
+        const intensity = parseInt(val);
+        
+        if (intensity <= 4) {
+            resultDiv.style.backgroundColor = '#d4edda';
+            resultDiv.style.color = '#155724';
+            resultDiv.innerText = `🟢 流量等級 ${intensity}：應用代理防火牆游刃有餘，詳細檢查內容中。`;
+        } else if (intensity <= 7) {
+            resultDiv.style.backgroundColor = '#fff3cd';
+            resultDiv.style.color = '#856404';
+            resultDiv.innerText = `🟡 流量等級 ${intensity}：警告！流量變大，CPU 負載升高，檢查速度變慢...`;
+        } else {
+            resultDiv.style.backgroundColor = '#f8d7da';
+            resultDiv.style.color = '#721c24';
+            resultDiv.innerText = `🔴 流量等級 ${intensity}：系統崩潰！DoS 攻擊成功！資源耗盡，防火牆停止回應。`;
+        }
+    }
+
+    // 3. 拖拉配對邏輯 (HTML5 Drag and Drop)
+    function allowDrop(ev) {
+        ev.preventDefault();
+        ev.currentTarget.classList.add('drag-over');
+    }
+    
+    // 處理 dragover 樣式移除 (當離開時)
+    const dropZones = document.querySelectorAll('.drop-zone');
+    dropZones.forEach(zone => {
+        zone.addEventListener('dragleave', () => {
+            zone.classList.remove('drag-over');
+        });
+    });
+
+    function drag(ev) {
+        ev.dataTransfer.setData("text", ev.target.id);
+    }
+
+    function drop(ev) {
+        ev.preventDefault();
+        ev.currentTarget.classList.remove('drag-over');
+        var data = ev.dataTransfer.getData("text");
+        var draggedElement = document.getElementById(data);
+        
+        // 清空該區域舊的內容 (如果是重新拖拉) 或允許多個 (這裡設計為單一放置較簡單)
+        // 簡單實作：直接 append
+        if(ev.currentTarget.children.length > 2) { 
+            // 避免重複堆疊太多，如果已有內容，將舊的移回原處 (這裡簡化處理：允許覆蓋或堆疊)
+        }
+        ev.currentTarget.appendChild(draggedElement);
+    }
+
+    function checkDragGame() {
+        const zone1 = document.getElementById('zone1'); // 預期: drag1 (IP 偽裝)
+        const zone2 = document.getElementById('zone2'); // 預期: drag2 (郵件)
+        const zone3 = document.getElementById('zone3'); // 預期: drag3 (DoS)
+        const feedback = document.getElementById('dragFeedback');
+
+        // 檢查是否每個區域都有正確的元素 ID
+        const isZone1Correct = zone1.querySelector('#drag1');
+        const isZone2Correct = zone2.querySelector('#drag2');
+        const isZone3Correct = zone3.querySelector('#drag3');
+
+        if (isZone1Correct && isZone2Correct && isZone3Correct) {
+            feedback.style.color = 'green';
+            feedback.innerHTML = "🎉 太棒了！完全正確！<br>IP偽裝騙過封包過濾；應用代理能掃毒；DoS 專攻資源耗盡。";
+        } else {
+            feedback.style.color = 'red';
+            feedback.innerHTML = "🤔 還有地方配對錯誤喔！<br>提示：DoS 是「量」的問題；郵件需要「內容檢查」。再試試看！";
+        }
+    }
+
+    // 4. 題目 19 檢查邏輯
+    function checkAnswer(option, btnElement) {
+        const feedback = document.getElementById('answerFeedback');
+        const allBtns = document.querySelectorAll('.option-btn');
+        
+        // 重置按鈕樣式
+        allBtns.forEach(btn => {
+            btn.classList.remove('correct', 'wrong');
+        });
+
+        feedback.style.display = 'block';
+
+        if (option === 'B') {
+            // 正確答案 (因為題目問何者錯誤，B 是錯誤敘述)
+            btnElement.classList.add('correct');
+            feedback.innerHTML = `
+                <h4 style="color: green; margin-top:0;">✅ 答對了！(B) 是錯誤的敘述。</h4>
+                <p><strong>為什麼 (B) 是錯的？</strong></p>
+                <p>應用代理防火牆需要詳細檢查內容，非常消耗 CPU 與記憶體。面對 <strong>DoS (阻斷服務攻擊)</strong> 這種「人海戰術」，應用代理反而比簡單的封包過濾更容易被塞爆、癱瘓。</p>
+                <hr>
+                <p><strong>其他選項解析：</strong></p>
+                <ul style="text-align:left; font-size: 0.9em;">
+                    <li>(A) 正確：封包過濾只看表頭 (IP)，無法驗證 IP 真偽，容易被 Spoofing 騙。</li>
+                    <li>(C) 正確：應用代理看得懂應用層協定 (如 SMTP)，當然可以掃描郵件內容。</li>
+                    <li>(D) 正確：狀態檢查 (Stateful) 的核心就是這張「連線狀態表」。</li>
+                </ul>
+            `;
+        } else {
+            // 錯誤答案
+            btnElement.classList.add('wrong');
+            let reason = "";
+            if(option === 'A') reason = "這是正確敘述喔！封包過濾只看信封，真的很容易被假 IP 騙。題目要選「錯誤」的。";
+            if(option === 'C') reason = "這是正確敘述喔！應用代理就像會拆信的秘書，可以檢查郵件內容。題目要選「錯誤」的。";
+            if(option === 'D') reason = "這是正確敘述喔！狀態檢查防火牆最強的就是「記性 (狀態)」。題目要選「錯誤」的。";
+            
+            feedback.innerHTML = `
+                <h4 style="color: red; margin-top:0;">❌ 答錯囉！</h4>
+                <p>${reason}</p>
+                <p>再想一下，哪一種攻擊是針對「資源耗盡」，而檢查越詳細的防火牆反而越怕它？</p>
+            `;
+        }
+    }
+
+    // 5. 自我檢測提示
+    function toggleHint(id) {
+        const hint = document.getElementById(id);
+        if (hint.style.display === 'block') {
+            hint.style.display = 'none';
+        } else {
+            hint.style.display = 'block';
+        }
+    }
+
+    // 6. 重置功能
+    function resetAll() {
+        // 重置滑桿
+        document.getElementById('trafficRange').value = 1;
+        updateSlider(1);
+
+        // 重置卡片
+        document.querySelectorAll('.card-body').forEach(el => el.classList.remove('show'));
+        document.querySelectorAll('.card-header span').forEach(el => el.textContent = '▼');
+
+        // 重置題目
+        document.getElementById('answerFeedback').style.display = 'none';
+        document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('correct', 'wrong'));
+
+        // 重置提示
+        document.querySelectorAll('.hint-text').forEach(el => el.style.display = 'none');
+
+        // 重置拖拉遊戲 (簡單暴力法：重整頁面，或是手動移回 dom)
+        const container = document.querySelector('.draggables-container');
+        container.appendChild(document.getElementById('drag1'));
+        container.appendChild(document.getElementById('drag2'));
+        container.appendChild(document.getElementById('drag3'));
+        document.getElementById('dragFeedback').innerHTML = '';
+        document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('drag-over'));
+    }
+</script>
+
+</body>
+</html>

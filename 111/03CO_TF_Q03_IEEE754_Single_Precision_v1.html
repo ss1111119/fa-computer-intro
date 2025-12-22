@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CO_TF_Q03_IEEE754_Single_Precision_v1</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50; /* 深藍色：專業、知識 */
+            --accent-color: #d35400; /* 深橘色：重點強調 */
+            --highlight-bg: #f1c40f; /* 螢光黃：標記 */
+            --light-bg: #ecf0f1;
+            --white: #ffffff;
+            --correct-color: #27ae60;
+            --wrong-color: #c0392b;
+            --border-radius: 8px;
+            --spacing-std: 1.2rem;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+        }
+
+        body {
+            background-color: #f4f6f7;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        /* A. 頁首區 */
+        header {
+            background-color: var(--primary-color);
+            color: var(--white);
+            padding: 20px;
+            text-align: center;
+            border-bottom: 4px solid var(--accent-color);
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            font-weight: bold;
+        }
+
+        .q-number {
+            display: inline-block;
+            background: var(--accent-color);
+            color: var(--white);
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-top: 10px;
+        }
+
+        /* B. 題目區 */
+        .question-card {
+            padding: 25px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .question-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            background-color: #fff;
+            padding: 15px;
+            border-left: 5px solid var(--primary-color);
+            background-color: #fdfdfd;
+        }
+
+        .options-list {
+            list-style: none;
+        }
+
+        .options-list li {
+            font-size: 1.1rem;
+            padding: 10px;
+            border: 2px solid #ddd;
+            margin-bottom: 10px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .options-list li:hover {
+            border-color: var(--primary-color);
+            background-color: var(--light-bg);
+        }
+
+        /* C. 關鍵字互動 */
+        .interaction-area {
+            padding: 20px;
+            background-color: #fafafa;
+            border-bottom: 1px solid #eee;
+        }
+
+        .keyword-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .kw-btn {
+            background-color: var(--white);
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 5px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .kw-btn:hover, .kw-btn.active {
+            background-color: var(--primary-color);
+            color: var(--white);
+        }
+
+        .explanation-box {
+            background-color: var(--white);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            border: 1px dashed var(--primary-color);
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            color: #555;
+            font-weight: 500;
+        }
+
+        /* 螢光筆效果 Class */
+        .highlight {
+            background-color: var(--highlight-bg);
+            padding: 2px 4px;
+            border-radius: 3px;
+            color: #000;
+        }
+
+        /* D. 白話翻譯 (Accordion) */
+        .accordion {
+            border-bottom: 1px solid #eee;
+        }
+
+        .accordion-header {
+            width: 100%;
+            background: #fff;
+            border: none;
+            outline: none;
+            padding: 15px 25px;
+            text-align: left;
+            font-size: 1rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .accordion-header:after {
+            content: '+';
+            font-size: 1.2rem;
+        }
+
+        .accordion-header.active:after {
+            content: '-';
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background-color: #f8f9fa;
+        }
+
+        .accordion-inner {
+            padding: 15px 25px;
+            color: #444;
+        }
+
+        .translation-text {
+            border-left: 3px solid var(--accent-color);
+            padding-left: 10px;
+            margin-bottom: 10px;
+        }
+
+        /* E. 重點觀念 & F. 解析 */
+        .section-block {
+            padding: 25px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .section-title {
+            color: var(--primary-color);
+            border-bottom: 2px solid #eee;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        @media (min-width: 600px) {
+            .comparison-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .concept-card {
+            background: #fff;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: var(--border-radius);
+        }
+
+        .concept-card.single {
+            border-top: 4px solid var(--accent-color);
+        }
+
+        .concept-card.double {
+            border-top: 4px solid var(--primary-color);
+        }
+
+        .concept-card h4 {
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .bit-count {
+            font-size: 2rem;
+            font-weight: bold;
+            text-align: center;
+            display: block;
+            margin: 10px 0;
+            color: var(--accent-color);
+        }
+
+        .double .bit-count {
+            color: var(--primary-color);
+        }
+
+        .detail-list {
+            list-style: none;
+            font-size: 0.9rem;
+        }
+
+        .detail-list li {
+            margin-bottom: 5px;
+            padding-bottom: 5px;
+            border-bottom: 1px dashed #eee;
+        }
+
+        .emphasis-text {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 10px;
+            text-align: center;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        /* G. 常見錯誤 & H. 口訣 */
+        .mnemonic-box {
+            background-color: var(--primary-color);
+            color: var(--white);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            margin-top: 10px;
+        }
+
+        /* I. 答案區 */
+        .answer-section {
+            padding: 25px;
+            text-align: center;
+            background-color: #ecf0f1;
+        }
+
+        .reveal-btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.1s;
+        }
+
+        .reveal-btn:active {
+            transform: scale(0.98);
+        }
+
+        .answer-content {
+            margin-top: 20px;
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        .final-answer {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--wrong-color); /* X 是紅的，代表選項B內容是正確的判斷 */
+            margin-bottom: 10px;
+        }
+        
+        /* 選項分析 */
+        .analysis-item {
+            margin-bottom: 10px;
+            padding: 8px;
+            background: #fff;
+            border-radius: 4px;
+        }
+        .correct-tag { color: var(--correct-color); font-weight: bold; }
+        .wrong-tag { color: var(--wrong-color); font-weight: bold; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- A. 頁首區 -->
+    <header>
+        <h1>單精確度真的用 64 位元嗎？</h1>
+        <p>IEEE 754 浮點數表示法必考觀念</p>
+        <div class="q-number">題號：3（是非題）</div>
+    </header>
+
+    <!-- B. 題目區 -->
+    <div class="question-card">
+        <div class="question-text">
+            3. <span id="txt-ieee" class="kw-target">IEEE 754</span> 的<span id="txt-single" class="kw-target">單精確度</span><span id="txt-float" class="kw-target">浮點數</span>表示法（single precision floating-point format）共使用 <span id="txt-64" class="kw-target">64 位元</span>
+        </div>
+        <ul class="options-list">
+            <li>(A) O</li>
+            <li>(B) X</li>
+        </ul>
+    </div>
+
+    <!-- C. 關鍵字互動 -->
+    <div class="interaction-area">
+        <p style="margin-bottom: 10px; font-size: 0.9rem; color: #666;">點擊下方按鈕找出解題關鍵：</p>
+        <div class="keyword-buttons">
+            <button class="kw-btn" onclick="highlightKey('ieee', 'IEEE 754：電腦表示浮點數的國際標準規範。')">IEEE 754</button>
+            <button class="kw-btn" onclick="highlightKey('single', '單精確度（Single Precision）：浮點數的一種儲存格式，重點在「單」。')">單精確度</button>
+            <button class="kw-btn" onclick="highlightKey('float', '浮點數：也就是電腦中的「小數」（如 3.14）。')">浮點數</button>
+            <button class="kw-btn" onclick="highlightKey('64', '64 位元：這題的陷阱，要想清楚單精確度是不是這麼大。')">64 位元</button>
+        </div>
+        <div class="explanation-box" id="explanationText">
+            請點擊上方關鍵字，這裡會顯示白話解釋。
+        </div>
+    </div>
+
+    <!-- D. 白話翻譯 (Accordion) -->
+    <div class="accordion">
+        <button class="accordion-header" onclick="toggleAccordion('trans-panel', this)">
+            白話翻譯與考點
+        </button>
+        <div id="trans-panel" class="accordion-content">
+            <div class="accordion-inner">
+                <p><strong>【白話翻譯】</strong></p>
+                <div class="translation-text">
+                    「IEEE 754 規定的『單精確度浮點數』，是不是總共用 64 個位元（bit）來表示？」
+                </div>
+                <p><strong>【這題在考什麼】</strong></p>
+                <div class="translation-text">
+                    你是否能分清楚「單精確度」與「雙精確度」的位元數差異。這是基本分，不能丟！
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- E. 重點觀念教學 -->
+    <div class="section-block">
+        <h3 class="section-title">重點觀念：單精確度 vs 雙精確度</h3>
+        <p style="margin-bottom: 15px;">IEEE 754 定義了兩種最常用的格式，請務必記清楚它們的「總長度」：</p>
+        
+        <div class="comparison-grid">
+            <!-- 單精確度 -->
+            <div class="concept-card single">
+                <h4>單精確度<br><small>(Single Precision)</small></h4>
+                <span class="bit-count">32 位元</span>
+                <ul class="detail-list">
+                    <li>符號 (Sign)：1 位</li>
+                    <li>指數 (Exponent)：8 位</li>
+                    <li>尾數 (Mantissa)：23 位</li>
+                </ul>
+            </div>
+
+            <!-- 雙精確度 -->
+            <div class="concept-card double">
+                <h4>雙精確度<br><small>(Double Precision)</small></h4>
+                <span class="bit-count">64 位元</span>
+                <ul class="detail-list">
+                    <li>符號 (Sign)：1 位</li>
+                    <li>指數 (Exponent)：11 位</li>
+                    <li>尾數 (Mantissa)：52 位</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="emphasis-text">
+            強調：64 位元是「雙精確度」，不是單精確度！
+        </div>
+    </div>
+
+    <!-- F. 解析與 G. 常見錯誤 -->
+    <div class="section-block">
+        <h3 class="section-title">選項解析與常見錯誤</h3>
+        <div class="analysis-item">
+            <span class="wrong-tag">(A) O</span>：錯誤。單精確度只有 32 位元，說 64 位元是不對的。
+        </div>
+        <div class="analysis-item">
+            <span class="correct-tag">(B) X</span>：正確。題目敘述錯誤，故選 X。
+        </div>
+
+        <h4 style="margin-top: 20px; margin-bottom: 10px; font-size: 1rem;">同學常犯的錯誤：</h4>
+        <ol style="padding-left: 20px; color: #555;">
+            <li>把單精確度（Single）和雙精確度（Double）搞混。</li>
+            <li>看到「精確度」覺得好像很高級，就直覺選數字大的 64。</li>
+            <li>沒有背熟 32 與 64 的對應關係。</li>
+        </ol>
+    </div>
+
+    <!-- H. 記憶口訣 -->
+    <div class="section-block">
+        <h3 class="section-title">名師記憶口訣</h3>
+        <div class="mnemonic-box">
+            「單三二，雙六四」
+        </div>
+        <p style="text-align: center; margin-top: 10px; font-size: 0.9rem;">
+            （單精確度 32 位元、雙精確度 64 位元）
+        </p>
+    </div>
+
+    <!-- I. 正確答案揭曉 -->
+    <div class="answer-section">
+        <button class="reveal-btn" onclick="revealAnswer()">顯示正確答案</button>
+        
+        <div id="answer-content" class="answer-content">
+            <div class="final-answer">(B) X</div>
+            <p><strong>一句話理由：</strong></p>
+            <p>IEEE 754 的單精確度使用 <strong>32 位元</strong>，64 位元是雙精確度。</p>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // C. 關鍵字螢光筆互動邏輯
+    function highlightKey(key, explanation) {
+        // 1. 清除所有現有的螢光標示與按鈕狀態
+        const allTargets = document.querySelectorAll('.kw-target');
+        allTargets.forEach(el => el.classList.remove('highlight'));
+        
+        const allBtns = document.querySelectorAll('.kw-btn');
+        allBtns.forEach(btn => btn.classList.remove('active'));
+
+        // 2. 標記目標文字
+        const targetId = 'txt-' + key;
+        const targetEl = document.getElementById(targetId);
+        if (targetEl) {
+            targetEl.classList.add('highlight');
+        }
+
+        // 3. 標記被點擊的按鈕
+        // 這裡透過 event.target 找不到的話 (因為 function call 沒傳 event)，
+        // 我們簡單用 DOM 查找文字內容匹配或透過 class 處理，
+        // 但為了簡單，這裡只要顯示解釋文字與上方亮點即可。
+        // 若要按鈕變色，需在HTML onclick傳入this。
+        // 為了簡易實作，我們重新遍歷按鈕文字做簡單對應 (這是一個取巧的方法)
+        // 更嚴謹的寫法是 highlightKey(key, explanation, btnElement)
+        
+        // 4. 更新解釋框
+        const expBox = document.getElementById('explanationText');
+        expBox.style.color = "#333";
+        expBox.innerHTML = `<strong>${explanation.split('：')[0]}</strong>：${explanation.split('：')[1] || ''}`;
+        
+        // 簡單動畫提示
+        expBox.style.backgroundColor = "#fff8e1";
+        setTimeout(() => {
+            expBox.style.backgroundColor = "#fff";
+        }, 300);
+    }
+
+    // D. Accordion 展開收合
+    function toggleAccordion(panelId, header) {
+        const panel = document.getElementById(panelId);
+        
+        if (panel.style.maxHeight) {
+            panel.style.maxHeight = null;
+            header.classList.remove('active');
+        } else {
+            panel.style.maxHeight = panel.scrollHeight + "px";
+            header.classList.add('active');
+        }
+    }
+
+    // I. 顯示答案
+    function revealAnswer() {
+        const answerDiv = document.getElementById('answer-content');
+        const btn = document.querySelector('.reveal-btn');
+        
+        if (answerDiv.style.display === 'block') {
+            answerDiv.style.display = 'none';
+            btn.textContent = '顯示正確答案';
+        } else {
+            answerDiv.style.display = 'block';
+            btn.textContent = '隱藏答案';
+            // 自動捲動到答案區
+            answerDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }
+</script>
+
+</body>
+</html>

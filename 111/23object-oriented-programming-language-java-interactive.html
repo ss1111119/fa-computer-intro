@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>題目 23：物件導向程式語言互動教學</title>
+    <style>
+        /* --- 基礎設定 --- */
+        :root {
+            --primary-color: #4a90e2; /* 補習班專業藍 */
+            --secondary-color: #50e3c2; /* 重點亮色 */
+            --accent-color: #f5a623; /* 警示/重點色 */
+            --bg-color: #f4f7f9;
+            --text-color: #333;
+            --card-bg: #ffffff;
+            --correct-bg: #d4edda;
+            --correct-text: #155724;
+            --wrong-bg: #f8d7da;
+            --wrong-text: #721c24;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: transparent;
+        }
+
+        /* --- 標題區 --- */
+        header {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            text-align: center;
+            border-top: 5px solid var(--primary-color);
+            position: relative;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+
+        .question-box {
+            background-color: #eef6ff;
+            border: 1px dashed var(--primary-color);
+            padding: 15px;
+            margin-top: 10px;
+            border-radius: 8px;
+            text-align: left;
+        }
+
+        .reset-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #999;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        .reset-btn:hover { background: #777; }
+
+        /* --- 通用卡片樣式 --- */
+        .section-card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        h2 {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            border-left: 5px solid var(--accent-color);
+            padding-left: 10px;
+            color: #444;
+        }
+
+        /* --- 核心觀念區 --- */
+        .concept-list dt {
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-top: 10px;
+            font-size: 1.1rem;
+        }
+        .concept-list dd {
+            margin-left: 20px;
+            margin-bottom: 10px;
+            color: #555;
+        }
+        .highlight {
+            background-color: #fff3cd;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+
+        /* --- 互動卡片 (Grid) --- */
+        .lang-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .lang-card {
+            background: #fcfcfc;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+
+        .lang-card-header {
+            background: #e0e0e0;
+            padding: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .lang-card-header:hover { background: #d0d0d0; }
+
+        .lang-card-content {
+            padding: 15px;
+            display: none; /* 預設隱藏 */
+            background: white;
+            font-size: 0.95rem;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-bottom: 5px;
+        }
+        .tag-oo { background: #d1ecf1; color: #0c5460; }
+        .tag-proc { background: #f8d7da; color: #721c24; }
+
+        /* --- 生活例子互動 --- */
+        .analogy-box {
+            text-align: center;
+            background: #fff9db; /* 筆記本黃 */
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .analogy-options {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 15px;
+        }
+        .analogy-btn {
+            padding: 10px 20px;
+            border: 2px solid var(--primary-color);
+            background: white;
+            color: var(--primary-color);
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .analogy-btn:hover, .analogy-btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
+        #analogy-feedback {
+            margin-top: 15px;
+            font-weight: bold;
+            min-height: 1.6em;
+        }
+
+        /* --- 題目 23 選項區 --- */
+        .quiz-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .quiz-btn {
+            padding: 15px;
+            font-size: 1.1rem;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: background 0.2s;
+            text-align: left;
+        }
+        .quiz-btn:hover { background: #f0f0f0; }
+
+        .result-box {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none; /* 預設隱藏 */
+        }
+        .result-box.correct { display: block; background: var(--correct-bg); color: var(--correct-text); border: 1px solid #c3e6cb; }
+        .result-box.wrong { display: block; background: var(--wrong-bg); color: var(--wrong-text); border: 1px solid #f5c6cb; }
+
+        /* --- 陷阱卡區 --- */
+        .trap-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .trap-card {
+            flex: 1 1 300px;
+            background: #fff0f0;
+            border-left: 4px solid #dc3545;
+            padding: 15px;
+            border-radius: 4px;
+            position: relative;
+            transition: opacity 0.5s;
+        }
+        .trap-card h3 { font-size: 1rem; color: #dc3545; margin-bottom: 5px; }
+        .trap-btn {
+            margin-top: 10px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            float: right;
+        }
+
+        /* --- 重點整理與自測 --- */
+        .summary-box {
+            background: #333;
+            color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        .cheat-sheet-row {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #555;
+            padding: 5px 0;
+        }
+        .mnemonic {
+            margin-top: 10px;
+            text-align: center;
+            font-size: 1.2rem;
+            color: var(--secondary-color);
+            font-weight: bold;
+        }
+
+        .self-check-item {
+            margin-bottom: 15px;
+            border-bottom: 1px dashed #ddd;
+            padding-bottom: 10px;
+        }
+        .hint-box {
+            background: #e2e3e5;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        /* --- Footer --- */
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        /* --- 手機版調整 --- */
+        @media (max-width: 600px) {
+            .quiz-options { grid-template-columns: 1fr; }
+            h1 { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- 頁首與題目 -->
+        <header>
+            <button class="reset-btn" onclick="resetAll()">⟳ 重置所有練習</button>
+            <h1>題目 23：物件導向程式語言</h1>
+            <div class="question-box">
+                <p><strong>題目 23：下列何者是物件導向程式語言？</strong></p>
+                <p>(A) JAVA<br>(B) C<br>(C) BASIC<br>(D) FORTRAN</p>
+                <p style="margin-top: 10px; color: var(--primary-color);"><strong>正確答案：(A) JAVA</strong></p>
+            </div>
+        </header>
+
+        <!-- 專有名詞與核心觀念 -->
+        <div class="section-card">
+            <h2>1. 核心觀念速成 (必讀)</h2>
+            <dl class="concept-list">
+                <dt>📌 程式語言 (Programming Language)</dt>
+                <dd>人寫給電腦看、告訴電腦怎麼做事的語言，是人與電腦溝通的橋樑。</dd>
+                
+                <dt>📌 物件導向 (Object-Oriented)</dt>
+                <dd>把程式世界想成由很多<strong>「物件 (Object)」</strong>組成，就像現實世界有「車子」、「學生」、「手機」，每個物件都有自己的資料與功能。</dd>
+                <dd>
+                    <ul>
+                        <li><strong>物件 (Object)：</strong>一個具體的東西 (例如：你的同學小明)。</li>
+                        <li><strong>類別 (Class)：</strong>物件的設計圖 (例如：「學生」這個概念，定義了學生要有姓名、學號)。</li>
+                    </ul>
+                </dd>
+
+                <dt>📌 程序導向 (Procedural)</dt>
+                <dd>一步一步照流程寫指令，重點在<strong>「做事順序」</strong>，就像食譜一樣 (先洗菜 -> 再切菜 -> 再下鍋)。</dd>
+            </dl>
+        </div>
+
+        <!-- 互動 A: 語言分類卡 -->
+        <div class="section-card">
+            <h2>2. 語言身分證 (點擊展開)</h2>
+            <p style="margin-bottom: 15px; color: #666;">點開下面的卡片，看看它們的身分背景：</p>
+            <div class="lang-grid">
+                <!-- JAVA -->
+                <div class="lang-card">
+                    <div class="lang-card-header" onclick="toggleCard('card-java')">
+                        JAVA <span style="font-size:1.2rem;">▾</span>
+                    </div>
+                    <div class="lang-card-content" id="card-java">
+                        <span class="tag tag-oo">物件導向</span>
+                        <p><strong>常見用途：</strong>大型企業系統、Android App、網頁後端。</p>
+                        <hr style="margin:8px 0; border:0; border-top:1px dashed #ccc;">
+                        <p><strong>解析：</strong>Java 天生就是為了「物件導向」設計的，強制使用 Class (類別) 來寫程式，擁有完整的繼承、封裝特性。</p>
+                    </div>
+                </div>
+
+                <!-- C -->
+                <div class="lang-card">
+                    <div class="lang-card-header" onclick="toggleCard('card-c')">
+                        C 語言 <span style="font-size:1.2rem;">▾</span>
+                    </div>
+                    <div class="lang-card-content" id="card-c">
+                        <span class="tag tag-proc">程序導向</span>
+                        <p><strong>常見用途：</strong>作業系統 (Windows/Linux核心)、嵌入式系統 (冷氣晶片)。</p>
+                        <hr style="margin:8px 0; border:0; border-top:1px dashed #ccc;">
+                        <p><strong>解析：</strong>C 語言關注「函式 (Function)」與流程控制，雖然功能強大，但本身不具備物件導向的特性。</p>
+                    </div>
+                </div>
+
+                <!-- BASIC -->
+                <div class="lang-card">
+                    <div class="lang-card-header" onclick="toggleCard('card-basic')">
+                        BASIC <span style="font-size:1.2rem;">▾</span>
+                    </div>
+                    <div class="lang-card-content" id="card-basic">
+                        <span class="tag" style="background:#eee;">早期教學/簡化</span>
+                        <p><strong>常見用途：</strong>早期初學者教學。</p>
+                        <hr style="margin:8px 0; border:0; border-top:1px dashed #ccc;">
+                        <p><strong>解析：</strong>設計目的是「簡單好學」，早期版本主要是流程導向，並非現代標準的物件導向語言。</p>
+                    </div>
+                </div>
+
+                <!-- FORTRAN -->
+                <div class="lang-card">
+                    <div class="lang-card-header" onclick="toggleCard('card-fortran')">
+                        FORTRAN <span style="font-size:1.2rem;">▾</span>
+                    </div>
+                    <div class="lang-card-content" id="card-fortran">
+                        <span class="tag tag-proc">程序導向</span>
+                        <p><strong>常見用途：</strong>科學計算、氣象預報、航太工程。</p>
+                        <hr style="margin:8px 0; border:0; border-top:1px dashed #ccc;">
+                        <p><strong>解析：</strong>非常古老的語言 (比 C 還早)，專注於複雜數學公式計算，是典型的程序導向。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 互動 B: 物件導向直覺 -->
+        <div class="section-card">
+            <h2>3. 感覺一下：這是哪種思維？</h2>
+            <div class="analogy-box">
+                <p>假設我們要設計一個<strong>「學生系統」</strong>：</p>
+                <div style="background:white; padding:10px; margin:10px auto; display:inline-block; text-align:left; border:1px solid #ddd;">
+                    <strong>設計圖 (Class)：學生</strong><br>
+                    • 屬性 (資料)：姓名、學號<br>
+                    • 方法 (功能)：讀書()、考試()
+                </div>
+                <p>👆 這種「先設計好藍圖，再產生無數個學生」的想法，比較像？</p>
+                
+                <div class="analogy-options">
+                    <button class="analogy-btn" onclick="checkAnalogy('oo', this)">物件導向 (Java)</button>
+                    <button class="analogy-btn" onclick="checkAnalogy('proc', this)">程序導向 (C)</button>
+                </div>
+                <div id="analogy-feedback"></div>
+            </div>
+        </div>
+
+        <!-- 互動 C: 題目實戰 -->
+        <div class="section-card">
+            <h2>4. 題目 23 實戰解析</h2>
+            <p>請點選正確答案：</p>
+            <div class="quiz-options">
+                <button class="quiz-btn" onclick="checkQuiz('A')">(A) JAVA</button>
+                <button class="quiz-btn" onclick="checkQuiz('B')">(B) C</button>
+                <button class="quiz-btn" onclick="checkQuiz('C')">(C) BASIC</button>
+                <button class="quiz-btn" onclick="checkQuiz('D')">(D) FORTRAN</button>
+            </div>
+            
+            <div id="quiz-result" class="result-box">
+                <!-- 結果將顯示於此 -->
+            </div>
+        </div>
+
+        <!-- 互動 D: 考試陷阱 -->
+        <div class="section-card">
+            <h2>5. 小心！常見考試陷阱</h2>
+            <p style="margin-bottom:10px;">點擊「我懂了」把錯誤觀念消除：</p>
+            <div class="trap-container">
+                <div class="trap-card" id="trap1">
+                    <h3>陷阱 1：「只要是很新的語言就是物件導向？」</h3>
+                    <p>❌ 不一定！雖然現代語言多半支援，但考試常考經典定義。重點是該語言「核心設計」是否為 Class/Object。</p>
+                    <button class="trap-btn" onclick="removeTrap('trap1')">我懂了</button>
+                </div>
+                <div class="trap-card" id="trap2">
+                    <h3>陷阱 2：「C 語言也有函式，所以是物件導向？」</h3>
+                    <p>❌ 錯！函式 (Function) 是「程序導向」的特徵。物件導向要有繼承、多型等特性。</p>
+                    <button class="trap-btn" onclick="removeTrap('trap2')">我懂了</button>
+                </div>
+                <div class="trap-card" id="trap3">
+                    <h3>陷阱 3：「Basic 聽起來很基本，是物件導向嗎？」</h3>
+                    <p>❌ 錯！Basic 早期是為了讓新手好上手設計的指令式語言，不是物件導向。</p>
+                    <button class="trap-btn" onclick="removeTrap('trap3')">我懂了</button>
+                </div>
+            </div>
+            <div id="trap-clear-msg" style="display:none; text-align:center; color:green; margin-top:10px; font-weight:bold;">
+                ✨ 太棒了！你已經排除了所有錯誤觀念！
+            </div>
+        </div>
+
+        <!-- 互動 E: 重點整理 -->
+        <div class="section-card">
+            <h2>6. 考前 30 秒速記</h2>
+            <button onclick="toggleSummary()" style="background:#555; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">顯示/隱藏重點卡</button>
+            <div id="summary-content" class="summary-box" style="display:none;">
+                <div class="cheat-sheet-row">
+                    <span>Java</span>
+                    <span style="color:#50e3c2;">物件導向 (Object-Oriented)</span>
+                </div>
+                <div class="cheat-sheet-row">
+                    <span>C</span>
+                    <span style="color:#ff9999;">程序導向 (Procedural)</span>
+                </div>
+                <div class="cheat-sheet-row">
+                    <span>FORTRAN</span>
+                    <span style="color:#ff9999;">程序導向 (科學計算)</span>
+                </div>
+                <div class="cheat-sheet-row" style="border:none;">
+                    <span>BASIC</span>
+                    <span>早期教學用</span>
+                </div>
+                <div class="mnemonic">
+                    ★ 口訣：「Java 物件導向，其餘多半流程跑」
+                </div>
+            </div>
+        </div>
+
+        <!-- 互動 F: 自我檢測 -->
+        <div class="section-card">
+            <h2>7. 自我檢測 (不給答案，試著思考)</h2>
+            
+            <div class="self-check-item">
+                <p><strong>Q1：如果考試問「哪一個適合用來開發大型銀行系統」，你會選 Java 還是 C？為什麼？</strong></p>
+                <button onclick="toggleHint('hint1')" style="font-size:0.8rem; margin-top:5px; cursor:pointer;">顯示提示</button>
+                <div id="hint1" class="hint-box">
+                    提示：大型系統物件複雜 (帳戶、客戶、交易紀錄)，需要好的「分類」與「維護」性。想想哪種語言有 Class 可以畫藍圖？(Java)
+                </div>
+            </div>
+
+            <div class="self-check-item">
+                <p><strong>Q2：如果題目改成「下列何者不是物件導向語言」，選項有 C++, Java, C# 和 C，答案是？</strong></p>
+                <button onclick="toggleHint('hint2')" style="font-size:0.8rem; margin-top:5px; cursor:pointer;">顯示提示</button>
+                <div id="hint2" class="hint-box">
+                    提示：找找看哪一個是「程序導向」的老大哥？(提示：C++, C#, Java 名字都很像或有淵源，它們都是物件導向家族，只有 C 是程序導向)。
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>高中程式設計入門講義 | 題目 23 專題教材</p>
+        </footer>
+
+    </div>
+
+    <script>
+        // --- 互動 A: 卡片切換 ---
+        function toggleCard(id) {
+            const content = document.getElementById(id);
+            const header = content.previousElementSibling;
+            if (content.style.display === "block") {
+                content.style.display = "none";
+                header.innerHTML = header.innerText.split(' ')[0] + ' <span style="font-size:1.2rem;">▾</span>';
+            } else {
+                content.style.display = "block";
+                header.innerHTML = header.innerText.split(' ')[0] + ' <span style="font-size:1.2rem;">▴</span>';
+            }
+        }
+
+        // --- 互動 B: 類比選擇 ---
+        function checkAnalogy(type, btn) {
+            // 重置按鈕樣式
+            const btns = document.querySelectorAll('.analogy-btn');
+            btns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            const feedback = document.getElementById('analogy-feedback');
+            if (type === 'oo') {
+                feedback.innerHTML = "<span style='color:green;'>✅ 沒錯！</span> 把東西分門別類 (Class) 的想法，正是 <strong>物件導向 (Java)</strong> 的精髓。";
+            } else {
+                feedback.innerHTML = "<span style='color:red;'>❌ 不太對喔。</span> 程序導向比較像是「食譜」，關注第一步做什麼、第二步做什麼，而不是先把「學生」定義出來。";
+            }
+        }
+
+        // --- 互動 C: 題目解析 ---
+        function checkQuiz(option) {
+            const resultBox = document.getElementById('quiz-result');
+            resultBox.className = "result-box"; // 重置 class
+            
+            let content = "";
+            
+            if (option === 'A') {
+                resultBox.classList.add('correct');
+                content = "<strong>(A) JAVA：正確！🎉</strong><br>Java 是最具代表性的物件導向語言，強制程式必須寫在 Class (類別) 裡面。";
+            } else if (option === 'B') {
+                resultBox.classList.add('wrong');
+                content = "<strong>(B) C：錯誤。</strong><br>C 語言是「程序導向」的王者，重點在函式與執行流程，不是物件導向。";
+            } else if (option === 'C') {
+                resultBox.classList.add('wrong');
+                content = "<strong>(C) BASIC：錯誤。</strong><br>BASIC 早期主要用於初學者教學，是指令式/流程導向的語言。";
+            } else if (option === 'D') {
+                resultBox.classList.add('wrong');
+                content = "<strong>(D) FORTRAN：錯誤。</strong><br>FORTRAN 是最古老的高階語言之一，專門用來算數學 (公式翻譯)，屬於程序導向。";
+            }
+
+            resultBox.innerHTML = content;
+        }
+
+        // --- 互動 D: 陷阱移除 ---
+        let trapsRemoved = 0;
+        function removeTrap(id) {
+            const trap = document.getElementById(id);
+            trap.style.opacity = "0";
+            setTimeout(() => {
+                trap.style.display = "none";
+                trapsRemoved++;
+                if (trapsRemoved === 3) {
+                    document.getElementById('trap-clear-msg').style.display = "block";
+                }
+            }, 500); // 等待淡出動畫
+        }
+
+        // --- 互動 E: 重點整理切換 ---
+        function toggleSummary() {
+            const box = document.getElementById('summary-content');
+            if (box.style.display === "none") {
+                box.style.display = "block";
+            } else {
+                box.style.display = "none";
+            }
+        }
+
+        // --- 互動 F: 提示切換 ---
+        function toggleHint(id) {
+            const hint = document.getElementById(id);
+            if (hint.style.display === "block") {
+                hint.style.display = "none";
+            } else {
+                hint.style.display = "block";
+            }
+        }
+
+        // --- 全域重置 ---
+        function resetAll() {
+            // 1. 重置卡片
+            const cards = document.querySelectorAll('.lang-card-content');
+            cards.forEach(c => c.style.display = "none");
+            const headers = document.querySelectorAll('.lang-card-header');
+            headers.forEach(h => h.innerHTML = h.innerText.split(' ')[0] + ' <span style="font-size:1.2rem;">▾</span>');
+
+            // 2. 重置類比
+            document.getElementById('analogy-feedback').innerHTML = "";
+            document.querySelectorAll('.analogy-btn').forEach(b => b.classList.remove('active'));
+
+            // 3. 重置測驗
+            const quizResult = document.getElementById('quiz-result');
+            quizResult.style.display = "none";
+            quizResult.className = "result-box";
+
+            // 4. 重置陷阱
+            const trapCards = document.querySelectorAll('.trap-card');
+            trapCards.forEach(t => {
+                t.style.display = "block";
+                t.style.opacity = "1";
+            });
+            document.getElementById('trap-clear-msg').style.display = "none";
+            trapsRemoved = 0;
+
+            // 5. 重置重點與提示
+            document.getElementById('summary-content').style.display = "none";
+            document.querySelectorAll('.hint-box').forEach(h => h.style.display = "none");
+
+            // 捲動回頂端
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>複選題 47：關聯式資料庫運算教學</title>
+    <style>
+        /* --- 全域設定 --- */
+        :root {
+            --primary-color: #2c3e50; /* 深藍色 - 專業感 */
+            --accent-color: #e67e22; /* 橘色 - 重點提示 */
+            --success-color: #27ae60; /* 綠色 - 正確 */
+            --error-color: #c0392b; /* 紅色 - 錯誤 */
+            --bg-color: #f4f6f7;
+            --card-bg: #ffffff;
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        h1, h2, h3 {
+            color: var(--primary-color);
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 10px;
+        }
+
+        h1 {
+            text-align: center;
+            border-bottom: none;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-top: 0;
+        }
+
+        .highlight {
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        .section-box {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            background-color: #fff;
+        }
+
+        /* --- 觀念說明區 --- */
+        .concept-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        
+        .concept-table th, .concept-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        .concept-table th {
+            background-color: #ecf0f1;
+        }
+
+        .mnemonic-box {
+            background-color: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+            font-size: 1.1em;
+        }
+
+        /* --- 互動示範區 (SELECT/PROJECT) --- */
+        .demo-controls button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .demo-controls button:hover {
+            background-color: #34495e;
+        }
+
+        .demo-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            border: 2px solid #333;
+        }
+
+        .demo-table th, .demo-table td {
+            border: 1px solid #999;
+            padding: 8px;
+            text-align: center;
+            transition: background-color 0.3s;
+        }
+
+        .demo-table th {
+            background-color: #ddd;
+        }
+
+        /* 互動效果 Class */
+        .row-highlight {
+            background-color: #fdcb6e !important; /* 黃色 highlight */
+        }
+        .col-highlight {
+            background-color: #81ecec !important; /* 青色 highlight */
+        }
+        .join-highlight {
+            background-color: #a29bfe !important; /* 紫色 highlight */
+            color: white;
+        }
+
+        /* --- 拖放分類互動 --- */
+        .drag-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .source-container {
+            width: 100%;
+            min-height: 60px;
+            background: #eee;
+            padding: 10px;
+            display: flex;
+            gap: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .drop-zone {
+            flex: 1;
+            min-height: 150px;
+            border: 2px dashed #aaa;
+            border-radius: 5px;
+            padding: 10px;
+            text-align: center;
+            background-color: #fafafa;
+        }
+
+        .drop-zone h4 {
+            margin-top: 0;
+            color: #7f8c8d;
+        }
+
+        .draggable-item {
+            padding: 8px 15px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 4px;
+            cursor: move;
+            display: inline-block;
+            user-select: none;
+            margin: 5px;
+        }
+
+        .draggable-item:active {
+            opacity: 0.6;
+        }
+
+        /* --- 複選題作答區 --- */
+        .quiz-option {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #eee;
+            border-radius: 5px;
+            cursor: pointer;
+            display: block;
+        }
+
+        .quiz-option:hover {
+            background-color: #f9f9f9;
+        }
+
+        .quiz-option input {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+
+        #quiz-feedback {
+            margin-top: 15px;
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .correct-bg {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .wrong-bg {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        /* --- 解析與陷阱卡 --- */
+        .analysis-btn {
+            background: none;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 5px 10px;
+            margin: 5px 0;
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+        }
+        
+        .analysis-btn:hover {
+            background-color: #eee;
+        }
+
+        .trap-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .trap-card {
+            flex: 1;
+            min-width: 200px;
+            background-color: #ffeaa7;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #fdcb6e;
+            position: relative;
+            cursor: pointer;
+            transition: opacity 0.5s;
+        }
+
+        .trap-card h4 {
+            margin-top: 0;
+            color: #d35400;
+        }
+
+        .close-trap {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            font-size: 0.8em;
+            color: #666;
+        }
+
+        /* --- 自我檢測 --- */
+        .hint-box {
+            background: #e8f6f3;
+            padding: 10px;
+            margin-top: 5px;
+            display: none;
+            border-left: 3px solid var(--success-color);
+        }
+
+        /* --- 工具按鈕 --- */
+        .reset-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background-color: #95a5a6;
+            color: white;
+            border: none;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin-top: 30px;
+            border-radius: var(--border-radius);
+        }
+
+        .reset-btn:hover {
+            background-color: #7f8c8d;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>複選題 47：關聯式資料庫運算</h1>
+    <p style="text-align: center;">補教名師講義 — 互動式教學版</p>
+
+    <!-- 1. 核心觀念說明區 -->
+    <div class="section-box">
+        <h2>📌 考前重點：三大關聯運算</h2>
+        <p>各位同學，關聯式資料庫（Relational Database）就是用「資料表（Table）」來儲存資料的系統。而針對這些表，有三個最重要的運算，考試必考！</p>
+        
+        <div class="mnemonic-box">
+            👉 <strong>超強口訣（背下來就得分）：</strong><br>
+            <span style="font-size: 1.3em;">「選列 SELECT、選欄 PROJECT、合併 JOIN」</span>
+        </div>
+
+        <h3>📝 運算 vs SQL 指令對照表</h3>
+        <p>考試常考這三個運算在 SQL 語法中對應的關鍵字，千萬別搞混！</p>
+        <table class="concept-table">
+            <thead>
+                <tr>
+                    <th width="20%">運算名稱</th>
+                    <th width="30%">白話解釋 (功能)</th>
+                    <th width="20%">對應 SQL 指令</th>
+                    <th width="30%">記憶點</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>SELECT</strong></td>
+                    <td><span class="highlight">選列</span> (篩選符合條件的橫列)</td>
+                    <td>WHERE 條件</td>
+                    <td>看到 Select 想著「過濾器」</td>
+                </tr>
+                <tr>
+                    <td><strong>PROJECT</strong></td>
+                    <td><span class="highlight">選欄</span> (只看特定的直欄)</td>
+                    <td>SELECT 欄位</td>
+                    <td>看到 Project 想著「投影機」(只照某區塊)</td>
+                </tr>
+                <tr>
+                    <td><strong>JOIN</strong></td>
+                    <td><span class="highlight">合併</span> (兩張表拼起來)</td>
+                    <td>FROM A JOIN B</td>
+                    <td>看到 Join 想著「黏合」</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 2. 互動示範區 -->
+    <div class="section-box">
+        <h2>🎮 互動實驗室：點點看就懂</h2>
+        <p>這裡有一張成績表，請點擊按鈕，觀察運算發生了什麼事！</p>
+        
+        <div class="demo-controls">
+            <button onclick="demoSelect()">示範 SELECT (分數 > 80)</button>
+            <button onclick="demoProject()">示範 PROJECT (只看姓名)</button>
+            <button onclick="demoJoin()">示範 JOIN (合併班級表)</button>
+            <button onclick="resetDemo()" style="background-color: #95a5a6;">還原表格</button>
+        </div>
+
+        <div id="demo-area">
+            <!-- 這裡的內容會被 JS 動態修改 -->
+            <table class="demo-table" id="student-table">
+                <thead>
+                    <tr>
+                        <th class="col-id">學號</th>
+                        <th class="col-name">姓名</th>
+                        <th class="col-score">分數</th>
+                        <th class="col-class">班級代號</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr id="row-1">
+                        <td class="col-id">001</td>
+                        <td class="col-name">張三</td>
+                        <td class="col-score">90</td>
+                        <td class="col-class">A</td>
+                    </tr>
+                    <tr id="row-2">
+                        <td class="col-id">002</td>
+                        <td class="col-name">李四</td>
+                        <td class="col-score">55</td>
+                        <td class="col-class">B</td>
+                    </tr>
+                    <tr id="row-3">
+                        <td class="col-id">003</td>
+                        <td class="col-name">王五</td>
+                        <td class="col-score">85</td>
+                        <td class="col-class">A</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p id="demo-msg" style="color: #666; font-style: italic; min-height: 20px;"></p>
+        </div>
+    </div>
+
+    <!-- 3. 拖拉分類互動 -->
+    <div class="section-box">
+        <h2>🖐️ 隨堂小考：分類大作戰</h2>
+        <p>請將下方的名詞卡片，拖拉（或點擊後移動）到正確的分類框中。</p>
+        
+        <div class="source-container" id="source-zone" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <div class="draggable-item" draggable="true" ondragstart="drag(event)" id="drag-proceed" onclick="mobileMove(this)">PROCEED</div>
+            <div class="draggable-item" draggable="true" ondragstart="drag(event)" id="drag-join" onclick="mobileMove(this)">JOIN</div>
+            <div class="draggable-item" draggable="true" ondragstart="drag(event)" id="drag-select" onclick="mobileMove(this)">SELECT</div>
+            <div class="draggable-item" draggable="true" ondragstart="drag(event)" id="drag-project" onclick="mobileMove(this)">PROJECT</div>
+            <div class="draggable-item" draggable="true" ondragstart="drag(event)" id="drag-react" onclick="mobileMove(this)">REACT</div>
+        </div>
+
+        <div class="drag-container">
+            <div class="drop-zone" id="zone-relational" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="mobileTarget(this)">
+                <h4>✅ 關聯式資料庫運算</h4>
+            </div>
+            <div class="drop-zone" id="zone-non" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="mobileTarget(this)">
+                <h4>❌ 非關聯運算 / 無此名詞</h4>
+            </div>
+        </div>
+        <button onclick="checkDragAnswer()" style="margin-top: 10px; background-color: var(--accent-color); color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">檢查分類答案</button>
+        <p id="drag-feedback"></p>
+    </div>
+
+    <!-- 4. 題目作答區 -->
+    <div class="section-box" style="border: 2px solid var(--primary-color);">
+        <h2 style="background-color: var(--primary-color); color: white; margin: -20px -20px 20px -20px; padding: 10px 20px; border-radius: 6px 6px 0 0;">📝 複選題 47</h2>
+        <p style="font-weight: bold; font-size: 1.1em;">下列何者為關聯式資料庫管理系統之運算？<span style="color: red;">（本題為複選題）</span></p>
+
+        <form id="quiz-form">
+            <label class="quiz-option">
+                <input type="checkbox" name="option" value="A"> (A) PROCEED
+            </label>
+            <label class="quiz-option">
+                <input type="checkbox" name="option" value="B"> (B) JOIN
+            </label>
+            <label class="quiz-option">
+                <input type="checkbox" name="option" value="C"> (C) SELECT
+            </label>
+            <label class="quiz-option">
+                <input type="checkbox" name="option" value="D"> (D) PROJECT
+            </label>
+            <label class="quiz-option">
+                <input type="checkbox" name="option" value="E"> (E) REACT
+            </label>
+        </form>
+
+        <button onclick="submitQuiz()" style="background-color: var(--primary-color); color: white; border: none; padding: 10px 20px; border-radius: 5px; font-size: 1.1em; cursor: pointer; margin-top: 10px;">送出答案</button>
+
+        <div id="quiz-feedback"></div>
+    </div>
+
+    <!-- 5. 詳細解析 -->
+    <div class="section-box">
+        <h2>🔍 選項逐一解析</h2>
+        <p>點擊選項看詳細說明：</p>
+        <div id="analysis-area">
+            <button class="analysis-btn" onclick="toggleAnalysis('A')">(A) PROCEED</button>
+            <div id="analysis-A" style="display:none; padding:10px; color: #c0392b;">❌ 錯誤。這不是資料庫的標準運算名詞，純粹是英文單字（前進）。</div>
+
+            <button class="analysis-btn" onclick="toggleAnalysis('B')">(B) JOIN</button>
+            <div id="analysis-B" style="display:none; padding:10px; color: #27ae60;">✅ 正確！<strong>JOIN (結合/合併)</strong>：是用來將兩個以上的資料表，依照共同欄位合併成一個新表的運算。</div>
+
+            <button class="analysis-btn" onclick="toggleAnalysis('C')">(C) SELECT</button>
+            <div id="analysis-C" style="display:none; padding:10px; color: #27ae60;">✅ 正確！<strong>SELECT (選擇/選列)</strong>：是用條件來篩選出我們想要的「列 (Row/Tuple)」。</div>
+
+            <button class="analysis-btn" onclick="toggleAnalysis('D')">(D) PROJECT</button>
+            <div id="analysis-D" style="display:none; padding:10px; color: #27ae60;">✅ 正確！<strong>PROJECT (投影/選欄)</strong>：是用來挑選出我們想要的「欄位 (Column/Attribute)」。</div>
+
+            <button class="analysis-btn" onclick="toggleAnalysis('E')">(E) REACT</button>
+            <div id="analysis-E" style="display:none; padding:10px; color: #c0392b;">❌ 錯誤。這不是資料庫名詞，比較像是化學反應或是 JavaScript 的框架名稱。</div>
+        </div>
+    </div>
+
+    <!-- 6. 陷阱卡與自我檢測 -->
+    <div class="section-box">
+        <h2>⚠️ 考試陷阱 & 自我檢測</h2>
+        
+        <div class="trap-container">
+            <div class="trap-card" onclick="this.style.opacity='0'; setTimeout(()=>this.style.display='none', 500);">
+                <span class="close-trap">點擊我懂了</span>
+                <h4>陷阱 1：英文恐懼症</h4>
+                <p>看到 PROCEED 這種很像動詞的字不要怕，資料庫只有 SELECT, PROJECT, JOIN, UPDATE 等固定名詞。</p>
+            </div>
+            <div class="trap-card" onclick="this.style.opacity='0'; setTimeout(()=>this.style.display='none', 500);">
+                <span class="close-trap">點擊我懂了</span>
+                <h4>陷阱 2：SQL 混淆</h4>
+                <p>SQL 的 <code>SELECT *</code> 其實包含了關聯運算的 PROJECT(選欄) 概念，不要把理論運算跟 SQL 語法搞混！</p>
+            </div>
+            <div class="trap-card" onclick="this.style.opacity='0'; setTimeout(()=>this.style.display='none', 500);">
+                <span class="close-trap">點擊我懂了</span>
+                <h4>陷阱 3：複選題漏選</h4>
+                <p>這題一定要選 B, C, D 三個，少選一個都不給分喔！</p>
+            </div>
+        </div>
+
+        <hr style="margin: 20px 0; border: 0; border-top: 1px dashed #ccc;">
+
+        <h3>🧠 自我檢測 (點按鈕看提示)</h3>
+        
+        <div style="margin-bottom: 15px;">
+            <strong>Q1: 為什麼 SELECT 和 PROJECT 常被搞混？</strong>
+            <button onclick="document.getElementById('hint1').style.display='block'" style="font-size: 0.8em; margin-left: 10px;">顯示提示</button>
+            <div id="hint1" class="hint-box">
+                提示：因為 SQL 語言裡，第一個字就是 SELECT (用來選欄位)，但在「關聯運算理論」裡，SELECT 是選列（Row）。這就是最大的陷阱！記得口訣：運算理論中「選列 SELECT」。
+            </div>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <strong>Q2: JOIN 一定要有共同欄位嗎？</strong>
+            <button onclick="document.getElementById('hint2').style.display='block'" style="font-size: 0.8em; margin-left: 10px;">顯示提示</button>
+            <div id="hint2" class="hint-box">
+                提示：是的！要把兩張表接起來，必須要有一個像是「掛鉤」一樣的共同屬性（例如：兩張表都有學號），才能把資料正確對應起來。
+            </div>
+        </div>
+    </div>
+
+    <button class="reset-btn" onclick="resetAll()">🔄 全部重置 / 再練習一次</button>
+
+    <footer style="text-align: center; margin-top: 30px; color: #7f8c8d; font-size: 0.9em;">
+        電腦概論 - 資料庫教學單元 | Designed for Students
+    </footer>
+</div>
+
+<script>
+    /* --- 互動示範區邏輯 --- */
+    function demoSelect() {
+        resetDemoStyle();
+        // 模擬 SELECT Score > 80 (Row 1 and 3)
+        document.getElementById('row-1').classList.add('row-highlight');
+        document.getElementById('row-3').classList.add('row-highlight');
+        document.getElementById('demo-msg').innerText = "💡 SELECT 運算：篩選出了分數高於 80 分的「資料列 (Rows)」。";
+    }
+
+    function demoProject() {
+        resetDemoStyle();
+        // 模擬 PROJECT Name (Column 2)
+        const names = document.querySelectorAll('.col-name');
+        names.forEach(el => el.classList.add('col-highlight'));
+        document.getElementById('demo-msg').innerText = "💡 PROJECT 運算：只保留了「姓名」這個「欄位 (Column)」，其他欄位被忽略。";
+    }
+
+    function demoJoin() {
+        resetDemoStyle();
+        // 模擬 JOIN 效果，簡單顯示所有欄位變色
+        const table = document.getElementById('student-table');
+        table.querySelectorAll('th, td').forEach(el => el.classList.add('join-highlight'));
+        document.getElementById('demo-msg').innerText = "💡 JOIN 運算：依照「班級代號」，將這張表跟另一張「班級表」合併在一起。(示意)";
+    }
+
+    function resetDemoStyle() {
+        const els = document.querySelectorAll('.row-highlight, .col-highlight, .join-highlight');
+        els.forEach(el => {
+            el.classList.remove('row-highlight');
+            el.classList.remove('col-highlight');
+            el.classList.remove('join-highlight');
+        });
+        document.getElementById('demo-msg').innerText = "";
+    }
+
+    function resetDemo() {
+        resetDemoStyle();
+        document.getElementById('demo-msg').innerText = "表格已還原";
+    }
+
+    /* --- 拖放互動邏輯 (支援 PC Drag & Mobile Click) --- */
+    let mobileSelectedItem = null;
+
+    function allowDrop(ev) {
+        ev.preventDefault();
+    }
+
+    function drag(ev) {
+        ev.dataTransfer.setData("text", ev.target.id);
+    }
+
+    function drop(ev) {
+        ev.preventDefault();
+        var data = ev.dataTransfer.getData("text");
+        var el = document.getElementById(data);
+        if (ev.target.classList.contains('drop-zone') || ev.target.id === 'source-zone') {
+            ev.target.appendChild(el);
+        } else if (ev.target.closest('.drop-zone')) {
+            ev.target.closest('.drop-zone').appendChild(el); // 容錯：如果丟到 h4 上
+        }
+    }
+
+    // 手機版點擊移動邏輯
+    function mobileMove(el) {
+        if (window.matchMedia("(hover: none)").matches || window.innerWidth < 768) {
+            // 如果已經選中，取消選中
+            if (mobileSelectedItem === el) {
+                el.style.border = "none";
+                mobileSelectedItem = null;
+                return;
+            }
+            // 清除之前的選中
+            if (mobileSelectedItem) mobileSelectedItem.style.border = "none";
+            
+            // 選中當前
+            mobileSelectedItem = el;
+            el.style.border = "2px solid #e74c3c"; // 紅框標示選中
+        }
+    }
+
+    function mobileTarget(zone) {
+        if (mobileSelectedItem) {
+            zone.appendChild(mobileSelectedItem);
+            mobileSelectedItem.style.border = "none";
+            mobileSelectedItem = null;
+        }
+    }
+
+    function checkDragAnswer() {
+        const relationalZone = document.getElementById('zone-relational');
+        const nonZone = document.getElementById('zone-non');
+        const feedback = document.getElementById('drag-feedback');
+        
+        // 簡單檢查子元素 ID
+        const rIds = Array.from(relationalZone.children).map(c => c.id).filter(id => id);
+        const nIds = Array.from(nonZone.children).map(c => c.id).filter(id => id);
+
+        // 正解：Relational 包含 JOIN, SELECT, PROJECT
+        const correctR = rIds.includes('drag-join') && rIds.includes('drag-select') && rIds.includes('drag-project');
+        const noWrongInR = !rIds.includes('drag-proceed') && !rIds.includes('drag-react');
+        
+        // 確認是否所有卡片都分類了
+        const totalCards = rIds.length + nIds.length;
+
+        if (totalCards < 5) {
+            feedback.innerText = "⚠️ 還有卡片沒分類喔！";
+            feedback.className = "highlight";
+        } else if (correctR && noWrongInR) {
+            feedback.innerText = "🎉 太棒了！分類完全正確！(JOIN, SELECT, PROJECT 是關聯運算)";
+            feedback.className = "correct-bg";
+            feedback.style.padding = "10px";
+            feedback.style.borderRadius = "5px";
+        } else {
+            feedback.innerText = "❌ 有分錯喔！記得口訣：選列、選欄、合併。其他都是干擾項。";
+            feedback.className = "wrong-bg";
+            feedback.style.padding = "10px";
+            feedback.style.borderRadius = "5px";
+        }
+    }
+
+    /* --- 複選題作答邏輯 --- */
+    function submitQuiz() {
+        const checkboxes = document.querySelectorAll('input[name="option"]:checked');
+        const values = Array.from(checkboxes).map(cb => cb.value);
+        const feedback = document.getElementById('quiz-feedback');
+        
+        feedback.style.display = 'block';
+
+        // 正確答案 B, C, D
+        const isCorrect = values.includes('B') && values.includes('C') && values.includes('D') 
+                          && !values.includes('A') && !values.includes('E') 
+                          && values.length === 3;
+
+        if (isCorrect) {
+            feedback.innerHTML = "🎉 <strong>完全正確！</strong><br>這三個就是關聯式資料庫的核心運算：JOIN(合併)、SELECT(選列)、PROJECT(選欄)。";
+            feedback.className = "correct-bg";
+        } else {
+            // 判斷常見錯誤
+            let msg = "❌ <strong>答案不完整或有誤：</strong><br>";
+            if (values.includes('A') || values.includes('E')) {
+                msg += "👉 PROCEED 和 REACT 不是關聯運算名詞。<br>";
+            }
+            if (!values.includes('B') || !values.includes('C') || !values.includes('D')) {
+                msg += "👉 您漏選了某些選項，記得有「三大」運算。<br>";
+            }
+            if (values.length === 0) {
+                msg = "⚠️ 請先勾選答案再送出。";
+            }
+            feedback.innerHTML = msg;
+            feedback.className = "wrong-bg";
+        }
+    }
+
+    /* --- 解析區邏輯 --- */
+    function toggleAnalysis(option) {
+        const el = document.getElementById('analysis-' + option);
+        if (el.style.display === 'none') {
+            el.style.display = 'block';
+        } else {
+            el.style.display = 'none';
+        }
+    }
+
+    /* --- 重置全頁 --- */
+    function resetAll() {
+        // 重置示範區
+        resetDemo();
+        
+        // 重置拖放區
+        const source = document.getElementById('source-zone');
+        const cards = ['drag-proceed', 'drag-join', 'drag-select', 'drag-project', 'drag-react'];
+        cards.forEach(id => {
+            const card = document.getElementById(id);
+            if(card) source.appendChild(card);
+        });
+        document.getElementById('drag-feedback').innerText = "";
+        document.getElementById('drag-feedback').className = "";
+
+        // 重置測驗區
+        const form = document.getElementById('quiz-form');
+        form.reset();
+        document.getElementById('quiz-feedback').style.display = 'none';
+
+        // 重置解析區
+        document.querySelectorAll('[id^="analysis-"]').forEach(el => el.style.display = 'none');
+        
+        // 重置陷阱卡 (淡入)
+        document.querySelectorAll('.trap-card').forEach(el => {
+            el.style.display = 'block';
+            setTimeout(() => el.style.opacity = '1', 10);
+        });
+
+        // 重置提示
+        document.querySelectorAll('.hint-box').forEach(el => el.style.display = 'none');
+
+        window.scrollTo(0, 0);
+    }
+</script>
+
+</body>
+</html>

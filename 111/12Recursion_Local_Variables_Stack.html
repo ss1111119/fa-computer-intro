@@ -1,0 +1,836 @@
+Recursion_Local_Variables_Stack.html<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Q12 遞迴函式與 Stack 教學</title>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --success: #2ec4b6;
+            --danger: #e63946;
+            --warning: #ffb703;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --card-bg: #ffffff;
+            --shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+            color: var(--dark);
+            padding-bottom: 60px;
+        }
+
+        /* 頁首與導覽 */
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            font-size: 1.2rem;
+            margin: 0;
+            text-align: center;
+        }
+
+        .subtitle {
+            font-size: 0.9rem;
+            text-align: center;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        .nav-pills {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+            gap: 5px;
+        }
+
+        .nav-item {
+            background: rgba(255,255,255,0.2);
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .nav-item.active {
+            background: white;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        /* 卡片容器 */
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 0 15px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            display: none; /* 預設隱藏，由 JS 控制顯示 */
+            animation: slideIn 0.5s ease;
+        }
+
+        .card.active {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            color: var(--primary);
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        /* 題目樣式 */
+        .question-box {
+            font-size: 1.1rem;
+            font-weight: bold;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .btn-option {
+            background: white;
+            border: 2px solid #ddd;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        .btn-option:hover {
+            border-color: var(--primary);
+            background: #f8f9ff;
+        }
+
+        .btn-option.selected {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* 彈窗樣式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .reason-btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            background: #eee;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .reason-btn:hover {
+            background: #ddd;
+        }
+
+        /* 動畫展示區 */
+        .demo-area {
+            background: #f8f9fa;
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            min-height: 250px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .stack-container {
+            width: 200px;
+            border-bottom: 4px solid var(--dark);
+            border-left: 4px solid var(--dark);
+            border-right: 4px solid var(--dark);
+            min-height: 200px;
+            display: flex;
+            flex-direction: column-reverse; /* 讓元素從底部開始堆疊 */
+            padding: 5px;
+            position: relative;
+        }
+        
+        .stack-label {
+            position: absolute;
+            right: -120px;
+            bottom: 50%;
+            font-weight: bold;
+            color: var(--primary);
+            width: 100px;
+        }
+
+        .stack-frame {
+            background: var(--primary);
+            color: white;
+            padding: 10px;
+            margin: 2px 0;
+            text-align: center;
+            border-radius: 5px;
+            animation: dropIn 0.5s ease;
+            font-size: 0.9rem;
+        }
+
+        @keyframes dropIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .code-snippet {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+
+        .highlight {
+            background: #e63946;
+            color: white;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        /* 配對遊戲 */
+        .match-game {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .match-col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .match-item {
+            padding: 10px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .match-item.selected {
+            background: var(--warning);
+            border-color: var(--warning);
+            color: black;
+        }
+
+        .match-item.matched {
+            background: var(--success);
+            border-color: var(--success);
+            color: white;
+            pointer-events: none;
+        }
+
+        /* 錯誤示範區 */
+        .queue-demo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 10px;
+            border: 2px solid #e63946;
+            border-radius: 10px;
+            background: #fff0f0;
+        }
+
+        .queue-item {
+            min-width: 60px;
+            height: 60px;
+            background: #e63946;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+        }
+
+        /* 迷思破解 */
+        .myth-item {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .myth-btns button {
+            margin-right: 5px;
+            padding: 5px 15px;
+            border-radius: 20px;
+            border: 1px solid #ddd;
+            background: white;
+            cursor: pointer;
+        }
+
+        .correct-bg { background-color: #d1e7dd !important; }
+        .wrong-bg { background-color: #f8d7da !important; }
+
+        /* 控制按鈕 */
+        .nav-controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 25px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .btn-prev { background: #ddd; color: #555; }
+        .btn-next { background: var(--primary); color: white; }
+
+        /* 老師備註 */
+        .teacher-note {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 30px;
+            border: 1px solid #ffecb5;
+        }
+        
+        .teacher-toggle {
+            cursor: pointer;
+            color: #856404;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .note-content {
+            display: none;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #664d03;
+        }
+
+        /* 重點提示 */
+        .highlight-box {
+            background: #e7f5ff;
+            border-left: 5px solid var(--primary);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 0 5px 5px 0;
+        }
+
+        .term {
+            color: #d63384;
+            font-weight: bold;
+        }
+
+        /* 記憶口訣 */
+        .mnemonic-card {
+            background: var(--dark);
+            color: var(--warning);
+            padding: 20px;
+            text-align: center;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin: 20px 0;
+            transition: transform 0.2s;
+        }
+        .mnemonic-card:active {
+            transform: scale(0.98);
+        }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Q12 遞迴函式與堆疊 (Stack)</h1>
+    <div class="subtitle">高中電腦概論 / 資料結構</div>
+    <div class="nav-pills">
+        <div class="nav-item active" onclick="gotoStep(0)">1.題目</div>
+        <div class="nav-item" onclick="gotoStep(1)">2.理解</div>
+        <div class="nav-item" onclick="gotoStep(2)">3.模擬</div>
+        <div class="nav-item" onclick="gotoStep(3)">4.分析</div>
+        <div class="nav-item" onclick="gotoStep(4)">5.總結</div>
+    </div>
+</header>
+
+<div class="container">
+
+    <!-- STEP 1: 題目與作答 -->
+    <div class="card active" id="step0">
+        <h2>題目挑戰</h2>
+        <div class="question-box">
+            12. 下列哪一種資料結構最適合用來置放遞迴函式（recursive function）之區域變數（local variables）？
+        </div>
+        
+        <div class="options-grid">
+            <button class="btn-option" onclick="checkAnswer('A')">(A) hash table</button>
+            <button class="btn-option" onclick="checkAnswer('B')">(B) queue</button>
+            <button class="btn-option" onclick="checkAnswer('C')">(C) stack</button>
+            <button class="btn-option" onclick="checkAnswer('D')">(D) tree</button>
+        </div>
+
+        <div id="feedback-area" style="margin-top: 20px; display: none;">
+            <!-- 結果會顯示在這裡 -->
+        </div>
+
+        <div class="nav-controls">
+            <button class="btn btn-next" onclick="nextStep()" style="margin-left: auto;">看教學解析 &rarr;</button>
+        </div>
+    </div>
+
+    <!-- STEP 2: 理解觀念 -->
+    <div class="card" id="step1">
+        <h2>關鍵字解碼</h2>
+        
+        <div class="highlight-box">
+            <p><span class="term">遞迴函式 (Recursion)</span>：<br>簡單說就是「自己呼叫自己」的函式。就像俄羅斯娃娃，一層打開還有一層。</p>
+        </div>
+
+        <div class="highlight-box">
+            <p><span class="term">區域變數 (Local Variables)</span>：<br>函式裡面宣告的變數，只在該次執行時存在。每次呼叫都會產生一份「新的」區域變數，互不干擾。</p>
+        </div>
+
+        <div style="text-align: center; margin: 20px 0;">
+            <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMTAwIj48cGF0aCBkPSJNNDAgODBIMTYwVjkwSDQwVjgwWiIgZmlsbD0iIzQzNjFlZSIvPjxwYXRoIGQ9Ik01MCA2MEgxNTBWNzBINTBWNjBaIiBmaWxsPSIjNDM2MWVlIiBvcGFjaXR5PSIwLjgiLz48cGF0aCBkPSJNNjAgNDBIMTQwVjUwSDYwVjQwWiIgZmlsbD0iIzQzNjFlZSIgb3BhY2l0eT0iMC42Ii8+PHRleHQgeD0iMTAwIiB5PSI5NSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIxMiI+U3RhY2sg5aC655aKXzwvdGV4dD48L3N2Zz4" alt="Stack Icon" style="width: 150px;">
+            <p><strong>生活比喻：疊盤子 (Stack)</strong></p>
+            <p>最後放上去的盤子，一定要最先拿下來洗。<br>這就是 <span style="color:red; font-weight:bold;">後進先出 (LIFO, Last-In First-Out)</span></p>
+        </div>
+
+        <div class="nav-controls">
+            <button class="btn btn-prev" onclick="prevStep()">&larr; 上一步</button>
+            <button class="btn btn-next" onclick="nextStep()">下一步：看動畫 &rarr;</button>
+        </div>
+    </div>
+
+    <!-- STEP 3: 模擬執行 -->
+    <div class="card" id="step2">
+        <h2>遞迴執行流程模擬</h2>
+        <p>假設執行一個計算階乘的函式 <code>fact(3)</code>：</p>
+        <div class="code-snippet">
+            function fact(n) {<br>
+            &nbsp;&nbsp;if (n==1) return 1;<br>
+            &nbsp;&nbsp;let result = n * fact(n-1); <span style="color:#aaa">// 區域變數 result</span><br>
+            &nbsp;&nbsp;return result;<br>
+            }
+        </div>
+
+        <div class="demo-area">
+            <div class="stack-container" id="stack-visual">
+                <div class="stack-label">Stack 記憶體區</div>
+            </div>
+            <div id="status-text" style="margin-top: 10px; color: var(--secondary); font-weight: bold;">準備開始...</div>
+        </div>
+
+        <div style="display: flex; gap: 10px; justify-content: center;">
+            <button class="btn" style="background: var(--success); color: white;" onclick="runAnimation()">播放動畫</button>
+            <button class="btn" style="background: var(--warning); color: black;" onclick="resetAnimation()">重置</button>
+        </div>
+        
+        <p style="margin-top: 15px; font-size: 0.9rem; color: #666;">
+            觀察重點：<br>
+            1. 每次呼叫 <code>fact</code>，就像往上疊一個盤子。<br>
+            2. 當 <code>n=1</code> 回傳時，最上面的盤子先被拿走 (Pop)。<br>
+            3. 這就是為什麼需要 Stack：為了能正確「回到上一層」。
+        </p>
+
+        <div class="nav-controls">
+            <button class="btn btn-prev" onclick="prevStep()">&larr; 上一步</button>
+            <button class="btn btn-next" onclick="nextStep()">下一步：選項分析 &rarr;</button>
+        </div>
+    </div>
+
+    <!-- STEP 4: 選項分析與互動 -->
+    <div class="card" id="step3">
+        <h2>選項逐一擊破</h2>
+
+        <h3>配對遊戲：連連看</h3>
+        <p>請點選左邊的資料結構，再點選右邊對應的特性。</p>
+        <div class="match-game">
+            <div class="match-col" id="col-left">
+                <div class="match-item" data-id="stack">Stack (堆疊)</div>
+                <div class="match-item" data-id="queue">Queue (佇列)</div>
+                <div class="match-item" data-id="hash">Hash Table</div>
+                <div class="match-item" data-id="tree">Tree (樹)</div>
+            </div>
+            <div class="match-col" id="col-right">
+                <div class="match-item" data-match="queue">先進先出 (排隊)</div>
+                <div class="match-item" data-match="tree">階層結構</div>
+                <div class="match-item" data-match="stack">後進先出 (疊盤子)</div>
+                <div class="match-item" data-match="hash">Key-Value 快速查找</div>
+            </div>
+        </div>
+        <div id="match-msg" style="text-align: center; margin-top: 10px; font-weight: bold;"></div>
+
+        <hr style="margin: 20px 0;">
+
+        <h3>如果用 Queue 會怎樣？(錯誤示範)</h3>
+        <p>Queue 是「先進先出」(FIFO)，像排隊買飲料。</p>
+        <div class="queue-demo">
+            <div class="queue-item">call(3)</div>
+            <div class="queue-item">call(2)</div>
+            <div class="queue-item">call(1)</div>
+            <div style="font-size: 20px;">➔</div>
+            <div style="color: var(--danger); font-weight: bold;">???</div>
+        </div>
+        <button class="btn" style="background: #eee; color: #333; margin-top: 10px; width: 100%;" onclick="showQueueError()">點我看結果</button>
+        <div id="queue-error-msg" style="display:none; color: var(--danger); margin-top: 5px; background: #fff0f0; padding: 10px; border-radius: 5px;">
+            ⚠️ <strong>大錯特錯！</strong><br>
+            如果是 Queue，call(1) 結束後，最早進來的 call(3) 會先跑出來。<br>
+            但我們需要回到的是 call(2) 啊！順序完全亂掉了。
+        </div>
+
+        <div class="nav-controls">
+            <button class="btn btn-prev" onclick="prevStep()">&larr; 上一步</button>
+            <button class="btn btn-next" onclick="nextStep()">下一步：總結 &rarr;</button>
+        </div>
+    </div>
+
+    <!-- STEP 5: 總結 -->
+    <div class="card" id="step4">
+        <h2>觀念總結與記憶</h2>
+
+        <div class="mnemonic-card" onclick="toggleMnemonic()">
+            👉 點我切換記憶口訣 👈<br>
+            <span id="mnemonic-text" style="color: white; display: block; margin-top: 10px;">「遞迴回來找上一層，一定是 Stack」</span>
+        </div>
+
+        <h3>迷思破解 O / X</h3>
+        <div class="myth-item">
+            <p>1. 遞迴函式每次呼叫都會產生新的區域變數？</p>
+            <div class="myth-btns">
+                <button onclick="checkMyth(this, true, '沒錯！每一層都有獨立的空間。')">O</button>
+                <button onclick="checkMyth(this, false, '不對喔，遞迴每一層變數都是獨立的。')">X</button>
+                <span class="myth-feedback"></span>
+            </div>
+        </div>
+        <div class="myth-item">
+            <p>2. Stack 的特性是先進先出 (FIFO)？</p>
+            <div class="myth-btns">
+                <button onclick="checkMyth(this, false, '那是 Queue！Stack 是後進先出。')">O</button>
+                <button onclick="checkMyth(this, true, '正確！Stack 是後進先出 (LIFO)。')">X</button>
+                <span class="myth-feedback"></span>
+            </div>
+        </div>
+
+        <h3>自我檢測</h3>
+        <ul>
+            <li>為什麼 Stack Overflow (堆疊溢位) 跟無窮遞迴有關？<br><small style="color:#666;">(答：因為無窮遞迴會一直 Push 資料到 Stack 直到滿出來)</small></li>
+        </ul>
+
+        <div class="highlight-box" style="background: #d4edda; border-color: #28a745; text-align: center;">
+            <h3>正確答案：(C) stack</h3>
+        </div>
+
+        <div class="nav-controls">
+            <button class="btn btn-prev" onclick="prevStep()">&larr; 回去複習</button>
+        </div>
+    </div>
+
+</div>
+
+<!-- 老師備註區 -->
+<footer class="container">
+    <div class="teacher-note">
+        <div class="teacher-toggle" onclick="toggleNote()">
+            <span>👨‍🏫 教師備註 (點擊展開)</span>
+            <span>▼</span>
+        </div>
+        <div class="note-content" id="teacher-note-content">
+            <p><strong>教學重點：</strong></p>
+            <ul>
+                <li>本題是資料結構與程式執行流程的結合，是 APCS 或大學資工導論的高頻考題。</li>
+                <li>學生常有的迷思是分不清 Stack 與 Queue 的差異，建議用「洗盤子」與「買飲料」的生活化比喻加深印象。</li>
+                <li>務必強調「區域變數」的生命週期：函式開始時 Push 進去，函式結束時 Pop 出來，這剛好符合 Stack 的運作模式。</li>
+            </ul>
+        </div>
+    </div>
+</footer>
+
+<!-- 為什麼選這個的彈窗 -->
+<div class="modal-overlay" id="reason-modal">
+    <div class="modal-content">
+        <h3>你為什麼選這個？</h3>
+        <button class="reason-btn" onclick="submitReason('lifo')">因為它是後進先出 (LIFO)</button>
+        <button class="reason-btn" onclick="submitReason('fifo')">因為它是先進先出 (FIFO)</button>
+        <button class="reason-btn" onclick="submitReason('fast')">因為查找速度很快</button>
+        <button class="reason-btn" onclick="submitReason('guess')">我猜的 / 看起來很專業</button>
+        <button class="reason-btn" style="color: #666;" onclick="closeModal()">取消</button>
+    </div>
+</div>
+
+<script>
+    // --- 狀態管理 ---
+    let currentStep = 0;
+    let selectedAnswer = '';
+    const totalSteps = 5;
+
+    // --- 導覽功能 ---
+    function gotoStep(step) {
+        document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        
+        document.getElementById(`step${step}`).classList.add('active');
+        document.querySelectorAll('.nav-item')[step].classList.add('active');
+        currentStep = step;
+        window.scrollTo(0, 0);
+    }
+
+    function nextStep() {
+        if (currentStep < totalSteps - 1) gotoStep(currentStep + 1);
+    }
+
+    function prevStep() {
+        if (currentStep > 0) gotoStep(currentStep - 1);
+    }
+
+    // --- STEP 1: 選答案互動 ---
+    function checkAnswer(option) {
+        selectedAnswer = option;
+        document.getElementById('reason-modal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('reason-modal').style.display = 'none';
+    }
+
+    function submitReason(reason) {
+        closeModal();
+        const feedbackArea = document.getElementById('feedback-area');
+        feedbackArea.style.display = 'block';
+        
+        let msg = '';
+        let color = '';
+
+        if (selectedAnswer === 'C') {
+            if (reason === 'lifo') {
+                msg = '<h3 style="color:var(--success)">🎉 完全正確！</h3><p>觀念非常清晰！Stack 的後進先出特性正是管理遞迴變數的關鍵。</p>';
+            } else {
+                msg = '<h3 style="color:var(--success)">✅ 答案對了，但理由...</h3><p>答案是 Stack 沒錯，但正確理由是因為「後進先出 (LIFO)」。我們往下看教學確認一下觀念！</p>';
+            }
+        } else {
+            msg = '<h3 style="color:var(--danger)">❌ 答錯囉！</h3><p>別擔心，這題觀念比較抽象。我們透過接下來的動畫來找答案！</p>';
+        }
+
+        feedbackArea.innerHTML = msg;
+        
+        // 標記選中的按鈕
+        document.querySelectorAll('.btn-option').forEach(btn => {
+            btn.classList.remove('selected');
+            if(btn.textContent.includes(`(${selectedAnswer})`)) {
+                btn.classList.add('selected');
+            }
+        });
+    }
+
+    // --- STEP 3: 動畫邏輯 ---
+    let animTimer = null;
+    const steps = [
+        { text: "呼叫 fact(3)... Push 進 Stack", action: "push", val: "n=3" },
+        { text: "呼叫 fact(2)... Push 進 Stack", action: "push", val: "n=2" },
+        { text: "呼叫 fact(1)... Push 進 Stack", action: "push", val: "n=1" },
+        { text: "n=1 回傳 1，Pop 移除", action: "pop" },
+        { text: "回到 n=2，計算 2*1=2，Pop 移除", action: "pop" },
+        { text: "回到 n=3，計算 3*2=6，Pop 移除", action: "pop" },
+        { text: "執行結束！Stack 清空", action: "done" }
+    ];
+
+    function runAnimation() {
+        resetAnimation();
+        const container = document.getElementById('stack-visual');
+        const status = document.getElementById('status-text');
+        let i = 0;
+
+        function playStep() {
+            if (i >= steps.length) return;
+            
+            const s = steps[i];
+            status.innerText = s.text;
+
+            if (s.action === "push") {
+                const div = document.createElement('div');
+                div.className = 'stack-frame';
+                div.innerText = `Frame: ${s.val}`;
+                div.id = `frame-${i}`;
+                container.appendChild(div);
+            } else if (s.action === "pop") {
+                if(container.lastElementChild.classList.contains('stack-frame')) {
+                    container.removeChild(container.lastElementChild);
+                }
+            }
+
+            i++;
+            animTimer = setTimeout(playStep, 1500);
+        }
+
+        playStep();
+    }
+
+    function resetAnimation() {
+        clearTimeout(animTimer);
+        const container = document.getElementById('stack-visual');
+        // 保留 label，移除 frame
+        const frames = container.querySelectorAll('.stack-frame');
+        frames.forEach(f => f.remove());
+        document.getElementById('status-text').innerText = "準備開始...";
+    }
+
+    // --- STEP 4: 配對遊戲 ---
+    let selectedLeft = null;
+
+    document.querySelectorAll('#col-left .match-item').forEach(item => {
+        item.addEventListener('click', function() {
+            if(this.classList.contains('matched')) return;
+            // 清除之前的選取
+            document.querySelectorAll('#col-left .match-item').forEach(i => i.classList.remove('selected'));
+            this.classList.add('selected');
+            selectedLeft = this;
+        });
+    });
+
+    document.querySelectorAll('#col-right .match-item').forEach(item => {
+        item.addEventListener('click', function() {
+            if(!selectedLeft || this.classList.contains('matched')) return;
+            
+            const matchId = selectedLeft.getAttribute('data-id');
+            const targetId = this.getAttribute('data-match');
+            const msg = document.getElementById('match-msg');
+
+            if (matchId === targetId) {
+                // 配對成功
+                selectedLeft.classList.add('matched');
+                selectedLeft.classList.remove('selected');
+                this.classList.add('matched');
+                
+                selectedLeft.innerHTML += ' ✅';
+                this.innerHTML += ' ✅';
+                
+                selectedLeft = null;
+                msg.innerText = "配對成功！🎉";
+                msg.style.color = "var(--success)";
+            } else {
+                msg.innerText = "配對錯誤，再試試看！😫";
+                msg.style.color = "var(--danger)";
+                setTimeout(() => msg.innerText = "", 1500);
+            }
+        });
+    });
+
+    function showQueueError() {
+        const err = document.getElementById('queue-error-msg');
+        err.style.display = 'block';
+        err.animate([
+            { transform: 'translateX(-5px)' },
+            { transform: 'translateX(5px)' },
+            { transform: 'translateX(0)' }
+        ], { duration: 300, iterations: 2 });
+    }
+
+    // --- STEP 5: 總結互動 ---
+    function toggleMnemonic() {
+        const text = document.getElementById('mnemonic-text');
+        if (text.innerText.includes("回來找上一層")) {
+            text.innerText = "「後進先出，才能回得去」";
+        } else {
+            text.innerText = "「遞迴回來找上一層，一定是 Stack」";
+        }
+    }
+
+    function checkMyth(btn, isCorrect, feedbackText) {
+        const feedbackSpan = btn.parentElement.querySelector('.myth-feedback');
+        if (isCorrect) {
+            btn.classList.add('correct-bg');
+            feedbackSpan.innerHTML = `<span style="color:green">✅ ${feedbackText}</span>`;
+        } else {
+            btn.classList.add('wrong-bg');
+            feedbackSpan.innerHTML = `<span style="color:red">❌ ${feedbackText}</span>`;
+        }
+    }
+
+    // --- 老師備註 ---
+    function toggleNote() {
+        const content = document.getElementById('teacher-note-content');
+        if (content.style.display === 'block') {
+            content.style.display = 'none';
+        } else {
+            content.style.display = 'block';
+        }
+    }
+
+</script>
+
+</body>
+</html>

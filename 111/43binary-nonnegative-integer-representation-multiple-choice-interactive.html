@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>複選題 43：二進位非負整數表示系統 - 互動式講義</title>
+    <style>
+        /* --- 全域設定 --- */
+        :root {
+            --primary-color: #2c3e50; /* 深藍：專業感 */
+            --accent-color: #e67e22;  /* 橘色：重點 */
+            --correct-color: #27ae60; /* 綠色：正確 */
+            --error-color: #c0392b;   /* 紅色：錯誤 */
+            --bg-color: #f4f6f7;      /* 淺灰背景 */
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            background-color: var(--bg-color);
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* --- 標題區 --- */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin: 0;
+            font-size: 2.2rem;
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+            margin-top: 10px;
+        }
+
+        /* --- 通用卡片樣式 --- */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-left: 5px solid var(--primary-color);
+        }
+
+        h2 {
+            color: var(--primary-color);
+            border-bottom: 2px dashed #bdc3c7;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        h3 {
+            color: var(--accent-color);
+            margin-bottom: 10px;
+        }
+
+        /* --- 專有名詞 --- */
+        .term {
+            background-color: #ecf0f1;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: #2980b9;
+        }
+
+        /* --- 重點口訣 --- */
+        .highlight-box {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: bold;
+            text-align: center;
+            font-size: 1.2rem;
+        }
+
+        /* --- 互動區：滑桿 --- */
+        .slider-container {
+            background: #e8f6f3;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        input[type="range"] {
+            width: 80%;
+            margin: 15px 0;
+            cursor: pointer;
+        }
+
+        .slider-result {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        /* --- 互動區：二進位轉換 --- */
+        .converter-box {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            font-size: 1.1rem;
+            border: 2px solid #bdc3c7;
+            border-radius: 6px;
+            flex: 1;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 1rem;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background-color: #34495e;
+        }
+
+        .calc-steps {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: monospace;
+            color: #555;
+            white-space: pre-wrap;
+        }
+
+        /* --- 題目區 --- */
+        .question-box {
+            background-color: #fff;
+            border: 2px solid var(--primary-color);
+            padding: 20px;
+            border-radius: 10px;
+            position: relative;
+        }
+
+        .question-tag {
+            position: absolute;
+            top: -15px;
+            left: 20px;
+            background: var(--accent-color);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .options-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .option-item {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+        }
+
+        .option-item:hover {
+            background-color: #f1f1f1;
+        }
+
+        .option-item input {
+            margin-right: 15px;
+            transform: scale(1.5);
+            cursor: pointer;
+        }
+
+        .feedback-area {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none; /* 預設隱藏 */
+            font-weight: bold;
+        }
+
+        .feedback-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .feedback-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* --- 解析與陷阱 --- */
+        .analysis-btn {
+            background-color: #95a5a6;
+            margin-top: 5px;
+            font-size: 0.9rem;
+        }
+
+        .analysis-content {
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            background: #ecf0f1;
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .trap-container {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .trap-card {
+            flex: 1;
+            min-width: 200px;
+            background: #fff;
+            border: 2px solid var(--error-color);
+            padding: 15px;
+            border-radius: 8px;
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .trap-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .trap-card h4 {
+            color: var(--error-color);
+            margin-top: 0;
+        }
+
+        .trap-dismiss {
+            text-align: center;
+            font-size: 0.8rem;
+            color: #999;
+            margin-top: 10px;
+            border-top: 1px solid #eee;
+            padding-top: 5px;
+        }
+
+        /* --- 自我檢測 --- */
+        .quiz-hint {
+            display: none;
+            color: var(--accent-color);
+            margin-top: 5px;
+            font-size: 0.95rem;
+        }
+
+        /* --- 頁尾 --- */
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        
+        .reset-btn {
+            background-color: var(--error-color);
+            margin-top: 20px;
+            display: block;
+            width: 100%;
+        }
+
+        /* RWD 調整 */
+        @media (max-width: 600px) {
+            h1 { font-size: 1.8rem; }
+            .converter-box { flex-direction: column; align-items: stretch; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>電腦概論互動講義</h1>
+        <div class="subtitle">單元：資料表示法 | 主題：複選題 43</div>
+    </header>
+
+    <!-- 1. 核心觀念區 -->
+    <div class="card">
+        <h2>📚 核心觀念懶人包</h2>
+        <p>各位同學好！在解題前，這三個觀念一定要刻在腦海裡，考試一定會考：</p>
+        
+        <h3>名詞解釋（第一次看到請背起來）</h3>
+        <ul>
+            <li><span class="term">二進位 Binary</span>：電腦的世界只有 0 與 1。</li>
+            <li><span class="term">位元 bit</span>：二進位裡面的一個數字（0 或 1），是最小單位。</li>
+            <li><span class="term">位元組 byte</span>：由 8 個 bit 組成，是儲存資料的基本單位。</li>
+            <li><span class="term">非負整數</span>：只有 0 和 正整數（1, 2, 3...），沒有負號喔！</li>
+        </ul>
+
+        <h3>必考重點</h3>
+        <ol>
+            <li><strong>位權觀念</strong>：二進位轉十進位時，從右邊數過來，第 0 位是 $2^0$，第 1 位是 $2^1$，以此類推。</li>
+            <li><strong>前導 0</strong>：數字最前面的 0 不影響大小（例如：$010$ 跟 $10$ 是一樣的）。</li>
+            <li><strong>數量公式</strong>：$n$ 個位元可以表示 $2^n$ 個不同的數值。</li>
+        </ol>
+
+        <div class="highlight-box">
+            口訣：「bit 數一多，能表示的數量就翻倍！」
+        </div>
+    </div>
+
+    <!-- 2. 互動體驗區 (A) & (C) -->
+    <div class="card">
+        <h2>🛠️ 觀念實驗室</h2>
+        
+        <h3>實驗一：為什麼 16 位元是 65536？</h3>
+        <p>試著拖動下面的滑桿，看看 <span class="term">位元數</span> 增加時，能表示的數字個數變多少？</p>
+        <div class="slider-container">
+            <label for="bitSlider">位元數 (n)：<span id="bitDisplay" style="font-size:1.2rem; font-weight:bold;">8</span> bits</label><br>
+            <input type="range" id="bitSlider" min="1" max="16" value="8">
+            <div class="slider-result">
+                可表示 $2^n$ = <span id="countDisplay">256</span> 個數值
+            </div>
+            <p style="font-size: 0.9rem; color: #666;">(範圍：0 ~ <span id="maxValDisplay">255</span>)</p>
+        </div>
+
+        <hr style="border-top:1px dashed #ddd; margin: 25px 0;">
+
+        <h3>實驗二：二進位轉十進位計算機</h3>
+        <p>輸入一個二進位數字（例如 1000 或 010），看看它是多少？</p>
+        <div class="converter-box">
+            <input type="text" id="binaryInput" placeholder="輸入 0 與 1 (例: 1000)" maxlength="16">
+            <button onclick="convertBinary()">轉換與解析</button>
+        </div>
+        <div id="calcSteps" class="calc-steps">等待輸入...</div>
+    </div>
+
+    <!-- 3. 題目與作答區 (B) & (D) -->
+    <div class="card question-box">
+        <div class="question-tag">複選題 43</div>
+        <h3 style="margin-top: 15px;">二進位的非負整數表示系統中，下列何者正確？（本題可複選）</h3>
+        
+        <div class="options-list">
+            <label class="option-item">
+                <input type="checkbox" name="q43" value="A">
+                (A) 一個 byte 可以表示的最大值為 126
+            </label>
+            <label class="option-item">
+                <input type="checkbox" name="q43" value="B">
+                (B) 1000 表示十進位值為 8
+            </label>
+            <label class="option-item">
+                <input type="checkbox" name="q43" value="C">
+                (C) 十進位的 -1 以 1111 表示
+            </label>
+            <label class="option-item">
+                <input type="checkbox" name="q43" value="D">
+                (D) 010 與 10 所表示的十進位數值相同
+            </label>
+            <label class="option-item">
+                <input type="checkbox" name="q43" value="E">
+                (E) 16 位元能夠表示的整數個數有 65536
+            </label>
+        </div>
+
+        <button onclick="checkAnswer()" style="width: 100%; margin-top: 10px; font-size: 1.2rem;">送出答案</button>
+        <button onclick="resetAll()" class="reset-btn">重置題目與互動</button>
+
+        <div id="feedback" class="feedback-area"></div>
+    </div>
+
+    <!-- 4. 詳細解析區 (D) -->
+    <div class="card">
+        <h2>🔍 選項逐一破解</h2>
+        <p>點擊下方按鈕查看詳細解析：</p>
+
+        <div style="margin-bottom: 15px;">
+            <button class="analysis-btn" onclick="toggleAnalysis('analysisA')">(A) byte 最大值 126？</button>
+            <div id="analysisA" class="analysis-content">
+                <strong>❌ 錯誤</strong><br>
+                1 byte = 8 bits。<br>
+                最大值公式為 $2^n - 1$。<br>
+                $2^8 - 1 = 256 - 1 = \mathbf{255}$。<br>
+                126 是錯的離譜喔！
+            </div>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <button class="analysis-btn" onclick="toggleAnalysis('analysisB')">(B) 1000 是 8？</button>
+            <div id="analysisB" class="analysis-content" style="border-color: var(--correct-color);">
+                <strong>✅ 正確</strong><br>
+                $1000_2 = 1 \times 2^3 + 0 + 0 + 0 = 8$。<br>
+                記得：第 4 位就是 $2^3=8$。
+            </div>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <button class="analysis-btn" onclick="toggleAnalysis('analysisC')">(C) -1 是 1111？</button>
+            <div id="analysisC" class="analysis-content">
+                <strong>❌ 錯誤</strong><br>
+                題目第一句說什麼？<strong>「非負整數」</strong>！<br>
+                所以在這個系統裡，根本沒有負數的存在。<br>
+                (如果是「二補數」系統，1111 (4 bit) 才是 -1，但這裡不是。)
+            </div>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <button class="analysis-btn" onclick="toggleAnalysis('analysisD')">(D) 010 與 10 相同？</button>
+            <div id="analysisD" class="analysis-content" style="border-color: var(--correct-color);">
+                <strong>✅ 正確</strong><br>
+                就像十進位的 050 就是 50 一樣。<br>
+                前面的 0 叫做「前導 0」，不影響數值大小，只是用來補齊位數好看而已。
+            </div>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <button class="analysis-btn" onclick="toggleAnalysis('analysisE')">(E) 16 bits 有 65536 個整數？</button>
+            <div id="analysisE" class="analysis-content" style="border-color: var(--correct-color);">
+                <strong>✅ 正確</strong><br>
+                根據公式：$n$ 位元有 $2^n$ 個組合。<br>
+                $2^{16} = 65536$。<br>
+                (範圍是 0 ~ 65535，總共 65536 個數)。
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. 陷阱卡 (E) -->
+    <div class="card">
+        <h2>⚠️ 考試陷阱卡（點擊消除）</h2>
+        <p>這些都是學長姐最容易錯的地方，看懂了就點一下把它消掉！</p>
+        <div class="trap-container">
+            <div class="trap-card" onclick="dismissTrap(this)">
+                <h4>陷阱 1：Byte 定義不清</h4>
+                <p>很多人以為 1 byte 是 7 bit 或 10 bit。</p>
+                <p><strong>正解：</strong>1 byte 鐵定是 <strong>8 bits</strong>。</p>
+                <div class="trap-dismiss">點擊表示我懂了</div>
+            </div>
+            <div class="trap-card" onclick="dismissTrap(this)">
+                <h4>陷阱 2：看到 1111 就想填 -1</h4>
+                <p>題目沒看清楚「非負整數」就用二補數去解。</p>
+                <p><strong>正解：</strong>非負系統中，1111 就是 $8+4+2+1 = 15$。</p>
+                <div class="trap-dismiss">點擊表示我懂了</div>
+            </div>
+            <div class="trap-card" onclick="dismissTrap(this)">
+                <h4>陷阱 3：被前導 0 嚇到</h4>
+                <p>以為 010 是一種特殊編碼。</p>
+                <p><strong>正解：</strong>它就是 10，也就是十進位的 2。</p>
+                <div class="trap-dismiss">點擊表示我懂了</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. 自我檢測 (F) -->
+    <div class="card">
+        <h2>🧐 自我檢測</h2>
+        <p>不給你直接答案，試著想一想，需要幫忙請點「提示」。</p>
+        
+        <div style="margin-bottom: 20px;">
+            <strong>Q1. 8 位元能表示多少個整數？</strong><br>
+            <button onclick="toggleHint('hint1')" style="padding: 5px 10px; font-size: 0.8rem; background: #95a5a6;">顯示提示</button>
+            <div id="hint1" class="quiz-hint">提示：套公式 $2^n$，所以是 $2^8 = ?$</div>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <strong>Q2. 為什麼 $n$ 位元最大值是 $2^n - 1$？</strong><br>
+            <button onclick="toggleHint('hint2')" style="padding: 5px 10px; font-size: 0.8rem; background: #95a5a6;">顯示提示</button>
+            <div id="hint2" class="quiz-hint">提示：因為我們是從 0 開始數的！假設有 4 個蘋果(0,1,2,3)，最大編號是 3 (也就是 4-1)。</div>
+        </div>
+        
+        <div>
+            <strong>Q3. 如果題目改成「含負數」(二補數系統)，選項(C)會變對嗎？</strong><br>
+            <button onclick="toggleHint('hint3')" style="padding: 5px 10px; font-size: 0.8rem; background: #95a5a6;">顯示提示</button>
+            <div id="hint3" class="quiz-hint">提示：是的！在 4 位元二補數系統中，1111 代表 -1。但在這題「非負整數」系統中，它是 15。</div>
+        </div>
+    </div>
+
+    <div class="footer">
+        &copy; 電腦概論互動講義 | 複選題 43 | Designed for Learning
+    </div>
+</div>
+
+<script>
+    /* --- 1. 滑桿互動邏輯 --- */
+    const slider = document.getElementById('bitSlider');
+    const bitDisplay = document.getElementById('bitDisplay');
+    const countDisplay = document.getElementById('countDisplay');
+    const maxValDisplay = document.getElementById('maxValDisplay');
+
+    function updateSlider() {
+        const n = parseInt(slider.value);
+        const count = Math.pow(2, n);
+        
+        bitDisplay.textContent = n;
+        countDisplay.textContent = count.toLocaleString(); // 加千分位逗號
+        maxValDisplay.textContent = (count - 1).toLocaleString();
+    }
+
+    slider.addEventListener('input', updateSlider);
+
+    /* --- 2. 二進位轉換邏輯 --- */
+    function convertBinary() {
+        const input = document.getElementById('binaryInput').value.trim();
+        const stepsDiv = document.getElementById('calcSteps');
+
+        // 防呆：檢查是否為空或包含非 0/1 字元
+        if (!input || !/^[01]+$/.test(input)) {
+            stepsDiv.innerHTML = "<span style='color:red;'>⚠️ 請輸入有效的二進位數字（只能包含 0 與 1）！</span>";
+            return;
+        }
+
+        const len = input.length;
+        let decimalValue = 0;
+        let stepString = "";
+
+        // 計算過程
+        stepString += `二進位 <strong style="font-size:1.2rem">${input}</strong> 轉換過程：\n\n`;
+
+        for (let i = 0; i < len; i++) {
+            const bit = parseInt(input[i]);
+            const power = len - 1 - i;
+            const val = bit * Math.pow(2, power);
+            
+            decimalValue += val;
+
+            // 組合算式字串
+            if (i > 0) stepString += " + ";
+            stepString += `${bit}×2<sup>${power}</sup>`;
+        }
+
+        stepString += `\n= ${decimalValue}`;
+        stepString += `\n\n結果：十進位 <strong style="font-size:1.2rem; color:var(--primary-color);">${decimalValue}</strong>`;
+
+        stepsDiv.innerHTML = stepString;
+    }
+
+    /* --- 3. 複選題作答邏輯 --- */
+    function checkAnswer() {
+        // 取得所有勾選的選項
+        const checkboxes = document.querySelectorAll('input[name="q43"]:checked');
+        const userAnswers = Array.from(checkboxes).map(cb => cb.value).sort();
+        const feedback = document.getElementById('feedback');
+        
+        // 正確答案
+        const correctAnswers = ["B", "D", "E"];
+
+        // 比對邏輯
+        const isCorrect = JSON.stringify(userAnswers) === JSON.stringify(correctAnswers);
+
+        feedback.style.display = "block";
+        feedback.className = "feedback-area"; // 重置 class
+
+        if (isCorrect) {
+            feedback.classList.add("feedback-success");
+            feedback.innerHTML = "🎉 <strong>完全正確！太棒了！</strong><br>你已經完全掌握了二進位與非負整數的觀念。";
+        } else {
+            feedback.classList.add("feedback-error");
+            let msg = "🤔 <strong>有點可惜，再想一下：</strong><br>";
+            
+            if (userAnswers.length === 0) {
+                msg += "你還沒勾選任何答案喔！<br>";
+            } else {
+                // 檢查是否選了 A 或 C (絕對錯誤)
+                if (userAnswers.includes("A")) msg += "- 選項 (A) 不對喔，1 byte 最大不只 126。<br>";
+                if (userAnswers.includes("C")) msg += "- 選項 (C) 不對喔，題目說「非負整數」，不能有負號。<br>";
+                
+                // 檢查是否漏選
+                const missing = correctAnswers.filter(x => !userAnswers.includes(x));
+                if (missing.length > 0) {
+                    msg += `- 你好像漏掉了 ${missing.join(", ")} 選項。<br>`;
+                }
+            }
+            msg += "<br>💡 <strong>提示：</strong>請往下滑看「選項逐一破解」或用上方的轉換器檢查一下。";
+            feedback.innerHTML = msg;
+        }
+    }
+
+    /* --- 4. 解析顯示 --- */
+    function toggleAnalysis(id) {
+        const el = document.getElementById(id);
+        if (el.style.display === "block") {
+            el.style.display = "none";
+        } else {
+            el.style.display = "block";
+        }
+    }
+
+    /* --- 5. 陷阱卡消除 --- */
+    function dismissTrap(element) {
+        element.style.transition = "opacity 0.5s, transform 0.5s";
+        element.style.opacity = "0";
+        element.style.transform = "scale(0.8)";
+        setTimeout(() => {
+            element.style.display = "none";
+        }, 500);
+    }
+
+    /* --- 6. 提示顯示 --- */
+    function toggleHint(id) {
+        const el = document.getElementById(id);
+        el.style.display = (el.style.display === "block") ? "none" : "block";
+    }
+
+    /* --- 7. 全域重置 --- */
+    function resetAll() {
+        // 重置 Checkbox
+        document.querySelectorAll('input[name="q43"]').forEach(cb => cb.checked = false);
+        document.getElementById('feedback').style.display = 'none';
+
+        // 重置轉換器
+        document.getElementById('binaryInput').value = '';
+        document.getElementById('calcSteps').textContent = '等待輸入...';
+
+        // 重置滑桿
+        slider.value = 8;
+        updateSlider();
+
+        // 重置解析顯示
+        document.querySelectorAll('.analysis-content').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('.quiz-hint').forEach(el => el.style.display = 'none');
+        
+        // 重置陷阱卡 (如果被消除了，要叫回來)
+        document.querySelectorAll('.trap-card').forEach(el => {
+            el.style.display = 'block';
+            setTimeout(() => {
+                el.style.opacity = '1';
+                el.style.transform = 'scale(1)';
+            }, 10);
+        });
+
+        alert("已重置所有內容！");
+    }
+
+    // 初始化滑桿數值
+    updateSlider();
+
+</script>
+
+</body>
+</html>

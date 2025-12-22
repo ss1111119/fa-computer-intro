@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>題目 26：IPv4 位址判斷互動講義</title>
+    <style>
+        /* --- 基礎設定 --- */
+        :root {
+            --primary-color: #2c3e50; /* 補習班講義深藍 */
+            --accent-color: #3498db; /* 重點藍 */
+            --success-color: #27ae60; /* 正確綠 */
+            --error-color: #c0392b; /* 錯誤紅 */
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* --- 通用元件 --- */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 25px;
+            margin-bottom: 25px;
+            border-left: 5px solid var(--accent-color);
+        }
+
+        h1, h2, h3 {
+            color: var(--primary-color);
+            margin-top: 0;
+        }
+
+        h1 {
+            text-align: center;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 15px;
+        }
+
+        .highlight {
+            color: var(--error-color);
+            font-weight: bold;
+            background-color: #fdeaea;
+            padding: 2px 5px;
+            border-radius: 4px;
+        }
+
+        .success-text {
+            color: var(--success-color);
+            font-weight: bold;
+        }
+
+        .tag {
+            display: inline-block;
+            background: #eee;
+            color: #555;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            margin-right: 5px;
+        }
+
+        button {
+            cursor: pointer;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-reset {
+            background-color: #7f8c8d;
+            color: white;
+            display: block;
+            margin: 30px auto;
+        }
+
+        /* --- 題目區塊 --- */
+        .question-box {
+            background-color: #e8f4fd;
+            border: 2px solid #b3d7f2;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .option-btn {
+            background: white;
+            border: 2px solid #ddd;
+            padding: 15px;
+            text-align: left;
+            font-size: 1.1rem;
+            position: relative;
+        }
+
+        .option-btn:hover {
+            border-color: var(--accent-color);
+        }
+
+        .option-btn.correct {
+            border-color: var(--success-color);
+            background-color: #eafaf1;
+        }
+
+        .option-btn.wrong {
+            border-color: var(--error-color);
+            background-color: #fdedec;
+        }
+
+        .feedback-area {
+            margin-top: 15px;
+            font-weight: bold;
+            min-height: 1.6em;
+        }
+
+        /* --- 互動檢查器 --- */
+        .ip-checker-container {
+            text-align: center;
+        }
+
+        .ip-input-wrapper {
+            margin-bottom: 20px;
+        }
+
+        #customIpInput {
+            padding: 10px;
+            font-size: 1.2rem;
+            width: 80%;
+            max-width: 300px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .segments-display {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .segment-box {
+            width: 80px;
+            height: 80px;
+            border: 3px solid #ddd;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: white;
+            position: relative;
+        }
+
+        .segment-box .value {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .segment-box .status {
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+
+        .segment-box.valid {
+            border-color: var(--success-color);
+            color: var(--success-color);
+        }
+
+        .segment-box.invalid {
+            border-color: var(--error-color);
+            color: var(--error-color);
+            background-color: #fff0f0;
+        }
+
+        .dot {
+            font-size: 2rem;
+            color: #aaa;
+            font-weight: bold;
+        }
+
+        .checker-result {
+            margin-top: 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        /* --- 二進位解釋 --- */
+        .binary-explanation {
+            display: none;
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border: 1px dashed #ccc;
+        }
+
+        /* --- 陷阱卡 --- */
+        .trap-cards {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .trap-card {
+            flex: 1;
+            min-width: 250px;
+            background: #fff8e1;
+            border: 1px solid #ffe082;
+            padding: 15px;
+            border-radius: 8px;
+            position: relative;
+            transition: opacity 0.5s;
+        }
+
+        .trap-card h4 {
+            margin-top: 0;
+            color: #f39c12;
+        }
+
+        .close-trap {
+            margin-top: 10px;
+            background: none;
+            border: 1px solid #aaa;
+            padding: 5px 10px;
+            font-size: 0.9rem;
+        }
+
+        .close-trap:hover {
+            background: #eee;
+        }
+
+        /* --- 快速小測驗 --- */
+        .quiz-box {
+            text-align: center;
+            padding: 20px;
+            background: #f0f3f4;
+            border-radius: 8px;
+        }
+
+        .quiz-ip {
+            font-size: 2rem;
+            font-family: monospace;
+            margin: 15px 0;
+            letter-spacing: 2px;
+        }
+
+        .quiz-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .btn-quiz-yes { background-color: var(--success-color); color: white; }
+        .btn-quiz-no { background-color: var(--error-color); color: white; }
+        
+        .quiz-feedback {
+            margin-top: 15px;
+            font-weight: bold;
+            min-height: 1.5em;
+        }
+
+        /* --- 自我檢測 --- */
+        .self-check-item {
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+        }
+        .hint-box {
+            display: none;
+            margin-top: 10px;
+            color: #555;
+            background: #eee;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        /* --- 響應式 --- */
+        @media (max-width: 600px) {
+            .options-grid { grid-template-columns: 1fr; }
+            .segments-display { gap: 5px; }
+            .segment-box { width: 60px; height: 60px; }
+            .segment-box .value { font-size: 1.1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- 頁頭 -->
+    <header>
+        <h1>網路基礎觀念衝刺班：題目 26</h1>
+        <p style="text-align: center; color: #666;">針對「IP 位址格式與檢查」的重點互動講義</p>
+    </header>
+
+    <!-- 1. 題目展示區 -->
+    <section class="card">
+        <h3><span class="tag">考題</span>題目 26</h3>
+        <div class="question-box">
+            <p><strong>IP 位址由四組數字組成，下列何者是正確的 IP？</strong></p>
+            <div class="options-grid">
+                <button class="option-btn" onclick="checkAnswer('A', this)">
+                    (A) 266.140.32.103
+                </button>
+                <button class="option-btn" onclick="checkAnswer('B', this)">
+                    (B) 104.124.230.161
+                </button>
+                <button class="option-btn" onclick="checkAnswer('C', this)">
+                    (C) 118.214.253.256
+                </button>
+                <button class="option-btn" onclick="checkAnswer('D', this)">
+                    (D) 98.303.136.24
+                </button>
+            </div>
+            <div id="answerFeedback" class="feedback-area"></div>
+        </div>
+        <p style="font-size: 0.9rem; color: #888;">* 點選上方選項即可查看解析</p>
+    </section>
+
+    <!-- 2. 核心觀念區 -->
+    <section class="card">
+        <h3><span class="tag">觀念</span>什麼是 IPv4？</h3>
+        <p>在我們做題前，先搞懂三個關鍵字：</p>
+        <ul>
+            <li><strong>IP 位址</strong>：就像網路上的門牌號碼，用來找到你的電腦或手機。</li>
+            <li><strong>IPv4</strong>：目前最常用的門牌格式，由四組數字組成。</li>
+            <li><strong>八位元組 (Octet)</strong>：就是那一組數字，因為電腦用 8 個位元 (bits) 存它。</li>
+            <li><strong>點分十進位</strong>：用「.」把四組數字隔開的寫法 (例如 192.168.0.1)。</li>
+        </ul>
+        
+        <div style="background-color: #fffde7; padding: 15px; border-left: 4px solid #f1c40f;">
+            <strong>★ 必考規則 (口訣：0 到 255)</strong>
+            <ol>
+                <li>IPv4 一定由「四組數字」組成。</li>
+                <li>每組數字中間用「.」分開。</li>
+                <li>每一組數字範圍必須是 <span class="highlight">0 ~ 255</span>。</li>
+                <li>只要有任何一組超過 255，就是錯的！</li>
+            </ol>
+        </div>
+
+        <!-- 0-255 原理解析 -->
+        <div style="margin-top: 15px;">
+            <button class="btn-primary" style="padding: 8px 15px; font-size: 0.9rem;" onclick="toggleBinary()">
+                💡 為什麼最大是 255？ (點我看原理)
+            </button>
+            <div id="binaryInfo" class="binary-explanation">
+                <p>電腦只看得懂 0 和 1 (二進位)。</p>
+                <p>IPv4 的每一段都使用 <strong>8 個位元 (8 bits)</strong> 來儲存。</p>
+                <ul>
+                    <li>最小值 (8個0)：<code>00000000</code> = <strong>0</strong></li>
+                    <li>最大值 (8個1)：<code>11111111</code> = <strong>255</strong></li>
+                </ul>
+                <p>算式：2 的 8 次方 = 256 種組合 (從 0 算到 255)。所以絕對不可能出現 256 或更大的數字！</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. 互動檢查器 (核心功能) -->
+    <section class="card">
+        <h3><span class="tag">工具</span>IP 照妖鏡：逐段檢查器</h3>
+        <p>輸入一個 IP，我們來一段一段拆開檢查：</p>
+        
+        <div class="ip-checker-container">
+            <div class="ip-input-wrapper">
+                <input type="text" id="customIpInput" placeholder="輸入 IP (例如 192.168.1.1)" value="266.140.32.103" oninput="validateIP()">
+                <div style="margin-top: 10px;">
+                    <button style="font-size: 0.8rem; padding: 5px 10px;" onclick="setDemoIP('266.140.32.103')">試試 (A)</button>
+                    <button style="font-size: 0.8rem; padding: 5px 10px;" onclick="setDemoIP('104.124.230.161')">試試 (B)</button>
+                    <button style="font-size: 0.8rem; padding: 5px 10px;" onclick="setDemoIP('118.214.253.256')">試試 (C)</button>
+                </div>
+            </div>
+
+            <div class="segments-display">
+                <!-- 第一段 -->
+                <div class="segment-box" id="seg1-box">
+                    <span class="value" id="seg1-val">---</span>
+                    <span class="status" id="seg1-status">待命</span>
+                </div>
+                <div class="dot">.</div>
+                <!-- 第二段 -->
+                <div class="segment-box" id="seg2-box">
+                    <span class="value" id="seg2-val">---</span>
+                    <span class="status" id="seg2-status">待命</span>
+                </div>
+                <div class="dot">.</div>
+                <!-- 第三段 -->
+                <div class="segment-box" id="seg3-box">
+                    <span class="value" id="seg3-val">---</span>
+                    <span class="status" id="seg3-status">待命</span>
+                </div>
+                <div class="dot">.</div>
+                <!-- 第四段 -->
+                <div class="segment-box" id="seg4-box">
+                    <span class="value" id="seg4-val">---</span>
+                    <span class="status" id="seg4-status">待命</span>
+                </div>
+            </div>
+
+            <div id="checkerResult" class="checker-result">請輸入 IP 進行檢查...</div>
+        </div>
+    </section>
+
+    <!-- 4. 常見陷阱區 -->
+    <section class="card">
+        <h3><span class="tag">必讀</span>常見考試陷阱</h3>
+        <p>點擊「我懂了」可以消除這些錯誤觀念卡片：</p>
+        <div class="trap-cards" id="trapZone">
+            <div class="trap-card">
+                <h4>❌ 陷阱 1：以為有四段就對</h4>
+                <p>有些選項是四組數字，但其中一組是 300，這是錯的！不能只數段數。</p>
+                <button class="close-trap" onclick="dismissCard(this)">我懂了 👌</button>
+            </div>
+            <div class="trap-card">
+                <h4>❌ 陷阱 2：以為 256 也可以</h4>
+                <p>256 剛好超過 255 一點點，最容易眼花選錯。記住：0~255。</p>
+                <button class="close-trap" onclick="dismissCard(this)">我懂了 👌</button>
+            </div>
+            <div class="trap-card">
+                <h4>❌ 陷阱 3：只檢查前面</h4>
+                <p>很多題目故意前面都正常 (如 192.168...)，錯在最後一個數字。要全部看完！</p>
+                <button class="close-trap" onclick="dismissCard(this)">我懂了 👌</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. 快速測驗 -->
+    <section class="card">
+        <h3><span class="tag">實戰</span>快速判斷小測驗</h3>
+        <p>訓練你的直覺！這個 IP 合法嗎？</p>
+        
+        <div class="quiz-box">
+            <div id="quizDisplay" class="quiz-ip">Loading...</div>
+            <div class="quiz-buttons">
+                <button class="btn-quiz-yes" onclick="answerQuiz(true)">合法 (O)</button>
+                <button class="btn-quiz-no" onclick="answerQuiz(false)">不合法 (X)</button>
+            </div>
+            <div id="quizFeedback" class="quiz-feedback"></div>
+            <button onclick="generateQuiz()" style="margin-top: 10px; font-size: 0.9rem; background: #ddd;">下一題 ➡</button>
+        </div>
+    </section>
+
+    <!-- 6. 自我檢測 -->
+    <section class="card">
+        <h3><span class="tag">思考</span>自我檢測 (不給答案，想一下)</h3>
+        
+        <div class="self-check-item">
+            <strong>Q1：為什麼 IPv4 每一段最大是 255，不是 999？</strong>
+            <br>
+            <button onclick="toggleHint('hint1')" style="font-size: 0.8rem; margin-top: 5px; padding: 3px 8px;">顯示提示</button>
+            <div id="hint1" class="hint-box">提示：回想一下電腦是用什麼進位制？8 個位元 (bits) 全滿是多少？</div>
+        </div>
+
+        <div class="self-check-item">
+            <strong>Q2：127.0.0.1 為什麼是合法的？看起來很怪？</strong>
+            <br>
+            <button onclick="toggleHint('hint2')" style="font-size: 0.8rem; margin-top: 5px; padding: 3px 8px;">顯示提示</button>
+            <div id="hint2" class="hint-box">提示：套用「0~255」規則檢查看看。127 在範圍內嗎？0 在範圍內嗎？1 呢？如果都在，它就是合法的格式 (雖然它有特殊用途)。</div>
+        </div>
+
+        <div class="self-check-item">
+            <strong>Q3：如果題目問「下列哪一個 IP 一定錯」，你會怎麼快速掃描？</strong>
+            <br>
+            <button onclick="toggleHint('hint3')" style="font-size: 0.8rem; margin-top: 5px; padding: 3px 8px;">顯示提示</button>
+            <div id="hint3" class="hint-box">提示：不要從頭讀到尾。直接掃描有沒有數字「大於 255」的？或是長度「不是4段」的？這叫消去法。</div>
+        </div>
+    </section>
+
+    <!-- 全局重置 -->
+    <button class="btn-reset" onclick="resetAll()">🔄 全部重置 (重新開始)</button>
+
+    <footer style="text-align: center; color: #aaa; margin-top: 50px; font-size: 0.8rem;">
+        &copy; 2024 高中資訊學科中心 | 互動講義生成範例
+    </footer>
+</div>
+
+<script>
+    /* --- 全域變數 --- */
+    let currentQuizIsVald = false;
+
+    /* --- 初始化 --- */
+    window.onload = function() {
+        validateIP(); // 初始化檢查器
+        generateQuiz(); // 初始化測驗
+    };
+
+    /* --- 功能 1: 題目 26 選項解析 --- */
+    function checkAnswer(option, btnElement) {
+        const feedback = document.getElementById('answerFeedback');
+        
+        // 重置所有按鈕樣式
+        document.querySelectorAll('.option-btn').forEach(btn => {
+            btn.classList.remove('correct', 'wrong');
+        });
+
+        // 根據選項判斷
+        if (option === 'B') {
+            btnElement.classList.add('correct');
+            feedback.innerHTML = '<span style="color:var(--success-color)">✅ 答對了！</span><br>解析：104, 124, 230, 161 這四個數字全部都在 0~255 的範圍內，完全符合 IPv4 規則。';
+        } else {
+            btnElement.classList.add('wrong');
+            let reason = "";
+            if (option === 'A') reason = "第一段 266 超過了 255，所以錯誤。";
+            if (option === 'C') reason = "第四段 256 超過了 255 (最大只能到 255)，所以錯誤。";
+            if (option === 'D') reason = "第二段 303 超過了 255，所以錯誤。";
+            
+            feedback.innerHTML = '<span style="color:var(--error-color)">❌ 答錯了。</span><br>解析：' + reason;
+        }
+    }
+
+    /* --- 功能 2: IP 逐段檢查器 --- */
+    function setDemoIP(ip) {
+        document.getElementById('customIpInput').value = ip;
+        validateIP();
+    }
+
+    function validateIP() {
+        const input = document.getElementById('customIpInput').value.trim();
+        const segments = input.split('.');
+        const resultDiv = document.getElementById('checkerResult');
+        
+        let allValid = true;
+        let errorMsg = "";
+
+        // 檢查段數
+        if (segments.length !== 4) {
+            allValid = false;
+            errorMsg = "格式錯誤：必須剛好有 4 組數字";
+            // 視覺上清空或顯示錯誤
+            updateSegmentVisuals(['?','?','?','?'], [false, false, false, false]);
+            resultDiv.innerHTML = `<span style="color:var(--error-color)">❌ ${errorMsg}</span>`;
+            return;
+        }
+
+        // 逐段檢查
+        let visualValues = [];
+        let visualStatus = [];
+
+        for (let i = 0; i < 4; i++) {
+            let segStr = segments[i];
+            visualValues.push(segStr === "" ? "?" : segStr);
+
+            // 檢查是否為空
+            if (segStr === "") {
+                visualStatus.push(false);
+                allValid = false;
+                continue;
+            }
+
+            // 檢查是否為純數字 (利用 Regex 較嚴謹，或簡單 isNaN)
+            if (isNaN(segStr)) {
+                visualStatus.push(false);
+                allValid = false;
+                continue;
+            }
+
+            let num = Number(segStr);
+            
+            // 檢查範圍 0-255
+            if (num >= 0 && num <= 255) {
+                visualStatus.push(true);
+            } else {
+                visualStatus.push(false);
+                allValid = false;
+                if(num > 255) errorMsg = "有數字超過 255 了！";
+                else errorMsg = "數字不合法";
+            }
+        }
+
+        updateSegmentVisuals(visualValues, visualStatus);
+
+        if (allValid) {
+            resultDiv.innerHTML = '<span style="color:var(--success-color)">✅ 恭喜！這是一個合法的 IPv4 位址。</span>';
+        } else {
+            resultDiv.innerHTML = `<span style="color:var(--error-color)">❌ 不合法：${errorMsg || "請檢查紅色區塊"}</span>`;
+        }
+    }
+
+    function updateSegmentVisuals(values, statuses) {
+        for (let i = 0; i < 4; i++) {
+            const box = document.getElementById(`seg${i+1}-box`);
+            const valSpan = document.getElementById(`seg${i+1}-val`);
+            const statusSpan = document.getElementById(`seg${i+1}-status`);
+
+            valSpan.textContent = values[i];
+            
+            // 移除舊 class
+            box.classList.remove('valid', 'invalid');
+
+            if (statuses[i]) {
+                box.classList.add('valid');
+                statusSpan.textContent = "OK";
+            } else {
+                box.classList.add('invalid');
+                statusSpan.textContent = "錯誤";
+            }
+        }
+    }
+
+    /* --- 功能 3: 二進位原理切換 --- */
+    function toggleBinary() {
+        const div = document.getElementById('binaryInfo');
+        if (div.style.display === 'block') {
+            div.style.display = 'none';
+        } else {
+            div.style.display = 'block';
+        }
+    }
+
+    /* --- 功能 4: 陷阱卡關閉 --- */
+    function dismissCard(btn) {
+        const card = btn.parentElement;
+        card.style.opacity = '0';
+        setTimeout(() => {
+            card.style.display = 'none';
+        }, 500);
+    }
+
+    /* --- 功能 5: 快速測驗生成 --- */
+    function generateQuiz() {
+        document.getElementById('quizFeedback').innerHTML = "";
+        
+        // 隨機決定要出題目是對的還是錯的 (50% 機率)
+        currentQuizIsVald = Math.random() > 0.5;
+
+        let ipParts = [];
+        if (currentQuizIsVald) {
+            // 生成合法 IP
+            for(let i=0; i<4; i++) ipParts.push(Math.floor(Math.random() * 256));
+        } else {
+            // 生成非法 IP
+            for(let i=0; i<4; i++) ipParts.push(Math.floor(Math.random() * 256));
+            // 隨機挑一個位置改成錯的 (256 ~ 350)
+            let badIndex = Math.floor(Math.random() * 4);
+            ipParts[badIndex] = Math.floor(Math.random() * 95) + 256; 
+        }
+
+        document.getElementById('quizDisplay').textContent = ipParts.join('.');
+    }
+
+    function answerQuiz(userSaysValid) {
+        const feedback = document.getElementById('quizFeedback');
+        
+        if (userSaysValid === currentQuizIsVald) {
+            feedback.innerHTML = '<span style="color:var(--success-color)">🎉 答對了！</span> 你反應真快。';
+        } else {
+            if (currentQuizIsVald) {
+                feedback.innerHTML = '<span style="color:var(--error-color)">💥 答錯了！</span> 這其實是合法的，每個數字都在 0~255 內。';
+            } else {
+                // 找出哪個錯
+                let parts = document.getElementById('quizDisplay').textContent.split('.');
+                let badNum = parts.find(p => Number(p) > 255);
+                feedback.innerHTML = `<span style="color:var(--error-color)">💥 答錯了！</span> 這是錯的，因為 <strong>${badNum}</strong> 超過 255 了。`;
+            }
+        }
+    }
+
+    /* --- 功能 6: 自我檢測提示 --- */
+    function toggleHint(id) {
+        const hint = document.getElementById(id);
+        hint.style.display = (hint.style.display === 'block') ? 'none' : 'block';
+    }
+
+    /* --- 功能 7: 全部重置 --- */
+    function resetAll() {
+        // 重置題目 26
+        document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('correct', 'wrong'));
+        document.getElementById('answerFeedback').innerHTML = "";
+
+        // 重置原理區
+        document.getElementById('binaryInfo').style.display = 'none';
+
+        // 重置檢查器
+        document.getElementById('customIpInput').value = "266.140.32.103";
+        validateIP();
+
+        // 重置陷阱卡 (恢復顯示)
+        document.querySelectorAll('.trap-card').forEach(card => {
+            card.style.display = 'block';
+            card.style.opacity = '1';
+        });
+
+        // 重置測驗
+        generateQuiz();
+
+        // 重置提示
+        document.querySelectorAll('.hint-box').forEach(box => box.style.display = 'none');
+        
+        alert("頁面已重置，讓我們重新複習一次！");
+    }
+</script>
+
+</body>
+</html>

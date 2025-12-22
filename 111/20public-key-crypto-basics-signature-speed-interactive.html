@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高中資訊科：題目 20 公開金鑰密碼系統解析</title>
+    <style>
+        /* * CSS reset 與 基礎設定 
+         * 使用系統字體，確保中文顯示正常
+         */
+        :root {
+            --primary-color: #2c3e50; /* 深藍色 - 專業感 */
+            --accent-color: #3498db;  /* 亮藍色 - 重點 */
+            --success-color: #27ae60; /* 綠色 - 正確 */
+            --error-color: #c0392b;   /* 紅色 - 錯誤 */
+            --bg-color: #f4f7f6;      /* 淺灰背景 */
+            --card-bg: #ffffff;
+            --text-color: #333333;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Microsoft JhengHei", "Segoe UI", Roboto, sans-serif;
+            line-height: 1.6;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        /* 版面容器 */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        /* 標題區 */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--bg-color);
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+        }
+
+        h2 {
+            color: var(--accent-color);
+            border-left: 5px solid var(--accent-color);
+            padding-left: 10px;
+            margin-top: 30px;
+            font-size: 1.4rem;
+        }
+
+        h3 {
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            margin-top: 20px;
+        }
+
+        /* 重點強調與解釋文字 */
+        .highlight {
+            font-weight: bold;
+            color: var(--error-color);
+        }
+
+        .term {
+            background-color: #e8f4fd;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: var(--primary-color);
+            font-weight: bold;
+            cursor: help;
+            border-bottom: 1px dashed var(--accent-color);
+        }
+
+        .note-box {
+            background-color: #fff8e1;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+            font-size: 0.95rem;
+        }
+
+        /* 題目區塊 */
+        .question-box {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+        }
+
+        .question-option {
+            background-color: rgba(255,255,255,0.1);
+            margin: 5px 0;
+            padding: 8px 12px;
+            border-radius: 4px;
+            list-style: none;
+        }
+
+        /* 互動區塊共通樣式 */
+        .interactive-area {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 15px;
+            background-color: #fafafa;
+        }
+
+        /* (A) 兩把鑰匙互動 */
+        .tab-container {
+            display: flex;
+            margin-bottom: 15px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            background: #e0e0e0;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+        }
+
+        .tab-btn.active {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .key-demo-stage {
+            text-align: center;
+            padding: 20px;
+            min-height: 180px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .key-icon {
+            font-size: 3rem;
+            margin: 10px;
+        }
+
+        .arrow {
+            font-size: 2rem;
+            color: #bdc3c7;
+        }
+
+        /* (B) 比較表 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .hidden-hint {
+            filter: blur(4px);
+            transition: filter 0.3s;
+            cursor: pointer;
+        }
+        
+        .hidden-hint.revealed {
+            filter: blur(0);
+        }
+
+        .toggle-btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        /* (C) 速度滑桿 */
+        .slider-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        input[type=range] {
+            width: 80%;
+            height: 10px;
+            border-radius: 5px;
+            background: #d3d3d3;
+            outline: none;
+        }
+
+        .speed-bars {
+            margin-top: 15px;
+        }
+
+        .bar-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .bar-track {
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            height: 20px;
+            width: 100%;
+            margin-bottom: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 5px;
+            color: white;
+            font-size: 0.8rem;
+        }
+
+        .symmetric-fill { background-color: var(--success-color); }
+        .asymmetric-fill { background-color: var(--error-color); }
+
+        /* (D) 選項解析按鈕 */
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .quiz-btn {
+            padding: 15px;
+            font-size: 1.1rem;
+            border: 2px solid var(--accent-color);
+            background: white;
+            color: var(--accent-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quiz-btn:hover {
+            background: #eef7ff;
+        }
+
+        .quiz-btn.correct {
+            background: var(--success-color);
+            color: white;
+            border-color: var(--success-color);
+        }
+
+        .quiz-btn.wrong {
+            background: var(--error-color);
+            color: white;
+            border-color: var(--error-color);
+        }
+
+        .feedback-box {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none; /* 預設隱藏 */
+        }
+
+        /* (E) 陷阱卡 */
+        .trap-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .trap-card {
+            background: #fff0f0;
+            border: 1px solid #ffcccc;
+            padding: 15px;
+            border-radius: 8px;
+            position: relative;
+            transition: opacity 0.5s;
+        }
+
+        .trap-card.solved {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .trap-title {
+            font-weight: bold;
+            color: var(--error-color);
+            margin-bottom: 5px;
+        }
+
+        /* (F) 自我檢測 */
+        .self-check-item {
+            border-bottom: 1px solid #eee;
+            padding: 15px 0;
+        }
+
+        .hint-btn {
+            background: none;
+            border: 1px solid #999;
+            color: #666;
+            padding: 2px 8px;
+            font-size: 0.8rem;
+            border-radius: 12px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        .hint-text {
+            display: none;
+            color: var(--accent-color);
+            font-size: 0.9rem;
+            margin-top: 5px;
+            font-weight: bold;
+        }
+
+        /* 底部重置區 */
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            border-top: 2px solid #eee;
+            padding-top: 20px;
+        }
+
+        .reset-btn {
+            background-color: var(--text-color);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        /* 手機版優化 */
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            .options-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>高中資訊科：公開金鑰密碼系統</h1>
+        <p>互動式講義 - 題目 20 特別解析篇</p>
+    </header>
+
+    <!-- 1. 題目展示區 -->
+    <section>
+        <h2>🎯 本日重點試題</h2>
+        <div class="question-box">
+            <div><strong>題目 20：</strong>關於公開金鑰密碼系統的特性，下列敘述何者正確？</div>
+            <ul style="padding-left: 0;">
+                <li class="question-option">(A) 加密金鑰公開，私密金鑰保持秘密</li>
+                <li class="question-option">(B) 加密金鑰與私密金鑰相同</li>
+                <li class="question-option">(C) 加解密速度快</li>
+                <li class="question-option">(D) 不能應用於數位簽章</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- 2. 觀念導讀 -->
+    <section>
+        <h2>📚 觀念導讀：先搞懂關鍵字</h2>
+        <div class="note-box">
+            <p>
+                <span class="term" title="把資料變成亂碼，只有拿到對的鑰匙才看得懂">密碼系統</span>：
+                就像把信放進保險箱，沒有鑰匙的人打不開。
+            </p>
+            <p>
+                <span class="term" title="有兩把不同的鑰匙：一把公開、一把自己留著">公開金鑰加密</span>（又稱非對稱式）：
+                你的保險箱有兩把不同的鑰匙，一把叫做 <span class="term" title="可以公開給大家，用來加密或驗證">公開金鑰 (Public Key)</span>，大家都可以拿；另一把是 <span class="term" title="自己保管，用來解密或簽章">私密金鑰 (Private Key)</span>，只有你有，絕對不能給別人！
+            </p>
+            <p>
+                相對於傳統的 <span class="term" title="只有一把鑰匙，加密解密同一把">對稱式加密</span>，公開金鑰比較慢，但解決了「鑰匙怎麼安全交給對方」的問題。
+            </p>
+        </div>
+    </section>
+
+    <!-- 3. 互動演示：加密 vs 簽章 -->
+    <section>
+        <h2>🔑 互動演示：兩把鑰匙怎麼用？</h2>
+        <p>A 同學要把訊息傳給 B 同學，或者 B 同學要證明信是他寫的。請切換頁籤看看：</p>
+        
+        <div class="interactive-area">
+            <div class="tab-container">
+                <button class="tab-btn active" onclick="switchKeyDemo('encrypt')">情境 1：加密傳訊 (保密)</button>
+                <button class="tab-btn" onclick="switchKeyDemo('sign')">情境 2：數位簽章 (認證)</button>
+            </div>
+
+            <div id="demo-content" class="key-demo-stage">
+                <!-- 內容會由 JS 動態產生，但預設為加密 -->
+            </div>
+            <div id="demo-narrative" style="text-align: center; color: var(--primary-color); font-weight: bold; margin-top: 10px;">
+                <!-- 旁白 -->
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. 比較表 -->
+    <section>
+        <h2>📊 對稱式 vs 公開金鑰 超級比一比</h2>
+        <p>點擊按鈕來顯示/隱藏重點提示：</p>
+        <button class="toggle-btn" onclick="toggleTableHints()">👁️ 顯示/隱藏提示</button>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>比較項目</th>
+                    <th>對稱式加密 (傳統)</th>
+                    <th>公開金鑰加密 (非對稱)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>鑰匙數量</td>
+                    <td>1 把 (雙方共用)</td>
+                    <td>2 把 (公鑰 + 私鑰)</td>
+                </tr>
+                <tr>
+                    <td>鑰匙關係</td>
+                    <td><span class="hidden-hint">完全相同</span></td>
+                    <td><span class="hidden-hint">配對但不同</span></td>
+                </tr>
+                <tr>
+                    <td>運算速度</td>
+                    <td style="color: var(--success-color);">快 (結構簡單)</td>
+                    <td style="color: var(--error-color);">慢 (數學運算複雜)</td>
+                </tr>
+                <tr>
+                    <td>主要用途</td>
+                    <td><span class="hidden-hint">加密大量資料</span></td>
+                    <td><span class="hidden-hint">金鑰交換、數位簽章</span></td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="note-box" style="margin-top: 10px;">
+            <strong>結論：</strong>實務上常使用「混合模式」：先用<span class="term" title="用公鑰安全交換一把對稱鑰匙，再用對稱加密大量資料">金鑰交換</span>傳遞一把對稱金鑰，再用那把對稱金鑰來傳送大檔案（因為比較快！）。
+        </div>
+    </section>
+
+    <!-- 5. 速度模擬 -->
+    <section>
+        <h2>🏎️ 速度大車拚：為什麼不全程用公開金鑰？</h2>
+        <div class="interactive-area">
+            <div class="slider-container">
+                <label for="dataSize">模擬資料量大小 (MB)：<span id="sizeVal">5</span></label><br>
+                <input type="range" id="dataSize" min="1" max="10" value="5" step="1">
+            </div>
+
+            <div class="speed-bars">
+                <div class="bar-label">
+                    <span>對稱式加密 (AES)</span>
+                    <span id="symTimeText">處理時間短</span>
+                </div>
+                <div class="bar-track">
+                    <div id="symBar" class="bar-fill symmetric-fill" style="width: 10%;">咻!</div>
+                </div>
+
+                <div class="bar-label">
+                    <span>公開金鑰加密 (RSA)</span>
+                    <span id="asymTimeText">處理時間長</span>
+                </div>
+                <div class="bar-track">
+                    <div id="asymBar" class="bar-fill asymmetric-fill" style="width: 50%;">運算中...</div>
+                </div>
+            </div>
+            
+            <p id="speed-conclusion" style="text-align: center; color: var(--accent-color); font-weight: bold;">
+                拖動滑桿看看！資料越大，公開金鑰慢得越明顯。
+            </p>
+        </div>
+    </section>
+
+    <!-- 6. 解題區 -->
+    <section>
+        <h2>📝 題目 20 解析：換你選選看</h2>
+        <p>關於公開金鑰密碼系統的特性，下列敘述何者正確？</p>
+        <div class="options-grid">
+            <button class="quiz-btn" onclick="checkAnswer('A', this)">(A) 加密金鑰公開，私密金鑰保持秘密</button>
+            <button class="quiz-btn" onclick="checkAnswer('B', this)">(B) 加密金鑰與私密金鑰相同</button>
+            <button class="quiz-btn" onclick="checkAnswer('C', this)">(C) 加解密速度快</button>
+            <button class="quiz-btn" onclick="checkAnswer('D', this)">(D) 不能應用於數位簽章</button>
+        </div>
+        
+        <div id="feedback-area" class="feedback-box">
+            <!-- JS 動態填入解析 -->
+        </div>
+    </section>
+
+    <!-- 7. 陷阱卡 -->
+    <section>
+        <h2>⚠️ 考試常見陷阱卡 (一定要會!)</h2>
+        <p>請閱讀並勾選「我懂了」，把陷阱消除！</p>
+        <div class="trap-grid">
+            <div class="trap-card" id="trap1">
+                <div class="trap-title">陷阱 1：比較高級所以比較快？</div>
+                <p>錯！公開金鑰數學運算超複雜，速度比對稱式慢很多。</p>
+                <label><input type="checkbox" onchange="solveTrap('trap1')"> 我懂了，公鑰其實很慢</label>
+            </div>
+            <div class="trap-card" id="trap2">
+                <div class="trap-title">陷阱 2：只有加密才用公鑰？</div>
+                <p>錯！它還可以用來做「數位簽章」驗證身分。</p>
+                <label><input type="checkbox" onchange="solveTrap('trap2')"> 我懂了，也能簽章</label>
+            </div>
+            <div class="trap-card" id="trap3">
+                <div class="trap-title">陷阱 3：公鑰私鑰是一樣的？</div>
+                <p>錯！如果一樣就是「對稱式」了。非對稱就是兩把不一樣。</p>
+                <label><input type="checkbox" onchange="solveTrap('trap3')"> 我懂了，兩把不一樣</label>
+            </div>
+        </div>
+    </section>
+
+    <!-- 8. 自我檢測 -->
+    <section>
+        <h2>🧠 自我檢測 (想一想，不給標準答案)</h2>
+        <div class="self-check-item">
+            <strong>Q1. 為什麼不用公開金鑰直接加密整部 4K 電影傳給朋友？</strong>
+            <button class="hint-btn" onclick="toggleHint('h1')">顯示提示</button>
+            <div id="h1" class="hint-text">提示：想想上面的滑桿，運算速度會發生什麼悲劇？</div>
+        </div>
+        <div class="self-check-item">
+            <strong>Q2. 數位簽章為什麼要用私鑰簽，不能用公鑰簽？</strong>
+            <button class="hint-btn" onclick="toggleHint('h2')">顯示提示</button>
+            <div id="h2" class="hint-text">提示：公鑰大家都有，如果用公鑰簽，能證明是「只有你」做的嗎？</div>
+        </div>
+        <div class="self-check-item">
+            <strong>Q3. 我們上網用的 HTTPS，公開金鑰與對稱加密各扮演什麼角色？</strong>
+            <button class="hint-btn" onclick="toggleHint('h3')">顯示提示</button>
+            <div id="h3" class="hint-text">提示：先用公鑰安全地「交換」鑰匙，接著用對稱加密「傳送」網頁內容。</div>
+        </div>
+    </section>
+
+    <footer>
+        <button class="reset-btn" onclick="resetAll()">🔄 全部重置，重新複習</button>
+        <p style="font-size: 0.8rem; color: #999; margin-top: 10px;">Created for High School CS Education</p>
+    </footer>
+
+</div>
+
+<script>
+    /* * JavaScript 邏輯控制區
+     * 包含：互動演示切換、滑桿計算、選項判斷、陷阱卡互動、重置功能
+     */
+
+    // --- (A) 兩把鑰匙互動示意 ---
+    function switchKeyDemo(mode) {
+        const contentDiv = document.getElementById('demo-content');
+        const narrativeDiv = document.getElementById('demo-narrative');
+        const btns = document.querySelectorAll('.tab-btn');
+        
+        // 更新按鈕樣式
+        btns.forEach(btn => btn.classList.remove('active'));
+        if(mode === 'encrypt') btns[0].classList.add('active');
+        else btns[1].classList.add('active');
+
+        // 更新內容與旁白
+        if(mode === 'encrypt') {
+            contentDiv.innerHTML = `
+                <div style="font-size: 1.2rem; display: flex; align-items: center; gap: 10px;">
+                    <div>
+                        <div>🧑 A同學</div>
+                        <div style="font-size: 0.8rem; color: #666;">持有訊息</div>
+                    </div>
+                    <span class="arrow">➕</span>
+                    <div style="color: var(--success-color);">
+                        <div class="key-icon">🔑</div>
+                        <div>B 的公開金鑰</div>
+                    </div>
+                    <span class="arrow">➡️</span>
+                    <div style="border: 2px dashed #999; padding: 10px; border-radius: 5px;">
+                        <div class="key-icon">🔒</div>
+                        <div>加密密文</div>
+                    </div>
+                    <span class="arrow">➡️</span>
+                    <div>
+                        <div class="key-icon">🗝️</div>
+                        <div>B 的私密金鑰</div>
+                        <div style="font-size: 0.8rem; color: #666;">(只有 B 有)</div>
+                    </div>
+                </div>
+            `;
+            narrativeDiv.innerHTML = `情境：A 要寫情書給 B (怕被別人偷看)<br>
+            <span style="color: var(--accent-color);">
+            A 用 B 的公鑰上鎖 🔒 → 只有持有私鑰的 B 能解開 🗝️
+            </span>`;
+        } else {
+            contentDiv.innerHTML = `
+                <div style="font-size: 1.2rem; display: flex; align-items: center; gap: 10px;">
+                    <div>
+                        <div>🧑 B同學</div>
+                        <div style="font-size: 0.8rem; color: #666;">要證明身分</div>
+                    </div>
+                    <span class="arrow">➕</span>
+                    <div style="color: var(--error-color);">
+                        <div class="key-icon">🗝️</div>
+                        <div>B 的私密金鑰</div>
+                    </div>
+                    <span class="arrow">➡️</span>
+                    <div style="border: 2px solid var(--accent-color); padding: 10px; border-radius: 5px;">
+                        <div class="key-icon">📜</div>
+                        <div>有簽章的信</div>
+                    </div>
+                    <span class="arrow">➡️</span>
+                    <div>
+                        <div class="key-icon">🔑</div>
+                        <div>B 的公開金鑰</div>
+                        <div style="font-size: 0.8rem; color: #666;">(大家都有)</div>
+                    </div>
+                </div>
+            `;
+            narrativeDiv.innerHTML = `情境：B 要發布公告 (證明真的是 B 發的)<br>
+            <span style="color: var(--accent-color);">
+            B 用私鑰簽名 ✍️ → 大家用 B 的公鑰驗證 ✅
+            </span>`;
+        }
+    }
+
+    // --- (B) 比較表提示切換 ---
+    function toggleTableHints() {
+        const hints = document.querySelectorAll('.hidden-hint');
+        hints.forEach(hint => {
+            hint.classList.toggle('revealed');
+        });
+    }
+
+    // --- (C) 速度滑桿邏輯 ---
+    const slider = document.getElementById('dataSize');
+    const sizeVal = document.getElementById('sizeVal');
+    const symBar = document.getElementById('symBar');
+    const asymBar = document.getElementById('asymBar');
+    
+    slider.addEventListener('input', function() {
+        const val = parseInt(this.value);
+        sizeVal.innerText = val;
+        
+        // 模擬計算：對稱式隨資料量線性微增，非對稱式指數暴增
+        // 這裡僅為視覺效果，非真實運算
+        let symWidth = 10 + (val * 2); 
+        let asymWidth = 10 + (val * 9); 
+
+        if (asymWidth > 100) asymWidth = 100;
+
+        symBar.style.width = symWidth + '%';
+        asymBar.style.width = asymWidth + '%';
+        
+        // 改變文字
+        if (val > 7) {
+            document.getElementById('speed-conclusion').innerText = "資料量太大了！公開金鑰跑不動啦！(實務上會改用混合模式)";
+            asymBar.innerText = "超級慢...";
+            asymBar.style.backgroundColor = "#c0392b"; // 深紅
+        } else {
+            document.getElementById('speed-conclusion').innerText = "拖動滑桿看看！資料越大，公開金鑰慢得越明顯。";
+            asymBar.innerText = "運算中...";
+            asymBar.style.backgroundColor = "#e74c3c"; // 一般紅
+        }
+    });
+
+    // --- (D) 選項解析 ---
+    function checkAnswer(option, btnElement) {
+        // 重置所有按鈕樣式
+        document.querySelectorAll('.quiz-btn').forEach(b => {
+            b.classList.remove('correct', 'wrong');
+        });
+
+        const feedbackBox = document.getElementById('feedback-area');
+        feedbackBox.style.display = 'block';
+
+        if (option === 'A') {
+            btnElement.classList.add('correct');
+            feedbackBox.style.backgroundColor = '#d4edda';
+            feedbackBox.style.color = '#155724';
+            feedbackBox.innerHTML = `
+                <strong>✅ 答對了！(A) 是正確答案。</strong><br>
+                這就是公開金鑰系統的核心定義：一把鎖給別人用（公開），鑰匙自己留著（私密）。
+            `;
+        } else {
+            btnElement.classList.add('wrong');
+            feedbackBox.style.backgroundColor = '#f8d7da';
+            feedbackBox.style.color = '#721c24';
+            
+            let explanation = "";
+            switch(option) {
+                case 'B': explanation = "錯。如果兩把相同，那就是「對稱式加密」了。"; break;
+                case 'C': explanation = "錯。公開金鑰因為數學運算複雜，速度比對稱式「慢」很多。"; break;
+                case 'D': explanation = "錯。公開金鑰可以做數位簽章（私鑰簽、公鑰驗）。"; break;
+            }
+            feedbackBox.innerHTML = `<strong>❌ 答錯了！</strong><br>${explanation}`;
+        }
+    }
+
+    // --- (E) 陷阱卡消除 ---
+    function solveTrap(id) {
+        const card = document.getElementById(id);
+        const checkbox = card.querySelector('input');
+        
+        if (checkbox.checked) {
+            card.classList.add('solved');
+        } else {
+            card.classList.remove('solved');
+        }
+    }
+
+    // --- (F) 自我檢測提示 ---
+    function toggleHint(id) {
+        const hint = document.getElementById(id);
+        if (hint.style.display === 'block') {
+            hint.style.display = 'none';
+        } else {
+            hint.style.display = 'block';
+        }
+    }
+
+    // --- 全局重置 ---
+    function resetAll() {
+        // 1. 重置 Demo
+        switchKeyDemo('encrypt');
+        
+        // 2. 重置比較表
+        document.querySelectorAll('.hidden-hint').forEach(h => h.classList.remove('revealed'));
+        
+        // 3. 重置滑桿
+        slider.value = 5;
+        slider.dispatchEvent(new Event('input'));
+        
+        // 4. 重置測驗
+        document.querySelectorAll('.quiz-btn').forEach(b => b.classList.remove('correct', 'wrong'));
+        document.getElementById('feedback-area').style.display = 'none';
+        
+        // 5. 重置陷阱卡
+        document.querySelectorAll('.trap-card').forEach(c => {
+            c.classList.remove('solved');
+            c.querySelector('input').checked = false;
+        });
+
+        // 6. 重置提示
+        document.querySelectorAll('.hint-text').forEach(h => h.style.display = 'none');
+
+        // 滾動回頂部
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // 初始化
+    switchKeyDemo('encrypt');
+</script>
+
+</body>
+</html>

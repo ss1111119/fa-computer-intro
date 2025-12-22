@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電腦概論 - 複選題 44：CPU 的組成單元</title>
+    <style>
+        /* --- 全域設定 --- */
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #e74c3c; /* 重點紅 */
+            --highlight-color: #f1c40f; /* 螢光筆黃 */
+            --success-color: #27ae60;
+            --bg-color: #fdfbf7; /* 仿講義紙張色 */
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --border-radius: 12px;
+            --box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1, h2, h3 {
+            color: var(--primary-color);
+            text-align: center;
+        }
+
+        h1 {
+            border-bottom: 3px solid var(--accent-color);
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+
+        /* --- 區塊通用樣式 --- */
+        .section-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: var(--box-shadow);
+            border: 1px solid #ddd;
+        }
+
+        .badge {
+            background: var(--accent-color);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+
+        /* --- 題目區 --- */
+        .question-box {
+            background: #eef2f3;
+            border-left: 5px solid var(--primary-color);
+            padding: 20px;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        .options-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 15px;
+        }
+
+        .options-list li {
+            margin: 8px 0;
+            padding: 8px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 5px;
+        }
+
+        /* --- 核心觀念區 (重點筆記) --- */
+        .concept-highlight {
+            background-color: #fff9c4; /* 黃色螢光筆底色 */
+            padding: 5px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .formula-box {
+            text-align: center;
+            font-size: 2em;
+            color: var(--accent-color);
+            font-weight: 900;
+            margin: 20px 0;
+            padding: 20px;
+            border: 3px dashed var(--accent-color);
+            border-radius: var(--border-radius);
+            background: #fff;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        /* --- 架構示意圖互動 --- */
+        .cpu-architecture {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .cpu-box {
+            border: 4px solid var(--primary-color);
+            border-radius: 10px;
+            padding: 20px;
+            width: 100%;
+            background: #e8f6f3;
+            position: relative;
+        }
+
+        .cpu-label {
+            position: absolute;
+            top: -15px;
+            left: 20px;
+            background: var(--primary-color);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .internal-units {
+            display: flex;
+            justify-content: space-around;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .unit-btn {
+            flex: 1;
+            padding: 20px;
+            border: 2px solid #3498db;
+            background: white;
+            color: #3498db;
+            font-weight: bold;
+            font-size: 1.2em;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .unit-btn:hover {
+            background: #3498db;
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .info-display {
+            width: 100%;
+            min-height: 60px;
+            background: #34495e;
+            color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1em;
+        }
+
+        /* --- 拖放遊戲區 --- */
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .draggable-items {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            min-height: 60px;
+        }
+
+        .draggable {
+            background: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: move; /* 電腦版游標 */
+            user-select: none;
+            font-weight: bold;
+            box-shadow: 0 3px 5px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+        }
+
+        .draggable:active {
+            transform: scale(1.1);
+        }
+
+        .drop-zones {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .drop-zone {
+            flex: 1;
+            border: 3px dashed #bdc3c7;
+            border-radius: 10px;
+            min-height: 150px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: background 0.3s;
+        }
+
+        .drop-zone h4 {
+            margin-top: 0;
+            color: #7f8c8d;
+        }
+
+        .drop-zone.hovered {
+            background: #ecf0f1;
+            border-color: #3498db;
+        }
+
+        /* --- 複選題作答區 --- */
+        .quiz-option {
+            display: block;
+            margin: 10px 0;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .quiz-option:hover {
+            background: #f9f9f9;
+        }
+
+        .quiz-option input {
+            margin-right: 10px;
+            transform: scale(1.5);
+        }
+
+        .action-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1em;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-top: 20px;
+            width: 100%;
+            transition: background 0.3s;
+        }
+
+        .action-btn:hover {
+            background: #34495e;
+        }
+
+        .result-box {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            display: none;
+        }
+
+        .result-correct {
+            background: #d5f5e3;
+            color: #1e8449;
+            border: 1px solid #1e8449;
+        }
+
+        .result-wrong {
+            background: #fadbd8;
+            color: #c0392b;
+            border: 1px solid #c0392b;
+        }
+
+        /* --- 選項解析與陷阱卡 --- */
+        .analysis-btn {
+            background: white;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: left;
+            width: 100%;
+        }
+        
+        .analysis-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .trap-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .trap-card {
+            background: #fff0f0;
+            border-left: 5px solid var(--accent-color);
+            padding: 15px;
+            border-radius: 8px;
+            position: relative;
+            cursor: pointer;
+            transition: opacity 0.5s;
+        }
+
+        .trap-card.resolved {
+            opacity: 0.2;
+            pointer-events: none;
+        }
+
+        /* --- 自我檢測 --- */
+        .self-check-item {
+            margin-bottom: 20px;
+            border-bottom: 1px dashed #ddd;
+            padding-bottom: 10px;
+        }
+
+        .hint-text {
+            color: #2980b9;
+            margin-top: 10px;
+            font-style: italic;
+            display: none;
+            background: #eaf2f8;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        /* --- 重置按鈕 --- */
+        .reset-section {
+            text-align: center;
+            margin-top: 40px;
+            margin-bottom: 20px;
+        }
+        
+        .reset-btn {
+            background: transparent;
+            color: #7f8c8d;
+            border: 1px solid #7f8c8d;
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        
+        .reset-btn:hover {
+            background: #7f8c8d;
+            color: white;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- 標題 -->
+    <h1>電腦概論 <span style="font-size:0.6em; color:#7f8c8d;">@互動式講義</span></h1>
+
+    <!-- 第一區：題目呈現 -->
+    <div class="section-card">
+        <h2 style="text-align: left;"><span class="badge">複選題 44</span>電腦 CPU 的組成單元包括？</h2>
+        <div class="question-box">
+            <p>請選出所有正確選項（本題可複選）：</p>
+            <ul class="options-list">
+                <li>(A) ACU</li>
+                <li>(B) CU</li>
+                <li>(C) ALU</li>
+                <li>(D) MU</li>
+                <li>(E) OS</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 第二區：核心觀念教學 -->
+    <div class="section-card">
+        <h3>🎓 老師的觀念筆記</h3>
+        <p>各位同學，講到 CPU（中央處理器，電腦的大腦），一定要記得它的核心結構只有兩部分！其他的像是記憶體、作業系統，都是它的助手或管理者，住在外面。</p>
+        
+        <div class="formula-box">
+            🔥 秒殺口訣：CPU = CU + ALU
+        </div>
+
+        <p>
+            <span class="concept-highlight">1. CU (Control Unit) 控制單元</span>：就像交通警察或樂團指揮，負責指揮交通、解碼指令。<br>
+            <span class="concept-highlight">2. ALU (Arithmetic Logic Unit) 算術邏輯單元</span>：就像數學天才，負責加減乘除跟比大小。
+        </p>
+
+        <!-- CPU 架構圖解互動 -->
+        <div class="cpu-architecture">
+            <div class="cpu-box">
+                <span class="cpu-label">CPU 內部 (硬體)</span>
+                <div class="internal-units">
+                    <button class="unit-btn" onclick="showUnitInfo('CU')">CU<br><span style="font-size:0.6em">控制單元</span></button>
+                    <button class="unit-btn" onclick="showUnitInfo('ALU')">ALU<br><span style="font-size:0.6em">算術邏輯單元</span></button>
+                </div>
+            </div>
+            
+            <div style="display:flex; width:100%; gap:10px;">
+                <button class="unit-btn" style="border-color:#95a5a6; color:#7f8c8d;" onclick="showUnitInfo('MU')">MU<br><span style="font-size:0.6em">記憶體 (外部)</span></button>
+                <button class="unit-btn" style="border-color:#95a5a6; color:#7f8c8d;" onclick="showUnitInfo('OS')">OS<br><span style="font-size:0.6em">作業系統 (軟體)</span></button>
+            </div>
+
+            <div id="unit-info-display" class="info-display">
+                👆 點擊上方方塊，查看各單元功能詳解
+            </div>
+        </div>
+    </div>
+
+    <!-- 第三區：拖拉互動遊戲 -->
+    <div class="section-card">
+        <h3>✋ 動手做：誰在 CPU 裡面？</h3>
+        <p style="text-align:center; margin-bottom:15px;">請將下方的卡片拖拉到正確的框框中（手機版請先點卡片，再點框框）</p>
+        
+        <div class="game-container">
+            <div class="draggable-items" id="drag-source">
+                <!-- draggable="true" 是 HTML5 DnD 屬性 -->
+                <div class="draggable" draggable="true" data-type="inside" id="card-cu">CU</div>
+                <div class="draggable" draggable="true" data-type="inside" id="card-alu">ALU</div>
+                <div class="draggable" draggable="true" data-type="outside" id="card-mu">MU</div>
+                <div class="draggable" draggable="true" data-type="outside" id="card-os">OS</div>
+                <div class="draggable" draggable="true" data-type="fake" id="card-acu">ACU</div>
+            </div>
+
+            <div class="drop-zones">
+                <div class="drop-zone" id="zone-inside" data-target="inside">
+                    <h4>✅ CPU 組成單元</h4>
+                </div>
+                <div class="drop-zone" id="zone-outside" data-target="outside">
+                    <h4>❌ 非 CPU 組成單元</h4>
+                </div>
+            </div>
+            
+            <button class="action-btn" style="background:#f39c12;" onclick="checkDragGame()">檢查分類結果</button>
+            <div id="game-result" class="result-box"></div>
+        </div>
+    </div>
+
+    <!-- 第四區：正式作答 -->
+    <div class="section-card">
+        <h3>📝 隨堂測驗 (複選題 44)</h3>
+        <p class="badge" style="background:#e67e22; width:fit-content;">⚠️ 注意：本題為複選題</p>
+        
+        <form id="quiz-form">
+            <label class="quiz-option">
+                <input type="checkbox" name="option" value="A"> (A) ACU (非標準名稱)
+            </label>
+            <label class="quiz-option">
+                <input type="checkbox" name="option" value="B"> (B) CU (控制單元)
+            </label>
+            <label class="quiz-option">
+                <input type="checkbox" name="option" value="C"> (C) ALU (算術邏輯單元)
+            </label>
+            <label class="quiz-option">
+                <input type="checkbox" name="option" value="D"> (D) MU (記憶體單元)
+            </label>
+            <label class="quiz-option">
+                <input type="checkbox" name="option" value="E"> (E) OS (作業系統)
+            </label>
+        </form>
+
+        <button class="action-btn" onclick="submitQuiz()">送出答案</button>
+        <div id="quiz-result" class="result-box"></div>
+    </div>
+
+    <!-- 第五區：詳細解析與陷阱 -->
+    <div class="section-card">
+        <h3>🔍 選項大解析 (點擊查看)</h3>
+        <div id="analysis-area">
+            <button class="analysis-btn" onclick="showAnalysis('A')">(A) ACU：這是什麼？</button>
+            <div id="explain-A" class="hint-text" style="color:#c0392b;">❌ 錯誤。ACU 不是標準的 CPU 組成名稱，通常是考試用來混淆你的選項。</div>
+
+            <button class="analysis-btn" onclick="showAnalysis('B')">(B) CU：正確嗎？</button>
+            <div id="explain-B" class="hint-text" style="color:#1e8449; font-weight:bold;">✅ 正確！CU (Control Unit) 是控制單元，負責指揮協調。</div>
+
+            <button class="analysis-btn" onclick="showAnalysis('C')">(C) ALU：正確嗎？</button>
+            <div id="explain-C" class="hint-text" style="color:#1e8449; font-weight:bold;">✅ 正確！ALU (Arithmetic Logic Unit) 是算術邏輯單元，負責運算。</div>
+
+            <button class="analysis-btn" onclick="showAnalysis('D')">(D) MU：正確嗎？</button>
+            <div id="explain-D" class="hint-text" style="color:#c0392b;">❌ 錯誤。MU (Memory Unit) 是記憶體，它透過匯流排與 CPU 連接，但在 CPU 「外部」。</div>
+
+            <button class="analysis-btn" onclick="showAnalysis('E')">(E) OS：正確嗎？</button>
+            <div id="explain-E" class="hint-text" style="color:#c0392b;">❌ 錯誤。OS (Operating System) 是作業系統（如 Windows, iOS），它是「軟體」，CPU 是「硬體」。</div>
+        </div>
+
+        <h4 style="margin-top:30px;">🚧 常見考試陷阱 (點擊卡片清除陷阱)</h4>
+        <div class="trap-grid">
+            <div class="trap-card" onclick="resolveTrap(this)">
+                <strong>陷阱 1：看到 Unit 就選？</strong>
+                <p>MU 也有 Unit，但它是記憶體，不在 CPU 裡面喔！<br><span style="color:#2980b9; font-size:0.9em;">(點我懂了)</span></p>
+            </div>
+            <div class="trap-card" onclick="resolveTrap(this)">
+                <strong>陷阱 2：OS 很重要就是 CPU？</strong>
+                <p>OS 是軟體大總管，CPU 是硬體大腦，兩者不同國。<br><span style="color:#2980b9; font-size:0.9em;">(點我懂了)</span></p>
+            </div>
+            <div class="trap-card" onclick="resolveTrap(this)">
+                <strong>陷阱 3：ACU 好像聽過？</strong>
+                <p>那是拼湊出來的字，不要被騙了，標準只有 CU 跟 ALU。<br><span style="color:#2980b9; font-size:0.9em;">(點我懂了)</span></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 第六區：自我檢測 -->
+    <div class="section-card">
+        <h3>🤔 課後小省思</h3>
+        
+        <div class="self-check-item">
+            <p><strong>Q1: 為什麼 ALU 一定要搭配 CU？</strong></p>
+            <button onclick="toggleHint('hint1')" style="font-size:0.8em; padding:5px 10px;">顯示提示</button>
+            <div id="hint1" class="hint-text">
+                提示：如果只有計算機(ALU)但沒有人(CU)按按鍵，計算機自己會動嗎？CU 負責告訴 ALU 該做什麼運算。
+            </div>
+        </div>
+
+        <div class="self-check-item">
+            <p><strong>Q2: 考試看到 MU 或 Memory，要在「CPU 組成」這題選嗎？</strong></p>
+            <button onclick="toggleHint('hint2')" style="font-size:0.8em; padding:5px 10px;">顯示提示</button>
+            <div id="hint2" class="hint-text">
+                提示：千萬不要！記憶體是資料的倉庫，CPU 是加工廠。倉庫通常蓋在工廠旁邊，不在工廠裡面。
+            </div>
+        </div>
+    </div>
+
+    <!-- 重置 -->
+    <div class="reset-section">
+        <button class="reset-btn" onclick="resetAll()">🔄 全部重置 / 重新開始</button>
+    </div>
+
+</div>
+
+<script>
+    /* --- 功能解說互動 --- */
+    function showUnitInfo(unit) {
+        const display = document.getElementById('unit-info-display');
+        let text = "";
+        let color = "#fff";
+        
+        switch(unit) {
+            case 'CU':
+                text = "<strong>CU (控制單元)</strong><br>角色：交通警察 👮‍♂️<br>功能：解碼指令、指揮資料流向、控制 CPU 運作節奏。";
+                color = "#e74c3c"; // Red highlight
+                break;
+            case 'ALU':
+                text = "<strong>ALU (算術邏輯單元)</strong><br>角色：數學天才 🧮<br>功能：算術運算 (+ - * /) 與 邏輯運算 (AND, OR, NOT, 比較大小)。";
+                color = "#27ae60"; // Green highlight
+                break;
+            case 'MU':
+                text = "<strong>MU (記憶體單元)</strong><br>角色：倉庫 📦<br>注意：它在 CPU <strong>外部</strong>！負責暫存 CPU 要用的資料與程式。";
+                color = "#7f8c8d";
+                break;
+            case 'OS':
+                text = "<strong>OS (作業系統)</strong><br>角色：經理 👨‍💼<br>注意：它是<strong>軟體</strong>！負責管理電腦硬體資源。";
+                color = "#7f8c8d";
+                break;
+        }
+        display.innerHTML = text;
+        display.style.borderLeft = `5px solid ${color}`;
+    }
+
+    /* --- 拖放遊戲邏輯 (支援簡易點擊與原生拖放) --- */
+    let selectedItem = null;
+    const draggables = document.querySelectorAll('.draggable');
+    const dropZones = document.querySelectorAll('.drop-zone');
+    const sourceZone = document.getElementById('drag-source');
+
+    // 1. 初始化拖拉事件
+    draggables.forEach(draggable => {
+        // Desktop Drag Start
+        draggable.addEventListener('dragstart', () => {
+            draggable.classList.add('dragging');
+        });
+        draggable.addEventListener('dragend', () => {
+            draggable.classList.remove('dragging');
+        });
+
+        // Mobile/Click Interaction
+        draggable.addEventListener('click', () => {
+            if(selectedItem) {
+                selectedItem.style.border = "none";
+            }
+            selectedItem = draggable;
+            draggable.style.border = "2px solid #333";
+        });
+    });
+
+    // 2. 初始化放置區事件
+    dropZones.forEach(zone => {
+        zone.addEventListener('dragover', e => {
+            e.preventDefault(); // 允許放置
+            zone.classList.add('hovered');
+        });
+
+        zone.addEventListener('dragleave', () => {
+            zone.classList.remove('hovered');
+        });
+
+        zone.addEventListener('drop', e => {
+            e.preventDefault();
+            zone.classList.remove('hovered');
+            const draggable = document.querySelector('.dragging');
+            if (draggable) {
+                zone.appendChild(draggable);
+            }
+        });
+
+        // Mobile/Click Drop
+        zone.addEventListener('click', () => {
+            if (selectedItem) {
+                zone.appendChild(selectedItem);
+                selectedItem.style.border = "none";
+                selectedItem = null;
+            }
+        });
+    });
+
+    // 3. 檢查拖放結果
+    function checkDragGame() {
+        const insideZone = document.getElementById('zone-inside');
+        const outsideZone = document.getElementById('zone-outside');
+        const resultBox = document.getElementById('game-result');
+        
+        let correctCount = 0;
+        let errors = [];
+
+        // 檢查 "CPU 內部" 區
+        Array.from(insideZone.children).forEach(item => {
+            if(item.tagName === 'H4') return; // 跳過標題
+            if (item.id === 'card-cu' || item.id === 'card-alu') {
+                correctCount++;
+            } else {
+                errors.push(`❌ ${item.innerText} 不應該在 CPU 裡面！`);
+            }
+        });
+
+        // 檢查 "非 CPU" 區
+        Array.from(outsideZone.children).forEach(item => {
+            if(item.tagName === 'H4') return;
+            if (item.id === 'card-cu' || item.id === 'card-alu') {
+                errors.push(`❌ ${item.innerText} 應該在 CPU 裡面才對！`);
+            }
+        });
+        
+        // 檢查是否所有卡片都分類了
+        const sourceItems = document.getElementById('drag-source').querySelectorAll('.draggable');
+        if (sourceItems.length > 0) {
+            resultBox.innerHTML = "⚠️ 請先把所有卡片都分類完再檢查喔！";
+            resultBox.className = "result-box result-wrong";
+            resultBox.style.display = "block";
+            return;
+        }
+
+        if (errors.length === 0 && correctCount === 2) {
+            resultBox.innerHTML = "🎉 太棒了！你完全答對了！CPU 裡面真的只有 CU 和 ALU。";
+            resultBox.className = "result-box result-correct";
+        } else {
+            resultBox.innerHTML = "🤔 還有點小錯誤喔：<br>" + errors.join("<br>");
+            resultBox.className = "result-box result-wrong";
+        }
+        resultBox.style.display = "block";
+    }
+
+    /* --- 複選題作答邏輯 --- */
+    function submitQuiz() {
+        const checkboxes = document.querySelectorAll('input[name="option"]:checked');
+        const resultDiv = document.getElementById('quiz-result');
+        let selectedValues = [];
+        checkboxes.forEach((checkbox) => {
+            selectedValues.push(checkbox.value);
+        });
+
+        // 正確答案：B 和 C
+        const correctAnswers = ['B', 'C'];
+        
+        // 判斷邏輯
+        let isCorrect = false;
+        if (selectedValues.length === 2 && selectedValues.includes('B') && selectedValues.includes('C')) {
+            isCorrect = true;
+        }
+
+        resultDiv.style.display = "block";
+
+        if (isCorrect) {
+            resultDiv.className = "result-box result-correct";
+            resultDiv.innerHTML = "💯 完全正確！<br>你已經掌握了「CPU = CU + ALU」的精隨！";
+        } else {
+            resultDiv.className = "result-box result-wrong";
+            let msg = "👉 答案不對喔。<br>";
+            
+            if (selectedValues.includes('D') || selectedValues.includes('E')) {
+                msg += "💡 提示：MU(記憶體) 和 OS(軟體) 都在 CPU 外面。<br>";
+            }
+            if (selectedValues.includes('A')) {
+                msg += "💡 提示：ACU 不是標準名稱。<br>";
+            }
+            if (selectedValues.length < 2) {
+                msg += "💡 提示：這是「複選題」，通常有兩個以上的答案，CPU 有兩個核心單元喔！";
+            }
+            
+            resultDiv.innerHTML = msg;
+        }
+    }
+
+    /* --- 解析區互動 --- */
+    function showAnalysis(option) {
+        // 先隱藏所有
+        document.querySelectorAll('.hint-text').forEach(el => {
+            if(el.id.startsWith('explain')) el.style.display = 'none';
+        });
+        // 顯示被點擊的
+        const target = document.getElementById(`explain-${option}`);
+        if(target) target.style.display = 'block';
+    }
+
+    function resolveTrap(card) {
+        card.classList.add('resolved');
+        const p = card.querySelector('p');
+        p.innerHTML = "✅ 觀念已釐清！";
+    }
+
+    function toggleHint(id) {
+        const hint = document.getElementById(id);
+        hint.style.display = (hint.style.display === 'block') ? 'none' : 'block';
+    }
+
+    /* --- 重置功能 --- */
+    function resetAll() {
+        // 1. 重置遊戲
+        const source = document.getElementById('drag-source');
+        const draggables = document.querySelectorAll('.draggable');
+        draggables.forEach(d => {
+            d.style.border = "none";
+            source.appendChild(d); // 把所有卡片丟回原點
+        });
+        selectedItem = null;
+        document.getElementById('game-result').style.display = 'none';
+
+        // 2. 重置測驗
+        document.getElementById('quiz-form').reset();
+        document.getElementById('quiz-result').style.display = 'none';
+
+        // 3. 重置解析顯示
+        document.querySelectorAll('.hint-text').forEach(h => h.style.display = 'none');
+
+        // 4. 重置陷阱卡
+        document.querySelectorAll('.trap-card').forEach(c => {
+            c.classList.remove('resolved');
+            // 恢復原始文字需要重新載入或寫死文字，這裡簡單處理：僅移除樣式
+            // 若要精細還原文字較複雜，此處主要還原可點擊狀態
+        });
+        
+        // 5. 重置資訊顯示
+        document.getElementById('unit-info-display').innerHTML = "👆 點擊上方方塊，查看各單元功能詳解";
+        document.getElementById('unit-info-display').style.borderLeft = "none";
+
+        // 滾動到頂部
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+</script>
+
+</body>
+</html>

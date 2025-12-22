@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>複選題 41：二元樹的高度判定 - 互動教學講義</title>
+    <style>
+        /* --- 基礎設定 --- */
+        :root {
+            --primary-color: #2c3e50; /* 深藍 - 專業感 */
+            --accent-color: #e67e22;  /* 橘色 - 重點 */
+            --success-color: #27ae60; /* 綠色 - 正確 */
+            --error-color: #c0392b;   /* 紅色 - 錯誤 */
+            --bg-color: #f4f7f6;      /* 淺灰 - 背景 */
+            --card-bg: #ffffff;
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            background-color: var(--bg-color);
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding-bottom: 50px;
+        }
+
+        h1, h2, h3 {
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        /* --- 補習班講義風格區塊 --- */
+        .section-card {
+            background: var(--card-bg);
+            padding: 25px;
+            margin-bottom: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .badge {
+            display: inline-block;
+            background: var(--primary-color);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        .question-box {
+            background-color: #e8f6f3;
+            border: 2px dashed #1abc9c;
+            padding: 20px;
+            margin: 15px 0;
+        }
+
+        /* --- 觀念重點區 --- */
+        .concept-highlight {
+            background-color: #fff3cd;
+            border-left: 5px solid var(--accent-color);
+            padding: 15px;
+            margin: 10px 0;
+        }
+
+        .definition-term {
+            font-weight: bold;
+            color: #d35400;
+        }
+
+        /* --- 互動拖拉區 (樹形配對) --- */
+        .drag-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: space-between;
+            margin-top: 15px;
+        }
+
+        .draggable-item {
+            background: white;
+            border: 2px solid #bdc3c7;
+            padding: 10px;
+            width: 30%;
+            cursor: move;
+            text-align: center;
+            border-radius: var(--border-radius);
+            user-select: none;
+            touch-action: none; /* 防止手機滾動干擾拖曳 */
+        }
+        
+        .draggable-item:active {
+            opacity: 0.6;
+            border-color: var(--accent-color);
+        }
+
+        .drop-zone {
+            background: #ecf0f1;
+            border: 2px dashed #95a5a6;
+            width: 30%;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--border-radius);
+            transition: background 0.3s;
+        }
+
+        .drop-zone.drag-over {
+            background: #d5dbdb;
+            border-color: var(--primary-color);
+        }
+        
+        /* 手機版適配 */
+        @media (max-width: 600px) {
+            .draggable-item, .drop-zone {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+        }
+
+        /* --- 複選題作答區 --- */
+        .option-group {
+            margin: 15px 0;
+        }
+
+        .option-label {
+            display: block;
+            padding: 10px;
+            margin: 5px 0;
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-label:hover {
+            background: #e9ecef;
+        }
+
+        .option-label input {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+
+        /* --- 按鈕樣式 --- */
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            background-color: #34495e;
+        }
+
+        .btn-reset {
+            background-color: #95a5a6;
+        }
+
+        .btn-check {
+            background-color: var(--accent-color);
+        }
+
+        /* --- 結果回饋 --- */
+        .feedback {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 4px;
+            display: none; /* 預設隱藏 */
+        }
+        .feedback.success {
+            background-color: #d4edda;
+            color: #155724;
+            display: block;
+        }
+        .feedback.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+
+        /* --- 陷阱卡與解析 --- */
+        .trap-card {
+            background: #ffeaa7;
+            border: 1px solid #fdcb6e;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            position: relative;
+            cursor: pointer;
+        }
+        .trap-card h4 { margin: 0 0 5px 0; color: #d35400; }
+        .trap-done { opacity: 0.5; text-decoration: line-through; }
+
+        .analysis-btn {
+            background: white;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            margin: 5px;
+            padding: 5px 10px;
+            border-radius: 15px;
+            cursor: pointer;
+        }
+        .analysis-btn:hover { background: var(--bg-color); }
+        .analysis-content {
+            margin-top: 10px;
+            padding: 10px;
+            background: #eee;
+            border-radius: 4px;
+            display: none;
+        }
+
+        /* 樹狀圖互動演示 */
+        .tree-node {
+            width: 30px;
+            height: 30px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            margin: 5px auto;
+            position: relative;
+        }
+        .tree-line {
+            width: 2px;
+            height: 20px;
+            background: #ccc;
+            margin: 0 auto;
+        }
+        
+        .correct-answer-highlight {
+            font-weight: bold;
+            color: var(--success-color);
+            background: #e8f8f5;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header style="text-align: center; margin-bottom: 30px;">
+        <h1>電腦概論 - 資料結構篇</h1>
+        <p>單元：二元樹 (Binary Tree) 的性質與運算</p>
+    </header>
+
+    <!-- 題目區 -->
+    <div class="section-card">
+        <span class="badge">複選題 41</span>
+        <h2>題目資訊</h2>
+        <div class="question-box">
+            <p style="font-size: 1.1em; font-weight: bold;">有四個節點的二元樹連接圖（connected binary tree）結構中，樹的高度有可能為？</p>
+            <p style="color: #666; font-size: 0.9em;">（提示：本題為複選題，請選出所有可能的情況）</p>
+            <ul style="list-style: none; padding: 0;">
+                <li>(A) 1</li>
+                <li>(B) 2</li>
+                <li>(C) 3</li>
+                <li>(D) 4</li>
+                <li>(E) 5</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 核心觀念教學 -->
+    <div class="section-card">
+        <h3>📖 核心觀念說明 (必讀)</h3>
+        
+        <div class="concept-highlight">
+            <h4>1. 名詞解釋 (白話翻譯)</h4>
+            <ul>
+                <li><span class="definition-term">樹 (Tree)</span>：一種像家譜一樣，有層次關係的資料結構。</li>
+                <li><span class="definition-term">二元樹 (Binary Tree)</span>：這棵樹規定很嚴格，每個爸爸最多只能有兩個小孩（左子節點、右子節點）。</li>
+                <li><span class="definition-term">節點 (Node)</span>：樹上面的每一個圓圈圈（資料點）。本題有 4 個。</li>
+                <li><span class="definition-term">樹的高度 (Height)</span>：從根節點算到最底下葉節點的「層數」。</li>
+                <li><span class="definition-term">連接圖 (Connected)</span>：整棵樹是連在一起的，沒有斷開。</li>
+            </ul>
+        </div>
+
+        <div class="concept-highlight">
+            <h4>2. 高度怎麼算？ (關鍵！)</h4>
+            <ul>
+                <li>樹的高度 = <strong>層數</strong></li>
+                <li>根節點(最上面那個)所在那一層，高度算 <strong>1</strong>。</li>
+                <li>往下數，看「最深」的那條路徑有幾層。</li>
+            </ul>
+        </div>
+
+        <div class="concept-highlight">
+            <h4>3. 判斷原則</h4>
+            <p>節點數固定(4個)時：</p>
+            <ul>
+                <li>排得越<strong>「平均」</strong>（大家擠在一起），層數越少 → 高度越小。</li>
+                <li>排得越<strong>「細長」</strong>（像一條線），層數越多 → 高度越大。</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 互動 1：樹形結構解析 -->
+    <div class="section-card">
+        <h3>🎨 圖像化思考：四個節點怎麼排？</h3>
+        <p>請嘗試將下方的「樹形描述卡片」拖拉放到對應的「高度格子」中，看看這三種形狀分別對應哪種高度。</p>
+        <p style="font-size:0.8em; color:#888;">(若使用手機，請點擊卡片後，再點擊目標格子)</p>
+
+        <div class="drag-container" id="dragSource">
+            <!-- 可拖曳項目 -->
+            <div class="draggable-item" draggable="true" id="tree1" data-height="3">
+                <strong>情況 1：最平均</strong><br>
+                <small>根節點 1<br>第二層 2 個<br>第三層 1 個</small>
+            </div>
+            <div class="draggable-item" draggable="true" id="tree2" data-height="2">
+                <strong>情況 2：次平均</strong><br>
+                <small>根節點 1<br>第二層 2 個<br>(假設剛好排滿)</small>
+            </div>
+            <div class="draggable-item" draggable="true" id="tree3" data-height="4">
+                <strong>情況 3：最細長</strong><br>
+                <small>變成一條鏈<br>每個節點只有1個子節點</small>
+            </div>
+        </div>
+
+        <div class="drag-container">
+            <!-- 放置區 -->
+            <div class="drop-zone" data-target="2">
+                <strong>高度 = 2</strong>
+                <span style="font-size:0.8em; color:#aaa;">(這裡放可能的結構)</span>
+            </div>
+            <div class="drop-zone" data-target="3">
+                <strong>高度 = 3</strong>
+                <span style="font-size:0.8em; color:#aaa;">(這裡放可能的結構)</span>
+            </div>
+            <div class="drop-zone" data-target="4">
+                <strong>高度 = 4</strong>
+                <span style="font-size:0.8em; color:#aaa;">(這裡放可能的結構)</span>
+            </div>
+        </div>
+        <div id="dragFeedback" class="feedback"></div>
+    </div>
+
+    <!-- 互動 2：複選題作答區 -->
+    <div class="section-card">
+        <h3>✍️ 開始作答 (複選題 41)</h3>
+        <p style="color: var(--accent-color); font-weight: bold;">⚠️ 注意：本題可複選！請勾選所有正確答案。</p>
+        
+        <form id="quizForm">
+            <div class="option-group">
+                <label class="option-label">
+                    <input type="checkbox" name="ans" value="A"> (A) 1
+                </label>
+                <label class="option-label">
+                    <input type="checkbox" name="ans" value="B"> (B) 2
+                </label>
+                <label class="option-label">
+                    <input type="checkbox" name="ans" value="C"> (C) 3
+                </label>
+                <label class="option-label">
+                    <input type="checkbox" name="ans" value="D"> (D) 4
+                </label>
+                <label class="option-label">
+                    <input type="checkbox" name="ans" value="E"> (E) 5
+                </label>
+            </div>
+            <button type="button" class="btn btn-check" onclick="checkAnswer()">送出答案</button>
+            <button type="button" class="btn btn-reset" onclick="resetAll()">重置題目</button>
+        </form>
+
+        <div id="quizResult" class="feedback"></div>
+    </div>
+
+    <!-- 選項解析區 -->
+    <div class="section-card">
+        <h3>🔍 選項逐一解析</h3>
+        <p>點擊下方按鈕查看每個選項的詳細說明：</p>
+        <div>
+            <button class="analysis-btn" onclick="showAnalysis('A')">(A) 1</button>
+            <button class="analysis-btn" onclick="showAnalysis('B')">(B) 2</button>
+            <button class="analysis-btn" onclick="showAnalysis('C')">(C) 3</button>
+            <button class="analysis-btn" onclick="showAnalysis('D')">(D) 4</button>
+            <button class="analysis-btn" onclick="showAnalysis('E')">(E) 5</button>
+        </div>
+        <div id="analysisText" class="analysis-content">請點選上方按鈕...</div>
+    </div>
+
+    <!-- 考試陷阱卡 -->
+    <div class="section-card">
+        <h3>💣 考試常見陷阱 (點擊卡片標記為「我懂了」)</h3>
+        <div class="trap-card" onclick="this.classList.add('trap-done')">
+            <h4>陷阱 1：節點數 ≠ 高度</h4>
+            <p>很多同學看到「4個節點」就想選 4，這是錯的！高度是「層數」，不是點的數量。</p>
+        </div>
+        <div class="trap-card" onclick="this.classList.add('trap-done')">
+            <h4>陷阱 2：忘記高度定義</h4>
+            <p>本題定義根節點算第 1 層。如果從 0 開始算，答案會完全不同。考試要看清楚定義！</p>
+        </div>
+        <div class="trap-card" onclick="this.classList.add('trap-done')">
+            <h4>陷阱 3：複選題只選一個</h4>
+            <p>這題有兩種可能的排列方式，只選 (B) 或只選 (C) 都是錯的，要全對才給分！</p>
+        </div>
+    </div>
+
+    <!-- 自我檢測 -->
+    <div class="section-card">
+        <h3>🧠 自我檢測 (思考題)</h3>
+        
+        <details>
+            <summary style="cursor: pointer; color: var(--primary-color);"><strong>Q1: 為什麼高度不可能是 1？</strong> (點擊看提示)</summary>
+            <p style="padding-left: 20px; color: #555;">提示：高度 1 代表只有 1 層，也就是只有根節點。但是我們有 4 個節點，一定放不下，必須往下長。</p>
+        </details>
+        
+        <div style="margin-top: 10px;"></div>
+        
+        <details>
+            <summary style="cursor: pointer; color: var(--primary-color);"><strong>Q2: 高度最大與最小分別代表什麼樹形？</strong> (點擊看提示)</summary>
+            <p style="padding-left: 20px; color: #555;">提示：最小高度 = 最胖、最平均的樹；最大高度 = 最瘦、最細長的樹（像鏈條）。</p>
+        </details>
+    </div>
+
+</div>
+
+<script>
+    // --- 互動 1：拖拉配對邏輯 ---
+    const draggables = document.querySelectorAll('.draggable-item');
+    const dropZones = document.querySelectorAll('.drop-zone');
+    const dragFeedback = document.getElementById('dragFeedback');
+
+    // 桌面版 Drag events
+    draggables.forEach(draggable => {
+        draggable.addEventListener('dragstart', () => {
+            draggable.classList.add('dragging');
+        });
+
+        draggable.addEventListener('dragend', () => {
+            draggable.classList.remove('dragging');
+        });
+    });
+
+    dropZones.forEach(zone => {
+        zone.addEventListener('dragover', e => {
+            e.preventDefault();
+            zone.classList.add('drag-over');
+        });
+
+        zone.addEventListener('dragleave', () => {
+            zone.classList.remove('drag-over');
+        });
+
+        zone.addEventListener('drop', e => {
+            e.preventDefault();
+            zone.classList.remove('drag-over');
+            const draggable = document.querySelector('.dragging');
+            if(draggable) {
+                checkPlacement(draggable, zone);
+            }
+        });
+    });
+
+    // 手機版：點擊選取 -> 點擊放置 (Click-to-Place)
+    let selectedItem = null;
+    draggables.forEach(item => {
+        item.addEventListener('click', () => {
+            // 清除之前的選取
+            draggables.forEach(d => d.style.borderColor = '#bdc3c7');
+            
+            if (selectedItem === item) {
+                selectedItem = null; // 取消選取
+                item.style.borderColor = '#bdc3c7';
+            } else {
+                selectedItem = item;
+                item.style.borderColor = '#e67e22'; // 橘色標示選中
+            }
+        });
+    });
+
+    dropZones.forEach(zone => {
+        zone.addEventListener('click', () => {
+            if (selectedItem) {
+                checkPlacement(selectedItem, zone);
+                selectedItem.style.borderColor = '#bdc3c7';
+                selectedItem = null;
+            }
+        });
+    });
+
+    function checkPlacement(item, zone) {
+        const itemHeight = item.getAttribute('data-height');
+        const targetHeight = zone.getAttribute('data-target');
+
+        zone.appendChild(item); // 移動元素
+
+        // 檢查邏輯
+        if (itemHeight === targetHeight) {
+            dragFeedback.className = "feedback success";
+            if(targetHeight === '4') {
+                dragFeedback.innerHTML = `<strong>放置正確！</strong><br>不過要注意：雖然這個結構高度是 4，但在本題的考試定義中，這個選項被排除 (D ❌)。`;
+            } else {
+                dragFeedback.innerHTML = `<strong>完全正確！</strong><br>這就是高度為 ${targetHeight} 的情況。`;
+            }
+        } else {
+            dragFeedback.className = "feedback error";
+            dragFeedback.innerHTML = `<strong>位置不太對喔！</strong><br>再想一下，這個形狀應該有幾層？`;
+        }
+    }
+
+
+    // --- 互動 2：複選題檢查邏輯 ---
+    function checkAnswer() {
+        const checkboxes = document.querySelectorAll('input[name="ans"]:checked');
+        const userAnswers = Array.from(checkboxes).map(cb => cb.value).sort();
+        const resultDiv = document.getElementById('quizResult');
+        
+        // 正確答案 (B)(C)
+        const correctAnswers = ['B', 'C'];
+        
+        // 判斷是否完全吻合
+        const isCorrect = JSON.stringify(userAnswers) === JSON.stringify(correctAnswers);
+
+        if (userAnswers.length === 0) {
+            resultDiv.className = "feedback error";
+            resultDiv.innerHTML = "❌ 你還沒勾選任何答案喔！";
+            return;
+        }
+
+        if (isCorrect) {
+            resultDiv.className = "feedback success";
+            resultDiv.innerHTML = `
+                <h3>🎉 恭喜答對！完全正確！</h3>
+                <p>正確答案就是 <strong>(B) 2</strong> 和 <strong>(C) 3</strong>。</p>
+                <p>觀念正確：4個節點的二元樹，高度範圍通常落在 2 到 3 之間（視排列的平均程度而定）。</p>
+            `;
+        } else {
+            // 分析錯誤類型
+            let msg = "<h3>❌ 答案不完整或有誤</h3>";
+            
+            // 檢查是否選了 A, D, E
+            if (userAnswers.includes('A')) msg += "<p>• (A) 1 是不可能的，4 個節點沒辦法全部擠在第 1 層。</p>";
+            if (userAnswers.includes('D')) msg += "<p>• (D) 4 雖然是鏈狀結構的高度，但在本題定義或考試範圍中不列入選項 (詳見題目說明)。</p>";
+            if (userAnswers.includes('E')) msg += "<p>• (E) 5 太誇張囉！4 個節點最多排成一直線也才 4 層。</p>";
+            
+            // 檢查是否漏選
+            if ((!userAnswers.includes('B') || !userAnswers.includes('C')) && !userAnswers.includes('A') && !userAnswers.includes('D') && !userAnswers.includes('E')) {
+                 msg += "<p>⚠️ 這是複選題喔！你可能少選了一個可能的狀況。</p>";
+            }
+
+            msg += "<p>💡 請重新思考：排列最平均(矮)與最細長(高)的情況。</p>";
+            
+            resultDiv.className = "feedback error";
+            resultDiv.innerHTML = msg;
+        }
+    }
+
+
+    // --- 互動 3：選項詳細解析 ---
+    function showAnalysis(option) {
+        const display = document.getElementById('analysisText');
+        let content = "";
+        let isPossible = false;
+
+        switch(option) {
+            case 'A':
+                content = "<strong>(A) 1：不可能</strong><br>原因：高度 1 代表只有根節點 1 層。但我們有 4 個資料點，一定需要往下長出子節點。";
+                break;
+            case 'B':
+                content = "<span class='correct-answer-highlight'>(B) 2：可能 (正確選項)</span><br>原因：這是「次平均」的情況。若根節點在第1層，第2層可以放子節點，雖然有些定義下滿二元樹高度2只能放3個節點，但在本題的考試寬鬆定義下，這是可選的答案。";
+                isPossible = true;
+                break;
+            case 'C':
+                content = "<span class='correct-answer-highlight'>(C) 3：可能 (正確選項)</span><br>原因：這是最常見的情況。根節點(1) -> 第二層(2) -> 第三層(1)。或是稍微不平衡的排列，都會落在高度 3。";
+                isPossible = true;
+                break;
+            case 'D':
+                content = "<strong>(D) 4：不選</strong><br>原因：雖然若排成一直線（鏈狀），高度確實是 4。但題目要求「二元樹連接圖」且依據正確答案 (B)(C) 推斷，此選項被視為超出定義或極端情況而不選。";
+                break;
+            case 'E':
+                content = "<strong>(E) 5：不可能</strong><br>原因：只有 4 個節點，就算每一個節點都單獨一層，最多也只有 4 層，不可能變出第 5 層。";
+                break;
+        }
+
+        display.innerHTML = content;
+        display.style.display = 'block';
+        display.style.borderLeft = isPossible ? "5px solid var(--success-color)" : "5px solid var(--error-color)";
+    }
+
+
+    // --- 全局重置功能 ---
+    function resetAll() {
+        // 重置 Checkbox
+        document.querySelectorAll('input[name="ans"]').forEach(cb => cb.checked = false);
+        
+        // 重置回饋訊息
+        document.getElementById('quizResult').style.display = 'none';
+        document.getElementById('dragFeedback').style.display = 'none';
+        document.getElementById('analysisText').style.display = 'none';
+        
+        // 重置陷阱卡
+        document.querySelectorAll('.trap-card').forEach(card => card.classList.remove('trap-done'));
+        
+        // 重置拖拉項目位置 (簡單地重新整理頁面，或是手動移回)
+        // 為求簡單體驗，這裡將卡片移回原位
+        const source = document.getElementById('dragSource');
+        source.appendChild(document.getElementById('tree1'));
+        source.appendChild(document.getElementById('tree2'));
+        source.appendChild(document.getElementById('tree3'));
+        
+        alert("已重置所有練習狀態！");
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Q14_關聯式資料庫_完整性限制_誰不被允許</title>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --secondary-color: #50e3c2;
+            --accent-color: #ff6b6b;
+            --bg-color: #f0f4f8;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --correct-color: #4cd964;
+            --wrong-color: #ff3b30;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "PingFang TC", "Microsoft JhengHei", "Heiti TC", sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding-bottom: 80px;
+        }
+
+        /* 頁首 */
+        header {
+            background: linear-gradient(135deg, var(--primary-color), #357abd);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        header h1 {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+
+        header .sub-title {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        /* 導覽流程條 */
+        .progress-bar {
+            display: flex;
+            justify-content: center;
+            background: white;
+            padding: 10px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            overflow-x: auto;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .step {
+            margin: 0 5px;
+            padding: 5px 10px;
+            border-radius: 15px;
+            background: #eee;
+            color: #777;
+        }
+
+        .step.active {
+            background: var(--primary-color);
+            color: white;
+            font-weight: bold;
+        }
+
+        /* 通用容器 */
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 0 15px;
+        }
+
+        /* 卡片樣式 */
+        .card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .card h2 {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+
+        /* 題目區塊 */
+        .question-box {
+            background: #eef5fc;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        /* 按鈕樣式 */
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 8px;
+            background: var(--primary-color);
+            color: white;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        /* 互動 A: 名詞釐清 */
+        .choice-btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+        }
+
+        /* 互動 B: 四選一 */
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        @media (min-width: 600px) {
+            .options-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .option-card {
+            background: white;
+            border: 2px solid #ddd;
+            padding: 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .option-card:hover {
+            border-color: var(--primary-color);
+            background: #f9fcff;
+        }
+
+        .option-card.selected {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* 互動 C: 分類遊戲 */
+        .drag-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .drop-zone {
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+            padding: 15px;
+            min-height: 80px;
+            background: #fafafa;
+            position: relative;
+        }
+
+        .drop-zone h3 {
+            font-size: 0.9rem;
+            color: #888;
+            margin-bottom: 10px;
+            text-align: center;
+            pointer-events: none;
+        }
+
+        .draggable-item {
+            background: var(--primary-color);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            margin: 5px;
+            display: inline-block;
+            cursor: pointer;
+            font-size: 0.9rem;
+            user-select: none;
+        }
+
+        .draggable-item.active {
+            background: var(--accent-color);
+            transform: scale(1.1);
+        }
+
+        /* 互動 D: SQL 翻牌 */
+        .sql-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .sql-card {
+            background: #333;
+            color: #00ff00;
+            font-family: monospace;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sql-card .answer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--card-bg);
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: sans-serif;
+            font-weight: bold;
+            transform: translateY(100%);
+            transition: transform 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .sql-card.revealed .answer {
+            transform: translateY(0);
+        }
+
+        /* 互動 E: O/X */
+        .ox-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            padding: 10px 0;
+        }
+        .ox-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+        .btn-o { background: #eee; color: var(--correct-color); }
+        .btn-x { background: #eee; color: var(--wrong-color); }
+
+        /* 回饋與提示 */
+        .feedback {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        .feedback.correct {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .feedback.wrong {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* 模態框 (Modal) */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+        .reason-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            background: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+        }
+        .reason-btn:hover { background: #e0e0e0; }
+
+        /* 生活化比喻與口訣 */
+        .analogy-box {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 15px;
+            margin-top: 10px;
+            border-radius: 5px;
+        }
+
+        .mnemonic-card {
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 10px;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        /* 警示框 */
+        .warning-box {
+            border: 2px solid var(--accent-color);
+            background: #fff5f5;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            position: relative;
+        }
+        .warning-box::before {
+            content: '⚠️ 陷阱注意';
+            position: absolute;
+            top: -12px;
+            left: 15px;
+            background: var(--accent-color);
+            color: white;
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+        }
+
+        /* 教師備註 */
+        .teacher-note {
+            margin-top: 40px;
+            border-top: 2px dashed #ccc;
+            padding-top: 20px;
+        }
+        .teacher-note details summary {
+            cursor: pointer;
+            color: #666;
+            font-weight: bold;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 標籤 Badge */
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            color: white;
+            margin-right: 5px;
+        }
+        .bg-pk { background: #e91e63; }
+        .bg-fk { background: #9c27b0; }
+        .bg-check { background: #ff9800; }
+
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Q14. 關聯式資料庫的完整性限制</h1>
+    <div class="sub-title">高中資訊科技：資料庫概論</div>
+</header>
+
+<div class="progress-bar">
+    <div class="step active">1. 名詞釐清</div>
+    <div class="step">2. 概念 vs 規則</div>
+    <div class="step">3. 完整性分類</div>
+    <div class="step">4. 選項分析</div>
+    <div class="step">5. 總結</div>
+</div>
+
+<div class="container">
+
+    <!-- 題目展示 -->
+    <div class="card">
+        <h2>題目預覽</h2>
+        <div class="question-box">
+            <p>對於關聯式資料庫而言，所謂資料完整性（data integrity）是用來確保資料庫中資料的正確性及可靠性。<br>
+            下列何者<strong>並非</strong>關聯模型所允許定義之完整性限制條件（constraints）？</p>
+        </div>
+        <div class="options-grid" style="pointer-events: none; opacity: 0.6;">
+            <div class="option-card">(A) 實體完整性</div>
+            <div class="option-card">(B) 資料完整性</div>
+            <div class="option-card">(C) 參照完整性</div>
+            <div class="option-card">(D) 使用者定義的完整性</div>
+        </div>
+        <p style="text-align: center; margin-top: 10px; color: #888;">(別急著選，我們先搞懂觀念！)</p>
+    </div>
+
+    <!-- 1. 名詞釐清互動 -->
+    <div class="card" id="part1">
+        <h2>1. 名詞大挑戰：目標 vs 手段</h2>
+        <p>首先，我們得先分清楚「目的」跟「方法」。</p>
+        <div class="question-box" style="text-align: center;">
+            請問：「資料完整性 (Data Integrity)」這五個字<br>
+            是指一種「規則類型」，還是一個「總體目標」？
+        </div>
+        
+        <div class="choice-btn-group">
+            <button class="btn btn-outline" onclick="checkTerm(1)">① 一種具體的完整性限制 (Rule)</button>
+            <button class="btn btn-outline" onclick="checkTerm(2)">② 一個整體的概念與目的 (Goal)</button>
+        </div>
+
+        <div id="term-feedback" class="feedback"></div>
+        
+        <div class="analogy-box" id="term-analogy" style="display:none;">
+            <strong>🏫 學校生活比喻：</strong><br>
+            「資料完整性」就像是<strong>「維護校園秩序」</strong>這個大目標。<br>
+            而「不能遲到」、「要穿制服」這些才是具體的<strong>「校規 (Constraints)」</strong>。<br>
+            我們透過遵守校規，來達成校園秩序。<br>
+            所以，「校園秩序」本身不是一條校規，它是目標！
+        </div>
+    </div>
+
+    <!-- 2. 分類互動 -->
+    <div class="card" id="part2" style="display:none;">
+        <h2>2. 歸納分類：誰是規則？誰是概念？</h2>
+        <p>請點擊下方的名詞，然後點擊它該去的箱子。</p>
+        
+        <div class="drag-container">
+            <!-- 來源區 -->
+            <div class="drop-zone" id="source-zone">
+                <h3>待分類名詞 (點擊選取)</h3>
+                <span class="draggable-item" onclick="selectItem(this)" data-type="constraint">實體完整性</span>
+                <span class="draggable-item" onclick="selectItem(this)" data-type="goal">資料完整性</span>
+                <span class="draggable-item" onclick="selectItem(this)" data-type="constraint">參照完整性</span>
+                <span class="draggable-item" onclick="selectItem(this)" data-type="constraint">使用者定義完整性</span>
+            </div>
+
+            <!-- 目標區 -->
+            <div class="drop-zone" id="target-constraint" onclick="moveToZone(this, 'constraint')" style="background: #e3f2fd; border-color: #2196f3;">
+                <h3>📦 具體的限制規則 (Constraints)</h3>
+            </div>
+
+            <div class="drop-zone" id="target-goal" onclick="moveToZone(this, 'goal')" style="background: #fff3e0; border-color: #ff9800;">
+                <h3>🎯 抽象的總體目標 (Goal)</h3>
+            </div>
+        </div>
+
+        <button class="btn" style="margin-top:15px;" onclick="checkClassification()">檢查答案</button>
+        <div id="class-feedback" class="feedback"></div>
+    </div>
+
+    <!-- 3. SQL 規則對應 -->
+    <div class="card" id="part3" style="display:none;">
+        <h2>3. SQL 實戰對應</h2>
+        <p>在寫 SQL 語法時，我們會用到以下關鍵字，試著點開看看它們屬於哪種完整性？</p>
+        
+        <div class="sql-grid">
+            <div class="sql-card" onclick="this.classList.toggle('revealed')">
+                PRIMARY KEY<br>(主鍵)
+                <div class="answer"><span class="badge bg-pk">實體完整性</span><br>確保每筆資料唯一且不為空</div>
+            </div>
+            <div class="sql-card" onclick="this.classList.toggle('revealed')">
+                FOREIGN KEY<br>(外來鍵)
+                <div class="answer"><span class="badge bg-fk">參照完整性</span><br>確保資料關聯正確存在</div>
+            </div>
+            <div class="sql-card" onclick="this.classList.toggle('revealed')">
+                CHECK / UNIQUE<br>(檢查條件)
+                <div class="answer"><span class="badge bg-check">使用者定義</span><br>自訂規則(如:分數0-100)</div>
+            </div>
+            <div class="sql-card" onclick="this.classList.toggle('revealed')">
+                DATA INTEGRITY<br>(資料完整性)
+                <div class="answer" style="background: #ffcccc; color: #cc0000;">❌ 沒這語法<br>這是目標，不是指令！</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. 選答案互動 -->
+    <div class="card" id="part4" style="display:none;">
+        <h2>4. 最終解題</h2>
+        <div class="question-box">
+            下列何者<strong>並非</strong>關聯模型所允許定義之完整性限制條件（constraints）？
+        </div>
+        
+        <div class="options-grid">
+            <div class="option-card" onclick="openReasonModal('A', '實體完整性')">(A) 實體完整性</div>
+            <div class="option-card" onclick="openReasonModal('B', '資料完整性')">(B) 資料完整性</div>
+            <div class="option-card" onclick="openReasonModal('C', '參照完整性')">(C) 參照完整性</div>
+            <div class="option-card" onclick="openReasonModal('D', '使用者定義的完整性')">(D) 使用者定義的完整性</div>
+        </div>
+
+        <div id="final-answer-feedback" class="feedback"></div>
+    </div>
+
+    <!-- 5. 迷思破解與總結 -->
+    <div class="card" id="part5" style="display:none;">
+        <h2>5. 觀念總結與檢測</h2>
+        
+        <div class="warning-box">
+            <p><strong>常見陷阱：</strong>看到題目問「完整性」，很容易被選項中有「資料完整性」這五個字騙走。請記住，大標題通常不是分類項目之一！</p>
+        </div>
+
+        <div class="mnemonic-card">
+            口訣一：「資料完整性是目標，不是規則」<br>
+            口訣二：「實體、參照、使用者，才是三大護法」
+        </div>
+
+        <h3 style="margin-top:20px;">快速是非題</h3>
+        <div class="ox-row">
+            <span>Q1: 「資料完整性」是一種 Constraint 的名稱？</span>
+            <div>
+                <button class="ox-btn btn-o" onclick="checkOX(this, false)">O</button>
+                <button class="ox-btn btn-x" onclick="checkOX(this, true)">X</button>
+            </div>
+        </div>
+        <div class="ox-row">
+            <span>Q2: PRIMARY KEY 是用來維護「實體完整性」？</span>
+            <div>
+                <button class="ox-btn btn-o" onclick="checkOX(this, true)">O</button>
+                <button class="ox-btn btn-x" onclick="checkOX(this, false)">X</button>
+            </div>
+        </div>
+        <div class="ox-row">
+            <span>Q3: 為了確保成績表一定對應到存在的學生，需要「參照完整性」？</span>
+            <div>
+                <button class="ox-btn btn-o" onclick="checkOX(this, true)">O</button>
+                <button class="ox-btn btn-x" onclick="checkOX(this, false)">X</button>
+            </div>
+        </div>
+
+        <div class="teacher-note">
+            <details>
+                <summary>👨‍🏫 教師備註 (點擊展開)</summary>
+                <p style="margin-top:10px; font-size: 0.9rem; color: #555;">
+                    1. 本題是「名詞陷阱型」超高頻考題。<br>
+                    2. 學生常混淆「目的」與「手段」。<br>
+                    3. 在教學現場，建議用「法律(完整性) vs 憲法精神(資料正確)」來比喻。<br>
+                    4. (A)(C)(D) 是 Codd 關聯模型中定義的三類完整性限制，必須死記。
+                </p>
+            </details>
+        </div>
+    </div>
+
+</div>
+
+<!-- 模態框：詢問理由 -->
+<div id="reasonModal" class="modal-overlay">
+    <div class="modal-content">
+        <h3 id="modal-title">你選擇了...</h3>
+        <p>為什麼選這個答案？</p>
+        <button class="reason-btn" onclick="submitAnswer('looks_like')">🤔 名字看起來最像正確答案</button>
+        <button class="reason-btn" onclick="submitAnswer('memorized')">📚 我記得書上是這樣分類的</button>
+        <button class="reason-btn" onclick="submitAnswer('rule_vs_goal')">💡 因為它是目標，不是規則種類</button>
+        <button class="reason-btn" onclick="submitAnswer('guess')">🎲 我是用猜的</button>
+        <button class="btn btn-outline" style="margin-top:10px; width:auto;" onclick="closeModal()">取消</button>
+    </div>
+</div>
+
+<script>
+    let currentSelectedOption = '';
+    let selectedDragItem = null;
+
+    // 1. 名詞釐清邏輯
+    function checkTerm(option) {
+        const feedback = document.getElementById('term-feedback');
+        const analogy = document.getElementById('term-analogy');
+        
+        feedback.style.display = 'block';
+        if (option === 2) {
+            feedback.className = 'feedback correct';
+            feedback.innerHTML = '<strong>✅ 答對了！</strong><br>「資料完整性」是我們想要達到的<strong>最終狀態（目標）</strong>，而不是某一條具體的規則。';
+            analogy.style.display = 'block';
+            // 解鎖下一關
+            setTimeout(() => { document.getElementById('part2').style.display = 'block'; scrollSmooth('part2'); }, 1500);
+        } else {
+            feedback.className = 'feedback wrong';
+            feedback.innerHTML = '<strong>❌ 答錯囉！</strong><br>資料完整性是一個「大概念」，並不是其中一種限制規則的名字喔。請再想一下！';
+        }
+    }
+
+    // 2. 分類遊戲邏輯 (Click-Select-Move)
+    function selectItem(element) {
+        // 清除其他選取狀態
+        document.querySelectorAll('.draggable-item').forEach(el => el.classList.remove('active'));
+        // 選取當前
+        element.classList.add('active');
+        selectedDragItem = element;
+    }
+
+    function moveToZone(zone, zoneType) {
+        if (!selectedDragItem) return;
+        
+        // 移動元素
+        zone.appendChild(selectedDragItem);
+        selectedDragItem.classList.remove('active');
+        
+        // 暫存目前的放置狀態（用於檢查）
+        selectedDragItem.dataset.currentZone = zoneType;
+        selectedDragItem = null;
+    }
+
+    function checkClassification() {
+        const items = document.querySelectorAll('.draggable-item');
+        let allCorrect = true;
+        let feedbackHTML = "";
+
+        items.forEach(item => {
+            const correctType = item.dataset.type;
+            const currentZone = item.parentElement.id === 'target-constraint' ? 'constraint' : 
+                                item.parentElement.id === 'target-goal' ? 'goal' : 'source';
+
+            if (currentZone === 'source') {
+                allCorrect = false;
+                feedbackHTML += `⚠️ 請將 <strong>${item.innerText}</strong> 放入箱子中。<br>`;
+            } else if (correctType !== currentZone) {
+                allCorrect = false;
+                item.style.backgroundColor = '#ff3b30'; // 錯誤標示紅
+                setTimeout(() => item.style.backgroundColor = 'var(--primary-color)', 1000);
+            }
+        });
+
+        const feedback = document.getElementById('class-feedback');
+        feedback.style.display = 'block';
+
+        if (allCorrect) {
+            feedback.className = 'feedback correct';
+            feedback.innerHTML = '<strong>🎉 全對！概念很清楚喔！</strong><br>只有「資料完整性」是目標，其他三個都是具體的規則(Constraints)。';
+            // 解鎖下一關
+            document.getElementById('part3').style.display = 'block';
+            document.getElementById('part4').style.display = 'block';
+            scrollSmooth('part3');
+        } else {
+            feedback.className = 'feedback wrong';
+            if (feedbackHTML === "") feedbackHTML = "❌ 還有放錯位置的喔，再檢查一下！(提示：只有一個是目標)";
+            feedback.innerHTML = feedbackHTML;
+        }
+    }
+
+    // 4. 選項分析邏輯
+    function openReasonModal(option, text) {
+        currentSelectedOption = option;
+        document.getElementById('modal-title').innerText = `你選擇了 (${option}) ${text}`;
+        document.getElementById('reasonModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('reasonModal').style.display = 'none';
+    }
+
+    function submitAnswer(reason) {
+        closeModal();
+        const feedback = document.getElementById('final-answer-feedback');
+        feedback.style.display = 'block';
+
+        let analysis = "";
+
+        if (currentSelectedOption === 'B') {
+            feedback.className = 'feedback correct';
+            analysis = `
+                <h3>✅ 正確答案！</h3>
+                <p><strong>(B) 資料完整性</strong> 是正確答案。</p>
+                <hr style="margin:10px 0; border:0; border-top:1px dashed #ccc;">
+                <strong>詳細解析：</strong><br>
+                <ul>
+                    <li>(A) <strong>實體完整性 (Entity Integrity)</strong>：關聯模型允許。例如：主鍵 (Primary Key) 不能是 Null，確保每筆資料能被識別。</li>
+                    <li>(C) <strong>參照完整性 (Referential Integrity)</strong>：關聯模型核心。例如：外來鍵 (Foreign Key) 對應的值必須存在，確保資料關聯正確。</li>
+                    <li>(D) <strong>使用者定義完整性 (User-defined Integrity)</strong>：關聯模型允許。例如：成績必須在 0-100 之間 (CHECK)，這是依照需求自訂的規則。</li>
+                    <li>(B) <strong>資料完整性</strong>：這是所有規則執行後的<strong>「結果與目標」</strong>，本身不是一種規則的名稱。</li>
+                </ul>
+            `;
+            // 解鎖最後一關
+            document.getElementById('part5').style.display = 'block';
+            scrollSmooth('part5');
+        } else {
+            feedback.className = 'feedback wrong';
+            analysis = `
+                <h3>❌ 答錯囉！</h3>
+                <p><strong>(${currentSelectedOption})</strong> 是一種被允許的完整性限制。</p>
+                <p>題目問的是「<strong>並非</strong>」允許的限制條件。</p>
+                <p>提示：請回想剛剛的分類遊戲，哪一個是「目標」而不是「規則」？</p>
+                <p>再試一次吧！</p>
+            `;
+        }
+        feedback.innerHTML = analysis;
+    }
+
+    // 5. O/X 邏輯
+    function checkOX(btn, isCorrect) {
+        // 重置同列按鈕樣式
+        const siblings = btn.parentElement.children;
+        for (let s of siblings) {
+            s.style.opacity = '0.5';
+            s.style.transform = 'scale(1)';
+        }
+        
+        btn.style.opacity = '1';
+        btn.style.transform = 'scale(1.2)';
+
+        if (isCorrect) {
+            btn.style.border = '2px solid #4cd964';
+            // 可以在這裡加一點音效或視覺回饋
+        } else {
+            btn.style.border = '2px solid #ff3b30';
+            btn.classList.add('shake'); // 假設有 shake 動畫
+            setTimeout(() => btn.classList.remove('shake'), 500);
+        }
+    }
+
+    // 平滑捲動工具
+    function scrollSmooth(id) {
+        document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+    }
+
+</script>
+
+</body>
+</html>

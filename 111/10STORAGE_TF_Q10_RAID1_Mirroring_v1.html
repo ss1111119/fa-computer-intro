@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAID 1 鏡像儲存觀念教學 - 題號 10</title>
+    <style>
+        :root {
+            --primary-color: #2563eb; /* 補教藍 */
+            --accent-color: #f59e0b; /* 重點黃 */
+            --success-color: #10b981; /* 正確綠 */
+            --error-color: #ef4444; /* 錯誤紅 */
+            --text-dark: #1f2937;
+            --text-light: #6b7280;
+            --bg-page: #f3f4f6;
+            --bg-card: #ffffff;
+            --border-radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "PingFang TC", "Microsoft JhengHei", "Heiti TC", sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-page);
+            color: var(--text-dark);
+            line-height: 1.6;
+            padding-bottom: 40px;
+        }
+
+        /* Container */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 24px;
+            padding: 20px 0;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .subject-tag {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+        }
+
+        .subtitle {
+            color: var(--text-light);
+            font-size: 1rem;
+        }
+
+        /* Card Style */
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid #e5e7eb;
+        }
+
+        /* Question Section */
+        .question-number {
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .question-text {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 24px;
+            line-height: 1.8;
+        }
+
+        .highlight-bg {
+            background-color: #fde047; /* 螢光筆效果 */
+            padding: 2px 4px;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-item {
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            cursor: default; /* 此處為展示題目，不直接作答 */
+            background-color: #f9fafb;
+        }
+
+        /* Interactive Keywords */
+        .keyword-section {
+            background-color: #eff6ff;
+            border: 1px solid #bfdbfe;
+        }
+
+        .keyword-title {
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 12px;
+        }
+
+        .keyword-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .btn-keyword {
+            background: white;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 6px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+
+        .btn-keyword:hover, .btn-keyword.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .definition-box {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid var(--accent-color);
+            min-height: 60px;
+        }
+
+        .def-title {
+            font-weight: bold;
+            color: var(--text-dark);
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .def-content {
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+
+        /* Accordion (Plain Language) */
+        .accordion {
+            cursor: pointer;
+            padding: 16px;
+            width: 100%;
+            border: none;
+            text-align: left;
+            background: white;
+            outline: none;
+            font-size: 1.1rem;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 8px;
+        }
+        
+        .accordion:hover {
+            background-color: #f9fafb;
+        }
+
+        .accordion:after {
+            content: '+'; /* 簡單符號代替 Icon */
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .accordion.active:after {
+            content: '-';
+        }
+
+        .panel {
+            padding: 0 18px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.2s ease-out;
+            background-color: white;
+            border-radius: 0 0 8px 8px;
+        }
+
+        .panel-content {
+            padding: 16px 0;
+            color: #4b5563;
+        }
+
+        /* Comparison Cards */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        @media (min-width: 600px) {
+            .comparison-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .comp-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .comp-card h3 {
+            text-align: center;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+            border-bottom: 2px solid #f3f4f6;
+        }
+
+        .raid0-header { color: #ef4444; border-bottom-color: #ef4444 !important; }
+        .raid1-header { color: #2563eb; border-bottom-color: #2563eb !important; }
+
+        .comp-list {
+            list-style: none;
+            font-size: 0.9rem;
+        }
+
+        .comp-list li {
+            margin-bottom: 8px;
+            padding-left: 12px;
+            border-left: 2px solid #d1d5db;
+        }
+
+        .metaphor-box {
+            margin-top: 16px;
+            background-color: #fffbeb;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            color: #92400e;
+        }
+
+        /* Mistakes & Mnemonic */
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 12px;
+            color: var(--text-dark);
+            border-left: 4px solid var(--primary-color);
+            padding-left: 10px;
+        }
+
+        ul.styled-list {
+            list-style: none;
+            padding-left: 5px;
+        }
+
+        ul.styled-list li {
+            margin-bottom: 10px;
+            position: relative;
+            padding-left: 20px;
+        }
+
+        ul.styled-list li::before {
+            content: "•";
+            color: var(--primary-color);
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        .mnemonic-text {
+            font-size: 1.25rem;
+            text-align: center;
+            color: var(--primary-color);
+            font-weight: bold;
+            padding: 16px;
+            background: #eff6ff;
+            border-radius: 8px;
+            border: 2px dashed #bfdbfe;
+        }
+
+        /* Answer Reveal */
+        .reveal-btn {
+            width: 100%;
+            padding: 16px;
+            background: var(--text-dark);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .reveal-btn:hover {
+            background: black;
+        }
+
+        #answer-content {
+            display: none;
+            margin-top: 20px;
+            animation: fadeIn 0.5s;
+        }
+
+        .correct-answer {
+            font-size: 3rem;
+            color: var(--success-color);
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .answer-reason {
+            background-color: #ecfdf5;
+            color: #065f46;
+            padding: 16px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 0.8rem;
+            color: var(--text-light);
+            border-top: 1px solid #e5e7eb;
+            padding-top: 20px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <!-- A. 頁首區 -->
+        <header>
+            <span class="subject-tag">儲存技術衝刺班</span>
+            <h1>RAID 1 是不是「鏡像備份」？</h1>
+            <p class="subtitle">儲存容錯必考觀念 | 題號：10（是非題）</p>
+        </header>
+
+        <!-- B. 題目區 -->
+        <section class="card">
+            <span class="question-number">Question 10</span>
+            <div class="question-text" id="question-text">
+                10. 將兩顆相同的硬碟做鏡像儲存，是屬於 RAID 1 技術。
+            </div>
+            <div class="options">
+                <div class="option-item">(A) O</div>
+                <div class="option-item">(B) X</div>
+            </div>
+        </section>
+
+        <!-- C. 關鍵字互動區 -->
+        <section class="card keyword-section">
+            <h3 class="keyword-title">點擊關鍵字查看白話解釋：</h3>
+            <div class="keyword-buttons">
+                <button class="btn-keyword" onclick="explain('RAID 1')">RAID 1</button>
+                <button class="btn-keyword" onclick="explain('鏡像儲存')">鏡像儲存</button>
+                <button class="btn-keyword" onclick="explain('硬碟')">硬碟</button>
+                <button class="btn-keyword" onclick="explain('容錯')">容錯</button>
+                <button class="btn-keyword" onclick="explain('備份')">備份</button>
+            </div>
+            <div class="definition-box">
+                <span class="def-title" id="def-title">觀念小老師</span>
+                <p class="def-content" id="def-content">請點選上方按鈕，我會幫你畫重點並解釋。</p>
+            </div>
+        </section>
+
+        <!-- D. 白話翻譯 -->
+        <div class="card" style="padding: 0;">
+            <button class="accordion" onclick="toggleAccordion(this)">
+                這題題目在問什麼？（白話翻譯）
+            </button>
+            <div class="panel">
+                <div class="panel-content">
+                    <p style="margin-bottom: 12px;"><strong>【白話翻譯】</strong><br>
+                    「如果把兩顆硬碟存一模一樣的資料（這叫做鏡像），這個技術是不是就叫做 RAID 1？」</p>
+                    
+                    <p><strong>【這題在考什麼】</strong><br>
+                    考試重點在於你是否知道 RAID 1 的核心定義就是「鏡像（Mirroring）」，它的主要目的是為了讓資料更安全（提高可靠性）。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- E. 觀念教學：RAID 0 vs RAID 1 -->
+        <section class="card">
+            <h3 class="section-title">觀念對照：RAID 0 與 RAID 1</h3>
+            <div class="comparison-grid">
+                <!-- RAID 0 -->
+                <div class="comp-card">
+                    <h3 class="raid0-header">RAID 0 (分條)</h3>
+                    <ul class="comp-list">
+                        <li><strong>特點：</strong>把資料切碎，分散寫入多顆硬碟。</li>
+                        <li><strong>優點：</strong>速度最快。</li>
+                        <li><strong>缺點：</strong><span style="color:#ef4444; font-weight:bold;">不容錯</span>，壞一顆硬碟資料就全毀。</li>
+                    </ul>
+                </div>
+                <!-- RAID 1 -->
+                <div class="comp-card">
+                    <h3 class="raid1-header">RAID 1 (鏡像)</h3>
+                    <ul class="comp-list">
+                        <li><strong>特點：</strong>同一份資料寫兩份，存入兩顆硬碟。</li>
+                        <li><strong>優點：</strong><span style="color:#10b981; font-weight:bold;">容錯佳</span>，壞一顆還能讀取。</li>
+                        <li><strong>缺點：</strong>可用容量減半（買兩顆只能用一顆的量）。</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="metaphor-box">
+                <strong>生活比喻：</strong><br>
+                RAID 1 就像你把重要筆記「影印兩份」，分別放在兩個不同的抽屜。就算其中一個抽屜卡住打不開，你還有另一份可以用。
+            </div>
+        </section>
+
+        <!-- F. 解析與 G. 常見錯誤 -->
+        <section class="card">
+            <h3 class="section-title">常見錯誤提醒</h3>
+            <ul class="styled-list">
+                <li><strong>別搞混代號：</strong> RAID 0 是分條（追求速度），RAID 1 是鏡像（追求安全）。</li>
+                <li><strong>這不是完美備份：</strong> RAID 1 只能防硬碟壞掉。如果你不小心「刪除」檔案，兩顆硬碟會同時刪除！所以還是要另外備份。</li>
+                <li><strong>容量打折：</strong> 考試常問容量，記得 RAID 1 的空間利用率只有 50%。</li>
+            </ul>
+        </section>
+
+        <!-- H. 記憶口訣 -->
+        <section class="card">
+            <h3 class="section-title">3秒記憶口訣</h3>
+            <div class="mnemonic-text">
+                「1 是一模一樣」＝ RAID 1 鏡像
+            </div>
+        </section>
+
+        <!-- I. 正確答案揭曉 -->
+        <section class="card" id="answer-reveal">
+            <button class="reveal-btn" onclick="showAnswer()">查看正確答案</button>
+            <div id="answer-content">
+                <div class="correct-answer">O (正確)</div>
+                <div class="answer-reason">
+                    解析：RAID 1 的核心技術就是「鏡像 (Mirroring)」，將資料同時寫入兩顆硬碟，一顆壞掉時，另一顆仍有完整資料。
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <h4 style="margin-bottom:10px; font-weight:bold;">選項分析：</h4>
+                    <ul class="styled-list">
+                        <li>(A) O → 正確。題目敘述完全符合 RAID 1 定義。</li>
+                        <li>(B) X → 錯誤。</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <footer>
+        <p>補教名師觀念衝刺班 © 2024 Design for Education</p>
+    </footer>
+
+    <script>
+        // 定義關鍵字與解釋的對應資料
+        const definitions = {
+            'RAID 1': '【RAID 1】<br>全名：磁碟陣列層級 1。<br>核心概念：鏡像（Mirroring）。將資料完整複製到另一顆硬碟上。',
+            '鏡像儲存': '【鏡像儲存 (Mirroring)】<br>就像照鏡子一樣，兩顆硬碟的內容「一模一樣」。這讓資料多了一份保險。',
+            '硬碟': '【硬碟 (HDD/SSD)】<br>電腦儲存資料的地方。在 RAID 架構中，我們討論的是如何組合多顆硬碟來工作。',
+            '容錯': '【容錯 (Fault Tolerance)】<br>系統發生故障（如硬碟壞掉）時，還能繼續運作的能力。RAID 1 容許壞一顆硬碟而不遺失資料。',
+            '備份': '【備份 vs RAID】<br>RAID 1 是「即時」的複寫。雖然有備份效果，但如果不小心手殘刪檔，兩邊都會不見！所以還是要額外備份。'
+        };
+
+        // 原始題目文字，用於重置螢光筆效果
+        const originalText = '10. 將兩顆相同的硬碟做鏡像儲存，是屬於 RAID 1 技術。';
+        const questionEl = document.getElementById('question-text');
+
+        function explain(keyword) {
+            // 1. 更新按鈕狀態
+            document.querySelectorAll('.btn-keyword').forEach(btn => {
+                btn.classList.remove('active');
+                if(btn.innerText === keyword) btn.classList.add('active');
+            });
+
+            // 2. 顯示解釋文字
+            const defTitle = document.getElementById('def-title');
+            const defContent = document.getElementById('def-content');
+            
+            // 拆解標題與內容
+            const fullDef = definitions[keyword];
+            const splitIndex = fullDef.indexOf('<br>');
+            const titlePart = fullDef.substring(0, splitIndex).replace(/【|】/g, ''); // 去除括號做純標題
+            const contentPart = fullDef.substring(splitIndex + 4);
+
+            defTitle.innerText = titlePart;
+            defContent.innerHTML = contentPart;
+
+            // 3. 在題目中畫螢光筆 (Highlight)
+            // 先重置回原始文字
+            questionEl.innerHTML = originalText;
+
+            // 根據關鍵字處理高亮邏輯
+            // 因為"容錯"與"備份"是觀念詞，可能不在原句中，我們只高亮原句有的詞
+            let targetText = keyword;
+            
+            // 特殊對應處理：如果點選觀念詞，高亮相關聯的文字
+            if (keyword === '容錯' || keyword === '備份') {
+                targetText = '鏡像儲存'; // 容錯與備份都來自於鏡像
+            }
+
+            if (originalText.includes(targetText)) {
+                const highlightedHtml = originalText.replace(
+                    new RegExp(targetText, 'g'), 
+                    `<span class="highlight-bg">${targetText}</span>`
+                );
+                questionEl.innerHTML = highlightedHtml;
+            }
+        }
+
+        function toggleAccordion(btn) {
+            btn.classList.toggle("active");
+            const panel = btn.nextElementSibling;
+            if (panel.style.maxHeight) {
+                panel.style.maxHeight = null;
+            } else {
+                panel.style.maxHeight = panel.scrollHeight + "px";
+            }
+        }
+
+        function showAnswer() {
+            const answerDiv = document.getElementById('answer-content');
+            const btn = document.querySelector('.reveal-btn');
+            
+            answerDiv.style.display = 'block';
+            btn.style.display = 'none'; // 隱藏按鈕
+            
+            // 滾動到答案區
+            answerDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    </script>
+</body>
+</html>

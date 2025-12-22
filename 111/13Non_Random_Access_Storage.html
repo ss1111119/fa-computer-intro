@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Q13_資料儲存設備_誰沒有隨機存取</title>
+    <style>
+        :root {
+            --primary: #4a90e2;
+            --secondary: #50e3c2;
+            --accent: #ff6b6b;
+            --bg: #f5f7fa;
+            --text: #2c3e50;
+            --card-bg: #ffffff;
+            --success: #2ecc71;
+            --warning: #f1c40f;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none; /* 防止手機上長按選取文字影響體驗 */
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans TC", sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        /* --- Header & Nav --- */
+        header {
+            background: linear-gradient(135deg, var(--primary), #357abd);
+            color: white;
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+
+        .subtitle {
+            font-size: 0.9rem;
+            text-align: center;
+            opacity: 0.9;
+        }
+
+        .progress-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            padding: 0 10px;
+        }
+
+        .step-dot {
+            width: 30px;
+            height: 30px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .step-dot.active {
+            background: white;
+            color: var(--primary);
+            transform: scale(1.1);
+        }
+
+        /* --- Main Content --- */
+        main {
+            padding: 1rem;
+            max-width: 800px;
+            margin: 0 auto;
+            padding-bottom: 80px; /* Space for footer */
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 0.5s forwards;
+            display: none; /* 預設隱藏，由 JS 控制顯示 */
+        }
+
+        .card.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            color: var(--primary);
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            font-size: 1.3rem;
+            margin-top: 0;
+        }
+
+        /* --- Interaction Components --- */
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 2px solid var(--primary);
+            background: white;
+            color: var(--primary);
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        .btn:hover, .btn:active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn.selected {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn.correct {
+            background: var(--success);
+            border-color: var(--success);
+            color: white;
+        }
+
+        .btn.wrong {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        .feedback {
+            background: #e8f4fd;
+            border-left: 4px solid var(--primary);
+            padding: 1rem;
+            margin-top: 1rem;
+            border-radius: 0 8px 8px 0;
+            display: none;
+        }
+
+        .highlight {
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        /* --- Simulation Animation Area --- */
+        .sim-container {
+            border: 2px solid #eee;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 15px 0;
+            background: #fafafa;
+        }
+
+        .sim-label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .tape-track {
+            height: 50px;
+            background: #333;
+            overflow: hidden;
+            position: relative;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+        }
+
+        .tape-strip {
+            display: flex;
+            position: absolute;
+            left: 0;
+            transition: left 0.5s linear; /* JS will change this */
+        }
+
+        .data-block {
+            width: 40px;
+            height: 30px;
+            background: white;
+            margin: 0 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            color: #333;
+            border-radius: 2px;
+        }
+
+        .read-head {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--accent);
+            transform: translateX(-50%);
+            z-index: 10;
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        .disk-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .disk-cell {
+            height: 40px;
+            background: #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            transition: background 0.1s;
+        }
+
+        .disk-cell.active {
+            background: var(--success);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .sim-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        /* --- Drag & Drop Game --- */
+        .game-area {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .drop-zones {
+            display: flex;
+            gap: 10px;
+        }
+
+        .zone {
+            flex: 1;
+            border: 2px dashed #aaa;
+            border-radius: 8px;
+            min-height: 120px;
+            padding: 10px;
+            text-align: center;
+            background: #f9f9f9;
+            transition: background 0.2s;
+        }
+
+        .zone h4 { margin: 0 0 10px 0; font-size: 0.9rem;}
+
+        .zone.drag-over {
+            background: #e1f5fe;
+            border-color: var(--primary);
+        }
+
+        .draggables {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            background: #eee;
+            padding: 10px;
+            border-radius: 8px;
+            min-height: 60px;
+        }
+
+        .drag-item {
+            background: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            cursor: pointer; /* Change to pointer to indicate clickable */
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            border: 2px solid transparent;
+        }
+        
+        .drag-item.selected {
+            border-color: var(--primary);
+            background-color: #e3f2fd;
+            transform: scale(1.05);
+        }
+
+        /* --- Analysis Cards --- */
+        .option-analysis {
+            background: #fff;
+            border: 1px solid #eee;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+        }
+        
+        .option-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            color: white;
+            margin-bottom: 5px;
+        }
+        .tag-random { background: var(--success); }
+        .tag-seq { background: var(--accent); }
+
+        /* --- Misc --- */
+        .next-btn-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .big-btn {
+            background: var(--text);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .alert-box {
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            display: flex;
+            align-items: start;
+            gap: 10px;
+        }
+
+        .true-false-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .tf-btns button {
+            margin-left: 5px;
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 4px;
+        }
+
+        details {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f1f1f1;
+            border-radius: 8px;
+        }
+        
+        summary {
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Modal specific */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            animation: fadeIn 0.3s;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>題目 13：資料儲存設備</h1>
+    <div class="subtitle">隨機存取 vs 循序存取</div>
+    <div class="progress-bar">
+        <div class="step-dot active" data-step="1">1</div>
+        <div class="step-dot" data-step="2">2</div>
+        <div class="step-dot" data-step="3">3</div>
+        <div class="step-dot" data-step="4">4</div>
+        <div class="step-dot" data-step="5">5</div>
+    </div>
+</header>
+
+<main>
+
+    <!-- STEP 1: Definition Quiz -->
+    <section id="step1" class="card active">
+        <h2>1. 觀念熱身</h2>
+        <p>這題在考「隨機存取（Random Access）」。<br>看到「隨機」這兩個字，你的直覺是什麼？</p>
+        
+        <div id="quiz-def-options">
+            <button class="btn" onclick="checkDef(this, 1)">① 想拿哪筆資料，就直接跳去拿</button>
+            <button class="btn" onclick="checkDef(this, 2)">② 一定要從頭開始慢慢找</button>
+            <button class="btn" onclick="checkDef(this, 3)">③ 跟亂數（Random Number）有關</button>
+        </div>
+
+        <div id="quiz-def-feedback" class="feedback">
+            <h3 id="def-title"></h3>
+            <p id="def-desc"></p>
+            <div class="next-btn-container">
+                <button class="big-btn" onclick="goToStep(2)">下一步：認識原理 ➜</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- STEP 2: Simulation -->
+    <section id="step2" class="card">
+        <h2>2. 原理模擬實驗室</h2>
+        <p>我們來比較兩種存取資料的方式。假設我們要讀取 <span class="highlight">第 8 號資料</span>。</p>
+        
+        <div class="sim-container">
+            <div class="sim-label">
+                <span>📼 磁帶 (Tape)</span>
+                <span style="font-size:0.8rem; color:#666;">循序存取 Sequential</span>
+            </div>
+            <div class="tape-track">
+                <div class="read-head"></div>
+                <div class="tape-strip" id="tapeStrip">
+                    <!-- JS will fill this -->
+                </div>
+            </div>
+            <div style="text-align:center; font-size:0.8rem; color:#888; margin-top:5px;">必須捲動帶子，經過 1~7 才能到 8</div>
+        </div>
+
+        <div class="sim-container">
+            <div class="sim-label">
+                <span>💿 硬碟/記憶體 (Disk/RAM)</span>
+                <span style="font-size:0.8rem; color:#666;">隨機存取 Random</span>
+            </div>
+            <div class="disk-grid" id="diskGrid">
+                <!-- JS will fill this -->
+            </div>
+            <div style="text-align:center; font-size:0.8rem; color:#888; margin-top:5px;">直接定位座標，瞬間跳到 8</div>
+        </div>
+
+        <div class="sim-controls" style="justify-content: center;">
+            <button class="big-btn" style="background:var(--primary); font-size:0.9rem;" onclick="runSimulation()">▶ 開始讀取第 8 號資料</button>
+        </div>
+
+        <div id="sim-feedback" class="feedback">
+            <p><strong>發現了嗎？</strong></p>
+            <ul>
+                <li><strong>循序存取 (Sequential)：</strong>像傳統錄音帶，想聽最後一首要先快轉（倒帶），很慢。</li>
+                <li><strong>隨機存取 (Random)：</strong>像 YouTube 影片進度條，點哪裡就播哪裡，不用等，很快！</li>
+            </ul>
+            <div class="next-btn-container">
+                <button class="big-btn" onclick="goToStep(3)">下一步：分類挑戰 ➜</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- STEP 3: Drag & Drop Game -->
+    <section id="step3" class="card">
+        <h2>3. 設備分類挑戰</h2>
+        <p>請將下方的設備歸類到正確的格子中。<br><span style="font-size:0.8rem; color:#666;">(點選下方設備，再點選上方對應的格子)</span></p>
+
+        <div class="game-area">
+            <div class="drop-zones">
+                <div class="zone" id="zone-random" onclick="handleZoneClick('random')">
+                    <h4>🚀 隨機存取<br>(可直接跳躍)</h4>
+                    <div class="zone-content"></div>
+                </div>
+                <div class="zone" id="zone-seq" onclick="handleZoneClick('seq')">
+                    <h4>🐌 循序/非隨機<br>(要依序尋找)</h4>
+                    <div class="zone-content"></div>
+                </div>
+            </div>
+
+            <div class="draggables" id="draggable-container">
+                <div class="drag-item" onclick="selectItem(this)" data-type="random">💿 光碟機 (CD-ROM)</div>
+                <div class="drag-item" onclick="selectItem(this)" data-type="random">💾 硬碟 (Hard Drive)</div>
+                <div class="drag-item" onclick="selectItem(this)" data-type="seq">📼 磁帶機 (Tape Drive)</div>
+                <div class="drag-item" onclick="selectItem(this)" data-type="random">⚡ 主記憶體 (RAM)</div>
+            </div>
+        </div>
+        
+        <p id="game-msg" style="text-align:center; color:var(--primary); min-height: 1.5rem;"></p>
+
+        <div id="game-feedback" class="feedback">
+            <strong>全對了！🎉</strong>
+            <p>只有「磁帶」因為物理構造限制，必須像捲麵線一樣捲動，無法直接跳躍。其他現代設備幾乎都支援隨機存取。</p>
+            <div class="next-btn-container">
+                <button class="big-btn" onclick="goToStep(4)">下一步：回答題目 ➜</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- STEP 4: The Question -->
+    <section id="step4" class="card">
+        <h2>4. 挑戰原題</h2>
+        <p class="question-text">
+            13. 以下哪一種資料儲存設備<strong>不具有</strong>隨機存取（random access）的功能？
+        </p>
+
+        <div id="q13-options">
+            <button class="btn" onclick="preCheckAnswer('A')">(A) 光碟機（CD-ROM drive）</button>
+            <button class="btn" onclick="preCheckAnswer('B')">(B) 硬碟（hard drive）</button>
+            <button class="btn" onclick="preCheckAnswer('C')">(C) 磁帶機（magnetic tape drive）</button>
+            <button class="btn" onclick="preCheckAnswer('D')">(D) 主記憶體（main memory）</button>
+        </div>
+
+        <div id="q13-final-feedback" class="feedback">
+            <!-- Content injected by JS -->
+        </div>
+
+        <div id="q13-next-btn" class="next-btn-container" style="display:none">
+            <button class="big-btn" onclick="goToStep(5)">看詳細解析與總結 ➜</button>
+        </div>
+    </section>
+
+    <!-- STEP 5: Analysis & Summary -->
+    <section id="step5" class="card">
+        <h2>5. 觀念總結與解析</h2>
+        
+        <div class="alert-box">
+            <div style="font-size:1.5rem">💡</div>
+            <div>
+                <strong>生活化記憶法</strong><br>
+                口訣：「磁帶要倒帶，沒有隨機快；能直接跳位，就是隨機存！」<br>
+                想想 YouTube 拉進度條 vs 錄音帶倒帶。
+            </div>
+        </div>
+
+        <h3>選項逐一分析</h3>
+        
+        <div class="option-analysis">
+            <span class="option-tag tag-random">隨機存取</span> <strong>(A) 光碟機、(B) 硬碟</strong><br>
+            光碟的雷射頭和硬碟的磁頭，都可以利用機械手臂直接移動到指定的「軌道」或「磁區」，不需要從頭讀起。
+        </div>
+
+        <div class="option-analysis" style="border: 2px solid var(--accent); background: #fff5f5;">
+            <span class="option-tag tag-seq">本題答案 / 循序存取</span> <strong>(C) 磁帶機</strong><br>
+            資料是寫在一條長長的磁性帶子上。要讀中間的資料，必須把前面的帶子捲過去。就像捲筒衛生紙，要拿到中間的紙，一定要拉出前面的部分。
+        </div>
+
+        <div class="option-analysis">
+            <span class="option-tag tag-random">隨機存取</span> <strong>(D) 主記憶體 (RAM)</strong><br>
+            Random Access Memory 的縮寫就是 RAM。CPU 可以透過地址線直接存取任何一個記憶體位置，速度最快。
+        </div>
+
+        <h3>迷思破解 O / X</h3>
+        <div class="true-false-item">
+            <span>1. 光碟一定要從第一軌開始慢慢讀？</span>
+            <div class="tf-btns">
+                <button onclick="checkTF(this, false)">O</button>
+                <button onclick="checkTF(this, true)">X</button>
+            </div>
+        </div>
+        <div class="true-false-item">
+            <span>2. RAM 的 R 代表 Random，所以是隨機存取？</span>
+            <div class="tf-btns">
+                <button onclick="checkTF(this, true)">O</button>
+                <button onclick="checkTF(this, false)">X</button>
+            </div>
+        </div>
+        <div class="true-false-item">
+            <span>3. 磁帶可以直接跳到中間讀資料？</span>
+            <div class="tf-btns">
+                <button onclick="checkTF(this, false)">O</button>
+                <button onclick="checkTF(this, true)">X</button>
+            </div>
+        </div>
+
+        <details>
+            <summary>👨‍🏫 教師備註 (Teacher's Note)</summary>
+            <ul>
+                <li><strong>重點提醒：</strong>學生常將「隨機 (Random)」誤解為「亂數」，需強調在電腦科學中，這裡是指「任意指定位置 (Arbitrary)」。</li>
+                <li><strong>延伸思考：</strong>為什麼磁帶這麼慢還有人用？(答案：容量超大、成本低、適合做長期冷備份)。</li>
+                <li><strong>SSD 比較：</strong>SSD 雖然沒有讀寫頭，但也是隨機存取，且速度比 HDD 更快。</li>
+            </ul>
+        </details>
+
+        <div class="next-btn-container" style="margin-top: 30px;">
+            <button class="big-btn" style="background: var(--success);" onclick="location.reload()">↺ 重玩一次</button>
+        </div>
+    </section>
+
+</main>
+
+<!-- Modal for Reason Selection -->
+<div id="reasonModal" class="modal-overlay">
+    <div class="modal-content">
+        <h3>你為什麼選這個答案？</h3>
+        <button class="btn" onclick="confirmReason('knowledge')">以前有讀過/聽過</button>
+        <button class="btn" onclick="confirmReason('feeling')">感覺它最古老/要倒帶</button>
+        <button class="btn" onclick="confirmReason('guess')">單純猜的</button>
+    </div>
+</div>
+
+<script>
+    // --- Global State ---
+    let currentStep = 1;
+    let selectedAnswer = '';
+    
+    // --- Navigation Logic ---
+    function goToStep(step) {
+        // Hide all cards
+        document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+        // Show target card
+        document.getElementById(`step${step}`).classList.add('active');
+        // Update dots
+        document.querySelectorAll('.step-dot').forEach(d => {
+            const s = parseInt(d.dataset.step);
+            d.classList.toggle('active', s <= step);
+        });
+        
+        currentStep = step;
+        window.scrollTo(0, 0);
+
+        // Init simulations if entering step 2
+        if(step === 2) initSimulation();
+    }
+
+    // --- Step 1: Definition Quiz ---
+    function checkDef(btn, option) {
+        const title = document.getElementById('def-title');
+        const desc = document.getElementById('def-desc');
+        const feedback = document.getElementById('quiz-def-feedback');
+        
+        // Reset buttons style
+        const btns = document.getElementById('quiz-def-options').querySelectorAll('.btn');
+        btns.forEach(b => b.classList.remove('selected', 'correct', 'wrong'));
+
+        if (option === 1) {
+            btn.classList.add('correct');
+            title.innerHTML = "✅ 正確！觀念很好喔！";
+            title.style.color = "var(--success)";
+            desc.innerHTML = "<strong>隨機存取 (Random Access)</strong> 的意思就是：「不需要按照順序，可以直接跳到任何指定位置讀取資料」。<br>就像看書可以直接翻到第 50 頁，不用從第 1 頁慢慢翻。";
+        } else if (option === 2) {
+            btn.classList.add('wrong');
+            title.innerHTML = "❌ 這是「循序存取」喔！";
+            title.style.color = "var(--accent)";
+            desc.innerHTML = "一定要從頭開始找，那個叫做<strong>循序存取 (Sequential Access)</strong>。<br>隨機存取是可以「直接跳」過去的喔！";
+        } else {
+            btn.classList.add('wrong');
+            title.innerHTML = "❌ 這是常見誤解！";
+            title.style.color = "var(--accent)";
+            desc.innerHTML = "這裡的 Random 不是指「亂數/隨便」，而是指「任意 (Arbitrary)」。<br>意思是你可以任意指定一個位置去讀取。";
+        }
+        
+        feedback.style.display = 'block';
+    }
+
+    // --- Step 2: Simulation Logic ---
+    function initSimulation() {
+        const tapeStrip = document.getElementById('tapeStrip');
+        const diskGrid = document.getElementById('diskGrid');
+        
+        // Create Tape Elements (1-10)
+        let tapeHtml = '';
+        for(let i=1; i<=10; i++) {
+            tapeHtml += `<div class="data-block" id="tape-${i}">${i}</div>`;
+        }
+        tapeStrip.innerHTML = tapeHtml;
+        tapeStrip.style.left = "calc(50% - 20px)"; // Reset position (center on 1)
+
+        // Create Disk Elements (1-10)
+        let diskHtml = '';
+        for(let i=1; i<=10; i++) {
+            diskHtml += `<div class="disk-cell" id="disk-${i}">${i}</div>`;
+        }
+        diskGrid.innerHTML = diskHtml;
+    }
+
+    function runSimulation() {
+        const target = 8;
+        const tapeStrip = document.getElementById('tapeStrip');
+        const feedback = document.getElementById('sim-feedback');
+        
+        // Reset
+        document.querySelectorAll('.disk-cell').forEach(c => c.classList.remove('active'));
+        tapeStrip.style.transition = 'none';
+        tapeStrip.style.left = "calc(50% - 20px)"; // Center on 1 (block width 40, half is 20)
+        
+        // --- 1. Tape Simulation (Sequential) ---
+        // Each block is 44px wide (40 + 2margin*2). To move to 8, we shift left.
+        // Distance from 1 to 8 is 7 blocks. 7 * 44 = 308px.
+        setTimeout(() => {
+            tapeStrip.style.transition = 'left 2.5s linear';
+            // Start at center (50%), offset by half block (20px) minus (index-1)*width
+            const blockWidth = 44;
+            const targetPos = `calc(50% - 20px - ${(target-1) * blockWidth}px)`;
+            tapeStrip.style.left = targetPos;
+        }, 100);
+
+        // --- 2. Disk Simulation (Random) ---
+        setTimeout(() => {
+            document.getElementById(`disk-${target}`).classList.add('active');
+        }, 500); // Very fast, simulating instant access
+
+        // Show feedback after animation
+        setTimeout(() => {
+            feedback.style.display = 'block';
+            feedback.scrollIntoView({behavior: "smooth"});
+        }, 2600);
+    }
+
+    // --- Step 3: Drag & Drop Logic (Click based for mobile) ---
+    let selectedDragItem = null;
+
+    function selectItem(el) {
+        // If clicked inside a zone, ignore selection logic (already placed)
+        if (el.parentElement.classList.contains('zone-content')) return;
+
+        // Deselect others
+        document.querySelectorAll('.drag-item').forEach(i => i.classList.remove('selected'));
+        
+        selectedDragItem = el;
+        el.classList.add('selected');
+        document.getElementById('game-msg').innerText = "已選取：" + el.innerText.split(' ')[1] + "。請點選上方的分類格子。";
+    }
+
+    function handleZoneClick(zoneType) {
+        if (!selectedDragItem) {
+            document.getElementById('game-msg').innerText = "請先點選下方的一個設備 👇";
+            return;
+        }
+
+        const itemType = selectedDragItem.dataset.type;
+        const msg = document.getElementById('game-msg');
+
+        if (itemType === zoneType) {
+            // Correct
+            const zone = document.getElementById(zoneType === 'random' ? 'zone-random' : 'zone-seq');
+            // Remove selected class
+            selectedDragItem.classList.remove('selected');
+            // Move to zone
+            zone.querySelector('.zone-content').appendChild(selectedDragItem);
+            
+            // Visual success
+            selectedDragItem.style.background = "#d4edda";
+            selectedDragItem.style.borderColor = "var(--success)";
+            msg.innerText = "答對了！👏";
+            msg.style.color = "var(--success)";
+            
+            selectedDragItem = null;
+            checkGameComplete();
+        } else {
+            // Wrong
+            msg.innerText = "❌ 不對喔！再想一下原理（需不需要捲動/倒帶？）";
+            msg.style.color = "var(--accent)";
+            
+            // Shake animation
+            selectedDragItem.style.transform = "translateX(10px)";
+            setTimeout(() => selectedDragItem.style.transform = "translateX(-10px)", 100);
+            setTimeout(() => selectedDragItem.style.transform = "scale(1.05)", 200);
+        }
+    }
+
+    function checkGameComplete() {
+        const container = document.getElementById('draggable-container');
+        if (container.children.length === 0) {
+            document.getElementById('game-feedback').style.display = 'block';
+            document.getElementById('game-msg').innerText = "";
+        }
+    }
+
+    // --- Step 4: Question Logic ---
+    function preCheckAnswer(option) {
+        selectedAnswer = option;
+        document.getElementById('reasonModal').style.display = 'flex';
+    }
+
+    function confirmReason(reason) {
+        document.getElementById('reasonModal').style.display = 'none';
+        checkFinalAnswer(selectedAnswer, reason);
+    }
+
+    function checkFinalAnswer(answer, reason) {
+        const feedback = document.getElementById('q13-final-feedback');
+        const nextBtn = document.getElementById('q13-next-btn');
+        let htmlContent = "";
+
+        // Disable all buttons
+        const btns = document.getElementById('q13-options').querySelectorAll('.btn');
+        btns.forEach(b => {
+            b.disabled = true;
+            if(b.innerText.startsWith(`(${answer})`)) {
+                if(answer === 'C') b.classList.add('correct');
+                else b.classList.add('wrong');
+            }
+        });
+
+        if (answer === 'C') {
+            htmlContent += `<h3 style="color:var(--success)">🎉 答對了！</h3>`;
+            if (reason === 'guess') htmlContent += `<p>運氣不錯！但要記得原理喔。</p>`;
+            else if (reason === 'feeling') htmlContent += `<p>你的直覺很準！磁帶確實因為要「捲動」所以最慢。</p>`;
+            htmlContent += `<p><strong>磁帶機 (Magnetic Tape)</strong> 是唯一必須使用「循序存取」的設備。<br>光碟、硬碟、記憶體都能「隨機存取」。</p>`;
+        } else {
+            htmlContent += `<h3 style="color:var(--accent)">❌ 答錯囉！</h3>`;
+            htmlContent += `<p>選項 (${answer}) 是可以隨機存取的喔！</p>`;
+            htmlContent += `<p><strong>提示：</strong>哪一個設備在讀取資料時，如果不按順序讀，就必須花時間「快轉」或「倒帶」？</p>`;
+        }
+
+        feedback.innerHTML = htmlContent;
+        feedback.style.display = 'block';
+        nextBtn.style.display = 'block';
+    }
+
+    // --- Step 5: True/False Logic ---
+    function checkTF(btn, isCorrect) {
+        const parent = btn.parentElement;
+        // Disable buttons in this group
+        parent.querySelectorAll('button').forEach(b => b.disabled = true);
+        
+        if (isCorrect) {
+            btn.style.background = "var(--success)";
+            btn.style.color = "white";
+        } else {
+            btn.style.background = "var(--accent)";
+            btn.style.color = "white";
+        }
+    }
+
+</script>
+</body>
+</html>

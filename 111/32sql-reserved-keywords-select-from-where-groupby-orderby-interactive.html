@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>複選題 32：SQL 保留關鍵字互動教學</title>
+    <style>
+        /* --- 基礎設定 --- */
+        :root {
+            --primary-color: #2c3e50; /* 深藍色，專業感 */
+            --accent-color: #e74c3c; /* 紅色，重點強調 */
+            --success-color: #27ae60; /* 綠色，正確 */
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+            background-color: var(--bg-color);
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* --- 標題區 --- */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 10px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            font-size: 1.1em;
+            color: #666;
+        }
+
+        /* --- 通用卡片樣式 --- */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 25px;
+            margin-bottom: 25px;
+            border-left: 5px solid var(--primary-color);
+        }
+
+        h2 {
+            color: var(--primary-color);
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        /* --- 重點強調 --- */
+        .highlight {
+            color: var(--accent-color);
+            font-weight: bold;
+            background-color: #fff3cd;
+            padding: 2px 5px;
+            border-radius: 4px;
+        }
+
+        .term {
+            font-weight: bold;
+            color: #2980b9;
+        }
+
+        /* --- 互動區：SQL 拼圖 --- */
+        .sql-builder-area {
+            background-color: #282c34;
+            color: #abb2bf;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+        }
+
+        .drop-zone {
+            display: inline-block;
+            width: 120px;
+            height: 30px;
+            background-color: #3e4451;
+            border: 2px dashed #5c6370;
+            border-radius: 4px;
+            vertical-align: middle;
+            text-align: center;
+            line-height: 30px;
+            color: #fff;
+            margin-right: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .drop-zone.filled {
+            background-color: var(--success-color);
+            border-style: solid;
+        }
+
+        .word-bank {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .draggable {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: grab;
+            user-select: none;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .draggable:active {
+            cursor: grabbing;
+        }
+
+        .draggable.used {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background-color: #95a5a6;
+        }
+
+        #sql-feedback {
+            margin-top: 10px;
+            font-weight: bold;
+            text-align: center;
+            height: 24px;
+        }
+
+        /* --- 互動區：複選題 --- */
+        .quiz-option {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+
+        .quiz-option:hover {
+            background-color: #f9f9f9;
+        }
+
+        .quiz-option label {
+            cursor: pointer;
+            display: block;
+            width: 100%;
+        }
+
+        .quiz-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1em;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .quiz-btn:hover {
+            opacity: 0.9;
+        }
+
+        #quiz-result {
+            margin-top: 15px;
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+
+        /* --- 關鍵字解析按鈕 --- */
+        .keyword-btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .keyword-btn {
+            background-color: #ecf0f1;
+            border: 1px solid #bdc3c7;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--primary-color);
+            transition: all 0.2s;
+        }
+
+        .keyword-btn:hover, .keyword-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .explanation-box {
+            background-color: #e8f6f3;
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 4px solid var(--success-color);
+            min-height: 40px;
+        }
+
+        /* --- 陷阱卡與自我檢測 --- */
+        .trap-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .trap-card {
+            background-color: #fff0f0;
+            border: 1px solid #ffcccc;
+            padding: 15px;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .trap-close {
+            display: block;
+            width: 100%;
+            margin-top: 10px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .self-check-item {
+            margin-bottom: 15px;
+            border-bottom: 1px dashed #ccc;
+            padding-bottom: 10px;
+        }
+
+        .hint-btn {
+            background-color: #f39c12;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        .hint-text {
+            display: none;
+            margin-top: 5px;
+            color: #d35400;
+            font-style: italic;
+        }
+
+        /* --- 重置按鈕 --- */
+        .reset-section {
+            text-align: center;
+            margin-top: 40px;
+            margin-bottom: 40px;
+        }
+
+        .reset-btn {
+            background-color: #95a5a6;
+            color: white;
+            border: none;
+            padding: 10px 30px;
+            border-radius: 30px;
+            cursor: pointer;
+        }
+
+        /* --- 手機版適配 --- */
+        @media (max-width: 600px) {
+            .sql-builder-area {
+                font-size: 0.9em;
+            }
+            .drop-zone {
+                width: 90px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <header>
+        <h1>電腦概論 - 資料庫單元</h1>
+        <div class="subtitle">複選題 32：SQL 保留關鍵字完全攻略</div>
+    </header>
+
+    <!-- 1. 核心觀念區 -->
+    <section class="card">
+        <h2>🔥 超重要核心觀念整理</h2>
+        <p>在學習此題前，請先搞懂這些專有名詞：</p>
+        <ul>
+            <li><span class="term">SQL</span> (操作資料庫用的標準語言)：跟資料庫溝通的唯一語言。</li>
+            <li><span class="term">保留關鍵字</span> (SQL 已經定義好用途的字)：這些字就像是程式的「指令」，不能隨便拿來當作欄位名稱或資料表名稱。</li>
+            <li><span class="term">查詢 Query</span> (向資料庫要資料)：最常見的動作。</li>
+            <li><span class="term">子句 Clause</span> (SQL 指令的組成片段)：例如 WHERE 子句負責篩選。</li>
+        </ul>
+
+        <div style="background-color: #fff8e1; padding: 15px; border-radius: 5px; border: 2px solid #ffcc00; margin-top: 15px;">
+            <strong style="font-size: 1.2em; color: #d35400;">💡 老師的考試密技：</strong><br>
+            只要是 SQL 指令本身用來「下指令」的字，全部都是保留關鍵字！<br>
+            看到 <strong>SELECT, FROM, WHERE, GROUP BY, ORDER BY</strong> 這一組，考試時幾乎都是<span class="highlight">「全選」</span>。
+        </div>
+
+        <h3 style="margin-top:20px;">標準 SQL 查詢結構示意：</h3>
+        <p>下面出現的每一個粗體字，都是<strong>保留關鍵字</strong>：</p>
+        <div style="font-family: monospace; background: #eee; padding: 15px; border-radius: 5px;">
+            <strong>SELECT</strong> 欄位名稱 (我要看什麼資料)<br>
+            <strong>FROM</strong> 資料表來源 (從哪張表找)<br>
+            <strong>WHERE</strong> 篩選條件 (只要符合條件的)<br>
+            <strong>GROUP BY</strong> 分組依據 (依照什麼分類)<br>
+            <strong>ORDER BY</strong> 排序方式 (由大到小或由小到大)
+        </div>
+    </section>
+
+    <!-- 2. SQL 關鍵字組裝互動 -->
+    <section class="card">
+        <h2>🎮 互動練習 A：組裝你的 SQL 指令</h2>
+        <p>請將下方的關鍵字卡片，拖曳或點選填入正確的空格中，完成標準語法結構。</p>
+        
+        <div class="sql-builder-area">
+            <div>
+                <span class="drop-zone" id="slot-1" data-answer="SELECT" onclick="fillSlot(this)">?</span>
+                <span>column_name (欄位)</span>
+            </div>
+            <div>
+                <span class="drop-zone" id="slot-2" data-answer="FROM" onclick="fillSlot(this)">?</span>
+                <span>table_name (資料表)</span>
+            </div>
+            <div>
+                <span class="drop-zone" id="slot-3" data-answer="WHERE" onclick="fillSlot(this)">?</span>
+                <span>condition (條件)</span>
+            </div>
+            <div>
+                <span class="drop-zone" id="slot-4" data-answer="GROUP BY" onclick="fillSlot(this)">?</span>
+                <span>column (分組)</span>
+            </div>
+            <div>
+                <span class="drop-zone" id="slot-5" data-answer="ORDER BY" onclick="fillSlot(this)">?</span>
+                <span>column (排序)</span>
+            </div>
+        </div>
+
+        <div class="word-bank" id="word-bank">
+            <div class="draggable" draggable="true" id="drag-SELECT">SELECT</div>
+            <div class="draggable" draggable="true" id="drag-FROM">FROM</div>
+            <div class="draggable" draggable="true" id="drag-WHERE">WHERE</div>
+            <div class="draggable" draggable="true" id="drag-GROUP BY">GROUP BY</div>
+            <div class="draggable" draggable="true" id="drag-ORDER BY">ORDER BY</div>
+        </div>
+        
+        <div id="sql-feedback"></div>
+    </section>
+
+    <!-- 3. 關鍵字用途解析 -->
+    <section class="card">
+        <h2>🔍 互動練習 B：關鍵字功能解析</h2>
+        <p>點擊下方的按鈕，看看這些保留字在 SQL 中負責做什麼：</p>
+        
+        <div class="keyword-btn-group">
+            <button class="keyword-btn" onclick="showExplanation('SELECT')">SELECT</button>
+            <button class="keyword-btn" onclick="showExplanation('FROM')">FROM</button>
+            <button class="keyword-btn" onclick="showExplanation('WHERE')">WHERE</button>
+            <button class="keyword-btn" onclick="showExplanation('GROUP BY')">GROUP BY</button>
+            <button class="keyword-btn" onclick="showExplanation('ORDER BY')">ORDER BY</button>
+        </div>
+
+        <div class="explanation-box" id="keyword-explanation">
+            請點擊上方按鈕查看說明...
+        </div>
+    </section>
+
+    <!-- 4. 題目作答區 -->
+    <section class="card" style="border-left-color: var(--accent-color);">
+        <h2>📝 實戰演練：複選題 32</h2>
+        <p style="font-weight: bold; color: var(--accent-color);">⚠️ 注意：本題為「複選題」，答案可能不只一個！</p>
+        
+        <div style="background: #fafafa; padding: 15px; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 15px;">
+            <p><strong>題目：</strong>SQL 資料庫語言中，下列何者屬於保留的關鍵字？</p>
+            
+            <form id="quiz-form">
+                <div class="quiz-option">
+                    <label>
+                        <input type="checkbox" name="option" value="A"> (A) SELECT
+                    </label>
+                </div>
+                <div class="quiz-option">
+                    <label>
+                        <input type="checkbox" name="option" value="B"> (B) FROM
+                    </label>
+                </div>
+                <div class="quiz-option">
+                    <label>
+                        <input type="checkbox" name="option" value="C"> (C) WHERE
+                    </label>
+                </div>
+                <div class="quiz-option">
+                    <label>
+                        <input type="checkbox" name="option" value="D"> (D) ORDER BY
+                    </label>
+                </div>
+                <div class="quiz-option">
+                    <label>
+                        <input type="checkbox" name="option" value="E"> (E) GROUP BY
+                    </label>
+                </div>
+                
+                <button type="button" class="quiz-btn" onclick="checkAnswer()">送出答案</button>
+            </form>
+
+            <div id="quiz-result"></div>
+        </div>
+
+        <h3>選項解析：</h3>
+        <p>點擊選項查看為什麼它是保留字：</p>
+        <ul id="option-analysis">
+            <li><strong>(A) SELECT：</strong><span style="color:#27ae60">是保留字。</span>因為所有查詢都必須以此開頭。</li>
+            <li><strong>(B) FROM：</strong><span style="color:#27ae60">是保留字。</span>用來指定資料來源，不可省略。</li>
+            <li><strong>(C) WHERE：</strong><span style="color:#27ae60">是保留字。</span>用來設定條件，屬於標準語法。</li>
+            <li><strong>(D) ORDER BY：</strong><span style="color:#27ae60">是保留字。</span>雖然由兩個字組成，但在 SQL 中視為一個完整的保留指令。</li>
+            <li><strong>(E) GROUP BY：</strong><span style="color:#27ae60">是保留字。</span>用於聚合函數分組，是固定語法。</li>
+        </ul>
+    </section>
+
+    <!-- 5. 陷阱與自我檢測 -->
+    <section class="card">
+        <h2>🚫 考試常見陷阱 (點擊「我懂了」消除)</h2>
+        <div class="trap-cards">
+            <div class="trap-card" id="trap1">
+                <h4>陷阱 1</h4>
+                <p>以為 GROUP BY 是兩個字，是「片語」所以不是關鍵字？</p>
+                <p><strong>錯！</strong>在 SQL 解析器眼中，它們就是保留指令。</p>
+                <button class="trap-close" onclick="dismissTrap('trap1')">我懂了</button>
+            </div>
+            <div class="trap-card" id="trap2">
+                <h4>陷阱 2</h4>
+                <p>複選題習慣只選前三個 (SELECT, FROM, WHERE)？</p>
+                <p><strong>錯！</strong>不要漏掉排序 (ORDER) 和分組 (GROUP)。</p>
+                <button class="trap-close" onclick="dismissTrap('trap2')">我懂了</button>
+            </div>
+            <div class="trap-card" id="trap3">
+                <h4>陷阱 3</h4>
+                <p>以為只有大寫才是關鍵字？</p>
+                <p><strong>錯！</strong>SQL 不分大小寫，select 也是保留字。</p>
+                <button class="trap-close" onclick="dismissTrap('trap3')">我懂了</button>
+            </div>
+        </div>
+
+        <h3 style="margin-top: 30px;">🤔 自我檢測 (不給答案，想一想)</h3>
+        <div class="self-check-item">
+            <p><strong>Q1：</strong>為什麼我建立資料表時，不能把欄位取名為 "SELECT"？</p>
+            <button class="hint-btn" onclick="toggleHint('hint1')">顯示提示</button>
+            <p id="hint1" class="hint-text">提示：因為資料庫看到 "SELECT" 會以為你要開始查詢資料，會造成語法混亂錯誤。</p>
+        </div>
+        <div class="self-check-item">
+            <p><strong>Q2：</strong>HAVING (通常跟在 GROUP BY 後面篩選) 是不是保留關鍵字？</p>
+            <button class="hint-btn" onclick="toggleHint('hint2')">顯示提示</button>
+            <p id="hint2" class="hint-text">提示：是！它也是 SQL 語法結構的一部分，就像 WHERE 一樣。</p>
+        </div>
+        <div class="self-check-item">
+            <p><strong>Q3：</strong>考試時如何快速判斷一個字是不是保留關鍵字？</p>
+            <button class="hint-btn" onclick="toggleHint('hint3')">顯示提示</button>
+            <p id="hint3" class="hint-text">提示：問自己「這個字是不是 SQL 指令本身就在用的功能字？」如果是，那就是保留字。</p>
+        </div>
+    </section>
+
+    <div class="reset-section">
+        <button class="reset-btn" onclick="resetAll()">🔄 全部重置 / 重新練習</button>
+    </div>
+
+</div>
+
+<script>
+    // --- 1. SQL 拼圖功能 ---
+    let selectedWord = null;
+
+    // 處理可拖曳項目的點擊 (適用於行動裝置點選模式)
+    const draggables = document.querySelectorAll('.draggable');
+    draggables.forEach(elem => {
+        // 拖曳事件
+        elem.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData('text/plain', e.target.innerText);
+            e.target.style.opacity = '0.4';
+        });
+
+        elem.addEventListener('dragend', (e) => {
+            e.target.style.opacity = '1';
+        });
+
+        // 點擊事件 (替代拖曳)
+        elem.addEventListener('click', () => {
+            if (elem.classList.contains('used')) return;
+            
+            // 清除其他選取狀態
+            draggables.forEach(d => d.style.border = 'none');
+            
+            selectedWord = elem.innerText;
+            elem.style.border = '2px solid yellow'; // 標示目前選取的字
+        });
+    });
+
+    // 填空邏輯
+    function fillSlot(slot) {
+        // 如果該格已經填了，不動作 (或可設計點擊清除)
+        if (slot.classList.contains('filled')) return;
+
+        // 如果沒有透過點選選擇字詞，提示使用者
+        if (!selectedWord) {
+            // 檢查是否有正在拖曳的資料 (透過 drop event 處理，這裡是 click handler)
+            // 這裡主要處理點選填充模式
+            return;
+        }
+
+        checkAndFill(slot, selectedWord);
+    }
+
+    // 處理 Drop 事件
+    const zones = document.querySelectorAll('.drop-zone');
+    zones.forEach(zone => {
+        zone.addEventListener('dragover', (e) => {
+            e.preventDefault(); // 允許 Drop
+            zone.style.backgroundColor = '#5c6370';
+        });
+
+        zone.addEventListener('dragleave', (e) => {
+            zone.style.backgroundColor = '#3e4451';
+        });
+
+        zone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const data = e.dataTransfer.getData('text/plain');
+            checkAndFill(zone, data);
+            zone.style.backgroundColor = '#3e4451';
+        });
+    });
+
+    function checkAndFill(slot, word) {
+        const correctWord = slot.getAttribute('data-answer');
+        const feedback = document.getElementById('sql-feedback');
+
+        if (word === correctWord) {
+            slot.innerText = word;
+            slot.classList.add('filled');
+            feedback.innerText = "✅ 正確！";
+            feedback.style.color = "#2ecc71";
+            
+            // 標記該字詞已使用
+            const wordElem = document.getElementById(`drag-${word}`);
+            if(wordElem) wordElem.classList.add('used');
+            wordElem.style.border = 'none';
+            selectedWord = null; // 重置選取
+
+            checkAllSlots();
+        } else {
+            feedback.innerText = "❌ 錯誤，這個位置應該放別的關鍵字喔！";
+            feedback.style.color = "#e74c3c";
+            setTimeout(() => { feedback.innerText = ""; }, 2000);
+        }
+    }
+
+    function checkAllSlots() {
+        const slots = document.querySelectorAll('.drop-zone');
+        const allFilled = Array.from(slots).every(slot => slot.classList.contains('filled'));
+        if (allFilled) {
+            document.getElementById('sql-feedback').innerText = "🎉 太棒了！這些全部都是 SQL 已定義的保留關鍵字！";
+        }
+    }
+
+    // --- 2. 關鍵字解釋功能 ---
+    const explanations = {
+        'SELECT': '<strong>SELECT (選取)</strong>：用來指定你要從資料庫中抓取哪些「欄位」。是查詢語句的第一個字。',
+        'FROM': '<strong>FROM (來自)</strong>：用來指定資料是儲存在哪一張「資料表 (Table)」裡面。',
+        'WHERE': '<strong>WHERE (條件)</strong>：用來設定「篩選條件」，只把符合條件的資料找出來 (例如：找出成績 > 60 分的人)。',
+        'GROUP BY': '<strong>GROUP BY (分組)</strong>：用來將資料依照特定欄位進行「分類」 (例如：依照班級分組)。',
+        'ORDER BY': '<strong>ORDER BY (排序)</strong>：用來決定資料顯示的「順序」 (例如：依照學號由小到大排序)。'
+    };
+
+    function showExplanation(keyword) {
+        const box = document.getElementById('keyword-explanation');
+        box.innerHTML = explanations[keyword];
+        
+        // 按鈕樣式切換
+        document.querySelectorAll('.keyword-btn').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+    }
+
+    // --- 3. 複選題檢查 ---
+    function checkAnswer() {
+        const form = document.getElementById('quiz-form');
+        const formData = new FormData(form);
+        const selected = formData.getAll('option'); // 取得所有勾選的值 ['A', 'B', ...]
+        const resultDiv = document.getElementById('quiz-result');
+
+        // 正確答案是 ABCDE 全選
+        const correctCount = 5;
+        
+        if (selected.length === 0) {
+            resultDiv.style.display = 'block';
+            resultDiv.style.backgroundColor = '#ffeaa7';
+            resultDiv.style.color = '#d35400';
+            resultDiv.innerText = "⚠️ 你還沒有選擇任何答案喔！";
+        } else if (selected.length === correctCount) {
+            resultDiv.style.display = 'block';
+            resultDiv.style.backgroundColor = '#dff9fb';
+            resultDiv.style.color = '#27ae60';
+            resultDiv.innerHTML = "🏆 <strong>完全正確！</strong><br>觀念正確：SQL 的指令語法字全部都是保留關鍵字。";
+        } else {
+            resultDiv.style.display = 'block';
+            resultDiv.style.backgroundColor = '#fab1a0';
+            resultDiv.style.color = '#c0392b';
+            resultDiv.innerHTML = "❌ <strong>答案不完整喔！</strong><br>提示：SQL 關鍵字是整組出現的，不能只選一部分，再檢查看看還有哪些也是指令？";
+        }
+    }
+
+    // --- 4. 陷阱卡功能 ---
+    function dismissTrap(id) {
+        const card = document.getElementById(id);
+        card.style.transition = "opacity 0.5s";
+        card.style.opacity = "0";
+        setTimeout(() => {
+            card.style.display = "none";
+        }, 500);
+    }
+
+    // --- 5. 自我檢測提示 ---
+    function toggleHint(id) {
+        const hint = document.getElementById(id);
+        if (hint.style.display === "block") {
+            hint.style.display = "none";
+        } else {
+            hint.style.display = "block";
+        }
+    }
+
+    // --- 6. 全域重置 ---
+    function resetAll() {
+        // 重置拼圖
+        document.querySelectorAll('.drop-zone').forEach(zone => {
+            zone.classList.remove('filled');
+            zone.innerText = "?";
+            zone.style.backgroundColor = '#3e4451';
+        });
+        document.querySelectorAll('.draggable').forEach(drag => {
+            drag.classList.remove('used');
+            drag.style.border = 'none';
+        });
+        document.getElementById('sql-feedback').innerText = "";
+        selectedWord = null;
+
+        // 重置複選題
+        document.getElementById('quiz-form').reset();
+        document.getElementById('quiz-result').style.display = 'none';
+
+        // 重置解釋區
+        document.getElementById('keyword-explanation').innerText = "請點擊上方按鈕查看說明...";
+        document.querySelectorAll('.keyword-btn').forEach(btn => btn.classList.remove('active'));
+
+        // 重置陷阱卡 (如果被消除了，讓它們回來)
+        document.querySelectorAll('.trap-card').forEach(card => {
+            card.style.display = "block";
+            setTimeout(() => card.style.opacity = "1", 100);
+        });
+
+        // 重置提示
+        document.querySelectorAll('.hint-text').forEach(hint => hint.style.display = "none");
+
+        // 捲動到頂部
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+</script>
+
+</body>
+</html>

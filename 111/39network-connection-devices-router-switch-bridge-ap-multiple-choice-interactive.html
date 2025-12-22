@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>複選題 39 - 網路連接設備互動教學</title>
+    <style>
+        /* 全域設定 */
+        :root {
+            --primary-color: #2c3e50; /* 深藍：專業感 */
+            --accent-color: #e67e22; /* 橘色：重點強調 */
+            --success-color: #27ae60; /* 綠色：正確 */
+            --error-color: #c0392b; /* 紅色：錯誤 */
+            --bg-color: #ecf0f1;
+            --card-bg: #ffffff;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding-bottom: 50px;
+        }
+
+        /* 標題區 */
+        header {
+            text-align: center;
+            background: var(--primary-color);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+
+        header p {
+            margin: 5px 0 0;
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+
+        /* 卡片通用樣式 */
+        .card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--primary-color);
+        }
+
+        h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        /* 核心觀念區 */
+        .concept-highlight {
+            background-color: #fff8e1;
+            border-left-color: var(--accent-color);
+        }
+
+        .key-point {
+            font-weight: bold;
+            color: var(--error-color);
+            font-size: 1.1em;
+        }
+
+        .highlight-box {
+            background: #e8f6f3;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        /* 互動區 A：拖拉分類 */
+        .drag-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            min-height: 60px;
+            padding: 10px;
+            background: #f9f9f9;
+            border: 2px dashed #ccc;
+            border-radius: 5px;
+            justify-content: center;
+        }
+
+        .draggable {
+            background: var(--primary-color);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: move; /* 提示可拖曳 */
+            user-select: none;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+        }
+
+        .draggable:active {
+            transform: scale(0.95);
+        }
+
+        .drop-zones-container {
+            display: flex;
+            gap: 20px;
+        }
+
+        .drop-zone {
+            flex: 1;
+            min-height: 150px;
+            background: #fff;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .drop-zone h3 {
+            margin-top: 0;
+            font-size: 1rem;
+            color: #555;
+            pointer-events: none; /* 防止文字干擾拖放 */
+        }
+
+        .drop-zone.correct-bg {
+            background-color: #d5f5e3;
+            border-color: var(--success-color);
+        }
+
+        .drop-zone.wrong-bg {
+            background-color: #fadbd8;
+            border-color: var(--error-color);
+        }
+
+        /* 題目區 B：複選題 */
+        .question-box {
+            background: #fff;
+            border: 2px solid var(--primary-color);
+            padding: 25px;
+            border-radius: 10px;
+            position: relative;
+        }
+
+        .question-tag {
+            position: absolute;
+            top: -15px;
+            left: 20px;
+            background: var(--accent-color);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .options-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .options-list li {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #eee;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .options-list li:hover {
+            background-color: #f0f8ff;
+        }
+
+        .options-list label {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+
+        .options-list input[type="checkbox"] {
+            margin-right: 15px;
+            transform: scale(1.2);
+        }
+
+        /* 情境互動 C & 按鈕 */
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+            font-weight: bold;
+        }
+
+        .btn-primary { background: var(--primary-color); color: white; }
+        .btn-action { background: var(--accent-color); color: white; }
+        .btn-outline { background: transparent; border: 2px solid var(--primary-color); color: var(--primary-color); }
+        .btn:hover { opacity: 0.9; transform: translateY(-2px); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .scenario-display {
+            padding: 15px;
+            background: #eaf2f8;
+            border-radius: 5px;
+            min-height: 40px;
+            margin-top: 10px;
+            font-style: italic;
+        }
+
+        /* 詳細解析區 D */
+        .detail-item {
+            cursor: pointer;
+            padding: 10px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .detail-item:hover { background: #e9ecef; }
+        
+        .detail-content {
+            display: none; /* 預設隱藏 */
+            padding: 15px;
+            background: white;
+            border-left: 3px solid var(--accent-color);
+            animation: fadeIn 0.3s;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .badge-yes { background: var(--success-color); color: white; }
+        .badge-no { background: var(--error-color); color: white; }
+
+        /* 陷阱卡 E */
+        .trap-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .trap-card {
+            background: #fff0f0;
+            border: 1px solid #ffcccc;
+            padding: 15px;
+            border-radius: 8px;
+            position: relative;
+            cursor: pointer;
+            transition: opacity 0.5s;
+        }
+
+        .trap-card h3 {
+            color: var(--error-color);
+            font-size: 1.1rem;
+            margin-top: 0;
+            border-bottom: none;
+        }
+
+        .trap-card button {
+            margin-top: 10px;
+            background: rgba(192, 57, 43, 0.1);
+            color: var(--error-color);
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        /* 自我檢測 F */
+        .hint-box {
+            display: none;
+            margin-top: 10px;
+            color: #666;
+            font-size: 0.95rem;
+            padding: 10px;
+            background: #fff;
+            border: 1px dashed #aaa;
+        }
+
+        /* 結果回饋區 */
+        #result-area {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+            font-weight: bold;
+        }
+
+        .success-msg { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error-msg { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+        /* 浮動重置按鈕 */
+        .reset-all-btn {
+            display: block;
+            width: 100%;
+            margin-top: 30px;
+            padding: 15px;
+            background: #95a5a6;
+            color: white;
+            border: none;
+            font-size: 1.1rem;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .reset-all-btn:hover { background: #7f8c8d; }
+
+        /* 動畫 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 600px) {
+            .drop-zones-container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- 頁首 -->
+    <header>
+        <h1>複選題 39：哪些是網路的連接設備？</h1>
+        <p>電腦網路基礎設備與功能｜高中電腦概論</p>
+    </header>
+
+    <!-- 1. 核心觀念區 -->
+    <div class="card concept-highlight">
+        <h2>🔥 補教名師：30秒觀念速成</h2>
+        <p>各位同學，這題是考試必考題！要判斷一個設備是不是「網路連接設備」，只有一個黃金法則：</p>
+        <div class="highlight-box">
+            <p><strong>網路連接設備 = 用來「連接」或「轉送」網路資料</strong></p>
+            <ul>
+                <li>只要設備的功能是<span class="key-point">「傳資料、接網路」</span> → ⭕ 通常是網路設備</li>
+                <li>只負責<span class="key-point">「播放內容、不負責連接」</span> → ❌ 只是終端設備（Client）</li>
+            </ul>
+        </div>
+        <p>👉 <strong>快速判斷法：</strong>能讓你的電腦「上網」或「彼此連線」的就要選！</p>
+    </div>
+
+    <!-- 2. 互動功能 A：分類練習 -->
+    <div class="card">
+        <h2>(A) 暖身互動：設備分類大挑戰</h2>
+        <p>請將下方的設備卡片，拖拉（或點選）到正確的分類框中：</p>
+        
+        <!-- 待分類區 -->
+        <div class="drag-area" id="source-container" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <div class="draggable" draggable="true" ondragstart="drag(event)" id="item1" data-type="net">路由器 (Router)</div>
+            <div class="draggable" draggable="true" ondragstart="drag(event)" id="item2" data-type="net">交換器 (Switch)</div>
+            <div class="draggable" draggable="true" ondragstart="drag(event)" id="item3" data-type="net">橋接器 (Bridge)</div>
+            <div class="draggable" draggable="true" ondragstart="drag(event)" id="item4" data-type="net">基地台 (AP)</div>
+            <div class="draggable" draggable="true" ondragstart="drag(event)" id="item5" data-type="not-net">影音播放器</div>
+        </div>
+
+        <!-- 分類目標區 -->
+        <div class="drop-zones-container">
+            <div class="drop-zone" id="zone-network" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <h3>✅ 網路連接設備</h3>
+                <!-- 落點 -->
+            </div>
+            <div class="drop-zone" id="zone-terminal" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <h3>⛔ 非網路連接設備</h3>
+                <!-- 落點 -->
+            </div>
+        </div>
+
+        <button class="btn btn-action" style="margin-top: 15px; width: 100%;" onclick="checkDragAnswer()">檢查分類答案</button>
+        <div id="drag-feedback" style="margin-top: 10px; font-weight: bold; text-align: center;"></div>
+    </div>
+
+    <!-- 3. 互動功能 C：情境模擬 -->
+    <div class="card">
+        <h2>(B) 設備用途情境模擬</h2>
+        <p>點擊下方按鈕，看看這些情況需要哪種設備：</p>
+        <div class="btn-group">
+            <button class="btn btn-outline" onclick="showScenario('home')">家裡多台電腦要互連</button>
+            <button class="btn btn-outline" onclick="showScenario('wifi')">手機要用 Wi-Fi 上網</button>
+            <button class="btn btn-outline" onclick="showScenario('internet')">連接不同網路(如網際網路)</button>
+        </div>
+        <div id="scenario-text" class="scenario-display">
+            請選擇一個情境...
+        </div>
+    </div>
+
+    <!-- 4. 題目區 B：複選題作答 -->
+    <div class="question-box">
+        <div class="question-tag">複選題 39</div>
+        <h3 style="margin-top: 20px;">下列何者可為網路的連接設備？<span style="color: red; font-size: 0.8em;">（本題可複選）</span></h3>
+        
+        <form id="quiz-form">
+            <ul class="options-list">
+                <li>
+                    <label>
+                        <input type="checkbox" name="option" value="A">
+                        (A) 路由器（Router）：負責幫資料選路，連接不同網路
+                    </label>
+                </li>
+                <li>
+                    <label>
+                        <input type="checkbox" name="option" value="B">
+                        (B) 交換器（Switch）：在區域網路內轉送資料
+                    </label>
+                </li>
+                <li>
+                    <label>
+                        <input type="checkbox" name="option" value="C">
+                        (C) 橋接器（Bridge）：連接兩個相同類型的網路區段
+                    </label>
+                </li>
+                <li>
+                    <label>
+                        <input type="checkbox" name="option" value="D">
+                        (D) 基地台（Access Point）：讓無線裝置連上有線網路
+                    </label>
+                </li>
+                <li>
+                    <label>
+                        <input type="checkbox" name="option" value="E">
+                        (E) 影音播放器：播放影音內容的終端設備
+                    </label>
+                </li>
+            </ul>
+        </form>
+
+        <button class="btn btn-primary" style="width: 100%;" onclick="submitQuiz()">送出答案</button>
+
+        <div id="result-area"></div>
+    </div>
+
+    <!-- 5. 選項解析區 D -->
+    <div class="card" style="margin-top: 20px;">
+        <h2>(C) 逐項解析（點擊展開）</h2>
+        <div id="analysis-container">
+            <!-- 透過 JS 生成或直接寫在 HTML -->
+            <div class="detail-item" onclick="toggleDetail('detail-a')">
+                <span>(A) 路由器 (Router)</span>
+                <span class="badge badge-yes">是網路設備</span>
+            </div>
+            <div id="detail-a" class="detail-content">
+                <strong>功能：</strong>連接「不同」的網路（例如你的家裡區域網路 LAN 連到外面的網際網路 WAN）。<br>
+                <strong>為什麼選：</strong>因為它負責「路由選擇」，幫資料找路，是核心連接設備。
+            </div>
+
+            <div class="detail-item" onclick="toggleDetail('detail-b')">
+                <span>(B) 交換器 (Switch)</span>
+                <span class="badge badge-yes">是網路設備</span>
+            </div>
+            <div id="detail-b" class="detail-content">
+                <strong>功能：</strong>連接多台電腦形成「區域網路」。<br>
+                <strong>為什麼選：</strong>它是現代網路的樞紐，負責將資料精準傳送到目的電腦。
+            </div>
+
+            <div class="detail-item" onclick="toggleDetail('detail-c')">
+                <span>(C) 橋接器 (Bridge)</span>
+                <span class="badge badge-yes">是網路設備</span>
+            </div>
+            <div id="detail-c" class="detail-content">
+                <strong>功能：</strong>連接兩個「同類型」的區域網路區段，可過濾資料。<br>
+                <strong>為什麼選：</strong>雖然現在較少單獨看到（功能多被交換器取代），但在定義上它絕對是連接設備。
+            </div>
+
+            <div class="detail-item" onclick="toggleDetail('detail-d')">
+                <span>(D) 基地台 (AP)</span>
+                <span class="badge badge-yes">是網路設備</span>
+            </div>
+            <div id="detail-d" class="detail-content">
+                <strong>功能：</strong>Access Point，作為無線裝置（手機、筆電）與有線網路之間的橋樑。<br>
+                <strong>為什麼選：</strong>沒有它，無線裝置就連不上網路，它是連接點。
+            </div>
+
+            <div class="detail-item" onclick="toggleDetail('detail-e')">
+                <span>(E) 影音播放器</span>
+                <span class="badge badge-no">❌ 不是</span>
+            </div>
+            <div id="detail-e" class="detail-content">
+                <strong>功能：</strong>負責「解碼、播放」影片或音樂。<br>
+                <strong>為什麼不選：</strong>雖然它可能有一條網路線插孔（用來下載影片），但它的主要功能是「使用」網路，而不是「連接」其他設備成網。它是 End Device（終端設備）。
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. 常見陷阱區 E -->
+    <div class="card">
+        <h2>⚠️ 考試陷阱卡（點擊消除）</h2>
+        <div class="trap-grid">
+            <div class="trap-card" onclick="dismissTrap(this)">
+                <h3>陷阱 1：能插網路線就是網路設備？</h3>
+                <p>錯！電腦、印表機、電視都能插網路線，但它們是「終端設備」。</p>
+                <button>我懂了</button>
+            </div>
+            <div class="trap-card" onclick="dismissTrap(this)">
+                <h3>陷阱 2：看到英文就亂選？</h3>
+                <p>不要怕！Router=選路、Switch=交換、AP=無線進入點。記住功能就好。</p>
+                <button>我懂了</button>
+            </div>
+            <div class="trap-card" onclick="dismissTrap(this)">
+                <h3>陷阱 3：Hub (集線器) 算不算？</h3>
+                <p>算！Hub 雖然笨（廣播），但它也是負責連接多台電腦的設備喔。</p>
+                <button>我懂了</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 7. 自我檢測 F -->
+    <div class="card">
+        <h2>🧐 自我檢測（想一想）</h2>
+        
+        <div style="margin-bottom: 15px;">
+            <strong>Q1: 為什麼印表機不是網路連接設備？</strong>
+            <button class="btn btn-outline" style="font-size: 0.8rem; padding: 2px 8px;" onclick="toggleHint('hint1')">顯示提示</button>
+            <div id="hint1" class="hint-box">提示：印表機是負責「產出文件」，它是網路的使用者，不是網路的建造者。</div>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <strong>Q2: 交換器 (Switch) 與路由器 (Router) 最大的差別？</strong>
+            <button class="btn btn-outline" style="font-size: 0.8rem; padding: 2px 8px;" onclick="toggleHint('hint2')">顯示提示</button>
+            <div id="hint2" class="hint-box">提示：交換器管「內部」（MAC位址）；路由器管「內外溝通」（IP位址）。</div>
+        </div>
+    </div>
+
+    <button class="reset-all-btn" onclick="resetAll()">🔄 全部重置 / 重新開始</button>
+
+</div>
+
+<script>
+    /* =========================================
+       互動邏輯 A: 拖拉分類 (Drag & Drop)
+       ========================================= */
+    function allowDrop(ev) {
+        ev.preventDefault();
+    }
+
+    function drag(ev) {
+        ev.dataTransfer.setData("text", ev.target.id);
+    }
+
+    function drop(ev) {
+        ev.preventDefault();
+        var data = ev.dataTransfer.getData("text");
+        var draggedElement = document.getElementById(data);
+        
+        // 確保放置目標是 drop-zone 或 source-container，而不是裡面的子元素
+        let target = ev.target;
+        while (!target.classList.contains('drop-zone') && !target.classList.contains('drag-area')) {
+            target = target.parentNode;
+            if(!target) return; // 防止錯誤
+        }
+        
+        target.appendChild(draggedElement);
+        
+        // 移除先前的視覺回饋
+        document.getElementById('zone-network').classList.remove('correct-bg', 'wrong-bg');
+        document.getElementById('zone-terminal').classList.remove('correct-bg', 'wrong-bg');
+        document.getElementById('drag-feedback').innerHTML = "";
+    }
+
+    // 手機版點擊移動支援 (簡單版)
+    document.querySelectorAll('.draggable').forEach(item => {
+        item.addEventListener('click', function() {
+            // 簡單輪轉邏輯：Source -> Network -> Terminal -> Source
+            let currentParent = this.parentNode.id;
+            let targetId = '';
+            
+            if (currentParent === 'source-container') targetId = 'zone-network';
+            else if (currentParent === 'zone-network') targetId = 'zone-terminal';
+            else targetId = 'source-container';
+            
+            document.getElementById(targetId).appendChild(this);
+            // 清除回饋
+            document.getElementById('drag-feedback').innerHTML = "";
+            document.getElementById('zone-network').classList.remove('correct-bg', 'wrong-bg');
+            document.getElementById('zone-terminal').classList.remove('correct-bg', 'wrong-bg');
+        });
+    });
+
+    function checkDragAnswer() {
+        const zoneNetwork = document.getElementById('zone-network');
+        const zoneTerminal = document.getElementById('zone-terminal');
+        const feedback = document.getElementById('drag-feedback');
+        
+        let correctCount = 0;
+        let errors = [];
+
+        // 檢查網路設備區
+        Array.from(zoneNetwork.children).forEach(child => {
+            if (child.classList.contains('draggable')) {
+                if (child.dataset.type === 'net') correctCount++;
+                else errors.push(`${child.innerText} 只是終端設備，不是連接設備喔！`);
+            }
+        });
+
+        // 檢查終端設備區
+        Array.from(zoneTerminal.children).forEach(child => {
+             if (child.classList.contains('draggable')) {
+                if (child.dataset.type === 'not-net') correctCount++;
+                else errors.push(`${child.innerText} 是負責連接網路的設備喔！`);
+            }
+        });
+
+        // 總共有5個項目
+        if (errors.length === 0 && correctCount === 5) {
+            feedback.style.color = "green";
+            feedback.innerHTML = "🎉 太棒了！分類完全正確！觀念很清楚喔！";
+            zoneNetwork.classList.add('correct-bg');
+            zoneTerminal.classList.add('correct-bg');
+        } else {
+            feedback.style.color = "red";
+            if(correctCount < 5 && errors.length === 0) {
+                 feedback.innerHTML = "還有設備沒分類完喔！加油！";
+            } else {
+                feedback.innerHTML = "❌ 哎呀！有分錯的：<br>" + errors.join("<br>");
+                zoneNetwork.classList.add('wrong-bg');
+                zoneTerminal.classList.add('wrong-bg');
+            }
+        }
+    }
+
+    /* =========================================
+       互動邏輯 B: 複選題作答
+       ========================================= */
+    function submitQuiz() {
+        const form = document.getElementById('quiz-form');
+        const resultArea = document.getElementById('result-area');
+        
+        // 取得所有勾選的值
+        const checked = Array.from(form.querySelectorAll('input[name="option"]:checked')).map(cb => cb.value);
+        
+        // 正確答案
+        const correctAnswers = ['A', 'B', 'C', 'D'];
+        
+        resultArea.style.display = 'block';
+        resultArea.className = ''; // 清除舊樣式
+
+        // 判斷邏輯
+        const isE_Selected = checked.includes('E');
+        const missingCorrect = correctAnswers.filter(x => !checked.includes(x));
+        
+        if (checked.length === 0) {
+            resultArea.innerText = "👀 同學，你還沒作答喔！請勾選你認為是網路設備的選項。";
+            resultArea.classList.add('error-msg');
+            return;
+        }
+
+        if (isE_Selected) {
+            resultArea.innerHTML = "❌ <strong>錯誤！</strong><br>你選到了 (E) 影音播放器。<br>記住老師說的：影音播放器只是「使用」網路來看影片，它本身不負責幫別人連接網路喔！";
+            resultArea.classList.add('error-msg');
+        } else if (missingCorrect.length > 0) {
+            resultArea.innerHTML = `⚠️ <strong>可惜，還差一點！</strong><br>你漏選了：${missingCorrect.join(', ')}。<br>這些也都是負責連接的設備喔！`;
+            resultArea.classList.add('error-msg'); // 用紅色提醒漏選
+        } else if (checked.length === 4 && !isE_Selected) {
+            resultArea.innerHTML = "💯 <strong>完全正確！太強了！</strong><br>(A)(B)(C)(D) 都是網路連接設備，恭喜你掌握了本題重點！";
+            resultArea.classList.add('success-msg');
+        } else {
+            // 防禦性代碼，理論上不應執行到這
+            resultArea.innerText = "答案組合怪怪的，請再檢查一次。";
+        }
+    }
+
+    /* =========================================
+       互動邏輯 C: 情境模擬
+       ========================================= */
+    function showScenario(type) {
+        const display = document.getElementById('scenario-text');
+        if (type === 'home') {
+            display.innerHTML = "<strong>情境：家裡多台電腦互連</strong><br>👉 需要 <strong>交換器 (Switch)</strong>。<br>說明：它像是一個多孔插座，把大家的網路線接在一起，形成區域網路 (LAN)。";
+        } else if (type === 'wifi') {
+            display.innerHTML = "<strong>情境：手機要用 Wi-Fi 上網</strong><br>👉 需要 <strong>無線基地台 (Access Point, AP)</strong>。<br>說明：它把有線訊號轉成無線電波，讓手機能連上網路。";
+        } else if (type === 'internet') {
+            display.innerHTML = "<strong>情境：連接不同網路 (如：家裡連到中華電信機房)</strong><br>👉 需要 <strong>路由器 (Router)</strong>。<br>說明：它負責幫資料「找路」，跨越不同的網路傳送資料。";
+        }
+    }
+
+    /* =========================================
+       互動邏輯 D: 展開詳解
+       ========================================= */
+    function toggleDetail(id) {
+        const content = document.getElementById(id);
+        if (content.style.display === 'block') {
+            content.style.display = 'none';
+        } else {
+            content.style.display = 'block';
+        }
+    }
+
+    /* =========================================
+       互動邏輯 E: 陷阱卡 & F: 自我檢測
+       ========================================= */
+    function dismissTrap(element) {
+        element.style.opacity = '0';
+        setTimeout(() => {
+            element.style.display = 'none';
+        }, 500);
+    }
+
+    function toggleHint(id) {
+        const hint = document.getElementById(id);
+        if (hint.style.display === 'block') {
+            hint.style.display = 'none';
+        } else {
+            hint.style.display = 'block';
+        }
+    }
+
+    /* =========================================
+       全域功能: 重置
+       ========================================= */
+    function resetAll() {
+        // 1. 重置拖拉區
+        const sourceContainer = document.getElementById('source-container');
+        const items = ['item1', 'item2', 'item3', 'item4', 'item5'];
+        items.forEach(id => {
+            sourceContainer.appendChild(document.getElementById(id));
+        });
+        document.getElementById('drag-feedback').innerHTML = "";
+        document.getElementById('zone-network').classList.remove('correct-bg', 'wrong-bg');
+        document.getElementById('zone-terminal').classList.remove('correct-bg', 'wrong-bg');
+
+        // 2. 重置題目
+        document.getElementById('quiz-form').reset();
+        const resultArea = document.getElementById('result-area');
+        resultArea.style.display = 'none';
+        resultArea.className = '';
+
+        // 3. 重置情境
+        document.getElementById('scenario-text').innerHTML = "請選擇一個情境...";
+
+        // 4. 重置詳解（全部收起）
+        document.querySelectorAll('.detail-content').forEach(el => el.style.display = 'none');
+
+        // 5. 重置陷阱卡（全部顯示）
+        document.querySelectorAll('.trap-card').forEach(el => {
+            el.style.display = 'block';
+            el.style.opacity = '1';
+        });
+
+        // 6. 重置提示
+        document.querySelectorAll('.hint-box').forEach(el => el.style.display = 'none');
+
+        // 捲動到頂部
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+</script>
+
+</body>
+</html>

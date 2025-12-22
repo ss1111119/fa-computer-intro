@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>十六進位轉二進位 - 衝刺班教學</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #e74c3c;
+            --highlight-bg: #f1c40f;
+            --highlight-text: #000;
+            --light-bg: #f8f9fa;
+            --border-color: #dee2e6;
+            --success-color: #27ae60;
+            --text-color: #333;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            background-color: #ecf0f1;
+            color: var(--text-color);
+            line-height: 1.6;
+            padding-bottom: 50px;
+        }
+
+        /* A. 頁首區 */
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .badge {
+            background-color: var(--accent-color);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-top: 5px;
+            display: inline-block;
+        }
+
+        /* 容器 */
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 0 15px;
+        }
+
+        /* 卡片通用樣式 */
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--primary-color);
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            border-bottom: 2px solid var(--light-bg);
+            padding-bottom: 5px;
+        }
+
+        /* B. 題目區 */
+        .question-text {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            line-height: 1.8;
+        }
+
+        .binary-code {
+            font-family: "Courier New", Courier, monospace;
+            background: #eee;
+            padding: 2px 5px;
+            border-radius: 4px;
+            letter-spacing: 1px;
+        }
+
+        .options label {
+            display: block;
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .options label:hover {
+            background-color: var(--light-bg);
+        }
+
+        input[type="radio"] {
+            margin-right: 10px;
+        }
+
+        /* C. 關鍵字互動 */
+        .highlight-span {
+            transition: background-color 0.3s;
+            padding: 0 2px;
+            border-radius: 2px;
+        }
+
+        .active-highlight {
+            background-color: var(--highlight-bg);
+            color: var(--highlight-text);
+            font-weight: bold;
+            box-shadow: 0 0 5px rgba(241, 196, 15, 0.5);
+        }
+
+        .keyword-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .kw-btn {
+            background: white;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .kw-btn:hover, .kw-btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        #explanation-box {
+            background-color: var(--light-bg);
+            padding: 15px;
+            border-radius: 5px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            font-size: 0.95rem;
+            border: 1px dashed #aaa;
+        }
+
+        /* D. 白話翻譯 */
+        details {
+            margin-bottom: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+        }
+
+        summary {
+            padding: 12px;
+            cursor: pointer;
+            background-color: var(--light-bg);
+            font-weight: bold;
+            list-style: none; /* 隱藏預設三角形 */
+            position: relative;
+        }
+        
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        summary::after {
+            content: "+";
+            position: absolute;
+            right: 15px;
+            font-weight: bold;
+        }
+
+        details[open] summary::after {
+            content: "-";
+        }
+
+        .accordion-content {
+            padding: 15px;
+            background: #fff;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .concept-note {
+            background: #e8f6f3;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            color: #16a085;
+            font-size: 0.9rem;
+        }
+
+        /* E. 解題步驟 */
+        .step-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .step-box {
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            border-radius: 5px;
+            background: #fff;
+            position: relative;
+        }
+
+        .step-header {
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .step-content {
+            display: none; /* 預設隱藏 */
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #ccc;
+        }
+
+        .step-content.show {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        /* 步驟表格模擬 */
+        .hex-table {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .hex-cell {
+            background: var(--primary-color);
+            color: white;
+            padding: 5px;
+            border-radius: 4px 4px 0 0;
+            font-weight: bold;
+        }
+
+        .bin-cell {
+            background: #ddd;
+            padding: 5px;
+            border-radius: 0 0 4px 4px;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* G. 常見錯誤 & H. 口訣 */
+        .mistake-list li {
+            margin-bottom: 8px;
+            list-style-type: none;
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .mistake-list li::before {
+            content: "!";
+            position: absolute;
+            left: 0;
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        .mnemonic-box {
+            background-color: #fef9e7;
+            border-left: 5px solid #f1c40f;
+            padding: 15px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        /* I. 答案揭曉 */
+        .answer-section {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .reveal-btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 4px #c0392b;
+            transition: all 0.1s;
+        }
+
+        .reveal-btn:active {
+            box-shadow: 0 2px #c0392b;
+            transform: translateY(2px);
+        }
+
+        .answer-content {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background: #d5f5e3;
+            border: 2px solid var(--success-color);
+            border-radius: 8px;
+        }
+
+        .big-answer {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--success-color);
+            margin-bottom: 10px;
+        }
+
+        /* 響應式調整 */
+        @media (max-width: 600px) {
+            .hex-table {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+            .bin-cell {
+                margin-bottom: 10px;
+                border-radius: 4px;
+            }
+            header h1 {
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- A. 頁首區 -->
+    <header>
+        <h1>十六進位怎麼快速轉成二進位？</h1>
+        <p>進位轉換必考題型 | 高中資訊科技</p>
+        <div class="badge">題號：1（是非題）</div>
+    </header>
+
+    <div class="container">
+        
+        <!-- B. 題目區 -->
+        <div class="card">
+            <h2>題目</h2>
+            <div class="question-text">
+                將<span id="txt-hex" class="highlight-span">十六進位</span>數值 <span id="txt-val" class="highlight-span">CF25</span> 轉換為<span id="txt-bin" class="highlight-span">二進位</span>為<br>
+                <span class="binary-code" id="txt-result">1100111100100101</span>
+            </div>
+            <div class="options">
+                <label>
+                    <input type="radio" name="q1" value="O"> (A) O (正確)
+                </label>
+                <label>
+                    <input type="radio" name="q1" value="X"> (B) X (錯誤)
+                </label>
+            </div>
+        </div>
+
+        <!-- C. 關鍵字螢光筆互動 -->
+        <div class="card">
+            <h2>關鍵字拆解（點擊按鈕學觀念）</h2>
+            <div class="keyword-buttons">
+                <button class="kw-btn" onclick="highlight('hex')">十六進位</button>
+                <button class="kw-btn" onclick="highlight('bin')">二進位</button>
+                <button class="kw-btn" onclick="highlight('val')">CF25</button>
+                <button class="kw-btn" onclick="highlight('rule')">4 位元對照</button>
+            </div>
+            <div id="explanation-box">
+                請點擊上方按鈕，這裡會顯示老師的白話解釋喔！
+            </div>
+        </div>
+
+        <!-- D. 白話翻譯 -->
+        <div class="card">
+            <h2>看不懂題目嗎？</h2>
+            <details>
+                <summary>點我查看「白話翻譯」</summary>
+                <div class="accordion-content">
+                    <p>「CF25 這個十六進位數字，轉成二進位後，是不是等於 1100111100100101？」</p>
+                </div>
+            </details>
+            <details>
+                <summary>這題在考什麼？</summary>
+                <div class="accordion-content">
+                    <p>你是否會用<strong>「一位十六進位對四位二進位」</strong>的快速轉換法，而不是在那邊傻傻地除以 2。</p>
+                </div>
+            </details>
+        </div>
+
+        <!-- E. 解題步驟互動說明 -->
+        <div class="card">
+            <h2>解題步驟（Step-by-Step）</h2>
+            <div class="step-container">
+                
+                <div class="step-box">
+                    <div class="step-header" onclick="toggleStep('step1')">Step 1：十六進位對照表 (點擊展開) ▼</div>
+                    <div id="step1" class="step-content">
+                        <p>把每個英文字母轉回數字：</p>
+                        <ul>
+                            <li><strong>C</strong> = 12 = 8+4 = <strong>1100</strong></li>
+                            <li><strong>F</strong> = 15 = 8+4+2+1 = <strong>1111</strong></li>
+                            <li><strong>2</strong> = 2 = <strong>0010</strong> (記得前面補零！)</li>
+                            <li><strong>5</strong> = 4+1 = <strong>0101</strong></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="step-box">
+                    <div class="step-header" onclick="toggleStep('step2')">Step 2：依序排列 (點擊展開) ▼</div>
+                    <div id="step2" class="step-content">
+                        <p>一個對四個，排排站好：</p>
+                        <div class="hex-table">
+                            <div class="hex-cell">C</div>
+                            <div class="hex-cell">F</div>
+                            <div class="hex-cell">2</div>
+                            <div class="hex-cell">5</div>
+                            
+                            <div class="bin-cell">1100</div>
+                            <div class="bin-cell">1111</div>
+                            <div class="bin-cell">0010</div>
+                            <div class="bin-cell">0101</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step-box">
+                    <div class="step-header" onclick="toggleStep('step3')">Step 3：合併結果 (點擊展開) ▼</div>
+                    <div id="step3" class="step-content">
+                        <p>把上面的二進位全部接起來：</p>
+                        <p style="font-size: 1.2rem; font-weight: bold; color: var(--primary-color);">1100111100100101</p>
+                        <p>檢查是否與題目給的一樣？<br><span style="color: var(--success-color);">→ 一樣！</span></p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- F. 是非題判斷解析 -->
+        <div class="card">
+            <h2>選項解析</h2>
+            <p><strong>(A) O</strong><br>
+            <span style="color: var(--success-color);">→ 正確，轉換結果完全一致。</span></p>
+            <hr style="margin: 10px 0; border: 0; border-top: 1px solid #eee;">
+            <p><strong>(B) X</strong><br>
+            → 錯，因為 CF25 正確轉換後就是 1100111100100101，題目敘述是正確的。</p>
+        </div>
+
+        <!-- G. 常見錯誤提醒 -->
+        <div class="card" style="border-left-color: var(--accent-color);">
+            <h2 style="color: var(--accent-color);">老師叮嚀：常見錯誤</h2>
+            <ul class="mistake-list">
+                <li>忘記每一位都要補滿 4 個 bit（例如把 2 寫成 10，應該是 0010）。</li>
+                <li>把 F (15) 記錯成 14 (1110)。</li>
+                <li>抄寫的時候眼花，少寫或多寫 0。</li>
+            </ul>
+        </div>
+
+        <!-- H. 記憶口訣 -->
+        <div class="card">
+            <h2>記憶口訣</h2>
+            <div class="mnemonic-box">
+                「一位十六，四位二進」
+            </div>
+        </div>
+
+        <!-- I. 正確答案揭曉 -->
+        <div class="answer-section">
+            <button class="reveal-btn" onclick="showAnswer()">看正確答案</button>
+            <div id="final-answer" class="answer-content">
+                <div class="big-answer">答案：(A) O</div>
+                <p><strong>一句話理由：</strong><br>
+                「CF25 依序轉為 1100、1111、0010、0101，合併後正是題目所給的二進位。」</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // 關鍵字與解釋資料庫
+        const keywordData = {
+            'hex': {
+                target: 'txt-hex',
+                text: '<strong>十六進位</strong>：電腦常用的表示法，用 0-9 和 A-F 來代表數字（A=10, B=11...F=15）。'
+            },
+            'bin': {
+                target: 'txt-bin',
+                text: '<strong>二進位</strong>：電腦最底層的語言，只用 0 和 1 兩個數字來表示所有資料。'
+            },
+            'val': {
+                target: 'txt-val',
+                text: '<strong>CF25</strong>：這是本題的主角。C=12, F=15, 2=2, 5=5。'
+            },
+            'rule': {
+                target: 'all', // 特殊處理
+                text: '<strong>4 位元對照</strong>：記住口訣！每一個十六進位數字，一定要剛好換成「4個」二進位數字（例如 2 要換成 0010）。'
+            }
+        };
+
+        function highlight(key) {
+            // 1. 清除所有現有按鈕的 active 狀態
+            document.querySelectorAll('.kw-btn').forEach(btn => btn.classList.remove('active'));
+            // 2. 設定當前按鈕 active
+            event.target.classList.add('active');
+
+            // 3. 清除所有文字螢光效果
+            document.querySelectorAll('.highlight-span').forEach(span => span.classList.remove('active-highlight'));
+
+            // 4. 根據 key 加上螢光效果
+            const data = keywordData[key];
+            if (data.target === 'all') {
+                // 如果是規則，我們把整個轉換過程都稍微標示一下（或是只標示數值）
+                document.getElementById('txt-hex').classList.add('active-highlight');
+                document.getElementById('txt-bin').classList.add('active-highlight');
+                document.getElementById('txt-result').style.backgroundColor = 'var(--highlight-bg)';
+            } else {
+                // 還原 result 背景色
+                document.getElementById('txt-result').style.backgroundColor = '#eee';
+                // 標示特定文字
+                const targetEl = document.getElementById(data.target);
+                if (targetEl) targetEl.classList.add('active-highlight');
+            }
+
+            // 5. 更新解釋框文字
+            const expBox = document.getElementById('explanation-box');
+            expBox.innerHTML = data.text;
+            expBox.style.animation = 'none'; // 重置動畫
+            expBox.offsetHeight; // 觸發 reflow
+            expBox.style.animation = 'fadeIn 0.5s';
+        }
+
+        // 步驟展開/收合
+        function toggleStep(stepId) {
+            const content = document.getElementById(stepId);
+            if (content.classList.contains('show')) {
+                content.classList.remove('show');
+            } else {
+                content.classList.add('show');
+            }
+        }
+
+        // 顯示答案
+        function showAnswer() {
+            const ansDiv = document.getElementById('final-answer');
+            ansDiv.style.display = 'block';
+            ansDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

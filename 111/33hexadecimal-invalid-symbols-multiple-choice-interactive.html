@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>複選題 33：十六進位符號判斷 | 電腦概論互動講義</title>
+    <style>
+        /* 全局設定 */
+        :root {
+            --primary-color: #2c3e50; /* 深藍 - 專業感 */
+            --accent-color: #e74c3c; /* 紅色 - 重點/錯誤 */
+            --success-color: #27ae60; /* 綠色 - 正確/合法 */
+            --bg-color: #f4f6f7;
+            --card-bg: #ffffff;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1, h2, h3 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* 區塊卡片樣式 - 模擬講義區塊 */
+        .section-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 25px;
+            margin-bottom: 25px;
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .section-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title::before {
+            content: '📖';
+            margin-right: 10px;
+        }
+
+        /* 重點強調標籤 */
+        .highlight-box {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+
+        .term {
+            font-weight: bold;
+            color: #d35400;
+        }
+
+        /* 快速記憶區 */
+        .memory-tip {
+            background: #2c3e50;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.1em;
+            margin-top: 15px;
+        }
+
+        .memory-tip strong {
+            color: #f1c40f;
+            font-size: 1.3em;
+        }
+
+        /* 互動 C：數值對應 */
+        .hex-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .hex-btn {
+            background: white;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 10px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .hex-btn:hover, .hex-btn.active {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .value-display {
+            text-align: center;
+            font-size: 1.2em;
+            margin-top: 10px;
+            padding: 10px;
+            background: #e8f6f3;
+            border-radius: 8px;
+            display: none; /* 初始隱藏 */
+        }
+
+        /* 互動 A：拖拉分類 */
+        .drag-area {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .source-container {
+            width: 100%;
+            min-height: 80px;
+            background: #eee;
+            padding: 10px;
+            border-radius: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .drop-zone {
+            flex: 1;
+            min-height: 150px;
+            border: 3px dashed #ccc;
+            border-radius: 12px;
+            padding: 10px;
+            text-align: center;
+            transition: background 0.3s;
+        }
+
+        .drop-zone h4 {
+            margin: 0 0 10px 0;
+            color: #666;
+        }
+
+        .drop-zone.valid-zone { border-color: var(--success-color); background: #f0fff4; }
+        .drop-zone.invalid-zone { border-color: var(--accent-color); background: #fff5f5; }
+
+        .draggable-item {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border: 2px solid #333;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            cursor: move;
+            user-select: none;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* 手機版按鈕輔助 */
+        .mobile-move-btns {
+            display: none; /* JS偵測顯示或預設隱藏 */
+            font-size: 0.8em;
+            margin-top: 5px;
+        }
+        
+        /* 複選題區域 */
+        .quiz-option {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            margin: 8px 0;
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .quiz-option:hover {
+            background: #e9ecef;
+        }
+
+        .quiz-option input[type="checkbox"] {
+            transform: scale(1.5);
+            margin-right: 15px;
+        }
+
+        .check-btn, .reset-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1.1em;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-top: 15px;
+            width: 100%;
+            transition: 0.3s;
+        }
+
+        .check-btn:hover { background: #34495e; }
+        
+        .reset-btn {
+            background: #95a5a6;
+            margin-top: 10px;
+        }
+
+        .feedback-box {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+        .feedback-correct { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .feedback-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+        /* 陷阱卡與解析 */
+        .trap-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .trap-card {
+            background: #fff;
+            border: 2px solid var(--accent-color);
+            padding: 15px;
+            border-radius: 10px;
+            position: relative;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        
+        .trap-card.faded {
+            opacity: 0.3;
+            pointer-events: none;
+            border-color: #ccc;
+        }
+
+        .trap-title {
+            color: var(--accent-color);
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .hint-btn {
+            background: #17a2b8;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        .hint-text {
+            display: none;
+            margin-top: 8px;
+            color: #0c5460;
+            background-color: #d1ecf1;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 0.95em;
+        }
+
+        /* 響應式調整 */
+        @media (max-width: 600px) {
+            .hex-grid { grid-template-columns: repeat(3, 1fr); }
+            .drag-area { flex-direction: column; }
+            .drop-zone { width: auto; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div style="text-align: center; margin-bottom: 30px;">
+        <h1 style="border-bottom: 3px solid var(--primary-color); display: inline-block; padding-bottom: 10px;">電腦概論：進位制表示法</h1>
+        <p>單元主題：複選題 33 之 十六進位的秘密</p>
+    </div>
+
+    <!-- 1. 核心觀念區 -->
+    <div class="section-card">
+        <div class="section-title">觀念整理：什麼是十六進位？</div>
+        <p>
+            <span class="term">十六進位 (Hexadecimal)</span>：這是一種電腦常用的數字表示法，以「16」為基底。
+            這就像我們平常的時間「60秒進1分鐘」，十六進位則是「數到16就進位」。
+        </p>
+        
+        <div class="highlight-box">
+            <h3>🔑 符號規則（超級重要）</h3>
+            <p>既然要表示 0~15 這 16 個數字，我們需要 16 個符號：</p>
+            <ul>
+                <li><strong>數字：</strong> 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 (共 10 個)</li>
+                <li><strong>字母：</strong> A, B, C, D, E, F (用來代表 10~15，共 6 個)</li>
+            </ul>
+            <p style="color: var(--accent-color); font-weight: bold;">
+                👉 超過 F 的字母（如 G, H, I, X, Y, Z...）在十六進位中一律是「非法符號」！
+            </p>
+        </div>
+
+        <div class="memory-tip">
+            口訣：<strong>「十六進位只到 F，看到 G 以後都不行！」</strong>
+        </div>
+    </div>
+
+    <!-- 2. 互動 C：數值對應 -->
+    <div class="section-card">
+        <div class="section-title">🖐️ 互動理解：A~F 到底是多少？</div>
+        <p>點擊下方的字母，看看它在十進位中代表多少：</p>
+        <div class="hex-grid">
+            <button class="hex-btn" onclick="showValue('A', 10)">A</button>
+            <button class="hex-btn" onclick="showValue('B', 11)">B</button>
+            <button class="hex-btn" onclick="showValue('C', 12)">C</button>
+            <button class="hex-btn" onclick="showValue('D', 13)">D</button>
+            <button class="hex-btn" onclick="showValue('E', 14)">E</button>
+            <button class="hex-btn" onclick="showValue('F', 15)">F</button>
+        </div>
+        <div id="valueDisplay" class="value-display"></div>
+    </div>
+
+    <!-- 3. 互動 A：拖拉分類 -->
+    <div class="section-card">
+        <div class="section-title">🎮 實戰演練：誰是合法的？</div>
+        <p>請將下方的英文字母，拖曳（或點擊分類）到正確的格子裡：</p>
+        
+        <div class="source-container" id="sourceContainer">
+            <!-- 這些元素會由 JS 生成，或者直接寫死 -->
+            <div class="draggable-item" draggable="true" id="d-A" ondragstart="drag(event)" onclick="moveItemClick(this)">A</div>
+            <div class="draggable-item" draggable="true" id="d-B" ondragstart="drag(event)" onclick="moveItemClick(this)">B</div>
+            <div class="draggable-item" draggable="true" id="d-X" ondragstart="drag(event)" onclick="moveItemClick(this)">X</div>
+            <div class="draggable-item" draggable="true" id="d-C" ondragstart="drag(event)" onclick="moveItemClick(this)">C</div>
+            <div class="draggable-item" draggable="true" id="d-Y" ondragstart="drag(event)" onclick="moveItemClick(this)">Y</div>
+            <div class="draggable-item" draggable="true" id="d-D" ondragstart="drag(event)" onclick="moveItemClick(this)">D</div>
+            <div class="draggable-item" draggable="true" id="d-Z" ondragstart="drag(event)" onclick="moveItemClick(this)">Z</div>
+            <div class="draggable-item" draggable="true" id="d-E" ondragstart="drag(event)" onclick="moveItemClick(this)">E</div>
+            <div class="draggable-item" draggable="true" id="d-F" ondragstart="drag(event)" onclick="moveItemClick(this)">F</div>
+        </div>
+
+        <p style="font-size: 0.9em; color: #666; text-align: center;">(手機版請點選圓球後，再點選下方框框)</p>
+
+        <div class="drag-area">
+            <div class="drop-zone valid-zone" id="validZone" ondrop="drop(event, 'valid')" ondragover="allowDrop(event)" onclick="targetClick('valid')">
+                <h4>✅ 合法符號</h4>
+            </div>
+            <div class="drop-zone invalid-zone" id="invalidZone" ondrop="drop(event, 'invalid')" ondragover="allowDrop(event)" onclick="targetClick('invalid')">
+                <h4>❌ 不合法符號</h4>
+            </div>
+        </div>
+        <button class="check-btn" onclick="checkDragAnswer()" style="margin-bottom: 10px;">檢查分類結果</button>
+        <div id="dragFeedback" class="feedback-box"></div>
+    </div>
+
+    <!-- 4. 題目 33 -->
+    <div class="section-card" style="border-left-color: var(--accent-color);">
+        <div class="section-title" style="color: var(--accent-color);">✍️ 複選題 33</div>
+        <p style="font-size: 1.1em; font-weight: bold; margin-bottom: 20px;">
+            下列哪個英文字母 <span style="color: red; text-decoration: underline;">不是</span> 合法的十六進位表示的符號？（本題可複選）
+        </p>
+
+        <div id="quizForm">
+            <label class="quiz-option">
+                <input type="checkbox" name="q33" value="A"> (A) X
+            </label>
+            <label class="quiz-option">
+                <input type="checkbox" name="q33" value="B"> (B) C
+            </label>
+            <label class="quiz-option">
+                <input type="checkbox" name="q33" value="C"> (C) Y
+            </label>
+            <label class="quiz-option">
+                <input type="checkbox" name="q33" value="D"> (D) F
+            </label>
+            <label class="quiz-option">
+                <input type="checkbox" name="q33" value="E"> (E) Z
+            </label>
+        </div>
+
+        <button class="check-btn" onclick="checkQuiz()">送出答案</button>
+        <div id="quizFeedback" class="feedback-box"></div>
+    </div>
+
+    <!-- 5. 選項解析互動 D -->
+    <div class="section-card">
+        <div class="section-title">🔍 選項逐一解析 (點擊查看)</div>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button class="hex-btn" onclick="analyzeOption('X')">解析 X</button>
+            <button class="hex-btn" onclick="analyzeOption('C')">解析 C</button>
+            <button class="hex-btn" onclick="analyzeOption('Y')">解析 Y</button>
+            <button class="hex-btn" onclick="analyzeOption('F')">解析 F</button>
+            <button class="hex-btn" onclick="analyzeOption('Z')">解析 Z</button>
+        </div>
+        <div id="analysisDisplay" class="highlight-box" style="display:none; margin-top: 15px;"></div>
+    </div>
+
+    <!-- 6. 陷阱卡互動 E -->
+    <div class="section-card">
+        <div class="section-title">⚠️ 考試常見陷阱 (點擊卡片破解)</div>
+        <div class="trap-grid">
+            <div class="trap-card" onclick="dismissTrap(this)">
+                <div class="trap-title">陷阱 1</div>
+                <p>以為所有英文字母都可以？</p>
+                <small style="color: #666;">(點我看正解)</small>
+                <div class="hint-text" style="display: block; margin-top: 5px;">錯！只有 A~F 可以，G 之後都不行！</div>
+            </div>
+            <div class="trap-card" onclick="dismissTrap(this)">
+                <div class="trap-title">陷阱 2</div>
+                <p>看到 C 或 F 就以為是錯的？</p>
+                <small style="color: #666;">(點我看正解)</small>
+                <div class="hint-text" style="display: block; margin-top: 5px;">錯！C=12, F=15，它們是非常合法的符號。</div>
+            </div>
+            <div class="trap-card" onclick="dismissTrap(this)">
+                <div class="trap-title">陷阱 3</div>
+                <p>複選題只選一個？</p>
+                <small style="color: #666;">(點我看正解)</small>
+                <div class="hint-text" style="display: block; margin-top: 5px;">這題有 3 個不合法的字母，少選就不算全對喔！</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 7. 自我檢測 F -->
+    <div class="section-card">
+        <div class="section-title">🧠 自我檢測</div>
+        
+        <div style="margin-bottom: 15px;">
+            <p><strong>Q1：為什麼十六進位不用 G 之後的字母？</strong></p>
+            <button class="hint-btn" onclick="toggleHint('h1')">顯示提示</button>
+            <div id="h1" class="hint-text">因為 0~9 加 A~F 剛好就是 16 個符號，已經夠用了！不需要用到 G。</div>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <p><strong>Q2：如果是八進位 (Octal)，會用到英文字母嗎？</strong></p>
+            <button class="hint-btn" onclick="toggleHint('h2')">顯示提示</button>
+            <div id="h2" class="hint-text">不會！八進位只用 0,1,2,3,4,5,6,7 這 8 個數字就夠了。</div>
+        </div>
+
+        <div>
+            <p><strong>Q3：考試中如何最快判斷十六進位合法符號？</strong></p>
+            <button class="hint-btn" onclick="toggleHint('h3')">顯示提示</button>
+            <div id="h3" class="hint-text">心中默念「0到9」與「A到F」。只要不在這範圍內的，直接打叉！</div>
+        </div>
+    </div>
+
+    <button class="reset-btn" onclick="resetAll()">🔄 全部重置 / 再練習一次</button>
+
+    <div style="text-align: center; margin-top: 30px; color: #888; font-size: 0.9em;">
+        &copy; 電腦概論補教名師團隊 | 專為高中生打造
+    </div>
+</div>
+
+<script>
+    /* * 全域變數與資料
+     */
+    const validSymbols = ['A', 'B', 'C', 'D', 'E', 'F'];
+    const invalidSymbols = ['X', 'Y', 'Z'];
+    let selectedDragItem = null; // 手機版點擊移動用
+
+    /* * 互動 C：數值對應
+     */
+    function showValue(char, val) {
+        const display = document.getElementById('valueDisplay');
+        
+        // 移除其他按鈕的 active 狀態
+        document.querySelectorAll('.hex-btn').forEach(btn => btn.classList.remove('active'));
+        // 加上當前按鈕 active
+        event.target.classList.add('active');
+
+        display.style.display = 'block';
+        display.innerHTML = `
+            <strong>符號 <span style="color:red; font-size:1.5em;">${char}</span></strong> 
+            在十進位中代表數值 
+            <strong><span style="color:blue; font-size:1.5em;">${val}</span></strong>
+            <br><small>說明：十六進位最多只能表示到 15 (F)，超過就要進位囉！</small>
+        `;
+    }
+
+    /* * 互動 A：拖拉與點擊移動邏輯
+     */
+    function allowDrop(ev) {
+        ev.preventDefault();
+    }
+
+    function drag(ev) {
+        ev.dataTransfer.setData("text", ev.target.id);
+    }
+
+    function drop(ev, zoneType) {
+        ev.preventDefault();
+        var data = ev.dataTransfer.getData("text");
+        var element = document.getElementById(data);
+        
+        // 確保放到 drop-zone 本身，而不是它的子元素
+        let target = ev.target;
+        if (!target.classList.contains('drop-zone')) {
+            target = target.closest('.drop-zone');
+        }
+        
+        target.appendChild(element);
+    }
+
+    // 手機版/滑鼠點擊移動邏輯
+    function moveItemClick(el) {
+        // 如果已經選取了一個，再次點擊取消選取
+        if (selectedDragItem === el) {
+            el.style.borderColor = "#333";
+            el.style.background = "white";
+            selectedDragItem = null;
+            return;
+        }
+
+        // 清除之前的選取樣式
+        if (selectedDragItem) {
+            selectedDragItem.style.borderColor = "#333";
+            selectedDragItem.style.background = "white";
+        }
+
+        // 選取當前
+        selectedDragItem = el;
+        el.style.borderColor = "var(--accent-color)";
+        el.style.background = "#fff0f0";
+    }
+
+    function targetClick(zoneType) {
+        if (selectedDragItem) {
+            const zoneId = zoneType === 'valid' ? 'validZone' : 'invalidZone';
+            document.getElementById(zoneId).appendChild(selectedDragItem);
+            
+            // 重置樣式
+            selectedDragItem.style.borderColor = "#333";
+            selectedDragItem.style.background = "white";
+            selectedDragItem = null;
+        }
+    }
+
+    function checkDragAnswer() {
+        const validZone = document.getElementById('validZone');
+        const invalidZone = document.getElementById('invalidZone');
+        const feedback = document.getElementById('dragFeedback');
+        
+        let correctCount = 0;
+        let errors = [];
+
+        // 檢查 Valid Zone 裡的元素
+        validZone.querySelectorAll('.draggable-item').forEach(item => {
+            const char = item.innerText;
+            if (validSymbols.includes(char)) {
+                correctCount++;
+            } else {
+                errors.push(`${char} 是不合法的，不該放在合法區！`);
+            }
+        });
+
+        // 檢查 Invalid Zone 裡的元素
+        invalidZone.querySelectorAll('.draggable-item').forEach(item => {
+            const char = item.innerText;
+            if (invalidSymbols.includes(char)) {
+                correctCount++;
+            } else {
+                errors.push(`${char} 是合法的 (A~F)，不該放在不合法區！`);
+            }
+        });
+
+        // 檢查是否還有沒分類的
+        const remaining = document.getElementById('sourceContainer').children.length;
+        if (remaining > 0) {
+            feedback.className = 'feedback-box feedback-error';
+            feedback.style.display = 'block';
+            feedback.innerHTML = `還有 ${remaining} 個符號沒分類喔！請繼續努力。`;
+            return;
+        }
+
+        if (errors.length === 0) {
+            feedback.className = 'feedback-box feedback-correct';
+            feedback.innerHTML = `<strong>太強了！完全正確！</strong><br>你已經清楚掌握 A~F 是合法的，其他都是不合法的觀念囉！`;
+        } else {
+            feedback.className = 'feedback-box feedback-error';
+            feedback.innerHTML = `<strong>哎呀，有錯誤喔：</strong><br>${errors.join('<br>')}`;
+        }
+        feedback.style.display = 'block';
+    }
+
+    /* * 互動 B：複選題邏輯
+     */
+    function checkQuiz() {
+        const checkboxes = document.querySelectorAll('input[name="q33"]:checked');
+        const feedback = document.getElementById('quizFeedback');
+        let selectedValues = [];
+        checkboxes.forEach((cb) => {
+            selectedValues.push(cb.value);
+        });
+
+        // 正確答案：A (X), C (Y), E (Z) 因為題目問"不是"合法的
+        // 對應 input value 分別是 A, C, E
+        // 修正邏輯：題目選項(A)的內容是X，選項(B)的內容是C...
+        // HTML結構: value="A" 代表選了 (A) X
+        
+        const correctAnswers = ['A', 'C', 'E']; // (A)X, (C)Y, (E)Z 是不合法的
+        
+        // 判斷邏輯
+        // 1. 檢查有沒有選錯的 (選了 B 或 D)
+        // 2. 檢查有沒有少選
+        
+        let isCorrect = true;
+        let msg = "";
+
+        // 檢查是否完全相等
+        if (selectedValues.length === 3 && 
+            selectedValues.includes('A') && 
+            selectedValues.includes('C') && 
+            selectedValues.includes('E')) {
+            
+            feedback.className = 'feedback-box feedback-correct';
+            feedback.innerHTML = `
+                <strong>完全正確！ 🎉</strong><br>
+                X、Y、Z 都超過了 F，所以它們都不是合法的十六進位符號。<br>
+                你很細心，這題複選題拿滿分！
+            `;
+            feedback.style.display = 'block';
+            return;
+        }
+
+        // 錯誤分析
+        feedback.className = 'feedback-box feedback-error';
+        let errorMsg = [];
+        
+        // 檢查誤選合法的
+        if (selectedValues.includes('B')) errorMsg.push("選項 (B) 是 C，C 在 A~F 之間，它是合法的喔！");
+        if (selectedValues.includes('D')) errorMsg.push("選項 (D) 是 F，F 是最大的合法符號，它是合法的喔！");
+
+        // 檢查漏選不合法的
+        if (!selectedValues.includes('A')) errorMsg.push("選項 (A) 是 X，X 超過 F 了，它是不合法的（要選！）。");
+        if (!selectedValues.includes('C')) errorMsg.push("選項 (C) 是 Y，Y 超過 F 了，它是不合法的（要選！）。");
+        if (!selectedValues.includes('E')) errorMsg.push("選項 (E) 是 Z，Z 超過 F 了，它是不合法的（要選！）。");
+
+        if (selectedValues.length === 0) {
+            feedback.innerHTML = "你還沒勾選任何答案喔！記得這是複選題。";
+        } else {
+            feedback.innerHTML = `<strong>可惜，答案不對喔：</strong><br><ul><li>${errorMsg.join('</li><li>')}</li></ul>`;
+        }
+        feedback.style.display = 'block';
+    }
+
+    /* * 互動 D：選項解析
+     */
+    function analyzeOption(symbol) {
+        const display = document.getElementById('analysisDisplay');
+        display.style.display = 'block';
+        
+        let isValid = validSymbols.includes(symbol);
+        let reason = "";
+        
+        if (symbol === 'X' || symbol === 'Y' || symbol === 'Z') {
+            reason = `它排在 F 的後面，屬於 G~Z 的範圍，所以在十六進位中是<strong>不合法</strong>的。`;
+        } else if (symbol === 'C') {
+            reason = `C 代表數值 12，介於 0~15 之間，是<strong>合法</strong>的。`;
+        } else if (symbol === 'F') {
+            reason = `F 代表數值 15，它是十六進位中<strong>最大</strong>的合法符號。`;
+        }
+
+        display.innerHTML = `
+            <h4>解析符號：${symbol}</h4>
+            <p>是否合法：<span style="color: ${isValid ? 'green' : 'red'}; font-weight:bold; font-size:1.2em;">${isValid ? '⭕ 是' : '❌ 否'}</span></p>
+            <p>原因：${reason}</p>
+        `;
+    }
+
+    /* * 互動 E：陷阱卡
+     */
+    function dismissTrap(card) {
+        card.classList.add('faded');
+        // 找到裡面的 hint-text 讓它反白或強調一下，這裡直接讓它變淡表示"已解決"
+        const hint = card.querySelector('.hint-text');
+        hint.style.backgroundColor = "#d4edda";
+        hint.style.color = "#155724";
+        hint.innerHTML += " (已破解)";
+    }
+
+    /* * 互動 F：提示開關
+     */
+    function toggleHint(id) {
+        const el = document.getElementById(id);
+        el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+    }
+
+    /* * 全域重置
+     */
+    function resetAll() {
+        // 重置拖拉區
+        const source = document.getElementById('sourceContainer');
+        const items = document.querySelectorAll('.draggable-item');
+        items.forEach(item => source.appendChild(item));
+        document.getElementById('dragFeedback').style.display = 'none';
+        selectedDragItem = null;
+        items.forEach(item => {
+            item.style.borderColor = "#333";
+            item.style.background = "white";
+        });
+
+        // 重置複選題
+        document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+        document.getElementById('quizFeedback').style.display = 'none';
+
+        // 重置數值顯示
+        document.getElementById('valueDisplay').style.display = 'none';
+        document.querySelectorAll('.hex-btn').forEach(btn => btn.classList.remove('active'));
+
+        // 重置解析區
+        document.getElementById('analysisDisplay').style.display = 'none';
+
+        // 重置陷阱卡
+        document.querySelectorAll('.trap-card').forEach(card => {
+            card.classList.remove('faded');
+            const hint = card.querySelector('.hint-text');
+            // 恢復原始提示文字太麻煩，簡單隱藏並恢復顏色即可，這裡簡化處理重整頁面最快，
+            // 但為了單頁體驗，我們只把樣式改回來。
+            // 實際教學中，學生可能想重新看一次。
+        });
+        
+        // 捲動到頂部
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+</script>
+
+</body>
+</html>

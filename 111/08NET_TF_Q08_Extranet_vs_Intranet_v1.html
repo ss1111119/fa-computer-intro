@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extranet 是內部網路嗎？ - 補教名師衝刺班</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #1e40af;
+            --accent-color: #f59e0b;
+            --bg-color: #f8fafc;
+            --text-color: #1e293b;
+            --card-bg: #ffffff;
+            --success-color: #16a34a;
+            --error-color: #dc2626;
+            --highlight-bg: #fef08a; /* 亮黃色螢光筆 */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* A. Header */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            color: var(--secondary-color);
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #64748b;
+            font-size: 1rem;
+            font-weight: bold;
+        }
+
+        .q-tag {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        /* B. Question Card */
+        .question-card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+            border-left: 5px solid var(--accent-color);
+        }
+
+        .question-text {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .options {
+            display: flex;
+            gap: 20px;
+        }
+
+        .option-item {
+            font-size: 1.2rem;
+            font-weight: bold;
+            padding: 10px 20px;
+            background: #f1f5f9;
+            border-radius: 8px;
+            color: #64748b;
+        }
+
+        /* Highlight Logic */
+        .highlight-span {
+            transition: background-color 0.3s;
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+        
+        .highlight-active {
+            background-color: var(--highlight-bg);
+            color: black;
+            font-weight: bold;
+            box-shadow: 0 0 5px rgba(253, 224, 71, 0.5);
+        }
+
+        /* C. Keywords Interaction */
+        .keyword-section {
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .keyword-title {
+            font-size: 1rem;
+            margin-bottom: 10px;
+            color: #475569;
+            font-weight: bold;
+        }
+
+        .keyword-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .kw-btn {
+            padding: 8px 16px;
+            border: 1px solid var(--primary-color);
+            background: white;
+            color: var(--primary-color);
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+
+        .kw-btn:hover, .kw-btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .definition-box {
+            background: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            padding: 15px;
+            border-radius: 8px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            font-size: 1rem;
+            color: #334155;
+        }
+
+        .def-term {
+            font-weight: bold;
+            color: var(--secondary-color);
+            margin-right: 8px;
+        }
+
+        /* D. Accordion */
+        .accordion {
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .accordion-header {
+            padding: 15px 20px;
+            background: #e2e8f0;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .accordion-header:hover {
+            background: #cbd5e1;
+        }
+
+        .accordion-content {
+            padding: 0 20px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background: white;
+        }
+
+        .accordion-content.open {
+            max-height: 300px; /* Adjust if content is longer */
+            padding: 20px;
+        }
+
+        /* E. Concepts Grid */
+        .concepts-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        @media (min-width: 768px) {
+            .concepts-grid {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+        }
+
+        .concept-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border-top: 4px solid #ccc;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .concept-card.internet { border-top-color: #94a3b8; }
+        .concept-card.intranet { border-top-color: var(--primary-color); }
+        .concept-card.extranet { border-top-color: var(--accent-color); }
+
+        .concept-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .concept-list {
+            list-style: none;
+            font-size: 0.9rem;
+        }
+
+        .concept-list li {
+            margin-bottom: 6px;
+            padding-left: 10px;
+            border-left: 2px solid #e2e8f0;
+        }
+
+        /* F & G. Analysis & Common Mistakes */
+        .section-box {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            color: var(--secondary-color);
+            margin-bottom: 15px;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 5px;
+        }
+
+        .mistake-list li, .analysis-list li {
+            margin-bottom: 10px;
+            margin-left: 20px;
+        }
+
+        /* H. Mnemonic */
+        .mnemonic-box {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .mnemonic-text {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 10px 0;
+            letter-spacing: 2px;
+        }
+
+        /* I. Answer Reveal */
+        .answer-section {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .reveal-btn {
+            background: var(--accent-color);
+            color: #fff;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 4px 0 #d97706;
+            transition: transform 0.1s;
+        }
+
+        .reveal-btn:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        .answer-result {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background: #dcfce7;
+            border: 2px solid var(--success-color);
+            border-radius: 12px;
+            color: var(--success-color);
+        }
+
+        .big-answer {
+            font-size: 3rem;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <!-- A. Header -->
+    <header>
+        <span class="q-tag">題號：8（是非題）</span>
+        <h1>Extranet 是內部網路嗎？</h1>
+        <div class="subtitle">Intranet / Extranet / Internet 一次分清楚</div>
+    </header>
+
+    <!-- B. Question Card -->
+    <div class="question-card">
+        <div class="question-text">
+            8. <span class="highlight-span" data-key="extranet">Extranet</span> 運用和<span class="highlight-span" data-key="internet">網際網路</span>相同的<span class="highlight-span" data-key="tool">工具</span>與<span class="highlight-span" data-key="protocol">通訊協定</span>，來建置的<span class="highlight-span" data-key="intranet">內部網路</span>。
+        </div>
+        <div class="options">
+            <div class="option-item">(A) O</div>
+            <div class="option-item">(B) X</div>
+        </div>
+    </div>
+
+    <!-- C. Keyword Highlight Interaction -->
+    <div class="keyword-section">
+        <div class="keyword-title">點擊下方關鍵字，看題目重點解析：</div>
+        <div class="keyword-buttons">
+            <button class="kw-btn" onclick="highlight('extranet', 'Extranet（企業外部延伸網路）：把部分內部資源安全地開放給合作夥伴或客戶使用。')">Extranet</button>
+            <button class="kw-btn" onclick="highlight('intranet', '內部網路（Intranet）：公司/學校內部限定成員使用的網路。')">內部網路</button>
+            <button class="kw-btn" onclick="highlight('internet', '網際網路（Internet）：全世界公開可連線的網路，無限制對象。')">網際網路</button>
+            <button class="kw-btn" onclick="highlight('protocol', '通訊協定：規定資料怎麼傳的規則，例如 TCP/IP、HTTP。')">通訊協定</button>
+            <button class="kw-btn" onclick="highlight('tool', '工具：指瀏覽器、網頁伺服器等軟體技術。')">工具</button>
+        </div>
+        <div class="definition-box" id="definitionBox">
+            請點擊上方按鈕，查看白話解釋。
+        </div>
+    </div>
+
+    <!-- D. Plain Language Accordion -->
+    <div class="accordion">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+            <span>按此展開【白話翻譯】</span>
+            <span>+</span>
+        </div>
+        <div class="accordion-content">
+            <p style="margin-bottom: 15px;"><strong>【題目這句話在問什麼？】</strong><br>
+            「Extranet 是不是指：用 Internet 的技術做出來的『內部網路』？」</p>
+            <p><strong>【這題在考什麼？】</strong><br>
+            「你是否能分清楚：Intranet 才是純粹的內部網路；Extranet 則是將內部網路『對外延伸』給特定合作夥伴。」</p>
+        </div>
+    </div>
+
+    <!-- E. Concept Explanation -->
+    <div class="section-box">
+        <h3 class="section-title">觀念教學：三者對照表</h3>
+        <p style="margin-bottom: 15px; color: #64748b;">技術都是同一套 (TCP/IP)，差別在於「誰可以用」：</p>
+        <div class="concepts-grid">
+            <!-- Card 1 -->
+            <div class="concept-card internet">
+                <div class="concept-title">1. Internet<br>(網際網路)</div>
+                <ul class="concept-list">
+                    <li><strong>權限：</strong>公開，任何人皆可連</li>
+                    <li><strong>範圍：</strong>全球</li>
+                    <li><strong>例子：</strong>Google、Facebook、新聞網站</li>
+                </ul>
+            </div>
+            <!-- Card 2 -->
+            <div class="concept-card intranet">
+                <div class="concept-title">2. Intranet<br>(內部網路)</div>
+                <ul class="concept-list">
+                    <li><strong>權限：</strong>封閉，限內部員工</li>
+                    <li><strong>範圍：</strong>公司/校園內</li>
+                    <li><strong>例子：</strong>員工打卡系統、校務行政系統</li>
+                </ul>
+            </div>
+            <!-- Card 3 -->
+            <div class="concept-card extranet">
+                <div class="concept-title">3. Extranet<br>(企業外部延伸網路)</div>
+                <ul class="concept-list">
+                    <li><strong>權限：</strong>半開放，限特定合作夥伴</li>
+                    <li><strong>範圍：</strong>內網延伸至外部</li>
+                    <li><strong>例子：</strong>供應商庫存查詢、經銷商下單系統</li>
+                </ul>
+            </div>
+        </div>
+        <p style="background: #f1f5f9; padding: 10px; border-radius: 5px; font-weight: bold; text-align: center;">
+            老師強調：「Extranet 不是純內部網路，它是 Intranet 的對外延伸。」
+        </p>
+    </div>
+
+    <!-- F. Analysis -->
+    <div class="section-box">
+        <h3 class="section-title">是非題判斷解析</h3>
+        <ul class="analysis-list">
+            <li><strong>(A) O：</strong> 錯。雖然 Extranet 用了網路技術，但它不是純粹的「內部網路」，它包含了「外部合作夥伴」的連線權限。</li>
+            <li><strong>(B) X：</strong> 正確。題目描述把 Extranet 與 Intranet 的定義混淆了。純粹的內部網路叫做 Intranet。</li>
+        </ul>
+    </div>
+
+    <!-- G. Common Mistakes -->
+    <div class="section-box">
+        <h3 class="section-title" style="color: var(--error-color);">常見錯誤陷阱</h3>
+        <ul class="mistake-list">
+            <li>看到單字結尾都是 "-net" 就覺得定義都一樣。</li>
+            <li>只記得「使用 Internet 技術」這點，卻忽略了「開放對象」的不同。</li>
+            <li>誤以為「只要公司架設的網站」就叫 Extranet (其實如果是給員工用是 Intranet，給大眾看是 Internet 網站)。</li>
+        </ul>
+    </div>
+
+    <!-- H. Mnemonic -->
+    <div class="mnemonic-box">
+        <h3>【記憶口訣】</h3>
+        <div class="mnemonic-text">「In 內用，Ex 外開」</div>
+        <p>Intranet：內部用<br>Extranet：對外開放一部分</p>
+    </div>
+
+    <!-- I. Answer Reveal -->
+    <div class="answer-section">
+        <button class="reveal-btn" onclick="showAnswer()">查看正確答案</button>
+        <div id="answerResult" class="answer-result">
+            <span class="big-answer">(B) X</span>
+            <p><strong>一句話理由：</strong><br>
+            Extranet 是 Intranet 的對外延伸網路，開放給特定外部對象（如廠商），不等同於純內部網路。</p>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // Highlight Interaction Logic
+    function highlight(key, definition) {
+        // 1. Remove active class from all spans
+        const allSpans = document.querySelectorAll('.highlight-span');
+        allSpans.forEach(span => span.classList.remove('highlight-active'));
+
+        // 2. Remove active class from all buttons
+        const allBtns = document.querySelectorAll('.kw-btn');
+        allBtns.forEach(btn => btn.classList.remove('active'));
+
+        // 3. Highlight specific spans
+        const targetSpans = document.querySelectorAll(`.highlight-span[data-key="${key}"]`);
+        targetSpans.forEach(span => span.classList.add('highlight-active'));
+
+        // 4. Highlight clicked button
+        event.target.classList.add('active');
+
+        // 5. Update definition box text
+        const defBox = document.getElementById('definitionBox');
+        
+        // Simple typing effect or direct replacement
+        defBox.style.opacity = 0;
+        setTimeout(() => {
+            defBox.innerHTML = definition;
+            defBox.style.opacity = 1;
+        }, 200);
+    }
+
+    // Accordion Logic
+    function toggleAccordion(header) {
+        const content = header.nextElementSibling;
+        const symbol = header.querySelector('span:last-child');
+        
+        if (content.classList.contains('open')) {
+            content.classList.remove('open');
+            symbol.textContent = '+';
+        } else {
+            content.classList.add('open');
+            symbol.textContent = '-';
+        }
+    }
+
+    // Answer Reveal Logic
+    function showAnswer() {
+        const result = document.getElementById('answerResult');
+        const btn = document.querySelector('.reveal-btn');
+        
+        result.style.display = 'block';
+        btn.style.display = 'none';
+        
+        // Scroll to answer
+        result.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+</script>
+
+</body>
+</html>

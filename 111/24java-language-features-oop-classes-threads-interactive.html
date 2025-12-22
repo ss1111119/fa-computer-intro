@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>題目 24：Java 語言核心特性解析</title>
+    <style>
+        /* 全局變數設定：補習班講義風格配色 */
+        :root {
+            --primary-color: #2c3e50; /* 深藍色：專業感 */
+            --accent-color: #e67e22; /* 橘色：重點強調 */
+            --correct-color: #27ae60; /* 綠色：正確 */
+            --wrong-color: #c0392b; /* 紅色：錯誤 */
+            --bg-color: #fdfbf7; /* 米白色：護眼紙張感 */
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --border-radius: 8px;
+            --shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* 基礎重置與排版 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* 標題區塊 */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid var(--primary-color);
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #666;
+        }
+
+        /* 通用卡片樣式 */
+        .section-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: var(--shadow);
+            border-left: 5px solid var(--primary-color);
+        }
+
+        h2 {
+            font-size: 1.4rem;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        h2::before {
+            content: "★";
+            margin-right: 8px;
+            color: var(--accent-color);
+        }
+
+        /* 題目區塊特別樣式 */
+        .question-box {
+            background-color: #e8f4f8;
+            border-left-color: var(--accent-color);
+        }
+
+        .options-list {
+            list-style: none;
+            margin-top: 15px;
+        }
+
+        .options-list li {
+            padding: 8px 12px;
+            margin-bottom: 5px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 4px;
+        }
+
+        .correct-answer-display {
+            margin-top: 15px;
+            font-weight: bold;
+            color: var(--correct-color);
+            font-size: 1.2rem;
+            display: none; /* 預設隱藏，互動後顯示 */
+        }
+
+        /* 專有名詞解釋區 */
+        .vocab-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .vocab-item {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        .vocab-term {
+            font-weight: bold;
+            color: var(--primary-color);
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .vocab-desc {
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        /* (A) 程式結構互動 */
+        .code-container {
+            background: #2d3436;
+            color: #dfe6e9;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            font-family: monospace;
+            position: relative;
+        }
+
+        .interactive-code-part {
+            cursor: pointer;
+            padding: 2px 5px;
+            border-radius: 3px;
+            transition: all 0.3s;
+            border: 1px dashed rgba(255,255,255,0.3);
+        }
+
+        .interactive-code-part:hover {
+            background: var(--accent-color);
+            color: white;
+            border-style: solid;
+        }
+
+        .code-explanation {
+            margin-top: 15px;
+            padding: 10px;
+            background: #fff3cd;
+            color: #856404;
+            border-radius: 4px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        /* (B) 選項解析互動 */
+        .option-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-btn {
+            padding: 15px;
+            text-align: left;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: 0.2s;
+        }
+
+        .option-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .option-detail {
+            display: none;
+            padding: 10px 15px;
+            margin-top: -5px;
+            margin-bottom: 10px;
+            border-radius: 0 0 8px 8px;
+            color: white;
+        }
+
+        .is-correct {
+            background-color: var(--correct-color);
+        }
+
+        .is-wrong {
+            background-color: var(--wrong-color);
+        }
+
+        /* (C) 繼承 vs 介面 */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .comparison-table th, .comparison-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .comparison-table th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .comparison-row:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* (D) 執行與執行緒 */
+        .flip-card-container {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .flip-card {
+            flex: 1;
+            min-width: 280px;
+            background: white;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .flip-card:active {
+            transform: scale(0.98);
+        }
+
+        .flip-content {
+            display: none;
+            margin-top: 10px;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        /* (E) 陷阱卡 */
+        .trap-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .trap-card {
+            background: #ffebee;
+            border: 1px solid #ffcdd2;
+            padding: 15px;
+            border-radius: 8px;
+            position: relative;
+            transition: opacity 0.5s ease;
+        }
+
+        .trap-title {
+            font-weight: bold;
+            color: #b71c1c;
+            margin-bottom: 5px;
+        }
+
+        .dismiss-btn {
+            float: right;
+            background: #b71c1c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        /* (F) 自我檢測 */
+        .quiz-item {
+            margin-bottom: 20px;
+            border-bottom: 1px dashed #ddd;
+            padding-bottom: 15px;
+        }
+
+        .quiz-question {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .hint-btn {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .hint-text {
+            display: none;
+            margin-top: 10px;
+            color: #666;
+            font-style: italic;
+            background: #fff8e1;
+            padding: 5px;
+        }
+
+        /* 底部重置按鈕 */
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-bottom: 40px;
+        }
+
+        .reset-btn {
+            background: #95a5a6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 1rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .reset-btn:hover {
+            background: #7f8c8d;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>題目 24：Java 程式語言特性</h1>
+        <div class="subtitle">高中物件導向入門 • 互動式講義</div>
+    </header>
+
+    <!-- 1. 題目展示區 -->
+    <section class="section-card question-box">
+        <h2>題目 24：關於 Java 程式語言之敘述，下列何者正確？</h2>
+        <ul class="options-list">
+            <li>(A) Java 支援如同 C++ 程式語言的多重繼承</li>
+            <li>(B) 在 Java 中，可直接寫程序，而不用定義任何類別</li>
+            <li>(C) 在 Java 中，一個應用程式是一堆類別與這些類別實例的集合</li>
+            <li>(D) Java 程式以直譯器（interpreter）執行，只允許單一執行緒</li>
+        </ul>
+        <div class="correct-answer-display" id="mainAnswerDisplay">
+            正確答案：(C)
+        </div>
+    </section>
+
+    <!-- 2. 核心觀念：名詞解釋 -->
+    <section class="section-card">
+        <h2>觀念暖身：專有名詞白話文</h2>
+        <div class="vocab-grid">
+            <div class="vocab-item">
+                <span class="vocab-term">類別 (Class)</span>
+                <span class="vocab-desc">像是「餅乾模具」或「設計圖」。定義了東西長什麼樣子、有什麼功能。</span>
+            </div>
+            <div class="vocab-item">
+                <span class="vocab-term">物件/實例 (Object/Instance)</span>
+                <span class="vocab-desc">像是用模具壓出來的「真餅乾」。依照類別產生出來的實際東西。</span>
+            </div>
+            <div class="vocab-item">
+                <span class="vocab-term">多重繼承 (Multiple Inheritance)</span>
+                <span class="vocab-desc">一個小孩有好幾個親生爸爸。Java 的類別<b>不支援</b>這個（太亂了），但 C++ 可以。</span>
+            </div>
+            <div class="vocab-item">
+                <span class="vocab-term">介面 (Interface)</span>
+                <span class="vocab-desc">像是「契約」或「規格書」。只規定你要做什麼功能，不規定怎麼做。</span>
+            </div>
+            <div class="vocab-item">
+                <span class="vocab-term">執行緒 (Thread)</span>
+                <span class="vocab-desc">工廠裡的生產線。Java 支援<b>多執行緒</b>，也就是可以同時開好多條生產線一起工作。</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. 互動功能 (A)：程式結構示意 -->
+    <section class="section-card">
+        <h2>觀念一：為什麼一定要有 Class？</h2>
+        <p style="margin-bottom: 10px;">請點擊下方程式碼的不同區塊，看看它們代表什麼意義：</p>
+        
+        <div class="code-container">
+<span class="interactive-code-part" onclick="showCodeExplain('class')">class App</span> {
+    
+    <span class="interactive-code-part" onclick="showCodeExplain('main')">public static void main(String[] args)</span> {
+        
+        System.out.println("Hello Java!");
+
+    }
+}
+        </div>
+        <div class="code-explanation" id="codeExplainBox">
+            點擊上方程式碼有顏色的文字，這裡會顯示說明喔！
+        </div>
+    </section>
+
+    <!-- 4. 互動功能 (B)：選項逐一擊破 -->
+    <section class="section-card">
+        <h2>觀念二：選項逐一解析</h2>
+        <p style="margin-bottom: 15px;">點擊下方選項卡片，查看為什麼對、為什麼錯：</p>
+        
+        <div class="option-cards">
+            <!-- 選項 A -->
+            <button class="option-btn" onclick="toggleOption('optA', false)">
+                (A) Java 支援如同 C++ 程式語言的多重繼承
+            </button>
+            <div id="optA" class="option-detail is-wrong">
+                ❌ 錯誤！<br>
+                Java 為了避免混亂（例如：鑽石繼承問題），規定<b>類別只能單一繼承</b>（一個小孩只能有一個親生爸爸）。<br>
+                若需要類似功能，Java 使用「介面 (Interface)」來達成（可以實作多個介面）。
+            </div>
+
+            <!-- 選項 B -->
+            <button class="option-btn" onclick="toggleOption('optB', false)">
+                (B) 在 Java 中，可直接寫程序，而不用定義任何類別
+            </button>
+            <div id="optB" class="option-detail is-wrong">
+                ❌ 錯誤！<br>
+                Java 是強制的物件導向語言。所有的程式碼、函式（方法），都<b>必須被包在一個 class (類別) 裡面</b>。<br>
+                不像 C 或 Python 可以直接寫在外面。
+            </div>
+
+            <!-- 選項 C -->
+            <button class="option-btn" onclick="toggleOption('optC', true)">
+                (C) 在 Java 中，一個應用程式是一堆類別與這些類別實例的集合
+            </button>
+            <div id="optC" class="option-detail is-correct">
+                ⭕ 正確！<br>
+                這就是物件導向 (OOP) 的精髓！<br>
+                Java 程式運作時，就是由許多設計圖（類別）產生出許多物件（實例），然後這些物件互相溝通合作。
+            </div>
+
+            <!-- 選項 D -->
+            <button class="option-btn" onclick="toggleOption('optD', false)">
+                (D) Java 程式以直譯器（interpreter）執行，只允許單一執行緒
+            </button>
+            <div id="optD" class="option-detail is-wrong">
+                ❌ 錯誤！這句話錯了兩個地方：<br>
+                1. 執行方式：Java 是先編譯成 .class (Bytecode)，再由 JVM 執行 (包含直譯與 JIT 編譯)，不是純直譯。<br>
+                2. 執行緒：Java 非常強調<b>支援多執行緒 (Multi-thread)</b>，可以同時做很多事！
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. 互動功能 (C)：繼承 vs 介面 -->
+    <section class="section-card">
+        <h2>觀念三：繼承 vs 介面 (考試必考)</h2>
+        <p>很多同學搞混，請看這個對照表（請記住關鍵字）：</p>
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th>特性</th>
+                    <th>類別繼承 (extends)</th>
+                    <th>介面實作 (implements)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="comparison-row">
+                    <td>數量限制</td>
+                    <td style="color: var(--wrong-color); font-weight: bold;">只能 1 個 (單一繼承)</td>
+                    <td style="color: var(--correct-color); font-weight: bold;">可以 無限多個</td>
+                </tr>
+                <tr class="comparison-row">
+                    <td>目的</td>
+                    <td>沿用父類別的功能</td>
+                    <td>遵守某種規格契約</td>
+                </tr>
+                <tr class="comparison-row">
+                    <td>口訣</td>
+                    <td>爸爸只能有一個</td>
+                    <td>證照可以考很多張</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- 6. 互動功能 (D)：執行與執行緒 -->
+    <section class="section-card">
+        <h2>觀念四：執行與執行緒</h2>
+        <p>點擊卡片翻開真相：</p>
+        <div class="flip-card-container">
+            <div class="flip-card" onclick="toggleFlip(this)">
+                <h3>Java 怎麼執行？</h3>
+                <div class="flip-content">
+                    原始碼(.java) ➔ 編譯 ➔ 位元碼(.class) ➔ JVM (虛擬機) 執行
+                    <br><small>(並非單純直譯，效率較高！)</small>
+                </div>
+            </div>
+            <div class="flip-card" onclick="toggleFlip(this)">
+                <h3>單一 vs 多執行緒？</h3>
+                <div class="flip-content">
+                    Java 支援「多執行緒 (Multi-thread)」！
+                    <br><small>(就像餐廳裡有好幾個服務生同時服務，不會只有一個人忙死)</small>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 7. 互動功能 (E)：常見陷阱卡 -->
+    <section class="section-card" style="border-left-color: #c0392b;">
+        <h2>⚠️ 考試常見陷阱區</h2>
+        <p>這些觀念要是搞錯，分數就送人了！點擊「我懂了」把錯誤觀念消除。</p>
+        
+        <div class="trap-container">
+            <div class="trap-card" id="trap1">
+                <button class="dismiss-btn" onclick="dismissTrap('trap1')">我懂了</button>
+                <div class="trap-title">陷阱 1：「Java 跟 C++ 一樣有多重繼承」</div>
+                <div>錯！Java 類別只有單一繼承。要多重功能請找 Interface。</div>
+            </div>
+            <div class="trap-card" id="trap2">
+                <button class="dismiss-btn" onclick="dismissTrap('trap2')">我懂了</button>
+                <div class="trap-title">陷阱 2：「Java 不用寫 class 就能跑」</div>
+                <div>大錯特錯！Java 是強制物件導向，連最簡單的 Hello World 都要包在 class 裡。</div>
+            </div>
+            <div class="trap-card" id="trap3">
+                <button class="dismiss-btn" onclick="dismissTrap('trap3')">我懂了</button>
+                <div class="trap-title">陷阱 3：「Java 只能單執行緒，跑很慢」</div>
+                <div>錯！Java 強項就是多執行緒伺服器端應用，且有 JVM 優化，速度不慢。</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 8. 互動功能 (F)：自我檢測 -->
+    <section class="section-card">
+        <h2>自我檢測 (不看答案試試看)</h2>
+        
+        <div class="quiz-item">
+            <div class="quiz-question">Q1：如果題目問「Java 不具備的特性是什麼？」，看到哪個關鍵字要選？</div>
+            <button class="hint-btn" onclick="toggleHint('hint1')">顯示提示</button>
+            <div id="hint1" class="hint-text">提示：想想看關於「爸爸」的數量... (多重繼承)</div>
+        </div>
+
+        <div class="quiz-item">
+            <div class="quiz-question">Q2：為什麼 Java 程式碼一定要寫在 class 裡面？</div>
+            <button class="hint-btn" onclick="toggleHint('hint2')">顯示提示</button>
+            <div id="hint2" class="hint-text">提示：因為 Java 是「純」的OOO導向語言，強調封裝與模組化。</div>
+        </div>
+
+        <div class="quiz-item">
+            <div class="quiz-question">Q3：多執行緒 (Multi-thread) 對應用程式有什麼好處？</div>
+            <button class="hint-btn" onclick="toggleHint('hint3')">顯示提示</button>
+            <div id="hint3" class="hint-text">提示：不要讓程式「卡住」。可以同時做 A 事又做 B 事 (例如邊下載邊看影片)。</div>
+        </div>
+    </section>
+
+    <div class="footer">
+        <button class="reset-btn" onclick="resetAll()">⟳ 全部重置，再來一次</button>
+        <p style="margin-top: 10px; font-size: 0.8rem; color: #888;">Keep Coding, Keep Learning.</p>
+    </div>
+
+</div>
+
+<script>
+    // 1. (A) 程式結構互動邏輯
+    function showCodeExplain(type) {
+        const box = document.getElementById('codeExplainBox');
+        if (type === 'class') {
+            box.innerHTML = "<b>class App</b><br>這就是「類別」。Java 規定所有程式邏輯都要包在 class 裡面，不能裸露在外！";
+            box.style.backgroundColor = "#d1ecf1";
+            box.style.color = "#0c5460";
+        } else if (type === 'main') {
+            box.innerHTML = "<b>main 方法</b><br>這是程式的入口點。程式執行時，JVM 會先找這個方法開始跑。";
+            box.style.backgroundColor = "#d4edda";
+            box.style.color = "#155724";
+        }
+    }
+
+    // 2. (B) 選項解析互動邏輯
+    function toggleOption(id, isCorrect) {
+        // 先把所有詳解關起來，避免版面太長
+        const allDetails = document.querySelectorAll('.option-detail');
+        allDetails.forEach(el => el.style.display = 'none');
+
+        // 顯示當前點擊的詳解
+        const target = document.getElementById(id);
+        target.style.display = 'block';
+
+        // 如果選對了，順便在上方題目區顯示正確答案標示
+        if (isCorrect) {
+            document.getElementById('mainAnswerDisplay').style.display = 'block';
+        }
+    }
+
+    // 3. (D) 翻卡效果
+    function toggleFlip(element) {
+        const content = element.querySelector('.flip-content');
+        if (content.style.display === 'block') {
+            content.style.display = 'none';
+            element.style.background = 'white';
+        } else {
+            content.style.display = 'block';
+            element.style.background = '#e8f6f3';
+        }
+    }
+
+    // 4. (E) 消除陷阱卡
+    function dismissTrap(id) {
+        const trap = document.getElementById(id);
+        trap.style.opacity = '0';
+        setTimeout(() => {
+            trap.style.display = 'none';
+        }, 500); // 等待淡出動畫結束
+    }
+
+    // 5. (F) 顯示提示
+    function toggleHint(id) {
+        const hint = document.getElementById(id);
+        hint.style.display = (hint.style.display === 'block') ? 'none' : 'block';
+    }
+
+    // 6. 全部重置
+    function resetAll() {
+        // 重置說明框
+        document.getElementById('codeExplainBox').innerText = "點擊上方程式碼有顏色的文字，這裡會顯示說明喔！";
+        document.getElementById('codeExplainBox').style.background = "#fff3cd";
+        document.getElementById('codeExplainBox').style.color = "#856404";
+
+        // 隱藏正確答案顯示
+        document.getElementById('mainAnswerDisplay').style.display = 'none';
+
+        // 隱藏所有選項詳解
+        document.querySelectorAll('.option-detail').forEach(el => el.style.display = 'none');
+
+        // 重置翻轉卡片
+        document.querySelectorAll('.flip-content').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('.flip-card').forEach(el => el.style.background = 'white');
+
+        // 恢復陷阱卡
+        document.querySelectorAll('.trap-card').forEach(el => {
+            el.style.display = 'block';
+            setTimeout(() => el.style.opacity = '1', 50);
+        });
+
+        // 隱藏提示
+        document.querySelectorAll('.hint-text').forEach(el => el.style.display = 'none');
+
+        // 滾動回頂部
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+</script>
+
+</body>
+</html>

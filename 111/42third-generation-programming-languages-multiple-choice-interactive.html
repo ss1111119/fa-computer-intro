@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電腦概論 - 複選題 42：程式語言世代</title>
+    <style>
+        /* 全域設定 */
+        :root {
+            --primary-color: #2c3e50; /* 深藍色 - 專業感 */
+            --accent-color: #e74c3c; /* 紅色 - 重點標示 */
+            --highlight-color: #f1c40f; /* 黃色 - 螢光筆效果 */
+            --success-color: #27ae60;
+            --bg-color: #fdfbf7; /* 米色 - 護眼紙質感 */
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            background-color: var(--bg-color);
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-top: 10px solid var(--primary-color);
+        }
+
+        /* 標題區 */
+        header {
+            text-align: center;
+            border-bottom: 2px dashed #ccc;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            color: #666;
+            font-weight: bold;
+        }
+
+        .teacher-note {
+            background-color: #e8f6f3;
+            border-left: 5px solid #1abc9c;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+
+        /* 章節標題 */
+        h2 {
+            background: var(--primary-color);
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-top: 40px;
+            font-size: 1.3em;
+        }
+
+        /* 重點強調 */
+        .highlight {
+            background: linear-gradient(to top, var(--highlight-color) 40%, transparent 40%);
+            font-weight: bold;
+            padding: 0 5px;
+        }
+
+        .term {
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
+        /* 觀念表格 */
+        .concept-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .concept-table th, .concept-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .concept-table th {
+            background-color: #f2f2f2;
+            color: var(--primary-color);
+        }
+
+        /* (A) 拖拉互動區 */
+        .drag-area {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #eee;
+        }
+
+        .card-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            min-height: 60px;
+            padding: 10px;
+            background: #eef;
+            border-radius: 8px;
+            border: 2px dashed #aac;
+        }
+
+        .draggable-card {
+            background: #fff;
+            border: 2px solid var(--primary-color);
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: grab;
+            font-weight: bold;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+            user-select: none;
+            transition: transform 0.2s;
+        }
+
+        .draggable-card:active {
+            cursor: grabbing;
+            transform: scale(1.05);
+        }
+
+        .drop-zones {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .drop-zone {
+            background: #fff;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            padding: 15px;
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .drop-zone h3 {
+            margin-top: 0;
+            font-size: 1em;
+            color: #555;
+            text-align: center;
+        }
+
+        .drop-zone.active {
+            border-color: var(--success-color);
+            background-color: #eafaf1;
+        }
+
+        /* (B) 複選題互動區 */
+        .quiz-box {
+            background: #fff8e1;
+            border: 2px solid #ffe082;
+            padding: 25px;
+            border-radius: 10px;
+            position: relative;
+        }
+
+        .question-tag {
+            background: var(--accent-color);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        .options-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .options-list li {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #fff;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .options-list li:hover {
+            background: #f5f5f5;
+        }
+
+        .options-list label {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+
+        .options-list input[type="checkbox"] {
+            margin-right: 15px;
+            transform: scale(1.5);
+        }
+
+        .action-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1.1em;
+            border-radius: 30px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.3s;
+            display: block;
+            width: 100%;
+        }
+
+        .action-btn:hover {
+            background: #34495e;
+        }
+
+        .result-msg {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            display: none;
+        }
+
+        .result-correct {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .result-wrong {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* (D) 解析與特性 */
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .analysis-btn {
+            background: #fff;
+            border: 2px solid var(--primary-color);
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .analysis-btn:hover, .analysis-btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .analysis-display {
+            margin-top: 15px;
+            padding: 15px;
+            background: #eee;
+            border-radius: 5px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 1.1em;
+        }
+
+        /* (E) 陷阱卡 */
+        .trap-container {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .trap-card {
+            flex: 1;
+            min-width: 200px;
+            background: #fff;
+            border: 2px solid var(--accent-color);
+            padding: 15px;
+            border-radius: 10px;
+            position: relative;
+            cursor: pointer;
+            transition: opacity 0.5s;
+        }
+
+        .trap-card h4 {
+            margin-top: 0;
+            color: var(--accent-color);
+        }
+
+        .dismiss-btn {
+            background: #ddd;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            margin-top: 10px;
+            cursor: pointer;
+            font-size: 0.8em;
+        }
+
+        /* (F) 自我檢測 */
+        .self-test-item {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .hint-text {
+            display: none;
+            color: var(--primary-color);
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        /* RWD 適配 */
+        @media (max-width: 600px) {
+            .drop-zones {
+                grid-template-columns: 1fr;
+            }
+            .drop-zone {
+                min-height: 100px;
+            }
+        }
+        
+        .reset-section {
+            text-align: center;
+            margin-top: 40px;
+            border-top: 1px solid #ccc;
+            padding-top: 20px;
+        }
+        
+        .reset-btn {
+            background: #7f8c8d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>電腦概論 - 複選題 42</h1>
+        <div class="subtitle">單元：電腦程式語言發展世代 (1GL ~ 3GL)</div>
+    </header>
+
+    <!-- 0. 老師的話 -->
+    <div class="teacher-note">
+        <strong>👨‍🏫 老師的話：</strong><br>
+        各位同學好！這題是考試必考題，很多同學看到英文選項就慌了。其實只要掌握「世代口訣」，不用死背也能秒殺！我們今天要把第 42 題的這 5 分穩穩拿下來！
+    </div>
+
+    <!-- 1. 核心觀念說明區 -->
+    <section>
+        <h2>第一部分：程式語言世代快速判斷法</h2>
+        <p>首先，什麼是 <span class="term">程式語言</span>？簡單說就是「人類用來指揮電腦做事的語言」。</p>
+        <p>語言的發展就像人類文明一樣，越來越進步、越來越好懂：</p>
+
+        <div class="concept-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>世代</th>
+                        <th>名稱</th>
+                        <th>白話解釋</th>
+                        <th>關鍵字</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>1GL (第一代)</strong></td>
+                        <td>機器語言<br>(Machine Language)</td>
+                        <td>只有電腦看得懂的 <strong>0 與 1</strong>，人類看像天書。</td>
+                        <td>0101、二進位、硬體相依</td>
+                    </tr>
+                    <tr>
+                        <td><strong>2GL (第二代)</strong></td>
+                        <td>組合語言<br>(Assembly)</td>
+                        <td>用簡單的<strong>助記符號</strong>(英文縮寫)來代替 0 與 1。</td>
+                        <td>ADD, MOV, JMP</td>
+                    </tr>
+                    <tr>
+                        <td><strong>3GL (第三代)</strong></td>
+                        <td>高階語言<br>(High-level Language)</td>
+                        <td>接近人類的<strong>英文與數學</strong>表示法。需要<span class="term">編譯器 (Compiler)</span>翻譯。</td>
+                        <td>C, Java, Fortran, Python</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div style="background: #fff3cd; padding: 15px; border-radius: 10px; border: 2px dashed #e67e22;">
+            <strong>👉 考試秒殺口訣：</strong>
+            <ul>
+                <li>看不懂的 0/1 亂碼 → <span class="highlight">第一代</span></li>
+                <li>很像英文指令縮寫 (Assembly) → <span class="highlight">第二代</span></li>
+                <li>像完整英文、數學式、可攜性高 (C, Java...) → <span class="highlight">第三代</span></li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- 2. 互動功能 (A) 分類練習 -->
+    <section>
+        <h2>第二部分：觀念互動分類</h2>
+        <p>請試著將下列語言卡片，拖拉到正確的世代框框中：</p>
+        
+        <div class="drag-area">
+            <!-- 待選區 -->
+            <div id="card-container" class="card-container" ondrop="drop(event)" ondragover="allowDrag(event)">
+                <div class="draggable-card" draggable="true" ondragstart="drag(event)" id="card-machine" data-type="1gl">Machine Language</div>
+                <div class="draggable-card" draggable="true" ondragstart="drag(event)" id="card-assembly" data-type="2gl">Assembly</div>
+                <div class="draggable-card" draggable="true" ondragstart="drag(event)" id="card-c" data-type="3gl">C</div>
+                <div class="draggable-card" draggable="true" ondragstart="drag(event)" id="card-java" data-type="3gl">Java</div>
+                <div class="draggable-card" draggable="true" ondragstart="drag(event)" id="card-fortran" data-type="3gl">Fortran</div>
+            </div>
+
+            <!-- 放置區 -->
+            <div class="drop-zones">
+                <div class="drop-zone" id="zone-1gl" ondrop="drop(event)" ondragover="allowDrag(event)">
+                    <h3>第一代語言 (1GL)<br><small>(機器語言)</small></h3>
+                </div>
+                <div class="drop-zone" id="zone-2gl" ondrop="drop(event)" ondragover="allowDrag(event)">
+                    <h3>第二代語言 (2GL)<br><small>(組合語言)</small></h3>
+                </div>
+                <div class="drop-zone" id="zone-3gl" ondrop="drop(event)" ondragover="allowDrag(event)">
+                    <h3>第三代語言 (3GL)<br><small>(高階語言)</small></h3>
+                </div>
+            </div>
+
+            <button class="action-btn" onclick="checkSorting()" style="margin-top: 20px;">檢查分類答案</button>
+            <div id="sort-result" class="result-msg"></div>
+        </div>
+    </section>
+
+    <!-- 3. 互動功能 (B) 複選題作答 -->
+    <section>
+        <h2>第三部分：實戰演練 (複選題 42)</h2>
+        <div class="quiz-box">
+            <span class="question-tag">題目 42 (複選題)</span>
+            <p style="font-size: 1.2em; font-weight: bold;">下列何種屬於第三代的電腦程式語言？</p>
+            <p style="color: #e74c3c; font-size: 0.9em;">(請勾選正確答案，可複選)</p>
+
+            <ul class="options-list">
+                <li><label><input type="checkbox" name="q42" value="A"> (A) Machine Language</label></li>
+                <li><label><input type="checkbox" name="q42" value="B"> (B) Assembly</label></li>
+                <li><label><input type="checkbox" name="q42" value="C"> (C) C</label></li>
+                <li><label><input type="checkbox" name="q42" value="D"> (D) Java</label></li>
+                <li><label><input type="checkbox" name="q42" value="E"> (E) Fortran</label></li>
+            </ul>
+
+            <button class="action-btn" onclick="checkQuiz()">送出答案</button>
+            <div id="quiz-result" class="result-msg"></div>
+        </div>
+    </section>
+
+    <!-- 4. 互動功能 (C) & (D) 解析 -->
+    <section>
+        <h2>第四部分：選項深度解析</h2>
+        <p>點選下方按鈕，查看每個選項的詳細說明：</p>
+        
+        <div class="analysis-grid">
+            <div class="analysis-btn" onclick="analyzeOption('A')">(A) Machine Language</div>
+            <div class="analysis-btn" onclick="analyzeOption('B')">(B) Assembly</div>
+            <div class="analysis-btn" onclick="analyzeOption('C')">(C) C 語言</div>
+            <div class="analysis-btn" onclick="analyzeOption('D')">(D) Java</div>
+            <div class="analysis-btn" onclick="analyzeOption('E')">(E) Fortran</div>
+        </div>
+
+        <div id="analysis-display" class="analysis-display">
+            請點選上方按鈕查看解析
+        </div>
+
+        <div style="margin-top: 20px; font-size: 0.9em; color: #555;">
+            💡 <strong>提示：</strong>C、Java、Fortran 都是高階語言，點擊它們查看共同特性。
+        </div>
+    </section>
+
+    <!-- 5. 互動功能 (E) 陷阱卡 -->
+    <section>
+        <h2>第五部分：常見考試陷阱</h2>
+        <p>這些觀念很容易搞混，點擊卡片確認「我懂了」把它消除！</p>
+        <div class="trap-container">
+            <div class="trap-card" onclick="dismissTrap(this)">
+                <h4>陷阱 1：Java 很新？</h4>
+                <p>別以為 Java 很潮就是第四代！它仍然是標準的<strong>第三代物件導向語言</strong>。</p>
+                <button class="dismiss-btn">我懂了 (點擊關閉)</button>
+            </div>
+            <div class="trap-card" onclick="dismissTrap(this)">
+                <h4>陷阱 2：看到英文就亂選</h4>
+                <p>Assembly 也是英文拼的，但它是<strong>第二代</strong>！要看它是「指令縮寫」還是「完整語法」。</p>
+                <button class="dismiss-btn">我懂了 (點擊關閉)</button>
+            </div>
+            <div class="trap-card" onclick="dismissTrap(this)">
+                <h4>陷阱 3：複選題漏選</h4>
+                <p>題目問「哪些屬於」，通常不只一個。C、Java、Fortran 都要選才算對！</p>
+                <button class="dismiss-btn">我懂了 (點擊關閉)</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. 互動功能 (F) 自我檢測 -->
+    <section>
+        <h2>第六部分：自我檢測 (考考你)</h2>
+        
+        <div class="self-test-item">
+            <p><strong>Q1：第四代語言 (4GL) 和第三代最大的差別是？</strong></p>
+            <button onclick="toggleHint('hint1')">顯示提示</button>
+            <p id="hint1" class="hint-text">提示：4GL 更接近人類自然語言，通常指資料庫查詢語言 (如 SQL)，告訴電腦「做什麼」而不是「怎麼做」。</p>
+        </div>
+
+        <div class="self-test-item">
+            <p><strong>Q2：為什麼 Assembly (組合語言) 不算高階語言？</strong></p>
+            <button onclick="toggleHint('hint2')">顯示提示</button>
+            <p id="hint2" class="hint-text">提示：因為它還是很依賴硬體架構，且一條指令對應一個動作，不像高階語言具有高結構性與可攜性。</p>
+        </div>
+
+        <div class="self-test-item">
+            <p><strong>Q3：看到一個沒看過的語言 (如 Python)，怎麼猜它是第幾代？</strong></p>
+            <button onclick="toggleHint('hint3')">顯示提示</button>
+            <p id="hint3" class="hint-text">提示：如果它寫起來像英文句子，不用管硬體暫存器，那它肯定是第三代 (或以上) 的高階語言！</p>
+        </div>
+    </section>
+
+    <div class="reset-section">
+        <button class="reset-btn" onclick="resetAll()">🔄 全部重置 / 重新開始</button>
+    </div>
+
+</div>
+
+<script>
+    // --- 拖拉互動邏輯 (Drag and Drop) ---
+    function allowDrag(ev) {
+        ev.preventDefault();
+    }
+
+    function drag(ev) {
+        ev.dataTransfer.setData("text", ev.target.id);
+    }
+
+    function drop(ev) {
+        ev.preventDefault();
+        var data = ev.dataTransfer.getData("text");
+        var draggedElement = document.getElementById(data);
+        
+        // 確保只放置在 drop-zone 或 card-container 內，避免放在子元素上
+        let target = ev.target;
+        if (!target.classList.contains("drop-zone") && !target.classList.contains("card-container")) {
+            target = target.closest(".drop-zone") || target.closest(".card-container");
+        }
+        
+        if (target) {
+            target.appendChild(draggedElement);
+        }
+    }
+
+    // 檢查分類結果
+    function checkSorting() {
+        const zone1 = document.getElementById('zone-1gl');
+        const zone2 = document.getElementById('zone-2gl');
+        const zone3 = document.getElementById('zone-3gl');
+        const resultDiv = document.getElementById('sort-result');
+
+        let score = 0;
+        let errors = [];
+
+        // 檢查 1GL
+        if (zone1.children.length === 2 && zone1.querySelector('#card-machine')) {
+            score++;
+        } else if (zone1.querySelector('#card-machine')) {
+             // Correct card but maybe extras
+             score++; 
+        } else {
+            errors.push("Machine Language 應該在第一代");
+        }
+
+        // 檢查 2GL
+        if (zone2.querySelector('#card-assembly')) score++;
+        else errors.push("Assembly 應該在第二代");
+
+        // 檢查 3GL
+        if (zone3.querySelector('#card-c')) score++;
+        else errors.push("C 應該在第三代");
+        
+        if (zone3.querySelector('#card-java')) score++;
+        else errors.push("Java 應該在第三代");
+        
+        if (zone3.querySelector('#card-fortran')) score++;
+        else errors.push("Fortran 應該在第三代");
+
+        // 簡單判斷：必須全部歸位才算對
+        // 這裡檢查是否所有卡片都離開了待選區
+        const container = document.getElementById('card-container');
+        if (container.children.length > 0) {
+            resultDiv.className = "result-msg result-wrong";
+            resultDiv.innerHTML = "還有卡片沒分類喔！請將所有卡片拖入對應框框。";
+            resultDiv.style.display = "block";
+            return;
+        }
+
+        // 檢查每個區域是否有錯誤的卡片
+        let wrongPlacement = false;
+        Array.from(zone1.children).forEach(el => { if(el.tagName === 'DIV' && el.dataset.type !== '1gl') wrongPlacement = true; });
+        Array.from(zone2.children).forEach(el => { if(el.tagName === 'DIV' && el.dataset.type !== '2gl') wrongPlacement = true; });
+        Array.from(zone3.children).forEach(el => { if(el.tagName === 'DIV' && el.dataset.type !== '3gl') wrongPlacement = true; });
+
+        if (!wrongPlacement && errors.length === 0) {
+            resultDiv.className = "result-msg result-correct";
+            resultDiv.innerHTML = "🎉 太棒了！分類完全正確！<br>C、Java、Fortran 都是第三代高階語言。";
+        } else {
+            resultDiv.className = "result-msg result-wrong";
+            resultDiv.innerHTML = "分類有誤喔！<br>" + errors.join("<br>") + (wrongPlacement ? "<br>有些語言跑錯世代了！" : "");
+        }
+        resultDiv.style.display = "block";
+    }
+
+    // --- 複選題邏輯 ---
+    function checkQuiz() {
+        const inputs = document.querySelectorAll('input[name="q42"]');
+        let selected = [];
+        inputs.forEach(input => {
+            if (input.checked) selected.push(input.value);
+        });
+
+        const resultDiv = document.getElementById('quiz-result');
+        const correctAnswers = ['C', 'D', 'E'];
+        
+        // 判斷邏輯
+        const isCorrect = selected.length === 3 && 
+                          selected.includes('C') && 
+                          selected.includes('D') && 
+                          selected.includes('E');
+        
+        const hasFirstOrSecond = selected.includes('A') || selected.includes('B');
+
+        if (isCorrect) {
+            resultDiv.className = "result-msg result-correct";
+            resultDiv.innerHTML = "✅ 完全正確！<br>(C) C, (D) Java, (E) Fortran 都是第三代高階語言。";
+        } else if (hasFirstOrSecond) {
+            resultDiv.className = "result-msg result-wrong";
+            resultDiv.innerHTML = "❌ 答錯囉！<br>(A) 是第一代機器語言，(B) 是第二代組合語言，它們都不是第三代。";
+        } else if (selected.length < 3) {
+            resultDiv.className = "result-msg result-wrong";
+            resultDiv.innerHTML = "⚠️ 答案不完整！<br>本題是複選題，還有其他第三代語言沒選到喔！";
+        } else {
+            resultDiv.className = "result-msg result-wrong";
+            resultDiv.innerHTML = "❌ 答案錯誤，請重新思考！";
+        }
+        resultDiv.style.display = "block";
+    }
+
+    // --- 選項解析邏輯 ---
+    function analyzeOption(opt) {
+        const display = document.getElementById('analysis-display');
+        let content = "";
+        let is3GL = false;
+
+        switch(opt) {
+            case 'A':
+                content = "<strong>(A) Machine Language (機器語言)</strong><br>❌ 這是第一代語言。<br>它是直接用 0 與 1 控制硬體，不是高階語言。";
+                break;
+            case 'B':
+                content = "<strong>(B) Assembly (組合語言)</strong><br>❌ 這是第二代語言。<br>它是用助記符號 (如 ADD) 取代 0/1，但還是偏低階。";
+                break;
+            case 'C':
+                content = "<strong>(C) C 語言</strong><br>✅ 這是第三代語言。<br>它是結構化的高階語言，語法像英文，需要編譯器。";
+                is3GL = true;
+                break;
+            case 'D':
+                content = "<strong>(D) Java</strong><br>✅ 這是第三代語言。<br>著名的物件導向高階語言，具備跨平台特性 (Write Once, Run Anywhere)。";
+                is3GL = true;
+                break;
+            case 'E':
+                content = "<strong>(E) Fortran</strong><br>✅ 這是第三代語言。<br>最早的高階語言之一，主要用於科學運算與工程計算。";
+                is3GL = true;
+                break;
+        }
+
+        if (is3GL) {
+            content += "<hr style='border:0; border-top:1px dashed #ccc; margin:10px 0;'><strong>✨ 高階語言 (3GL) 共同特性：</strong><br>1. 可讀性高 (像英文)<br>2. 可攜性佳 (換電腦也能跑)<br>3. 需透過「編譯器」或「直譯器」翻譯";
+            display.style.background = "#d4edda";
+            display.style.color = "#155724";
+        } else {
+            display.style.background = "#f8d7da";
+            display.style.color = "#721c24";
+        }
+
+        display.innerHTML = content;
+    }
+
+    // --- 陷阱卡邏輯 ---
+    function dismissTrap(element) {
+        element.style.opacity = '0';
+        setTimeout(() => {
+            element.style.display = 'none';
+        }, 500);
+    }
+
+    // --- 自我檢測提示 ---
+    function toggleHint(id) {
+        const hint = document.getElementById(id);
+        if (hint.style.display === 'block') {
+            hint.style.display = 'none';
+        } else {
+            hint.style.display = 'block';
+        }
+    }
+
+    // --- 重置功能 ---
+    function resetAll() {
+        // 1. 重置拖拉卡片
+        const container = document.getElementById('card-container');
+        const cards = document.querySelectorAll('.draggable-card');
+        cards.forEach(card => container.appendChild(card));
+        document.getElementById('sort-result').style.display = 'none';
+
+        // 2. 重置複選題
+        const checkboxes = document.querySelectorAll('input[name="q42"]');
+        checkboxes.forEach(cb => cb.checked = false);
+        document.getElementById('quiz-result').style.display = 'none';
+
+        // 3. 重置解析顯示
+        document.getElementById('analysis-display').innerHTML = "請點選上方按鈕查看解析";
+        document.getElementById('analysis-display').style.background = "#eee";
+        document.getElementById('analysis-display').style.color = "#333";
+
+        // 4. 重置陷阱卡
+        const traps = document.querySelectorAll('.trap-card');
+        traps.forEach(trap => {
+            trap.style.display = 'block';
+            setTimeout(() => trap.style.opacity = '1', 50);
+        });
+
+        // 5. 重置提示
+        const hints = document.querySelectorAll('.hint-text');
+        hints.forEach(hint => hint.style.display = 'none');
+
+        // 捲動到頂部
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+</script>
+
+</body>
+</html>

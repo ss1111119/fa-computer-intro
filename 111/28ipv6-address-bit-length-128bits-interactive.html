@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>題目 28：IPv6 位址長度 - 互動式教學</title>
+    <style>
+        /* 全局設定 */
+        :root {
+            --primary-color: #2c3e50; /* 深藍色 - 專業感 */
+            --accent-color: #e74c3c; /* 紅色 - 重點/錯誤 */
+            --success-color: #27ae60; /* 綠色 - 正確 */
+            --highlight-color: #f1c40f; /* 黃色 - 醒目 */
+            --bg-color: #ecf0f1;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            background-color: var(--bg-color);
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: var(--card-bg);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            padding: 30px;
+        }
+
+        /* 標題區 */
+        header {
+            text-align: center;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin: 0;
+            font-size: 1.8rem;
+        }
+
+        h2 {
+            color: #555;
+            font-size: 1.2rem;
+            margin-top: 10px;
+        }
+
+        .badge {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+
+        /* 題目區塊 */
+        .question-box {
+            background-color: #f9f9f9;
+            border-left: 5px solid var(--primary-color);
+            padding: 20px;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+
+        .options-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 15px;
+        }
+
+        .options-list li {
+            margin: 8px 0;
+            padding-left: 10px;
+        }
+
+        /* 重點觀念區 */
+        .section-title {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .concept-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: #fff;
+        }
+
+        .term {
+            font-weight: bold;
+            color: var(--primary-color);
+            font-size: 1.1em;
+        }
+
+        .definition {
+            color: #666;
+            font-size: 0.95em;
+        }
+
+        /* 互動卡片區 (IPv4 vs IPv6) */
+        .comparison-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .flip-card {
+            flex: 1;
+            min-width: 280px;
+            background-color: #f8f9fa;
+            border: 2px dashed #bdc3c7;
+            border-radius: 10px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .flip-card:hover {
+            border-color: var(--primary-color);
+            background-color: #eaf2f8;
+            transform: translateY(-5px);
+        }
+
+        .flip-card h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+
+        .card-content {
+            display: none;
+            text-align: left;
+            margin-top: 15px;
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+        }
+
+        .big-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            display: block;
+            margin: 10px 0;
+        }
+
+        /* 滑桿區 */
+        .slider-container {
+            background: linear-gradient(to right, #fceabb, #f8b500);
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        input[type=range] {
+            width: 100%;
+            margin: 20px 0;
+            cursor: pointer;
+        }
+
+        .slider-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #d35400;
+        }
+
+        .slider-desc {
+            font-weight: bold;
+            margin-top: 10px;
+            min-height: 60px; /* 防止高度跳動 */
+        }
+
+        /* 作答區 */
+        .quiz-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .quiz-btn {
+            padding: 15px;
+            font-size: 1.2rem;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background-color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quiz-btn:hover {
+            background-color: #f0f0f0;
+            border-color: #bbb;
+        }
+
+        .feedback-box {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none; /* 預設隱藏 */
+            font-weight: bold;
+        }
+
+        .feedback-correct {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .feedback-wrong {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* 陷阱卡區 */
+        .traps-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .trap-card {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            padding: 15px;
+            border-radius: 8px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .trap-card::after {
+            content: "點擊以消除此誤解";
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.8rem;
+            color: #856404;
+            opacity: 0.6;
+        }
+
+        .trap-card:hover {
+            background-color: #ffe8a1;
+        }
+
+        /* 自我檢測區 */
+        .self-check-item {
+            margin-bottom: 20px;
+            border-bottom: 1px dashed #ccc;
+            padding-bottom: 15px;
+        }
+
+        .hint-btn {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .hint-text {
+            display: none;
+            margin-top: 10px;
+            color: var(--primary-color);
+            background: #e2e6ea;
+            padding: 8px;
+            border-radius: 4px;
+        }
+
+        /* 重置按鈕 */
+        .reset-section {
+            text-align: center;
+            margin-top: 50px;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+        }
+
+        .reset-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 20px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .reset-btn:hover {
+            background-color: #34495e;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1><span class="badge">題目 28</span>網路概論衝刺班</h1>
+        <h2>主題：IPv6 的位元長度與位址空間</h2>
+    </header>
+
+    <!-- 題目區 -->
+    <div class="question-box">
+        <strong>題目 28：</strong><br>
+        IPv6（Internet Protocol version 6）的位址使用幾個位元表示？
+        <ul class="options-list">
+            <li>(A) 32</li>
+            <li>(B) 8</li>
+            <li>(C) 16</li>
+            <li>(D) 128</li>
+        </ul>
+    </div>
+
+    <!-- 核心名詞解釋 -->
+    <div class="section-title">💡 老師幫你畫重點：專有名詞白話文</div>
+    <div class="concept-card">
+        <span class="term">IP 位址 (IP Address)</span><br>
+        <span class="definition">就像網路世界裡的「門牌號碼」，有了它，資料才找得到你的電腦或手機在哪裡。</span>
+    </div>
+    <div class="concept-card">
+        <span class="term">位元 (Bit)</span><br>
+        <span class="definition">電腦裡最小的資料單位，就像一個開關，只能是 0 或 1。位元越多，能排列出的組合（門牌號碼）就越多。</span>
+    </div>
+
+    <!-- 核心觀念對照 -->
+    <div class="section-title">🔍 核心觀念：IPv4 vs IPv6 超級比一比</div>
+    <p style="text-align: center; color: #666; font-size: 0.9rem;">👇 點擊下方卡片查看詳細比較 👇</p>
+    
+    <div class="comparison-container">
+        <!-- IPv4 卡片 -->
+        <div class="flip-card" onclick="toggleCard(this)">
+            <h3>IPv4 (舊版)</h3>
+            <div>點我看位元數</div>
+            <div class="card-content">
+                <span class="big-number">32 bits</span>
+                <p><strong>格式：</strong>點分十進位 (例如 192.168.1.1)</p>
+                <p><strong>狀態：</strong>位址數量約 43 億個，已經不夠用了！就像舊款電話號碼不夠發一樣。</p>
+            </div>
+        </div>
+
+        <!-- IPv6 卡片 -->
+        <div class="flip-card" onclick="toggleCard(this)">
+            <h3>IPv6 (新版)</h3>
+            <div>點我看位元數</div>
+            <div class="card-content">
+                <span class="big-number">128 bits</span>
+                <p><strong>格式：</strong>十六進位冒號分隔 (例如 2001:0db8:...)</p>
+                <p><strong>為什麼這麼長？</strong>為了解決 IPv4 枯竭的問題。這個長度產生的數量是「天文數字」，多到永遠用不完！</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 滑桿互動區 -->
+    <div class="section-title">🎚️ 數量直覺體驗：位元數爆炸性成長</div>
+    <div class="slider-container">
+        <p>請拖動滑桿，感受位址數量的變化：</p>
+        <input type="range" id="bitSlider" min="0" max="4" step="1" value="0" oninput="updateSlider(this.value)">
+        <div class="slider-value">目前設定：<span id="sliderBitDisplay">8</span> bits</div>
+        <div class="slider-desc" id="sliderDescDisplay">數量非常少（256 個），連一個班級的裝置都不夠分。</div>
+    </div>
+
+    <!-- 題目解析互動區 -->
+    <div class="section-title">✍️ 實戰演練：請點選正確答案</div>
+    <div class="quiz-grid">
+        <button class="quiz-btn" onclick="checkAnswer('A')">(A) 32</button>
+        <button class="quiz-btn" onclick="checkAnswer('B')">(B) 8</button>
+        <button class="quiz-btn" onclick="checkAnswer('C')">(C) 16</button>
+        <button class="quiz-btn" onclick="checkAnswer('D')">(D) 128</button>
+    </div>
+    <div id="feedbackArea" class="feedback-box"></div>
+
+    <!-- 陷阱卡區 -->
+    <div class="section-title">⚠️ 考試常見陷阱 (點擊卡片以清除腦中錯誤觀念)</div>
+    <div class="traps-container">
+        <div class="trap-card" onclick="removeTrap(this)">
+            <strong>陷阱 1：</strong>看到 IPv6 用十六進位表示，就以為是 16 bits？<br>
+            <span style="color:red">錯！</span> 十六進位只是寫法，長度是 128 bits！
+        </div>
+        <div class="trap-card" onclick="removeTrap(this)">
+            <strong>陷阱 2：</strong>死背 32 bits，結果那是 IPv4？<br>
+            <span style="color:red">錯！</span> 32 是舊版 IPv4，新版 IPv6 是 128。
+        </div>
+        <div class="trap-card" onclick="removeTrap(this)">
+            <strong>陷阱 3：</strong>以為版本號 6 代表 6 bytes？<br>
+            <span style="color:red">錯！</span> 版本號跟長度無關，它是 128 bits (16 bytes)。
+        </div>
+    </div>
+
+    <!-- 自我檢測 -->
+    <div class="section-title">🧠 自我檢測 (不給答案，請思考)</div>
+    <div class="self-check-item">
+        <p><strong>Q1：</strong>如果 IPv6 只有 64 bits，夠用嗎？為什麼需要到 128 bits？</p>
+        <button class="hint-btn" onclick="toggleHint('hint1')">顯示提示</button>
+        <div id="hint1" class="hint-text">提示：網路發展包含物聯網 (IoT)，未來連冰箱、路燈都要 IP。128 bits 才能確保「每一顆沙子都有 IP」。</div>
+    </div>
+    <div class="self-check-item">
+        <p><strong>Q2：</strong>考試中看到「IPv4」和「IPv6」這兩個關鍵字，腦中要馬上浮現哪兩個數字？</p>
+        <button class="hint-btn" onclick="toggleHint('hint2')">顯示提示</button>
+        <div id="hint2" class="hint-text">提示：口訣「v4=32, v6=128」。這組對照背起來，這題就拿分了！</div>
+    </div>
+
+    <!-- 重置按鈕 -->
+    <div class="reset-section">
+        <button class="reset-btn" onclick="resetAll()">🔄 重新開始練習</button>
+    </div>
+</div>
+
+<script>
+    // 滑桿資料對照
+    const sliderData = [
+        { bits: 8, desc: "數量非常少（256 個），連一個班級的裝置都不夠分。" },
+        { bits: 16, desc: "數量約 6.5 萬個。一個小鎮可能就不夠用了。" },
+        { bits: 32, desc: "【IPv4】：約 43 億個。這就是目前的瓶頸，全球人類一人一支手機就不夠了！" },
+        { bits: 64, desc: "很大了！但為了物聯網長遠未來，還是不夠「揮霍」。" },
+        { bits: 128, desc: "【IPv6】：天文數字（3.4 x 10^38）。多到可以幫地球上「每一顆沙子」都分一個 IP！" }
+    ];
+
+    // 滑桿功能
+    function updateSlider(val) {
+        const index = parseInt(val);
+        const data = sliderData[index];
+        document.getElementById('sliderBitDisplay').innerText = data.bits;
+        document.getElementById('sliderDescDisplay').innerText = data.desc;
+        
+        // 特別標示
+        const descElem = document.getElementById('sliderDescDisplay');
+        if (data.bits === 128) {
+            descElem.style.color = "#d35400";
+            descElem.style.fontSize = "1.1rem";
+        } else if (data.bits === 32) {
+            descElem.style.color = "#2980b9";
+        } else {
+            descElem.style.color = "#333";
+            descElem.style.fontSize = "1rem";
+        }
+    }
+
+    // 卡片翻轉/展開功能
+    function toggleCard(card) {
+        const content = card.querySelector('.card-content');
+        if (content.style.display === 'block') {
+            content.style.display = 'none';
+        } else {
+            content.style.display = 'block';
+            content.style.animation = "fadeIn 0.5s";
+        }
+    }
+
+    // 答題檢查功能
+    function checkAnswer(option) {
+        const feedback = document.getElementById('feedbackArea');
+        feedback.style.display = 'block';
+        
+        if (option === 'D') {
+            feedback.className = 'feedback-box feedback-correct';
+            feedback.innerHTML = `
+                ⭕ 答對了！(D) 128 是正確答案。<br>
+                解析：IPv6 採用 128 位元長度，解決了 IPv4 (32位元) 位址耗盡的問題。
+            `;
+        } else {
+            feedback.className = 'feedback-box feedback-wrong';
+            let reason = "";
+            if (option === 'A') reason = "32 bits 是 IPv4 的長度喔！別搞混了。";
+            if (option === 'B') reason = "8 bits 太短了，只能產生 256 個位址。";
+            if (option === 'C') reason = "16 bits 通常是誤以為十六進位就等於 16，這是常見陷阱！";
+            
+            feedback.innerHTML = `
+                ❌ 答錯囉！<br>
+                解析：${reason} <br>請再看一次上方的「核心觀念對照」。
+            `;
+        }
+    }
+
+    // 陷阱卡移除功能
+    function removeTrap(card) {
+        card.style.transition = "opacity 0.5s";
+        card.style.opacity = "0";
+        setTimeout(() => {
+            card.style.display = "none";
+        }, 500);
+    }
+
+    // 提示開關功能
+    function toggleHint(id) {
+        const hint = document.getElementById(id);
+        if (hint.style.display === 'block') {
+            hint.style.display = 'none';
+        } else {
+            hint.style.display = 'block';
+        }
+    }
+
+    // 重置功能
+    function resetAll() {
+        // 重置滑桿
+        document.getElementById('bitSlider').value = 0;
+        updateSlider(0);
+
+        // 關閉卡片
+        document.querySelectorAll('.card-content').forEach(c => c.style.display = 'none');
+
+        // 隱藏回饋
+        document.getElementById('feedbackArea').style.display = 'none';
+
+        // 恢復陷阱卡
+        document.querySelectorAll('.trap-card').forEach(c => {
+            c.style.display = 'block';
+            c.style.opacity = '1';
+        });
+
+        // 隱藏提示
+        document.querySelectorAll('.hint-text').forEach(h => h.style.display = 'none');
+        
+        // 捲動回頂部
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // 初始化滑桿
+    updateSlider(0);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CPU 效能特訓班：MIPS 與 CPI 計算</title>
+    <style>
+        /* * 樣式表 (CSS)
+         * 設計理念：乾淨、補習班講義風格、高對比度、易讀性
+         */
+        :root {
+            --primary-color: #2563eb; /* 補習班藍 */
+            --secondary-color: #f59e0b; /* 重點橘 */
+            --success-color: #10b981; /* 正確綠 */
+            --danger-color: #ef4444; /* 錯誤紅 */
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-light: #6b7280;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* 標題區 */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary-color), #1d4ed8);
+            color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+
+        header p {
+            margin: 10px 0 0;
+            opacity: 0.9;
+        }
+
+        /* 卡片共用樣式 */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            color: var(--primary-color);
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 10px;
+            font-size: 1.4rem;
+        }
+
+        /* 重點標示 */
+        .highlight {
+            color: var(--secondary-color);
+            font-weight: bold;
+            background-color: #fffbeb;
+            padding: 0 4px;
+            border-radius: 4px;
+        }
+
+        .formula-box {
+            background-color: #eff6ff;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: Consolas, Monaco, monospace;
+            text-align: center;
+            margin: 10px 0;
+            border: 1px dashed var(--primary-color);
+        }
+
+        /* 按鈕樣式 */
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+            display: inline-block;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            background-color: #1d4ed8;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .btn-outline:hover {
+            background-color: #eff6ff;
+        }
+
+        .btn-option {
+            width: 100%;
+            text-align: left;
+            margin-bottom: 8px;
+            background-color: white;
+            border: 2px solid #e5e7eb;
+            color: var(--text-main);
+        }
+
+        .btn-option:hover {
+            border-color: var(--primary-color);
+            background-color: #f9fafb;
+        }
+
+        /* 互動控制項 */
+        input[type="text"], input[type="number"] {
+            padding: 10px;
+            border: 2px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 1rem;
+            width: 200px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            margin: 15px 0;
+        }
+
+        /* 狀態顯示 */
+        .status-box {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none; /* 預設隱藏 */
+        }
+
+        .status-success {
+            background-color: #d1fae5;
+            color: #065f46;
+            display: block;
+        }
+
+        .status-error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            display: block;
+        }
+
+        /* 逐步推導 */
+        .step-item {
+            opacity: 0.3;
+            transition: opacity 0.5s;
+            margin-bottom: 10px;
+            border-left: 2px solid #ddd;
+            padding-left: 15px;
+        }
+
+        .step-active {
+            opacity: 1;
+            border-left-color: var(--secondary-color);
+            font-weight: bold;
+        }
+
+        /* 題目區塊 */
+        .question-block {
+            background-color: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #cbd5e1;
+        }
+
+        /* 小考提示 */
+        .hint-text {
+            display: none;
+            margin-top: 10px;
+            color: var(--text-light);
+            font-style: italic;
+            font-size: 0.9rem;
+            background: #f3f4f6;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        /* 響應式調整 */
+        @media (max-width: 600px) {
+            .btn {
+                width: 100%;
+                margin: 5px 0;
+            }
+            input[type="text"] {
+                width: 100%;
+                box-sizing: border-box;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>⚡ CPU 效能特訓班</h1>
+        <p>名師帶你破解 MIPS 計算題，保證這題不再丟分！</p>
+    </header>
+
+    <!-- 題目區 -->
+    <div class="card">
+        <h2>📝 本日重點題型</h2>
+        <div class="question-block">
+            <p style="font-size: 1.1rem; font-weight: bold;">
+                題目：CPU 的單位時脈時間是 <span class="highlight">0.1 μs</span>，一程式的平均 CPI 值是 <span class="highlight">2</span>。請問該程式的平均 MIPS 值為何？
+            </p>
+            <p>選項：(A) 2 &nbsp;&nbsp; (B) 5 &nbsp;&nbsp; (C) 8 &nbsp;&nbsp; (D) 10</p>
+        </div>
+    </div>
+
+    <!-- 公式小卡 -->
+    <div class="card">
+        <h2>🔑 必考公式小卡</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div>
+                <strong>1. 時脈頻率 (Clock Rate)</strong>
+                <div class="formula-box">Rate = 1 / Cycle Time</div>
+                <small>頻率是週期的倒數</small>
+            </div>
+            <div>
+                <strong>2. MIPS 定義</strong>
+                <div class="formula-box">MIPS = IPS / 10<sup>6</sup></div>
+                <small>每秒執行多少"百萬"指令</small>
+            </div>
+            <div style="grid-column: span 2;">
+                <strong>3. 終極公式 (結合)</strong>
+                <div class="formula-box">MIPS = (Clock Rate) / CPI / 10<sup>6</sup></div>
+                <small>口訣：頻率除以 CPI，再除百萬</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- 互動一：單位換算 -->
+    <div class="card">
+        <h2>Step 1: 單位換算陷阱 (μs 轉 s)</h2>
+        <p>題目給的是 0.1 μs (微秒)，計算前必須先換成秒！</p>
+        <p>請問：<span class="highlight">0.1 μs = ? 秒</span> (請輸入科學記號，如 1e-5 或小數)</p>
+        
+        <input type="text" id="unitInput" placeholder="例如: 0.000001">
+        <button class="btn" onclick="checkUnit()">檢查答案</button>
+        
+        <div id="unitFeedback" class="status-box"></div>
+    </div>
+
+    <!-- 互動二：頻率計算 -->
+    <div class="card">
+        <h2>Step 2: 時脈頻率 (Clock Rate)</h2>
+        <p>有了週期 (時間)，就能算出頻率 (速度)。</p>
+        <div style="background: #f0f9ff; padding: 15px; border-radius: 8px;">
+            <p>週期 (T) = <span id="displayCycleTime">0.1</span> μs = <span id="displaySeconds">1×10<sup>-7</sup></span> s</p>
+            <hr style="border: 0; border-top: 1px dashed #ccc;">
+            <p>
+                頻率 (f) = 1 / T <br>
+                = 1 / (<span id="calcSeconds">1×10<sup>-7</sup></span>)<br>
+                = <strong style="font-size: 1.5rem; color: var(--primary-color);" id="resultHz">10,000,000</strong> Cycles/sec (Hz)<br>
+                = <span class="highlight" id="resultMHz">10 MHz</span>
+            </p>
+        </div>
+        <p><small>* 當時間越短，頻率就越高，CPU 跑得越快！</small></p>
+    </div>
+
+    <!-- 互動三：CPI 實驗室 -->
+    <div class="card">
+        <h2>Step 3: CPI 的影響實驗</h2>
+        <p>現在我們有了 <strong>10 MHz</strong> 的頻率，但 <span class="highlight">CPI = 2</span> (執行一個指令要 2 個週期)。</p>
+        <p>拖動滑桿，觀察 CPI 如何影響 MIPS 值：</p>
+
+        <label for="cpiSlider"><strong>CPI 值: <span id="cpiValue" style="color: var(--secondary-color); font-size: 1.5rem;">2</span></strong></label>
+        <input type="range" id="cpiSlider" min="1" max="6" step="0.5" value="2" oninput="updateSimulation()">
+
+        <div style="display: flex; justify-content: space-around; align-items: center; margin-top: 20px; flex-wrap: wrap;">
+            <div style="text-align: center; margin: 10px;">
+                <div style="font-size: 0.9rem;">時脈頻率</div>
+                <div style="font-size: 1.2rem; font-weight: bold;">10 MHz</div>
+            </div>
+            <div style="font-size: 1.5rem;">÷</div>
+            <div style="text-align: center; margin: 10px;">
+                <div style="font-size: 0.9rem;">CPI</div>
+                <div style="font-size: 1.2rem; font-weight: bold; color: var(--secondary-color);" id="simCpi">2</div>
+            </div>
+            <div style="font-size: 1.5rem;">=</div>
+            <div style="text-align: center; margin: 10px; background: #ecfdf5; padding: 10px 20px; border-radius: 8px; border: 2px solid #10b981;">
+                <div style="font-size: 0.9rem; color: #065f46;">結果 (MIPS)</div>
+                <div style="font-size: 2rem; font-weight: bold; color: #059669;" id="simMips">5</div>
+            </div>
+        </div>
+        <p id="simDesc" style="text-align: center; color: var(--text-light); margin-top: 10px;">
+            當 CPI=2，代表每秒指令數只有時脈數的一半。
+        </p>
+    </div>
+
+    <!-- 互動四：逐步推導 -->
+    <div class="card">
+        <h2>🚀 完整解題步驟 (動畫演示)</h2>
+        <div id="stepsContainer">
+            <div class="step-item" id="step1">
+                Step 1: 單位換算<br>
+                0.1 μs = 0.1 × 10<sup>-6</sup> s = <strong>1 × 10<sup>-7</sup> s</strong>
+            </div>
+            <div class="step-item" id="step2">
+                Step 2: 計算時脈頻率 (Rate)<br>
+                Rate = 1 / (1 × 10<sup>-7</sup>) = <strong>10<sup>7</sup> Hz (10 MHz)</strong>
+            </div>
+            <div class="step-item" id="step3">
+                Step 3: 計算每秒指令數 (IPS)<br>
+                IPS = Rate / CPI = 10<sup>7</sup> / 2 = <strong>5 × 10<sup>6</sup> instructions/s</strong>
+            </div>
+            <div class="step-item" id="step4">
+                Step 4: 換算成 MIPS (Million IPS)<br>
+                MIPS = (5 × 10<sup>6</sup>) / 10<sup>6</sup> = <strong style="color: red; font-size: 1.2rem;">5</strong>
+            </div>
+        </div>
+        <button class="btn" onclick="nextStep()" id="nextBtn">下一步 ➡️</button>
+        <button class="btn btn-outline" onclick="resetSteps()" style="display:none;" id="resetStepBtn">重播動畫</button>
+    </div>
+
+    <!-- 互動五：選項分析 -->
+    <div class="card">
+        <h2>💡 選項分析 (為什麼選 B？)</h2>
+        <p>點擊選項看看老師的解析：</p>
+        <div style="display: grid; gap: 10px;">
+            <button class="btn btn-option" onclick="checkOption('A')">(A) 2</button>
+            <button class="btn btn-option" onclick="checkOption('B')">(B) 5</button>
+            <button class="btn btn-option" onclick="checkOption('C')">(C) 8</button>
+            <button class="btn btn-option" onclick="checkOption('D')">(D) 10</button>
+        </div>
+        <div id="optionFeedback" class="status-box"></div>
+    </div>
+
+    <!-- 互動六：自我檢測 -->
+    <div class="card">
+        <h2>✍️ 課後自我檢測</h2>
+        
+        <div style="margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
+            <strong>Q1. 若時脈不變 (0.1 μs)，但程式優化後 CPI 降為 1，MIPS 變多少？</strong><br>
+            <button class="btn btn-outline" style="font-size: 0.8rem; padding: 5px 10px;" onclick="toggleHint('hint1')">顯示/隱藏提示</button>
+            <div id="hint1" class="hint-text">
+                提示：CPI 變為 1，代表每個指令只需 1 個週期。<br>
+                公式：10 MHz / 1 = ?
+            </div>
+        </div>
+
+        <div style="margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
+            <strong>Q2. 若 CPU 升級，時脈縮短為 0.01 μs，CPI 維持 2，MIPS 變多少？</strong><br>
+            <button class="btn btn-outline" style="font-size: 0.8rem; padding: 5px 10px;" onclick="toggleHint('hint2')">顯示/隱藏提示</button>
+            <div id="hint2" class="hint-text">
+                提示：先算新頻率。0.01 μs 是 0.1 μs 的十分之一，所以頻率會快 10 倍 (100 MHz)。<br>
+                MIPS = 100 / 2 = ?
+            </div>
+        </div>
+
+        <div>
+            <strong>Q3. 某程式執行需 5 秒，總指令數 20 百萬個 (20 × 10^6)，求 MIPS？</strong><br>
+            <button class="btn btn-outline" style="font-size: 0.8rem; padding: 5px 10px;" onclick="toggleHint('hint3')">顯示/隱藏提示</button>
+            <div id="hint3" class="hint-text">
+                提示：這是 MIPS 的另一個定義：MIPS = 總指令數(百萬) / 執行時間(秒)。<br>
+                20 / 5 = ?
+            </div>
+        </div>
+    </div>
+
+    <!-- 頁尾 -->
+    <div style="text-align: center; margin-top: 40px; color: var(--text-light);">
+        <button class="btn" style="background-color: var(--text-light);" onclick="fullReset()">🔄 重置所有練習</button>
+        <p style="margin-top: 20px; font-size: 0.9rem;">High School Computer Science Interactive Handout © 2025</p>
+    </div>
+
+</div>
+
+<script>
+    // --- 互動一：單位換算邏輯 ---
+    function checkUnit() {
+        const input = document.getElementById('unitInput').value.trim();
+        const feedback = document.getElementById('unitFeedback');
+        
+        // 嘗試解析使用者輸入 (支援科學記號)
+        const val = parseFloat(input);
+        
+        // 0.1us = 0.0000001 = 1e-7
+        const correctVal = 0.0000001;
+        const tolerance = 0.000000001;
+
+        if (isNaN(val)) {
+            feedback.className = "status-box status-error";
+            feedback.innerHTML = "❌ 請輸入數字喔！試試看 <code>1e-7</code> 或 <code>0.0000001</code>";
+        } else if (Math.abs(val - correctVal) < tolerance) {
+            feedback.className = "status-box status-success";
+            feedback.innerHTML = "✅ 答對了！<br>0.1 μs 就是 10<sup>-7</sup> 秒。<br>這是計算頻率的關鍵第一步。";
+        } else {
+            feedback.className = "status-box status-error";
+            feedback.innerHTML = "⚠️ 答案不太對。<br>提示：μ 是 10<sup>-6</sup>，所以 0.1 × 10<sup>-6</sup> = 10<sup>-7</sup>。";
+        }
+    }
+
+    // --- 互動三：CPI 滑桿邏輯 ---
+    function updateSimulation() {
+        const cpi = document.getElementById('cpiSlider').value;
+        document.getElementById('cpiValue').innerText = cpi;
+        document.getElementById('simCpi').innerText = cpi;
+
+        // 固定 Clock Rate = 10 MHz
+        const clockRateMHz = 10; 
+        
+        // MIPS = Rate(MHz) / CPI
+        const mips = (clockRateMHz / cpi).toFixed(2);
+        
+        // 更新顯示
+        const resultEl = document.getElementById('simMips');
+        resultEl.innerText = parseFloat(mips); // 去除多餘的 .00
+
+        // 動態說明
+        const descEl = document.getElementById('simDesc');
+        if(cpi == 1) {
+            descEl.innerText = "理想狀態！CPI=1 時，MIPS 直接等於時脈頻率 (MHz)。";
+        } else if (cpi == 2) {
+            descEl.innerText = "題目設定狀態：CPI=2，效能是時脈頻率的一半。";
+        } else if (cpi > 4) {
+            descEl.innerText = "CPI 太高了！代表指令執行效率差，MIPS 大幅下降。";
+        } else {
+            descEl.innerText = `CPI=${cpi} 時，MIPS 為 ${parseFloat(mips)}。`;
+        }
+    }
+
+    // --- 互動四：逐步推導動畫 ---
+    let currentStep = 0;
+    const totalSteps = 4;
+
+    function nextStep() {
+        if (currentStep < totalSteps) {
+            currentStep++;
+            // 移除舊的 active，加上新的
+            const el = document.getElementById(`step${currentStep}`);
+            el.style.opacity = "1";
+            el.classList.add('step-active');
+            
+            // 如果完成了
+            if (currentStep === totalSteps) {
+                document.getElementById('nextBtn').style.display = 'none';
+                document.getElementById('resetStepBtn').style.display = 'inline-block';
+            }
+        }
+    }
+
+    function resetSteps() {
+        currentStep = 0;
+        for(let i=1; i<=totalSteps; i++) {
+            const el = document.getElementById(`step${i}`);
+            el.style.opacity = "0.3";
+            el.classList.remove('step-active');
+        }
+        document.getElementById('nextBtn').style.display = 'inline-block';
+        document.getElementById('resetStepBtn').style.display = 'none';
+    }
+
+    // --- 互動五：選項分析 ---
+    function checkOption(option) {
+        const feedback = document.getElementById('optionFeedback');
+        let text = "";
+        let isCorrect = false;
+
+        switch(option) {
+            case 'A':
+                text = "❌ <strong>(A) 2 是陷阱！</strong><br>這可能是你忘了把 0.1 μs 換算成頻率，或是直接看到 CPI=2 就選了。記住：MIPS = 頻率 / CPI。";
+                break;
+            case 'B':
+                text = "✅ <strong>(B) 5 是正確答案！</strong><br>步驟：<br>1. 0.1 μs = 10 MHz<br>2. MIPS = 10 / 2 = 5。<br>恭喜你完全掌握了！";
+                isCorrect = true;
+                break;
+            case 'C':
+                text = "❌ <strong>(C) 8 怎麼來的？</strong><br>計算過程中沒有出現 8 這個數字喔，請再檢查一下公式：MIPS = 頻率 / CPI。";
+                break;
+            case 'D':
+                text = "❌ <strong>(D) 10 是陷阱！</strong><br>這代表你算出了 10 MHz 的頻率，但是<strong>忘記除以 CPI</strong>！如果 CPI=1 答案才是 10。";
+                break;
+        }
+
+        feedback.innerHTML = text;
+        feedback.className = isCorrect ? "status-box status-success" : "status-box status-error";
+    }
+
+    // --- 互動六：提示開關 ---
+    function toggleHint(id) {
+        const el = document.getElementById(id);
+        if (el.style.display === 'block') {
+            el.style.display = 'none';
+        } else {
+            el.style.display = 'block';
+        }
+    }
+
+    // --- 全域重置 ---
+    function fullReset() {
+        // 重置輸入
+        document.getElementById('unitInput').value = "";
+        document.getElementById('unitFeedback').style.display = 'none';
+        
+        // 重置滑桿
+        document.getElementById('cpiSlider').value = 2;
+        updateSimulation();
+
+        // 重置步驟
+        resetSteps();
+
+        // 重置選項反饋
+        document.getElementById('optionFeedback').style.display = 'none';
+
+        // 關閉提示
+        ['hint1', 'hint2', 'hint3'].forEach(id => {
+            document.getElementById(id).style.display = 'none';
+        });
+
+        // 捲動到頂部
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // 初始化執行一次 simulation 確保數值正確
+    window.onload = function() {
+        updateSimulation();
+    };
+</script>
+
+</body>
+</html>

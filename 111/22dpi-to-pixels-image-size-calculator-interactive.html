@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>題目 22：影像解析度與像素計算互動教學</title>
+    <style>
+        /* --- 全域設定 --- */
+        :root {
+            --primary-color: #2c3e50; /* 補習班專業深藍 */
+            --accent-color: #e74c3c; /* 重點紅 */
+            --highlight-color: #f1c40f; /* 螢光筆黃 */
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --border-radius: 8px;
+            --spacing: 20px;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            background-color: var(--bg-color);
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* --- 標題區 --- */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 10px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin: 0;
+            font-size: 1.8rem;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1rem;
+            margin-top: 5px;
+        }
+
+        /* --- 卡片通用樣式 --- */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-left: 5px solid var(--primary-color);
+        }
+
+        h2 {
+            color: var(--primary-color);
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-top: 0;
+            font-size: 1.4rem;
+        }
+
+        /* --- 題目區 --- */
+        .question-box {
+            background-color: #eef2f5;
+            padding: 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .options-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .options-list li {
+            margin: 5px 0;
+        }
+
+        /* --- 專有名詞 --- */
+        .term {
+            display: inline-block;
+            background: #e8f4f8;
+            padding: 2px 8px;
+            border-radius: 4px;
+            color: #2980b9;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        .term-desc {
+            color: #555;
+            font-size: 0.95rem;
+        }
+
+        /* --- 核心公式 --- */
+        .formula-box {
+            background-color: #fff8e1; /* 淡黃色背景 */
+            border: 1px dashed var(--highlight-color);
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .formula {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #d35400;
+            margin: 10px 0;
+        }
+
+        /* --- 互動按鈕通用 --- */
+        button {
+            cursor: pointer;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #34495e;
+        }
+
+        .btn-reset {
+            background-color: #95a5a6;
+            color: white;
+            display: block;
+            width: 100%;
+            margin-top: 30px;
+        }
+
+        /* --- 逐步計算器 --- */
+        .calc-step {
+            margin-top: 15px;
+            padding: 10px;
+            border-left: 3px solid #ccc;
+            background: #fafafa;
+            display: none; /* 預設隱藏 */
+            animation: fadeIn 0.5s;
+        }
+
+        .calc-step.active {
+            display: block;
+            border-color: var(--accent-color);
+            background: #fff0f0;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .input-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        input[type="number"] {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 80px;
+        }
+
+        /* --- 即時滑桿互動區 --- */
+        .slider-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .controls {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .visual-demo {
+            flex: 1;
+            min-width: 250px;
+            background: #eee;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            min-height: 250px;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+        }
+
+        .live-result {
+            margin-top: 10px;
+            padding: 10px;
+            background: #333;
+            color: #fff;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+
+        /* 示意圖的方格 */
+        #grid-box {
+            background-color: white;
+            border: 2px solid var(--primary-color);
+            transition: all 0.3s ease;
+            position: relative;
+            /* 利用 CSS 漸層模擬格子 */
+            background-image: 
+                linear-gradient(#ccc 1px, transparent 1px),
+                linear-gradient(90deg, #ccc 1px, transparent 1px);
+            background-size: 20px 20px; /* 預設格子大小 */
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #aaa;
+        }
+
+        /* --- 選項分析區 --- */
+        .option-btns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .btn-option {
+            background-color: white;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            text-align: left;
+        }
+
+        .btn-option:hover {
+            background-color: #eef2f5;
+        }
+
+        .feedback-box {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .feedback-correct {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .feedback-wrong {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* --- 常見陷阱卡 --- */
+        .trap-item {
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .trap-title {
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        /* --- 自我檢測 --- */
+        .quiz-item {
+            margin-bottom: 20px;
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .hint-box {
+            margin-top: 10px;
+            color: #004085;
+            background-color: #cce5ff;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+
+        /* --- 動畫 --- */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- 響應式調整 --- */
+        @media (max-width: 600px) {
+            .option-btns {
+                grid-template-columns: 1fr;
+            }
+            .input-group {
+                flex-direction: column;
+            }
+            input[type="number"] {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>影像解析度與像素計算</h1>
+        <div class="subtitle">高中資訊科技 / 基礎數學概念與應用</div>
+    </header>
+
+    <!-- 1. 題目展示區 -->
+    <section class="card" id="section-question">
+        <h2>題目 22</h2>
+        <div class="question-box">
+            一張長 3 英吋、寬 2 英吋的圖片，若其解析度為 200 dpi（dots per inch），則此圖片內含多少像素（pixel）？
+        </div>
+        <ul class="options-list">
+            <li>(A) 1,200</li>
+            <li>(B) 2,400</li>
+            <li>(C) 120,000</li>
+            <li>(D) 240,000</li>
+        </ul>
+        <div style="margin-top: 10px; font-weight: bold; color: var(--accent-color);">正確答案：(D) 240,000</div>
+    </section>
+
+    <!-- 2. 觀念導讀區 -->
+    <section class="card">
+        <h2>觀念導讀：這些名詞是什麼？</h2>
+        <p>
+            <span class="term">像素 pixel</span>
+            <span class="term-desc">圖片組成的最小單位，想像成馬賽克拼貼裡的「每一小格」。</span>
+        </p>
+        <p>
+            <span class="term">解析度 Resolution</span>
+            <span class="term-desc">描述影像有多「細緻」的指標。</span>
+        </p>
+        <p>
+            <span class="term">dpi (dots per inch)</span>
+            <span class="term-desc">「每英吋有幾個點」。在這個題目裡，我們把它看作「每英吋長度裡有幾個像素」。</span>
+        </p>
+        <p>
+            <span class="term">英吋 inch</span>
+            <span class="term-desc">長度單位。題目給英吋，公式就直接用英吋算，不用換算成公分。</span>
+        </p>
+    </section>
+
+    <!-- 3. 核心公式區 -->
+    <section class="card">
+        <h2>核心公式與本題解法</h2>
+        <div class="formula-box">
+            <div class="formula">① 寬方向像素 = 寬 (英吋) × dpi</div>
+            <div class="formula">② 高方向像素 = 高 (英吋) × dpi</div>
+            <div class="formula">③ 總像素 = 寬方向像素 × 高方向像素</div>
+        </div>
+        <div style="margin-top: 15px;">
+            <strong>本題帶入：</strong>
+            <ul>
+                <li>長 2 英吋邊：2 × 200 = <strong>400</strong> 像素</li>
+                <li>長 3 英吋邊：3 × 200 = <strong>600</strong> 像素</li>
+                <li>總像素：400 × 600 = <strong style="color:var(--accent-color); font-size:1.2em;">240,000</strong> 像素</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- 4. 互動功能(A)：逐步計算器 -->
+    <section class="card">
+        <h2>(A) 逐步計算器：跟著做一次</h2>
+        <p>請輸入題目數據，然後點選「下一步」來驗證計算過程。</p>
+        
+        <div class="input-group">
+            <div class="input-item">
+                <label>長/寬 (英吋)</label>
+                <input type="number" id="calc-w" value="3">
+            </div>
+            <div class="input-item">
+                <label>寬/高 (英吋)</label>
+                <input type="number" id="calc-h" value="2">
+            </div>
+            <div class="input-item">
+                <label>dpi</label>
+                <input type="number" id="calc-dpi" value="200">
+            </div>
+        </div>
+
+        <button class="btn-primary" onclick="nextStep()" id="btn-next-step">開始計算 / 下一步</button>
+
+        <div id="step-container">
+            <div class="calc-step" id="step-1">
+                <strong>Step 1：計算第一邊像素</strong><br>
+                公式：長度 × dpi<br>
+                計算：<span id="res-w-len">3</span> × <span id="res-dpi-1">200</span> = <span style="color:blue" id="res-w-pixels">600</span> px<br>
+                <small>(說明：因為每一英吋裡有 200 格，所以 3 英吋就有 3 倍的格數)</small>
+            </div>
+            <div class="calc-step" id="step-2">
+                <strong>Step 2：計算第二邊像素</strong><br>
+                公式：寬度 × dpi<br>
+                計算：<span id="res-h-len">2</span> × <span id="res-dpi-2">200</span> = <span style="color:blue" id="res-h-pixels">400</span> px<br>
+                <small>(說明：同理，2 英吋長度裡共有 400 格)</small>
+            </div>
+            <div class="calc-step" id="step-3">
+                <strong>Step 3：計算總像素 (面積)</strong><br>
+                公式：第一邊像素 × 第二邊像素<br>
+                計算：<span id="res-final-w">600</span> × <span id="res-final-h">400</span> = <strong style="color:red; font-size:1.3em;" id="res-total">240,000</strong> px<br>
+                <small>(說明：就像算矩形面積一樣，長 × 寬 得到總格子數)</small>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. 互動功能(B)(C)：視覺化滑桿 -->
+    <section class="card">
+        <h2>(B) 建立直覺：即時調整模擬</h2>
+        <p>試著拖動滑桿，觀察像素數量如何變化。<strong>注意看 dpi 變大時，格子(網格)會變密！</strong></p>
+        
+        <div class="slider-container">
+            <div class="controls">
+                <div class="control-group">
+                    <label>長度 (英吋): <span id="val-sim-w">3</span> inch</label>
+                    <input type="range" id="range-w" min="1" max="10" value="3" oninput="updateSimulation()">
+                </div>
+                <div class="control-group">
+                    <label>寬度 (英吋): <span id="val-sim-h">2</span> inch</label>
+                    <input type="range" id="range-h" min="1" max="10" value="2" oninput="updateSimulation()">
+                </div>
+                <div class="control-group">
+                    <label>解析度 (dpi): <span id="val-sim-dpi">200</span> dpi</label>
+                    <input type="range" id="range-dpi" min="50" max="600" step="50" value="200" oninput="updateSimulation()">
+                </div>
+
+                <div class="live-result">
+                    長邊像素：<span id="live-w-px">600</span> px<br>
+                    寬邊像素：<span id="live-h-px">400</span> px<br>
+                    -----------------------<br>
+                    總像素：<span id="live-total" style="color:#f1c40f; font-weight:bold;">240,000</span> px
+                </div>
+                <p style="font-size:0.9rem; color:var(--accent-color);">
+                    💡 小提醒：若 dpi 變成 2 倍 (200→400)，總像素會變成 <strong>4 倍</strong>喔！(因為長寬都各乘 2 倍)
+                </p>
+            </div>
+
+            <div class="visual-demo">
+                <!-- 這是示意方塊 -->
+                <div id="grid-box" style="width: 150px; height: 100px;">
+                    <span id="grid-label">3" x 2"</span>
+                </div>
+                <div style="position: absolute; bottom: 5px; right: 5px; font-size: 0.8rem; color: #888;">
+                    *網格僅為密度示意，非真實點數
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. 互動功能(D)：選項分析 -->
+    <section class="card">
+        <h2>(D) 選項分析：為什麼選 (D)？</h2>
+        <p>點擊下方選項看看老師的解析：</p>
+        <div class="option-btns">
+            <button class="btn-option" onclick="checkOption('A')">(A) 1,200</button>
+            <button class="btn-option" onclick="checkOption('B')">(B) 2,400</button>
+            <button class="btn-option" onclick="checkOption('C')">(C) 120,000</button>
+            <button class="btn-option" onclick="checkOption('D')">(D) 240,000</button>
+        </div>
+        
+        <div id="feedback-area" class="feedback-box">
+            <h3 id="feedback-title" style="margin-top:0;"></h3>
+            <p id="feedback-text"></p>
+        </div>
+    </section>
+
+    <!-- 7. 常見陷阱卡 -->
+    <section class="card">
+        <h2>(E) 考試常見陷阱</h2>
+        <div class="trap-item">
+            <div class="trap-title">❌ 陷阱 1：只乘了一次 dpi</div>
+            <div>錯誤算法：3 × 2 × 200 = 1,200。<br>修正：記得圖片是平面（二維）的，長跟寬<strong>都要</strong>乘上 dpi。</div>
+        </div>
+        <div class="trap-item">
+            <div class="trap-title">❌ 陷阱 2：誤把 dpi 當成總點數</div>
+            <div>錯誤觀念：以為這張圖總共就只有 200 個點。<br>修正：dpi 是「每英吋」的點數，必須乘上長度才是該邊的總點數。</div>
+        </div>
+        <div class="trap-item">
+            <div class="trap-title">🆗 陷阱 3：長寬搞反了？</div>
+            <div>若你算成 2 × 200 和 3 × 200，雖然邊長互換，但相乘後的總像素（面積）是<strong>一樣</strong>的，不會影響答案。</div>
+        </div>
+    </section>
+
+    <!-- 8. 自我檢測 -->
+    <section class="card">
+        <h2>(F) 自我檢測 (點擊查看提示)</h2>
+        
+        <div class="quiz-item">
+            <strong>Q1：如果 dpi 提升到 300，圖片尺寸仍是 3 × 2 英吋，總像素是多少？</strong><br>
+            <button style="margin-top:5px; font-size:0.8rem;" onclick="toggleHint('hint1')">顯示/隱藏提示</button>
+            <div id="hint1" class="hint-box">
+                提示：<br>
+                1. 寬邊變成 3 × 300 = ?<br>
+                2. 高邊變成 2 × 300 = ?<br>
+                3. 兩者相乘即為答案 (540,000)。
+            </div>
+        </div>
+
+        <div class="quiz-item">
+            <strong>Q2：如果尺寸變大為 6 × 4 英吋，dpi 維持 200，總像素是多少？</strong><br>
+            <button style="margin-top:5px; font-size:0.8rem;" onclick="toggleHint('hint2')">顯示/隱藏提示</button>
+            <div id="hint2" class="hint-box">
+                提示：<br>
+                1. (6 × 200) × (4 × 200)<br>
+                2. 或者思考：長寬都變原本 2 倍，面積會變 4 倍。原本 240,000 × 4 = ? (960,000)。
+            </div>
+        </div>
+
+        <div class="quiz-item">
+            <strong>Q3：為什麼 dpi 加倍時，總像素會變成 4 倍？</strong><br>
+            <button style="margin-top:5px; font-size:0.8rem;" onclick="toggleHint('hint3')">顯示/隱藏提示</button>
+            <div id="hint3" class="hint-box">
+                提示：<br>
+                因為像素總數 = (長 × dpi) × (寬 × dpi)。<br>
+                當 dpi 變成 2 倍，算式裡出現了兩次 2 倍，2 × 2 = 4，所以總數變 4 倍。
+            </div>
+        </div>
+    </section>
+
+    <!-- 9. 重置按鈕 -->
+    <button class="btn-reset" onclick="resetAll()">↻ 全部重置 / 重新開始</button>
+
+</div>
+
+<script>
+    /* --- 1. 逐步計算器邏輯 --- */
+    let currentStep = 0;
+
+    function nextStep() {
+        // 取得輸入值
+        const w = parseFloat(document.getElementById('calc-w').value);
+        const h = parseFloat(document.getElementById('calc-h').value);
+        const dpi = parseFloat(document.getElementById('calc-dpi').value);
+
+        if (isNaN(w) || isNaN(h) || isNaN(dpi)) {
+            alert("請輸入正確的數字！");
+            return;
+        }
+
+        const btn = document.getElementById('btn-next-step');
+        
+        currentStep++;
+
+        if (currentStep === 1) {
+            // 計算並顯示 Step 1
+            document.getElementById('res-w-len').innerText = w;
+            document.getElementById('res-dpi-1').innerText = dpi;
+            document.getElementById('res-w-pixels').innerText = (w * dpi).toLocaleString();
+            document.getElementById('step-1').classList.add('active');
+            btn.innerText = "下一步 (2/3)";
+        } else if (currentStep === 2) {
+            // 計算並顯示 Step 2
+            document.getElementById('res-h-len').innerText = h;
+            document.getElementById('res-dpi-2').innerText = dpi;
+            document.getElementById('res-h-pixels').innerText = (h * dpi).toLocaleString();
+            document.getElementById('step-2').classList.add('active');
+            btn.innerText = "下一步 (3/3)";
+        } else if (currentStep === 3) {
+            // 計算並顯示 Step 3
+            const pxW = w * dpi;
+            const pxH = h * dpi;
+            document.getElementById('res-final-w').innerText = pxW.toLocaleString();
+            document.getElementById('res-final-h').innerText = pxH.toLocaleString();
+            document.getElementById('res-total').innerText = (pxW * pxH).toLocaleString();
+            document.getElementById('step-3').classList.add('active');
+            btn.innerText = "計算完成 (重新輸入請按重置)";
+            btn.disabled = true;
+            btn.style.backgroundColor = "#95a5a6";
+        }
+    }
+
+    /* --- 2. 互動滑桿與視覺化邏輯 --- */
+    function updateSimulation() {
+        const w = parseInt(document.getElementById('range-w').value);
+        const h = parseInt(document.getElementById('range-h').value);
+        const dpi = parseInt(document.getElementById('range-dpi').value);
+
+        // 更新文字數值
+        document.getElementById('val-sim-w').innerText = w;
+        document.getElementById('val-sim-h').innerText = h;
+        document.getElementById('val-sim-dpi').innerText = dpi;
+
+        // 計算結果
+        const pxW = w * dpi;
+        const pxH = h * dpi;
+        const total = pxW * pxH;
+
+        document.getElementById('live-w-px').innerText = pxW.toLocaleString();
+        document.getElementById('live-h-px').innerText = pxH.toLocaleString();
+        document.getElementById('live-total').innerText = total.toLocaleString();
+
+        // 更新視覺圖形 (Grid Box)
+        const box = document.getElementById('grid-box');
+        const label = document.getElementById('grid-label');
+
+        // 1. 改變大小 (用比例縮放，避免太大爆版)
+        // 假設 1 英吋 = 50px (螢幕顯示用)
+        const displayScale = 40; 
+        box.style.width = (w * displayScale) + 'px';
+        box.style.height = (h * displayScale) + 'px';
+        
+        // 2. 改變網格密度 (模擬 DPI)
+        // DPI 越大，background-size 越小 (格子越密)
+        // 基礎: 200dpi -> 20px grid. 
+        // 公式: size = (200 / currentDpi) * 20
+        const gridSize = (200 / dpi) * 20;
+        box.style.backgroundSize = `${gridSize}px ${gridSize}px`;
+
+        label.innerText = `${w}" x ${h}"`;
+    }
+
+    /* --- 3. 選項分析邏輯 --- */
+    function checkOption(option) {
+        const feedbackArea = document.getElementById('feedback-area');
+        const title = document.getElementById('feedback-title');
+        const text = document.getElementById('feedback-text');
+
+        feedbackArea.style.display = 'block';
+        feedbackArea.className = 'feedback-box'; // 重置 class
+
+        if (option === 'D') {
+            feedbackArea.classList.add('feedback-correct');
+            title.innerText = "✅ 答對了！(D) 240,000";
+            text.innerHTML = "太棒了！你的觀念完全正確。<br><strong>寬向像素：</strong>2 × 200 = 400<br><strong>高向像素：</strong>3 × 200 = 600<br><strong>總像素：</strong>400 × 600 = 240,000。";
+        } else {
+            feedbackArea.classList.add('feedback-wrong');
+            title.innerText = "❌ 答錯囉，再想一下！";
+            
+            if (option === 'A') {
+                text.innerText = "(A) 1,200：你是不是只算了一次 dpi？(3×2×200=1200)。記得長跟寬都要乘上 dpi 喔！";
+            } else if (option === 'B') {
+                text.innerText = "(B) 2,400：這可能是算錯了，或者只計算了兩個邊的總長度？要計算的是「面積」(總格數)。";
+            } else if (option === 'C') {
+                text.innerText = "(C) 120,000：是不是少乘了一個 2？或是算成了 400 × 300？請再檢查一下長寬分別是多少像素。";
+            }
+        }
+    }
+
+    /* --- 4. 自我檢測提示 --- */
+    function toggleHint(id) {
+        const el = document.getElementById(id);
+        if (el.style.display === 'block') {
+            el.style.display = 'none';
+        } else {
+            el.style.display = 'block';
+        }
+    }
+
+    /* --- 5. 重置功能 --- */
+    function resetAll() {
+        // 重置計算器
+        document.getElementById('calc-w').value = 3;
+        document.getElementById('calc-h').value = 2;
+        document.getElementById('calc-dpi').value = 200;
+        currentStep = 0;
+        document.querySelectorAll('.calc-step').forEach(el => {
+            el.classList.remove('active');
+            el.style.display = 'none';
+        });
+        const btn = document.getElementById('btn-next-step');
+        btn.innerText = "開始計算 / 下一步";
+        btn.disabled = false;
+        btn.style.backgroundColor = "";
+
+        // 重置滑桿
+        document.getElementById('range-w').value = 3;
+        document.getElementById('range-h').value = 2;
+        document.getElementById('range-dpi').value = 200;
+        updateSimulation();
+
+        // 重置選項分析
+        document.getElementById('feedback-area').style.display = 'none';
+
+        // 重置提示
+        document.querySelectorAll('.hint-box').forEach(el => el.style.display = 'none');
+
+        // 捲動到頂部
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // 初始化執行一次視覺模擬
+    updateSimulation();
+
+</script>
+
+</body>
+</html>

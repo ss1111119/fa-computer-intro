@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>題目 21：IEEE 802.11 標準互動教學</title>
+    <style>
+        /* =========================================
+           CSS 樣式區
+           設計目標：補習班講義風格、乾淨、重點清晰
+           ========================================= */
+        
+        :root {
+            --primary-color: #2c3e50; /* 深藍色 - 專業感 */
+            --accent-color: #3498db;  /* 亮藍色 - 重點 */
+            --success-color: #27ae60; /* 綠色 - 正確 */
+            --error-color: #c0392b;   /* 紅色 - 錯誤 */
+            --bg-color: #f4f6f7;      /* 淺灰底 */
+            --card-bg: #ffffff;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding-bottom: 80px; /* 預留底部重置按鈕空間 */
+        }
+
+        /* 標題與章節樣式 */
+        h1, h2, h3 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            text-align: center;
+            border-bottom: 3px solid var(--accent-color);
+            padding-bottom: 10px;
+        }
+
+        .section-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-left: 5px solid var(--accent-color);
+        }
+
+        .badge {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            margin-right: 5px;
+        }
+
+        /* 重點強調文字 */
+        .highlight {
+            color: #d35400;
+            font-weight: bold;
+            background-color: #fdebd0;
+            padding: 0 4px;
+        }
+
+        /* 表格樣式 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        /* 互動區域通用按鈕 */
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 5px;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 2px solid var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        /* 題目 21 專用樣式 */
+        .question-box {
+            background-color: #e8f6f3;
+            border: 2px dashed var(--accent-color);
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        @media (max-width: 600px) {
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .feedback-box {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 6px;
+            display: none; /* 預設隱藏 */
+        }
+
+        .feedback-correct {
+            background-color: #d4efdf;
+            color: #145a32;
+            border: 1px solid #27ae60;
+        }
+
+        .feedback-wrong {
+            background-color: #fadbd8;
+            color: #78281f;
+            border: 1px solid #c0392b;
+        }
+
+        /* 配對遊戲樣式 */
+        .match-container {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .match-column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .match-item {
+            padding: 15px;
+            background: #fff;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .match-item.selected {
+            background-color: #ebf5fb;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 8px rgba(52, 152, 219, 0.5);
+        }
+
+        .match-item.matched {
+            background-color: #d4efdf;
+            border-color: var(--success-color);
+            color: var(--success-color);
+            pointer-events: none; /* 禁止再點 */
+        }
+        
+        .match-item.error {
+            animation: shake 0.5s;
+            border-color: var(--error-color);
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+
+        /* 情境分類樣式 */
+        .scenario-area {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .scenario-card {
+            padding: 10px;
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        .scenario-card.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        .scenario-card.solved {
+            background-color: #e8e8e8;
+            color: #aaa;
+            text-decoration: line-through;
+            pointer-events: none;
+            border-color: transparent;
+        }
+
+        .category-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        /* 重點小卡摺疊 */
+        details summary {
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--primary-color);
+            padding: 10px;
+            background-color: #eee;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+        /* 底部重置按鈕 */
+        .reset-sticky {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #333;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            cursor: pointer;
+            z-index: 1000;
+            border: none;
+        }
+        
+        .reset-sticky:hover {
+            background-color: #000;
+        }
+
+        /* 記憶口訣區 */
+        .quiz-option {
+            display: block;
+            width: 100%;
+            margin-top: 5px;
+            text-align: left;
+        }
+
+    </style>
+</head>
+<body>
+
+    <button class="reset-sticky" onclick="resetAll()">🔄 全部重置</button>
+
+    <div class="container">
+        <!-- 頁面標題 -->
+        <h1>題目 21：IEEE 802.11 標準攻略</h1>
+        <p style="text-align: center;">補教名師整理：重點整理 + 互動實戰</p>
+
+        <!-- 1. 概念與對照表 -->
+        <div class="section-card">
+            <h2>📚 第一部分：核心概念與對照表</h2>
+            
+            <p>同學，這種題目是「背多分」！只要記住對應號碼，分數就拿到了。我們先把專有名詞搞清楚：</p>
+            <ul>
+                <li><strong>IEEE</strong>：制定技術標準的國際組織（像是科技界的立法委員）。</li>
+                <li><strong>標準</strong>：大家遵守的規格，這樣不同牌子的設備才可以互通。</li>
+                <li><strong>WLAN</strong> (Wireless LAN)：無線區域網路，就是我們常說的 <span class="highlight">Wi-Fi</span>。</li>
+                <li><strong>乙太網路</strong> (Ethernet)：就是要「插線」的那種網路孔。</li>
+                <li><strong>藍牙</strong> (Bluetooth)：短距離連線（耳機、滑鼠）。</li>
+            </ul>
+
+            <h3>🔥 必考！802.x 終極對照表</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>IEEE 標準編號</th>
+                        <th>對應技術</th>
+                        <th>名師口訣 (必背)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>802.11</strong></td>
+                        <td><strong>無線區域網路 (WLAN / Wi-Fi)</strong></td>
+                        <td><span class="highlight">11 無線</span> (想像兩根天線)</td>
+                    </tr>
+                    <tr>
+                        <td>802.3</td>
+                        <td>乙太網路 (Ethernet)</td>
+                        <td><span class="highlight">3 有線</span> (3 個字：乙太網)</td>
+                    </tr>
+                    <tr>
+                        <td>802.15</td>
+                        <td>藍牙 (Bluetooth) / PAN</td>
+                        <td><span class="highlight">15 藍牙</span> (每個月 15 號買藍牙耳機?)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 2. 互動 A: 配對 -->
+        <div class="section-card" id="interaction-a">
+            <h2>🎮 互動 A：連連看特訓</h2>
+            <p>請點選左邊的「標準」，再點選右邊對應的「技術」來完成配對！</p>
+            
+            <div class="match-container">
+                <!-- 左側：標準 -->
+                <div class="match-column" id="col-standards">
+                    <div class="match-item" data-id="11" onclick="selectStandard('11', this)">IEEE 802.11</div>
+                    <div class="match-item" data-id="3" onclick="selectStandard('3', this)">IEEE 802.3</div>
+                    <div class="match-item" data-id="15" onclick="selectStandard('15', this)">IEEE 802.15</div>
+                </div>
+                
+                <!-- 右側：技術 -->
+                <div class="match-column" id="col-techs">
+                    <div class="match-item" onclick="checkMatch('wifi', this)">WLAN / Wi-Fi</div>
+                    <div class="match-item" onclick="checkMatch('bluetooth', this)">藍牙 (Bluetooth)</div>
+                    <div class="match-item" onclick="checkMatch('ethernet', this)">乙太網路 (Ethernet)</div>
+                </div>
+            </div>
+            <div id="match-feedback" class="feedback-box"></div>
+        </div>
+
+        <!-- 3. 題目 21 本體 -->
+        <div class="section-card">
+            <h2>📝 第二部分：實戰演練 (題目 21)</h2>
+            <div class="question-box">
+                <p><strong>題目 21：下列哪項技術是依據 IEEE 802.11 標準所建置？</strong></p>
+                <div class="options-grid">
+                    <button class="btn btn-outline" onclick="checkQ21('A')">(A) 行動寬頻無線存取技術</button>
+                    <button class="btn btn-outline" onclick="checkQ21('B')">(B) 藍牙技術</button>
+                    <button class="btn btn-outline" onclick="checkQ21('C')">(C) 無線區域網路</button>
+                    <button class="btn btn-outline" onclick="checkQ21('D')">(D) 乙太網路</button>
+                </div>
+                
+                <div id="q21-feedback" class="feedback-box">
+                    <!-- 解析內容將顯示於此 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. 互動 C: 生活情境 -->
+        <div class="section-card" id="interaction-c">
+            <h2>🌍 互動 C：生活情境直覺訓練</h2>
+            <p>選一張「生活情境卡」，然後歸類到正確的技術。</p>
+            
+            <div class="scenario-area" id="scenario-list">
+                <!-- 透過 JS 動態生成，或預寫好 -->
+                <div class="scenario-card" onclick="selectScenario(1, this)">家裡用無線路由器上網</div>
+                <div class="scenario-card" onclick="selectScenario(2, this)">桌機插網路線上網</div>
+                <div class="scenario-card" onclick="selectScenario(3, this)">手機連 5G 基地台上網</div>
+                <div class="scenario-card" onclick="selectScenario(4, this)">藍牙耳機連手機</div>
+                <div class="scenario-card" onclick="selectScenario(5, this)">公司辦公室用 Wi-Fi</div>
+                <div class="scenario-card" onclick="selectScenario(6, this)">滑鼠用藍牙連筆電</div>
+            </div>
+
+            <p>這屬於哪一類？</p>
+            <div class="category-buttons">
+                <button class="btn" onclick="checkScenarioAnswer('wifi')">WLAN (802.11)</button>
+                <button class="btn" onclick="checkScenarioAnswer('ethernet')">乙太網路 (802.3)</button>
+                <button class="btn" onclick="checkScenarioAnswer('bluetooth')">藍牙 (802.15)</button>
+                <button class="btn" style="background-color: #7f8c8d;" onclick="checkScenarioAnswer('mobile')">行動寬頻 (非上述)</button>
+            </div>
+            <div id="scenario-feedback" class="feedback-box"></div>
+        </div>
+
+        <!-- 5. 互動 D: 記憶口訣小測驗 -->
+        <div class="section-card">
+            <h2>⚡ 互動 D：快問快答</h2>
+            <p>口訣複習：11 無線、3 有線、15 藍牙。準備好了嗎？</p>
+            
+            <div id="quiz-area" class="question-box" style="background-color: #fdf2e9; border-color: #e67e22;">
+                <p id="quiz-question">點擊下方按鈕開始測驗！</p>
+                <div id="quiz-options">
+                    <button class="btn" onclick="nextQuiz()">開始測驗</button>
+                </div>
+            </div>
+            <div id="quiz-feedback" class="feedback-box"></div>
+        </div>
+
+        <!-- 6. 重點小卡 (可收合) -->
+        <div class="section-card">
+            <h2>📌 考前最後一眼 (Cheat Sheet)</h2>
+            
+            <details open>
+                <summary>點我展開：重點總結</summary>
+                <div style="padding: 10px;">
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="margin-bottom: 10px;">✅ <strong>802.11</strong> = <strong>WLAN / Wi-Fi</strong> (無線區域網路)</li>
+                        <li style="margin-bottom: 10px;">✅ <strong>802.3</strong> = <strong>Ethernet</strong> (乙太網路/有線)</li>
+                        <li style="margin-bottom: 10px;">✅ <strong>802.15</strong> = <strong>Bluetooth</strong> (藍牙)</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details>
+                <summary>點我展開：常見陷阱⚠️</summary>
+                <div style="padding: 10px; color: #c0392b;">
+                    <ul>
+                        <li>❌ 只要是「無線」就是 802.11？<br>→ <strong>錯！</strong> 藍牙 (802.15) 也是無線，手機 4G/5G (行動寬頻) 也是無線。</li>
+                        <li>❌ 802.11 是藍牙？<br>→ <strong>錯！</strong> 11 是 Wi-Fi，15 才是藍牙。</li>
+                    </ul>
+                </div>
+            </details>
+        </div>
+
+    </div>
+
+    <script>
+        /* =========================================
+           JavaScript 邏輯區
+           包含所有互動功能的處理函式
+           ========================================= */
+
+        // --- 互動 A: 配對邏輯 ---
+        let selectedStandardId = null;
+        let selectedStandardElement = null;
+
+        // 定義正確答案對照
+        const matchAnswers = {
+            '11': 'wifi',
+            '3': 'ethernet',
+            '15': 'bluetooth'
+        };
+
+        function selectStandard(id, element) {
+            // 如果已經配對成功，不能再選
+            if (element.classList.contains('matched')) return;
+
+            // 清除之前的選取狀態
+            const allStandards = document.querySelectorAll('#col-standards .match-item');
+            allStandards.forEach(el => el.classList.remove('selected'));
+
+            // 設定新的選取
+            selectedStandardId = id;
+            selectedStandardElement = element;
+            element.classList.add('selected');
+
+            // 顯示提示
+            const feedback = document.getElementById('match-feedback');
+            feedback.style.display = 'block';
+            feedback.className = 'feedback-box';
+            feedback.innerHTML = '請在右側選擇對應的技術...';
+        }
+
+        function checkMatch(techType, element) {
+            // 如果還沒選左邊，或這個選項已經配對過
+            if (!selectedStandardId || element.classList.contains('matched')) {
+                alert("請先在左側點選一個標準編號！");
+                return;
+            }
+
+            const feedback = document.getElementById('match-feedback');
+            
+            // 檢查是否正確
+            if (matchAnswers[selectedStandardId] === techType) {
+                // 正確
+                element.classList.add('matched');
+                selectedStandardElement.classList.add('matched');
+                selectedStandardElement.classList.remove('selected');
+                
+                feedback.className = 'feedback-box feedback-correct';
+                feedback.innerHTML = `✅ 答對了！ IEEE 802.${selectedStandardId} 對應的是 ${element.innerText}。`;
+                
+                // 重置選擇狀態
+                selectedStandardId = null;
+                selectedStandardElement = null;
+            } else {
+                // 錯誤
+                feedback.className = 'feedback-box feedback-wrong';
+                
+                let hint = "";
+                if (selectedStandardId === '11') hint = "提示：11 像兩根天線，是 Wi-Fi。";
+                if (selectedStandardId === '3') hint = "提示：802.3 對應有線網路。";
+                if (selectedStandardId === '15') hint = "提示：802.15 是短距離的藍牙。";
+
+                feedback.innerHTML = `❌ 配對錯誤。<br>${hint}`;
+                
+                // 搖晃動畫
+                element.classList.add('error');
+                setTimeout(() => element.classList.remove('error'), 500);
+            }
+            feedback.style.display = 'block';
+        }
+
+        // --- 互動 B: 題目 21 邏輯 ---
+        function checkQ21(option) {
+            const feedback = document.getElementById('q21-feedback');
+            feedback.style.display = 'block';
+
+            if (option === 'C') {
+                feedback.className = 'feedback-box feedback-correct';
+                feedback.innerHTML = `
+                    <strong>✅ 正確答案 (C)</strong><br>
+                    太棒了！IEEE 802.11 就是定義無線區域網路 (WLAN) 的標準，也就是我們熟知的 Wi-Fi。
+                `;
+            } else {
+                feedback.className = 'feedback-box feedback-wrong';
+                let reason = "";
+                if (option === 'A') reason = "(A) 行動寬頻通常指 3G/4G/5G 或 WiMAX (802.16)。";
+                if (option === 'B') reason = "(B) 藍牙技術屬於 IEEE 802.15 標準。";
+                if (option === 'D') reason = "(D) 乙太網路屬於 IEEE 802.3 標準。";
+                
+                feedback.innerHTML = `<strong>❌ 答錯了</strong><br>${reason} <br>記住：802.11 是 Wi-Fi。`;
+            }
+        }
+
+        // --- 互動 C: 情境分類邏輯 ---
+        let currentScenarioId = null;
+        const scenarioData = {
+            1: { type: 'wifi', text: '家裡用無線路由器上網' },
+            2: { type: 'ethernet', text: '桌機插網路線上網' },
+            3: { type: 'mobile', text: '手機連 5G 基地台上網' },
+            4: { type: 'bluetooth', text: '藍牙耳機連手機' },
+            5: { type: 'wifi', text: '公司辦公室用 Wi-Fi' },
+            6: { type: 'bluetooth', text: '滑鼠用藍牙連筆電' }
+        };
+
+        function selectScenario(id, element) {
+            if (element.classList.contains('solved')) return;
+
+            // 清除其他選取
+            document.querySelectorAll('.scenario-card').forEach(el => el.classList.remove('active'));
+            
+            element.classList.add('active');
+            currentScenarioId = id;
+            
+            const feedback = document.getElementById('scenario-feedback');
+            feedback.style.display = 'block';
+            feedback.className = 'feedback-box';
+            feedback.innerHTML = `已選擇：「${scenarioData[id].text}」<br>請點選下方按鈕進行分類。`;
+        }
+
+        function checkScenarioAnswer(userType) {
+            if (!currentScenarioId) {
+                alert("請先點選一張情境卡片！");
+                return;
+            }
+
+            const feedback = document.getElementById('scenario-feedback');
+            const correctType = scenarioData[currentScenarioId].type;
+
+            if (userType === correctType) {
+                feedback.className = 'feedback-box feedback-correct';
+                feedback.innerHTML = "✅ 分類正確！觀念很清楚喔。";
+                
+                // 標記為已解決
+                const activeCard = document.querySelector('.scenario-card.active');
+                if (activeCard) {
+                    activeCard.classList.remove('active');
+                    activeCard.classList.add('solved');
+                }
+                currentScenarioId = null;
+            } else {
+                feedback.className = 'feedback-box feedback-wrong';
+                let reason = "再想一下...";
+                if (correctType === 'wifi') reason = "這是區域內的無線上網，屬於 WLAN (802.11)。";
+                if (correctType === 'ethernet') reason = "這是使用實體線路的，屬於乙太網路 (802.3)。";
+                if (correctType === 'bluetooth') reason = "這是短距離周邊連接，屬於藍牙 (802.15)。";
+                if (correctType === 'mobile') reason = "這是大範圍的基地台連線，屬於行動寬頻，不是 802.11。";
+                
+                feedback.innerHTML = `❌ 分類錯誤。<br>${reason}`;
+            }
+        }
+
+        // --- 互動 D: 記憶口訣小測驗邏輯 ---
+        const quizBank = [
+            { q: "看到 802.11 要選什麼？", options: ["藍牙", "乙太網路", "Wi-Fi (WLAN)", "4G"], ans: 2, note: "11 = 無線 (Wi-Fi)" },
+            { q: "看到 802.3 要選什麼？", options: ["乙太網路", "藍牙", "Wi-Fi", "WiMAX"], ans: 0, note: "802.3 = 有線 (乙太)" },
+            { q: "看到 802.15 要選什麼？", options: ["Wi-Fi", "藍牙", "乙太網路", "光纖"], ans: 1, note: "15 = 藍牙" }
+        ];
+
+        function nextQuiz() {
+            const feedback = document.getElementById('quiz-feedback');
+            feedback.style.display = 'none';
+
+            // 隨機選一題
+            const randomIndex = Math.floor(Math.random() * quizBank.length);
+            const question = quizBank[randomIndex];
+
+            const qArea = document.getElementById('quiz-question');
+            qArea.innerHTML = `<strong>問題：</strong> ${question.q}`;
+
+            const optArea = document.getElementById('quiz-options');
+            optArea.innerHTML = ''; // 清空
+
+            question.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'btn btn-outline quiz-option';
+                btn.innerText = opt;
+                btn.onclick = () => checkQuiz(index, question);
+                optArea.appendChild(btn);
+            });
+        }
+
+        function checkQuiz(userIndex, questionObj) {
+            const feedback = document.getElementById('quiz-feedback');
+            feedback.style.display = 'block';
+
+            if (userIndex === questionObj.ans) {
+                feedback.className = 'feedback-box feedback-correct';
+                feedback.innerHTML = `✅ 答對了！ ${questionObj.note}`;
+                // 1.5秒後自動下一題
+                setTimeout(() => {
+                    // 添加一個過渡按鈕
+                    const optArea = document.getElementById('quiz-options');
+                    optArea.innerHTML = '<button class="btn" onclick="nextQuiz()">再出一題</button>';
+                }, 1000);
+            } else {
+                feedback.className = 'feedback-box feedback-wrong';
+                feedback.innerHTML = `❌ 答錯囉！<br>正確答案是：${questionObj.options[questionObj.ans]}<br>(${questionObj.note})`;
+            }
+        }
+
+        // --- 全域重置功能 ---
+        function resetAll() {
+            if(!confirm("確定要重置所有進度嗎？")) return;
+
+            // 重置配對
+            document.querySelectorAll('.match-item').forEach(el => {
+                el.classList.remove('matched', 'selected', 'error');
+            });
+            document.getElementById('match-feedback').style.display = 'none';
+            selectedStandardId = null;
+
+            // 重置題目 21
+            document.getElementById('q21-feedback').style.display = 'none';
+
+            // 重置情境
+            document.querySelectorAll('.scenario-card').forEach(el => {
+                el.classList.remove('active', 'solved');
+            });
+            document.getElementById('scenario-feedback').style.display = 'none';
+            currentScenarioId = null;
+
+            // 重置測驗
+            document.getElementById('quiz-question').innerText = "點擊下方按鈕開始測驗！";
+            document.getElementById('quiz-options').innerHTML = '<button class="btn" onclick="nextQuiz()">開始測驗</button>';
+            document.getElementById('quiz-feedback').style.display = 'none';
+
+            // 捲動回頂端
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+    </script>
+</body>
+</html>

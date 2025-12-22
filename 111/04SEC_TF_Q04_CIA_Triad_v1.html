@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEC_TF_Q04_CIA_Triad_v1</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #e74c3c;
+            --highlight-color: #f1c40f;
+            --light-bg: #f8f9fa;
+            --border-color: #ddd;
+            --text-color: #333;
+            --correct-color: #27ae60;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Microsoft JhengHei", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #eef2f3;
+            padding-bottom: 60px;
+        }
+
+        /* A. 頁首區 */
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        header .badge {
+            display: inline-block;
+            background-color: var(--accent-color);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-top: 5px;
+            font-weight: bold;
+        }
+
+        /* 容器設定 */
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 0 15px;
+        }
+
+        /* 卡片通用樣式 */
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            border-left: 5px solid var(--primary-color);
+            padding-left: 10px;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        /* B. 題目區 */
+        .question-box {
+            font-size: 1.15rem;
+            font-weight: 500;
+        }
+
+        .question-text span {
+            transition: background-color 0.3s;
+            padding: 0 2px;
+            border-radius: 3px;
+        }
+
+        .highlight-active {
+            background-color: var(--highlight-color);
+            font-weight: bold;
+            color: #000;
+        }
+
+        .options {
+            margin-top: 15px;
+            list-style: none;
+        }
+
+        .options li {
+            padding: 10px;
+            border: 1px solid #eee;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            background-color: #fff;
+        }
+
+        /* C. 關鍵字互動區 */
+        .interaction-area {
+            background-color: #e8ecf1;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .keyword-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn-key {
+            background-color: white;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .btn-key:hover, .btn-key.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .explanation-display {
+            background-color: white;
+            padding: 12px;
+            border-radius: 5px;
+            border-left: 4px solid var(--accent-color);
+            min-height: 50px;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+        }
+
+        /* D. 白話翻譯 (Accordion) */
+        .accordion {
+            background-color: white;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .accordion-header {
+            background-color: #f1f1f1;
+            padding: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .accordion-header::after {
+            content: '+';
+            font-size: 1.2rem;
+        }
+
+        .accordion.open .accordion-header::after {
+            content: '-';
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            padding: 0 15px;
+        }
+
+        .accordion.open .accordion-content {
+            max-height: 500px; /* 足夠大的高度 */
+            padding: 15px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* E. 觀念教學卡片 */
+        .concept-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        @media (min-width: 600px) {
+            .concept-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .concept-card {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 15px;
+        }
+
+        .concept-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: var(--primary-color);
+            margin-bottom: 8px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        .concept-eng {
+            font-size: 0.8rem;
+            color: #666;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .concept-plain {
+            background-color: #f9f9f9;
+            padding: 5px;
+            font-size: 0.9rem;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+
+        .concept-example {
+            font-size: 0.85rem;
+            color: #555;
+        }
+
+        .note-box {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 15px;
+            font-size: 0.95rem;
+        }
+
+        /* F, G, H 列表樣式 */
+        ul.simple-list {
+            padding-left: 20px;
+        }
+        ul.simple-list li {
+            margin-bottom: 8px;
+        }
+
+        .wrong {
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+        
+        .correct {
+            color: var(--correct-color);
+            font-weight: bold;
+        }
+
+        /* H. 記憶口訣 */
+        .mnemonic-box {
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        /* I. 答案揭曉區 */
+        .answer-section {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #fff;
+            border-top: 2px solid var(--border-color);
+        }
+
+        .btn-reveal {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1.1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .btn-reveal:hover {
+            background-color: #c0392b;
+        }
+
+        .answer-content {
+            display: none;
+            margin-top: 20px;
+            animation: fadeIn 0.5s;
+        }
+
+        .big-answer {
+            font-size: 3rem;
+            color: var(--accent-color);
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .answer-reason {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- A. 頁首區 -->
+    <header>
+        <h1>CIA 不是間諜，是資安三要素</h1>
+        <p>Confidentiality / Integrity / Availability</p>
+        <div class="badge">題號：4（是非題）</div>
+    </header>
+
+    <div class="container">
+
+        <!-- B. 題目區 -->
+        <div class="card">
+            <h2>題目</h2>
+            <div class="question-box">
+                <p class="question-text">
+                    4. 資訊安全中最重要的三項目標為 <span id="txt-cia">CIA</span>，其中<br>
+                    C 是<span id="txt-conf">保密性</span>（Confidentiality）、<br>
+                    I 是<span id="txt-int">完整性</span>（Integrity），<br>
+                    A 是<span id="txt-acc">存取</span>（Access）
+                </p>
+                <ul class="options">
+                    <li>(A) O</li>
+                    <li>(B) X</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- C. 關鍵字螢光筆互動 -->
+        <div class="interaction-area">
+            <p style="margin-bottom: 10px; font-weight: bold; font-size: 0.9rem; color:#666;">點擊下方按鈕，查看關鍵字詳解：</p>
+            <div class="keyword-buttons">
+                <button class="btn-key" onclick="highlight('cia')">CIA</button>
+                <button class="btn-key" onclick="highlight('conf')">保密性</button>
+                <button class="btn-key" onclick="highlight('int')">完整性</button>
+                <button class="btn-key" onclick="highlight('acc')">存取</button>
+                <button class="btn-key" onclick="highlight('avail')">可用性</button>
+                <button class="btn-key" onclick="highlight('availability')">Availability</button>
+            </div>
+            <div class="explanation-display" id="explanation-box">
+                請點擊上方關鍵字，白話解釋會顯示在這裡。
+            </div>
+        </div>
+
+        <!-- D. 白話翻譯 -->
+        <div class="accordion" id="accordion-plain">
+            <div class="accordion-header" onclick="toggleAccordion()">
+                白話翻譯與考點解析
+            </div>
+            <div class="accordion-content">
+                <div style="margin-bottom: 15px;">
+                    <strong>【白話翻譯】</strong><br>
+                    「CIA 三要素中的 A，到底是『存取』，還是別的意思？題目這個說法對不對？」
+                </div>
+                <div>
+                    <strong>【這題在考什麼】</strong><br>
+                    「你是否能背對概念：CIA 的 A 是 Availability（可用性），絕對不是 Access（存取）。」
+                </div>
+            </div>
+        </div>
+
+        <!-- E. 觀念教學 -->
+        <div class="card">
+            <h2>觀念教學：CIA 三要素</h2>
+            <div class="concept-grid">
+                <!-- C -->
+                <div class="concept-card">
+                    <div class="concept-title">C：保密性</div>
+                    <span class="concept-eng">Confidentiality</span>
+                    <div class="concept-plain">白話：不是你的人不要看</div>
+                    <div class="concept-example">例子：帳密、成績單、個資要加密，要設定權限不讓閒雜人等看到。</div>
+                </div>
+                <!-- I -->
+                <div class="concept-card">
+                    <div class="concept-title">I：完整性</div>
+                    <span class="concept-eng">Integrity</span>
+                    <div class="concept-plain">白話：資料不能被偷改</div>
+                    <div class="concept-example">例子：銀行轉帳金額不能被篡改、網頁內容沒有被駭客塗鴉。</div>
+                </div>
+                <!-- A -->
+                <div class="concept-card">
+                    <div class="concept-title">A：可用性</div>
+                    <span class="concept-eng">Availability</span>
+                    <div class="concept-plain">白話：要用的時候能用</div>
+                    <div class="concept-example">例子：網站不可以一直當機、伺服器不能被 DDoS 攻擊打掛。</div>
+                </div>
+            </div>
+
+            <div class="note-box">
+                <strong>為什麼很多人會把 A 誤認成 Access？</strong><br>
+                <ul>
+                    <li>因為 Access（存取）跟「能不能用」聽起來很像。</li>
+                    <li>但資安術語中，<strong>Access Control（存取控制）</strong>是達成資安的「手段」（例如輸入帳密登入）。</li>
+                    <li>CIA 的 A 是<strong>Availability（可用性）</strong>，這是資安的「目標」（系統維持正常運作）。</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- F. 是非題判斷解析 -->
+        <div class="card">
+            <h2>是非題判斷解析</h2>
+            <ul class="simple-list">
+                <li>
+                    (A) O <br>
+                    <span class="wrong">→ 錯，題目說 A 是 Access，這是錯誤的定義。</span>
+                </li>
+                <li>
+                    (B) X <br>
+                    <span class="correct">→ 正確，因為 A 應該是 Availability（可用性）。</span>
+                </li>
+            </ul>
+        </div>
+
+        <!-- G. 常見錯誤提醒 -->
+        <div class="card">
+            <h2>常見錯誤提醒</h2>
+            <ul class="simple-list">
+                <li>1. 看到 A 就直覺以為是 Access（存取）。</li>
+                <li>2. 把可用性誤以為只是「帳號能登入成功」（那是認證與授權）。</li>
+                <li>3. 忘記可用性通常跟「故障」、「停機維修」、「DDoS 攻擊」有關。</li>
+            </ul>
+        </div>
+
+        <!-- H. 記憶口訣 -->
+        <div class="mnemonic-box">
+            【記憶口訣】<br>
+            「保完可」＝ 保密性、完整性、可用性
+        </div>
+
+        <!-- I. 正確答案揭曉 -->
+        <div class="answer-section">
+            <button class="btn-reveal" onclick="showAnswer()">顯示正確答案</button>
+            <div class="answer-content" id="answer-content">
+                <div class="big-answer">X</div>
+                <div class="answer-reason">
+                    CIA 的 A 是 <strong>Availability（可用性）</strong>，不是 Access（存取）。
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // 互動資料
+        const explanations = {
+            'cia': {
+                targetId: 'txt-cia',
+                text: '<strong>CIA</strong>：資安鐵三角，缺一不可。分別是 Confidentiality、Integrity、Availability。'
+            },
+            'conf': {
+                targetId: 'txt-conf',
+                text: '<strong>保密性（Confidentiality）</strong>：不該看到的人看不到。就像你的日記本有上鎖。'
+            },
+            'int': {
+                targetId: 'txt-int',
+                text: '<strong>完整性（Integrity）</strong>：資料不被亂改、內容正確。就像寄出的信中間沒有被別人偷拆改寫。'
+            },
+            'acc': {
+                targetId: 'txt-acc',
+                text: '<strong>存取（Access）</strong>：<span style="color:red;">陷阱！</span>存取控制（Access Control）是手段（如登入），不是 CIA 的 A。'
+            },
+            'avail': {
+                targetId: null, // 題目中沒有這個詞，所以不標示題目文字，只顯示解釋
+                text: '<strong>可用性（Availability）</strong>：這才是正解！系統需要用的時候要能用（譬如搶票系統不能掛掉）。'
+            },
+            'availability': {
+                targetId: null,
+                text: '<strong>Availability</strong>：可用性。請大聲唸三遍，CIA 的 A 是 Availability。'
+            }
+        };
+
+        // 關鍵字螢光筆功能
+        function highlight(key) {
+            // 1. 清除所有現有的螢光效果
+            document.querySelectorAll('.question-text span').forEach(span => {
+                span.classList.remove('highlight-active');
+            });
+
+            // 2. 清除按鈕選取狀態
+            document.querySelectorAll('.btn-key').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // 標記當前按鈕
+            event.target.classList.add('active');
+
+            const data = explanations[key];
+
+            // 3. 標示對應文字（如果有）
+            if (data.targetId) {
+                const target = document.getElementById(data.targetId);
+                if (target) {
+                    target.classList.add('highlight-active');
+                }
+            }
+
+            // 4. 顯示解釋
+            const displayBox = document.getElementById('explanation-box');
+            displayBox.innerHTML = data.text;
+        }
+
+        // Accordion 開關
+        function toggleAccordion() {
+            const acc = document.getElementById('accordion-plain');
+            acc.classList.toggle('open');
+        }
+
+        // 顯示答案
+        function showAnswer() {
+            const content = document.getElementById('answer-content');
+            const btn = document.querySelector('.btn-reveal');
+            
+            content.style.display = 'block';
+            btn.style.display = 'none'; // 隱藏按鈕
+            
+            // 自動捲動到答案區
+            content.scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

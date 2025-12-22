@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>布林代數互動教學：最小項展開</title>
+    <style>
+        /* --- 基礎樣式重置 --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+            line-height: 1.6;
+            background-color: #f0f2f5;
+            color: #333;
+            padding: 20px;
+        }
+
+        /* --- 版面配置 --- */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: transparent;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        /* --- 卡片式設計 --- */
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border-left: 5px solid #3498db; /* 裝飾線 */
+        }
+
+        .card h2 {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 10px;
+        }
+
+        .card h3 {
+            font-size: 1.1rem;
+            margin: 15px 0 10px;
+            color: #7f8c8d;
+        }
+
+        /* --- 專有名詞區塊 --- */
+        .term-box {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .term {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #e9ecef;
+        }
+
+        .term strong {
+            color: #e74c3c;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        /* --- 數學式顯示 --- */
+        .math-display {
+            font-family: "Consolas", "Monaco", monospace;
+            background-color: #2c3e50;
+            color: #f1c40f;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 1.2rem;
+            margin: 15px 0;
+            letter-spacing: 1px;
+        }
+
+        .step-item {
+            padding: 10px;
+            margin: 5px 0;
+            border-left: 3px solid #bdc3c7;
+            background: #fdfdfd;
+            display: none; /* 預設隱藏，透過 JS 顯示 */
+            animation: fadeIn 0.5s ease;
+        }
+
+        .step-item.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- 按鈕樣式 --- */
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn-primary { background-color: #3498db; color: white; }
+        .btn-primary:hover { background-color: #2980b9; }
+
+        .btn-success { background-color: #27ae60; color: white; }
+        .btn-success:hover { background-color: #219150; }
+
+        .btn-danger { background-color: #e74c3c; color: white; }
+        .btn-danger:hover { background-color: #c0392b; }
+
+        .btn-secondary { background-color: #95a5a6; color: white; }
+        .btn-secondary:hover { background-color: #7f8c8d; }
+
+        /* --- 輸入與互動 --- */
+        input[type="text"] {
+            padding: 8px;
+            border: 1px solid #bdc3c7;
+            border-radius: 4px;
+            font-family: monospace;
+            width: 200px;
+        }
+
+        select {
+            padding: 8px;
+            border: 1px solid #bdc3c7;
+            border-radius: 4px;
+        }
+
+        .feedback {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .feedback.correct { background-color: #d4edda; color: #155724; }
+        .feedback.wrong { background-color: #f8d7da; color: #721c24; }
+
+        /* --- 真值表 --- */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        tr:nth-child(even) { background-color: #f9f9f9; }
+
+        tr.mismatch {
+            background-color: #f8d7da !important; /* 紅色標示錯誤列 */
+        }
+
+        .comparison-controls {
+            margin-bottom: 15px;
+            background: #eef2f3;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        /* --- 題目選項 --- */
+        .option-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-btn {
+            text-align: left;
+            background: white;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-btn:hover {
+            background: #f0f8ff;
+            border-color: #3498db;
+        }
+
+        .option-explanation {
+            display: none;
+            margin-top: 5px;
+            padding: 10px;
+            background: #fff3cd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            color: #856404;
+        }
+
+        /* --- 頁尾 --- */
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #7f8c8d;
+            font-size: 0.8rem;
+        }
+
+        /* 浮動重置按鈕 */
+        .reset-all-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>布林代數與邏輯電路：最小項展開</h1>
+        <p>跟著老師一步步拆解，搞懂「缺項補項」的技巧！</p>
+    </header>
+
+    <div class="container">
+
+        <!-- 1. 觀念導讀 -->
+        <div class="card">
+            <h2>📢 課前觀念補給站</h2>
+            <div class="term-box">
+                <div class="term"><strong>布林代數 (Boolean Algebra)</strong>用 0 與 1 來運算的數學，是電腦邏輯的基礎。</div>
+                <div class="term"><strong>AND (且)</strong>寫成 AB。兩個都要是 1，結果才是 1。</div>
+                <div class="term"><strong>OR (或)</strong>寫成 A+B。只要有一個是 1，結果就是 1。</div>
+                <div class="term"><strong>反相/補數 (NOT)</strong>寫成 A'。把 1 變 0，把 0 變 1。</div>
+                <div class="term"><strong>最小項 (Minterm)</strong>包含所有變數的乘積項（例如 ABC, A'BC'）。</div>
+                <div class="term"><strong>邏輯等價 (Equivalence)</strong>不管輸入什麼，兩個式子的輸出結果都完全一樣。</div>
+            </div>
+        </div>
+
+        <!-- 2. 題目與公式卡 -->
+        <div class="card">
+            <h2>📝 今日挑戰題</h2>
+            <p>請將下列布林表示式展開成標準的三變數最小項 (Minterm) 形式：</p>
+            <div class="math-display">Y = AB + AC</div>
+            <p>請問它和下列哪個選項相等？</p>
+            <ul style="list-style: none; padding-left: 20px; line-height: 2;">
+                <li>(A) ABC + ABC' + A'B'C</li>
+                <li>(B) ABC + ABC' + AB'C'</li>
+                <li>(C) A'BC + ABC' + AB'C</li>
+                <li>(D) ABC + ABC' + AB'C</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>💡 公式小卡 (Cheat Sheet)</h2>
+            <ul style="padding-left: 20px;">
+                <li><strong>補項原則：</strong> X = X(Y + Y') <span style="color:#7f8c8d">（因為 Y+Y'=1，乘 1 不變）</span></li>
+                <li><strong>分配律：</strong> X(Y + Z) = XY + XZ</li>
+                <li><strong>去重律：</strong> X + X = X <span style="color:#7f8c8d">（同樣的訊號加兩次還是一樣）</span></li>
+            </ul>
+        </div>
+
+        <!-- 3. 互動式公式拆解 -->
+        <div class="card">
+            <h2>🔍 互動推導：一步步來</h2>
+            <p>我們要把 Y = AB + AC 補成含有 A, B, C 的形式。</p>
+            <div id="derivation-container">
+                <!-- 步驟將由 JS 動態插入 -->
+            </div>
+            <br>
+            <button class="btn btn-primary" id="btn-next-step">下一步 ➡️</button>
+            <button class="btn btn-secondary" id="btn-reset-steps">重新開始 ↺</button>
+        </div>
+
+        <!-- 4. 互動練習：補誰就補誰 -->
+        <div class="card">
+            <h2>✏️ 隨堂練習：補項大考驗</h2>
+            <p>試著自己補補看！缺什麼變數，就乘上 (缺 + 缺')。</p>
+            
+            <div style="margin: 15px 0;">
+                <label>選擇要展開的項：</label>
+                <select id="practice-term">
+                    <option value="AB">AB (缺 C)</option>
+                    <option value="AC">AC (缺 B)</option>
+                </select>
+            </div>
+
+            <p>請輸入補項後的結果（例如輸入 <code>AB(C+C')</code>）：</p>
+            <div>
+                <input type="text" id="practice-input" placeholder="在這裡輸入式子...">
+                <button class="btn btn-success" onclick="checkPractice()">檢查答案</button>
+            </div>
+            <div id="practice-feedback" class="feedback" style="display:none;"></div>
+        </div>
+
+        <!-- 5. 真值表驗證 -->
+        <div class="card">
+            <h2>📊 真值表驗證 (Truth Table)</h2>
+            <p>不確定算得對不對？我們用「窮舉法」來檢查！</p>
+            
+            <div class="comparison-controls">
+                <strong>勾選要比較的對象：</strong><br>
+                <label><input type="checkbox" class="option-check" value="A"> 選項 (A)</label>
+                <label><input type="checkbox" class="option-check" value="B"> 選項 (B)</label>
+                <label><input type="checkbox" class="option-check" value="C"> 選項 (C)</label>
+                <label><input type="checkbox" class="option-check" value="D" checked> 選項 (D)</label>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table id="truth-table">
+                    <thead>
+                        <tr>
+                            <th>A</th>
+                            <th>B</th>
+                            <th>C</th>
+                            <th style="background-color: #fff3cd;">原式 Y = AB + AC</th>
+                            <th class="col-opt-a">選項 (A)</th>
+                            <th class="col-opt-b">選項 (B)</th>
+                            <th class="col-opt-c">選項 (C)</th>
+                            <th class="col-opt-d">選項 (D)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- 表格內容由 JS 生成 -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="table-analysis" style="margin-top: 10px; color: #e74c3c; font-weight: bold;"></div>
+        </div>
+
+        <!-- 6. 選項分析 -->
+        <div class="card">
+            <h2>🧐 選項分析 (點擊查看詳解)</h2>
+            <div class="option-group">
+                <div class="option-btn" onclick="toggleExplanation('expl-a')">
+                    <strong>(A) ABC + ABC' + A'B'C</strong>
+                    <div id="expl-a" class="option-explanation">
+                        ❌ 錯誤！多了 A'B'C 這一項。<br>
+                        原式需要 A=1 才會是 1 (AB 或 AC)，但這個選項在 A=0 (0,0,1) 時也會輸出 1。
+                    </div>
+                </div>
+                <div class="option-btn" onclick="toggleExplanation('expl-b')">
+                    <strong>(B) ABC + ABC' + AB'C'</strong>
+                    <div id="expl-b" class="option-explanation">
+                        ❌ 錯誤！第三項 AB'C' 弄錯了。<br>
+                        AC 補項展開應該是 AC(B+B') = ABC + AB'C，最後一項應該是 C 不是 C'。
+                    </div>
+                </div>
+                <div class="option-btn" onclick="toggleExplanation('expl-c')">
+                    <strong>(C) A'BC + ABC' + AB'C</strong>
+                    <div id="expl-c" class="option-explanation">
+                        ❌ 錯誤！含 A'BC。<br>
+                        同樣的問題，原式要求 A 必須為 1，這裡出現了 A' (A=0) 的項。
+                    </div>
+                </div>
+                <div class="option-btn" onclick="toggleExplanation('expl-d')">
+                    <strong>(D) ABC + ABC' + AB'C</strong>
+                    <div id="expl-d" class="option-explanation">
+                        ✅ 正確！<br>
+                        1. AB 展開 = ABC + ABC'<br>
+                        2. AC 展開 = ABC + AB'C<br>
+                        3. 合併去重後正是此式。真值表結果也完全一致。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 7. 自我檢測 -->
+        <div class="card">
+            <h2>🏆 課後自我檢測</h2>
+            
+            <div style="margin-bottom: 20px;">
+                <p><strong>題目 1：</strong>若 Y = AB + A'C，請試著展開。</p>
+                <button class="btn btn-secondary btn-sm" onclick="toggleHint('hint1')">顯示提示</button>
+                <p id="hint1" style="display:none; color: #d35400; margin-top:5px;">
+                    提示：AB 缺 C (乘 C+C')；A'C 缺 B (乘 B+B')。注意有一項是 A'B'C 喔！
+                </p>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <p><strong>題目 2：</strong>原題 Y = AB + AC，在哪幾組 (A,B,C) 輸入下會輸出 1？</p>
+                <button class="btn btn-secondary btn-sm" onclick="toggleHint('hint2')">顯示提示</button>
+                <p id="hint2" style="display:none; color: #d35400; margin-top:5px;">
+                    提示：看選項 (D) 的三項：ABC (111), ABC' (110), AB'C (101)。共 3 組。
+                </p>
+            </div>
+
+            <div>
+                <p><strong>題目 3：</strong>要把 (D) 的結果化簡回 AB + AC，關鍵第一步是什麼？</p>
+                <button class="btn btn-secondary btn-sm" onclick="toggleHint('hint3')">顯示提示</button>
+                <p id="hint3" style="display:none; color: #d35400; margin-top:5px;">
+                    提示：逆向操作！把 ABC 複製一份 (X = X+X)，變成 ABC + ABC + ABC' + AB'C，然後兩兩分組提公因式。
+                </p>
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        <p>Created for Learning | 互動式教學講義 v1.0</p>
+    </footer>
+
+    <!-- 全局重置按鈕 -->
+    <button class="btn btn-danger reset-all-btn" onclick="resetAll()">🔄 全部重置</button>
+
+    <script>
+        // --- 1. 公式拆解互動邏輯 ---
+        const steps = [
+            { text: "原始題目", math: "Y = AB + AC" },
+            { text: "Step 1: 處理第一項 AB (缺 C)，利用補項原則乘上 (C + C')", math: "AB = AB(C + C')" },
+            { text: "Step 2: 使用分配律展開", math: "AB = ABC + ABC'" },
+            { text: "Step 3: 處理第二項 AC (缺 B)，利用補項原則乘上 (B + B')", math: "AC = AC(B + B')" },
+            { text: "Step 4: 使用分配律展開 (習慣依字母順序排列)", math: "AC = ABC + AB'C" },
+            { text: "Step 5: 將兩部分合併", math: "Y = (ABC + ABC') + (ABC + AB'C)" },
+            { text: "Step 6: 去除重複項 (ABC 出現兩次，留一個即可)", math: "Y = ABC + ABC' + AB'C" }
+        ];
+
+        let currentStep = 0;
+        const container = document.getElementById('derivation-container');
+        const nextBtn = document.getElementById('btn-next-step');
+
+        function renderSteps() {
+            container.innerHTML = '';
+            steps.forEach((step, index) => {
+                if (index <= currentStep) {
+                    const div = document.createElement('div');
+                    div.className = 'step-item active';
+                    div.innerHTML = `<strong>${step.text}</strong><div class="math-display" style="font-size: 1rem; margin: 5px 0;">${step.math}</div>`;
+                    container.appendChild(div);
+                }
+            });
+
+            // 按鈕狀態控制
+            if (currentStep >= steps.length - 1) {
+                nextBtn.disabled = true;
+                nextBtn.textContent = "推導完成 🎉";
+                nextBtn.classList.remove('btn-primary');
+                nextBtn.classList.add('btn-success');
+            } else {
+                nextBtn.disabled = false;
+                nextBtn.textContent = "下一步 ➡️";
+                nextBtn.classList.add('btn-primary');
+                nextBtn.classList.remove('btn-success');
+            }
+        }
+
+        document.getElementById('btn-next-step').addEventListener('click', () => {
+            if (currentStep < steps.length - 1) {
+                currentStep++;
+                renderSteps();
+            }
+        });
+
+        document.getElementById('btn-reset-steps').addEventListener('click', () => {
+            currentStep = 0;
+            renderSteps();
+        });
+
+        // 初始化顯示第一步
+        renderSteps();
+
+
+        // --- 2. 隨堂練習互動邏輯 ---
+        function checkPractice() {
+            const term = document.getElementById('practice-term').value;
+            let input = document.getElementById('practice-input').value.replace(/\s/g, '').toUpperCase(); // 去除空白轉大寫
+            const feedback = document.getElementById('practice-feedback');
+            
+            feedback.style.display = 'block';
+            
+            // 簡單的正則表達式或字串比對
+            let isCorrect = false;
+            let correctAns = "";
+            let errorMsg = "";
+
+            if (term === "AB") {
+                // 正確應該是 AB(C+C') 或類似格式
+                if (input === "AB(C+C')" || input === "AB(C'+C)") {
+                    isCorrect = true;
+                } else {
+                    correctAns = "AB(C + C')";
+                    if (input.includes("B+B'")) errorMsg = "哎呀！AB 已經有 B 了，是缺 C 才對喔！";
+                    else errorMsg = "記得格式是：原式(缺項 + 缺項')";
+                }
+            } else if (term === "AC") {
+                if (input === "AC(B+B')" || input === "AC(B'+B)") {
+                    isCorrect = true;
+                } else {
+                    correctAns = "AC(B + B')";
+                    if (input.includes("C+C'")) errorMsg = "哎呀！AC 已經有 C 了，是缺 B 才對喔！";
+                    else errorMsg = "記得格式是：原式(缺項 + 缺項')";
+                }
+            }
+
+            if (isCorrect) {
+                feedback.className = "feedback correct";
+                feedback.innerHTML = "🎉 答對了！觀念非常清楚！";
+            } else {
+                feedback.className = "feedback wrong";
+                feedback.innerHTML = `❌ 再試試看！<br>${errorMsg}<br>正確寫法應該是：<strong>${correctAns}</strong>`;
+            }
+        }
+
+
+        // --- 3. 真值表邏輯 ---
+        const checkboxes = document.querySelectorAll('.option-check');
+        
+        checkboxes.forEach(box => {
+            box.addEventListener('change', updateTruthTable);
+        });
+
+        function updateTruthTable() {
+            const tbody = document.querySelector('#truth-table tbody');
+            const analysisDiv = document.getElementById('table-analysis');
+            tbody.innerHTML = ''; // 清空
+            
+            const showA = document.querySelector('input[value="A"]').checked;
+            const showB = document.querySelector('input[value="B"]').checked;
+            const showC = document.querySelector('input[value="C"]').checked;
+            const showD = document.querySelector('input[value="D"]').checked;
+
+            // 控制表頭顯示/隱藏
+            document.querySelector('.col-opt-a').style.display = showA ? '' : 'none';
+            document.querySelector('.col-opt-b').style.display = showB ? '' : 'none';
+            document.querySelector('.col-opt-c').style.display = showC ? '' : 'none';
+            document.querySelector('.col-opt-d').style.display = showD ? '' : 'none';
+
+            let mismatchFound = false;
+            let mismatchMsg = "";
+
+            // 生成 8 列 (0-7)
+            for (let i = 0; i < 8; i++) {
+                // 轉二進位，padStart 補 0
+                const bin = i.toString(2).padStart(3, '0');
+                const A = parseInt(bin[0]);
+                const B = parseInt(bin[1]);
+                const C = parseInt(bin[2]);
+
+                // 計算邏輯值 (1 為 true, 0 為 false)
+                // Y = AB + AC
+                const Y = (A && B) || (A && C) ? 1 : 0;
+
+                // 選項邏輯
+                // A: ABC + ABC' + A'B'C
+                const valA = (A&&B&&C) || (A&&B&&!C) || (!A&&!B&&C) ? 1 : 0;
+                // B: ABC + ABC' + AB'C'
+                const valB = (A&&B&&C) || (A&&B&&!C) || (A&&!B&&!C) ? 1 : 0;
+                // C: A'BC + ABC' + AB'C
+                const valC = (!A&&B&&C) || (A&&B&&!C) || (A&&!B&&C) ? 1 : 0;
+                // D: ABC + ABC' + AB'C
+                const valD = (A&&B&&C) || (A&&B&&!C) || (A&&!B&&C) ? 1 : 0;
+
+                const tr = document.createElement('tr');
+                
+                // 檢查是否與 Y 不一致 (只檢查有勾選的)
+                let rowError = false;
+                if (showA && valA !== Y) rowError = true;
+                if (showB && valB !== Y) rowError = true;
+                if (showC && valC !== Y) rowError = true;
+                if (showD && valD !== Y) rowError = true;
+
+                if (rowError) {
+                    tr.className = "mismatch";
+                    mismatchFound = true;
+                }
+
+                // 建立儲存格 HTML
+                let html = `
+                    <td>${A}</td>
+                    <td>${B}</td>
+                    <td>${C}</td>
+                    <td style="background-color: #fff3cd; font-weight:bold;">${Y}</td>
+                `;
+                
+                if (showA) html += `<td style="color:${valA!==Y?'red':'inherit'}">${valA} ${valA!==Y?'❌':''}</td>`; else html += '<td style="display:none"></td>';
+                if (showB) html += `<td style="color:${valB!==Y?'red':'inherit'}">${valB} ${valB!==Y?'❌':''}</td>`; else html += '<td style="display:none"></td>';
+                if (showC) html += `<td style="color:${valC!==Y?'red':'inherit'}">${valC} ${valC!==Y?'❌':''}</td>`; else html += '<td style="display:none"></td>';
+                if (showD) html += `<td style="color:${valD!==Y?'red':'inherit'}">${valD} ${valD!==Y?'❌':''}</td>`; else html += '<td style="display:none"></td>';
+
+                tr.innerHTML = html;
+                tbody.appendChild(tr);
+            }
+
+            if (mismatchFound) {
+                analysisDiv.textContent = "⚠️ 注意：紅色標記處表示該選項輸出與原式 Y 不一致，故該選項錯誤！";
+            } else {
+                analysisDiv.textContent = "✅ 完美！目前顯示的選項輸出與原式完全一致。";
+                analysisDiv.style.color = "#27ae60";
+            }
+        }
+
+        // 初始化表格
+        updateTruthTable();
+
+
+        // --- 4. 選項詳解切換 ---
+        function toggleExplanation(id) {
+            const el = document.getElementById(id);
+            if (el.style.display === 'block') {
+                el.style.display = 'none';
+            } else {
+                // 先關閉其他的 (選用)
+                document.querySelectorAll('.option-explanation').forEach(e => e.style.display = 'none');
+                el.style.display = 'block';
+            }
+        }
+
+        // --- 5. 自我檢測提示 ---
+        function toggleHint(id) {
+            const el = document.getElementById(id);
+            el.style.display = (el.style.display === 'none') ? 'block' : 'none';
+        }
+
+        // --- 6. 全局重置 ---
+        function resetAll() {
+            // 1. 重置推導
+            currentStep = 0;
+            renderSteps();
+            
+            // 2. 重置練習輸入
+            document.getElementById('practice-term').value = "AB";
+            document.getElementById('practice-input').value = "";
+            document.getElementById('practice-feedback').style.display = 'none';
+
+            // 3. 重置真值表勾選 (預設只勾 D)
+            document.querySelectorAll('.option-check').forEach(box => {
+                box.checked = (box.value === 'D');
+            });
+            updateTruthTable();
+
+            // 4. 重置選項詳解
+            document.querySelectorAll('.option-explanation').forEach(e => e.style.display = 'none');
+
+            // 5. 重置提示
+            document.getElementById('hint1').style.display = 'none';
+            document.getElementById('hint2').style.display = 'none';
+            document.getElementById('hint3').style.display = 'none';
+
+            // 滾動回頂部
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+    </script>
+</body>
+</html>

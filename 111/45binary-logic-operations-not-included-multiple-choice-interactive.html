@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>複選題 45：二進位邏輯運算辨析</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+            --warning-color: #f39c12;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1, h2, h3 {
+            color: var(--primary-color);
+        }
+
+        h1 {
+            text-align: center;
+            border-bottom: 3px solid var(--accent-color);
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+
+        .teacher-note {
+            background-color: #e8f4fc;
+            border-left: 5px solid var(--accent-color);
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 4px;
+        }
+
+        .highlight {
+            color: var(--error-color);
+            font-weight: bold;
+        }
+
+        /* 觀念對照表 */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .comparison-table th, .comparison-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .comparison-table th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .logic-col { background-color: #eafaf1; }
+        .arith-col { background-color: #fdedec; }
+
+        /* 互動區通用樣式 */
+        .interactive-section {
+            border: 2px dashed #bdc3c7;
+            padding: 20px;
+            margin: 30px 0;
+            border-radius: 10px;
+            background-color: #fafafa;
+        }
+
+        .section-title {
+            text-align: center;
+            background: var(--primary-color);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+
+        /* (A) 拖放遊戲 */
+        .drag-container {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .draggable {
+            background: var(--accent-color);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: move;
+            user-select: none;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .draggable:active {
+            opacity: 0.6;
+        }
+
+        .drop-zone {
+            width: 45%;
+            min-height: 120px;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            background: white;
+            transition: background 0.3s;
+        }
+
+        .drop-zone h4 {
+            margin-top: 0;
+            pointer-events: none;
+        }
+
+        .drop-zone.drag-over {
+            background-color: #ecf0f1;
+            border-color: var(--accent-color);
+        }
+
+        /* (B) 複選題區 */
+        .quiz-box {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        .question-text {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .options-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .option-item {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #eee;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+        }
+
+        .option-item:hover {
+            background-color: #f9f9f9;
+        }
+
+        .option-item input[type="checkbox"] {
+            margin-right: 15px;
+            transform: scale(1.5);
+            cursor: pointer;
+        }
+
+        .feedback-msg {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+            font-weight: bold;
+        }
+
+        .feedback-correct {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .feedback-wrong {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* 按鈕樣式 */
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background 0.3s;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            background-color: #34495e;
+        }
+
+        .btn-check {
+            background-color: var(--success-color);
+        }
+
+        .btn-reset {
+            background-color: var(--warning-color);
+        }
+
+        /* (C) 迷你測試 */
+        .mini-test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .test-card {
+            background: white;
+            border: 1px solid #ccc;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: transform 0.2s;
+        }
+
+        .test-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .test-card .result {
+            display: none;
+            color: var(--accent-color);
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-top: 5px;
+        }
+
+        /* (E) 陷阱卡 */
+        .trap-container {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .trap-card {
+            flex: 1;
+            min-width: 200px;
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            padding: 15px;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .trap-title {
+            color: #856404;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .close-trap {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            cursor: pointer;
+            color: #856404;
+            font-size: 1.2em;
+        }
+
+        /* (F) 自我檢測 */
+        .self-check-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px dashed #ccc;
+        }
+
+        .hint-box {
+            display: none;
+            margin-top: 10px;
+            color: var(--accent-color);
+            font-style: italic;
+        }
+
+        /* 詳細解析區 */
+        .analysis-box {
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .analysis-item {
+            margin: 5px 0;
+            padding: 8px;
+            border-left: 3px solid #ccc;
+        }
+        
+        .analysis-correct-opt {
+            border-left-color: var(--success-color);
+            background-color: #f0fff4;
+        }
+
+        .analysis-wrong-opt {
+            border-left-color: var(--error-color);
+            background-color: #fff5f5;
+        }
+
+        /* 頁尾 */
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            font-size: 0.9em;
+            color: #7f8c8d;
+        }
+
+        @media (max-width: 600px) {
+            .drag-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            .drop-zone {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>📝 電腦概論：複選題 45 專題講座</h1>
+
+    <!-- 老師的開場白 -->
+    <div class="teacher-note">
+        <h3>👋 同學們好！</h3>
+        <p>歡迎來到二進位運算的重點複習。今天我們要攻破一個考試超常考的陷阱：<strong>「到底哪些是邏輯運算？哪些是算術運算？」</strong></p>
+        <p>很多人看到英文代號就暈了，其實關鍵只有一句話：</p>
+        <p style="font-size: 1.1em; text-align: center;">
+            <span class="highlight">邏輯運算</span>只在乎 0 與 1 的關係；<br>
+            <span class="highlight">算術運算</span>就是在算國小數學（加減乘除）。
+        </p>
+    </div>
+
+    <!-- 核心觀念區 -->
+    <section id="concept">
+        <h2>📚 核心觀念速記</h2>
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th>運算類型</th>
+                    <th>關鍵字 (Keyword)</th>
+                    <th>功能說明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="logic-col">
+                    <td rowspan="3"><strong>邏輯運算<br>(Logic)</strong><br><small>判斷 0/1 關係</small></td>
+                    <td><strong>AND</strong> (且)</td>
+                    <td>兩個都是 1 才是 1</td>
+                </tr>
+                <tr class="logic-col">
+                    <td><strong>OR</strong> (或)</td>
+                    <td>只要有一個 1 就是 1</td>
+                </tr>
+                <tr class="logic-col">
+                    <td><strong>XOR</strong> (互斥或)</td>
+                    <td>兩個不同才是 1</td>
+                </tr>
+                <tr class="arith-col">
+                    <td rowspan="2"><strong>算術運算<br>(Arithmetic)</strong><br><small>數值計算</small></td>
+                    <td><strong>DIV</strong> (除法)</td>
+                    <td>一般的除法運算</td>
+                </tr>
+                <tr class="arith-col">
+                    <td><strong>MOD</strong> (餘數)</td>
+                    <td>取除法後的餘數</td>
+                </tr>
+            </tbody>
+        </table>
+        <p style="text-align: center; font-weight: bold; color: var(--accent-color);">
+            👉 口訣：AND/OR/XOR 是邏輯，DIV/MOD 是數學！
+        </p>
+    </section>
+
+    <!-- 互動一：拖放分類 -->
+    <div class="interactive-section">
+        <div style="text-align: center;"><span class="section-title">任務 1：分類大作戰</span></div>
+        <p style="text-align: center;">請將上方的運算卡片，拖拉到下方正確的籃子裡！</p>
+        
+        <div class="drag-container" id="source-container">
+            <!-- 卡片 -->
+            <div class="draggable" draggable="true" id="card-xor" data-type="logic">XOR</div>
+            <div class="draggable" draggable="true" id="card-and" data-type="logic">AND</div>
+            <div class="draggable" draggable="true" id="card-div" data-type="arithmetic">DIV</div>
+            <div class="draggable" draggable="true" id="card-or" data-type="logic">OR</div>
+            <div class="draggable" draggable="true" id="card-mod" data-type="arithmetic">MOD</div>
+        </div>
+
+        <div class="drag-container">
+            <div class="drop-zone" id="zone-logic" data-accept="logic">
+                <h4>🧠 二進位邏輯運算</h4>
+                <small>(判斷關係)</small>
+            </div>
+            <div class="drop-zone" id="zone-arithmetic" data-accept="arithmetic">
+                <h4>➗ 非邏輯 (算術) 運算</h4>
+                <small>(數學計算)</small>
+            </div>
+        </div>
+        
+        <div style="text-align: center;">
+            <button class="btn btn-check" onclick="checkDragGame()">檢查分類</button>
+            <p id="drag-feedback" class="feedback-msg"></p>
+        </div>
+    </div>
+
+    <!-- 互動二：邏輯小測試 -->
+    <div class="interactive-section">
+        <div style="text-align: center;"><span class="section-title">任務 2：邏輯運算結果小測試</span></div>
+        <p>點擊下方卡片，看看邏輯運算如何只針對 0 (假) 與 1 (真) 做判斷：</p>
+        <div class="mini-test-grid">
+            <div class="test-card" onclick="toggleResult(this)">
+                <div>1 AND 0</div>
+                <div class="result">0 (假)</div>
+            </div>
+            <div class="test-card" onclick="toggleResult(this)">
+                <div>1 OR 0</div>
+                <div class="result">1 (真)</div>
+            </div>
+            <div class="test-card" onclick="toggleResult(this)">
+                <div>1 XOR 0</div>
+                <div class="result">1 (真)</div>
+            </div>
+            <div class="test-card" onclick="toggleResult(this)">
+                <div>1 XOR 1</div>
+                <div class="result">0 (假)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 互動三：主要題目 -->
+    <div class="interactive-section" id="quiz-section">
+        <div style="text-align: center;"><span class="section-title">任務 3：解題挑戰</span></div>
+        
+        <div class="quiz-box">
+            <p style="color: #666;">題號：複選題 45</p>
+            <div class="question-text">下列何者 <span class="highlight">不是</span> 二進位系統的邏輯運算？</div>
+            <p style="font-size: 0.9em; color: var(--accent-color);">（📢 提示：本題為複選題，請選出所有正確答案）</p>
+
+            <ul class="options-list">
+                <li class="option-item"><label><input type="checkbox" name="q45" value="A"> (A) XOR (互斥或)</label></li>
+                <li class="option-item"><label><input type="checkbox" name="q45" value="B"> (B) AND (且)</label></li>
+                <li class="option-item"><label><input type="checkbox" name="q45" value="C"> (C) DIV (除法)</label></li>
+                <li class="option-item"><label><input type="checkbox" name="q45" value="D"> (D) OR (或)</label></li>
+                <li class="option-item"><label><input type="checkbox" name="q45" value="E"> (E) MOD (取餘數)</label></li>
+            </ul>
+
+            <button class="btn btn-check" onclick="submitQuiz()">送出答案</button>
+            <button class="btn btn-reset" onclick="resetAll()">全部重置</button>
+
+            <div id="quiz-feedback" class="feedback-msg"></div>
+
+            <!-- 詳細解析 (答對後顯示) -->
+            <div id="analysis-section" class="analysis-box">
+                <h3>🔍 選項逐一解析</h3>
+                <div class="analysis-item analysis-wrong-opt">
+                    <strong>(A) XOR</strong>：❌ 這是邏輯運算。判斷兩個位元是否「不同」。
+                </div>
+                <div class="analysis-item analysis-wrong-opt">
+                    <strong>(B) AND</strong>：❌ 這是邏輯運算。判斷兩個位元是否「同時為 1」。
+                </div>
+                <div class="analysis-item analysis-correct-opt">
+                    <strong>(C) DIV</strong>：✅ <strong>正確答案！</strong> 這是除法（Division），屬於算術運算。
+                </div>
+                <div class="analysis-item analysis-wrong-opt">
+                    <strong>(D) OR</strong>：❌ 這是邏輯運算。判斷兩個位元是否「至少有一個 1」。
+                </div>
+                <div class="analysis-item analysis-correct-opt">
+                    <strong>(E) MOD</strong>：✅ <strong>正確答案！</strong> 這是取餘數（Modulo），屬於算術運算。
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 陷阱卡區 -->
+    <section id="traps">
+        <h3>⚠️ 考試常見陷阱 (點擊關閉)</h3>
+        <div class="trap-container">
+            <div class="trap-card" onclick="this.style.opacity='0'; setTimeout(()=>this.style.display='none', 300);">
+                <span class="close-trap">×</span>
+                <div class="trap-title">陷阱 1：看到英文就選？</div>
+                <p>不要看到全大寫英文就以為是邏輯！DIV 和 MOD 也是英文，但它們是算術。</p>
+                <button class="btn" style="font-size:0.8em; padding:5px;">我懂了</button>
+            </div>
+            <div class="trap-card" onclick="this.style.opacity='0'; setTimeout(()=>this.style.display='none', 300);">
+                <span class="close-trap">×</span>
+                <div class="trap-title">陷阱 2：MOD 是什麼？</div>
+                <p>很多同學把 MOD 當成邏輯「模式」。錯！它是 Modulo (餘數) 的縮寫，是數學運算！</p>
+                <button class="btn" style="font-size:0.8em; padding:5px;">我懂了</button>
+            </div>
+            <div class="trap-card" onclick="this.style.opacity='0'; setTimeout(()=>this.style.display='none', 300);">
+                <span class="close-trap">×</span>
+                <div class="trap-title">陷阱 3：題目問「不是」</div>
+                <p>題目有「不是」兩個字要圈起來！這題要選的是「算術運算」。</p>
+                <button class="btn" style="font-size:0.8em; padding:5px;">我懂了</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 自我檢測 -->
+    <section id="self-check" style="margin-top: 30px;">
+        <h3>🧐 課後自我檢測</h3>
+        
+        <div class="self-check-item">
+            <p><strong>Q1: 為什麼 DIV、MOD 不能算邏輯運算？</strong></p>
+            <button class="btn" style="font-size: 0.8em;" onclick="toggleHint('hint1')">顯示提示</button>
+            <div id="hint1" class="hint-box">提示：邏輯運算只看 0 和 1 的關係（真/假），但 DIV 和 MOD 會算出具體的數值（例如餘數是 3），涉及數值大小計算就是算術。</div>
+        </div>
+
+        <div class="self-check-item">
+            <p><strong>Q2: 考試中看到「邏輯」兩個字，第一時間該想到什麼？</strong></p>
+            <button class="btn" style="font-size: 0.8em;" onclick="toggleHint('hint2')">顯示提示</button>
+            <div id="hint2" class="hint-box">提示：想到 AND、OR、XOR、NOT，還有「0 與 1 的判斷」。</div>
+        </div>
+    </section>
+
+    <footer>
+        <p>Copyright © 2024 電腦概論補教名師團隊 | 專為高中生打造的互動講義</p>
+    </footer>
+
+</div>
+
+<script>
+    /* ========== 全域變數 ========== */
+    const draggables = document.querySelectorAll('.draggable');
+    const dropZones = document.querySelectorAll('.drop-zone');
+    const sourceContainer = document.getElementById('source-container');
+
+    /* ========== 1. 拖放遊戲邏輯 (Drag and Drop) ========== */
+    
+    draggables.forEach(draggable => {
+        draggable.addEventListener('dragstart', () => {
+            draggable.classList.add('dragging');
+        });
+
+        draggable.addEventListener('dragend', () => {
+            draggable.classList.remove('dragging');
+        });
+    });
+
+    dropZones.forEach(zone => {
+        zone.addEventListener('dragover', e => {
+            e.preventDefault(); // 允許放置
+            zone.classList.add('drag-over');
+            const draggable = document.querySelector('.dragging');
+            zone.appendChild(draggable);
+        });
+
+        zone.addEventListener('dragleave', () => {
+            zone.classList.remove('drag-over');
+        });
+        
+        zone.addEventListener('drop', () => {
+            zone.classList.remove('drag-over');
+        });
+    });
+
+    // 允許拖回原處
+    sourceContainer.addEventListener('dragover', e => {
+        e.preventDefault();
+        const draggable = document.querySelector('.dragging');
+        sourceContainer.appendChild(draggable);
+    });
+
+    function checkDragGame() {
+        const logicZone = document.getElementById('zone-logic');
+        const arithZone = document.getElementById('zone-arithmetic');
+        const feedback = document.getElementById('drag-feedback');
+        
+        // 取得各區域內的卡片
+        const logicCards = Array.from(logicZone.querySelectorAll('.draggable'));
+        const arithCards = Array.from(arithZone.querySelectorAll('.draggable'));
+        
+        // 檢查是否有未分類的
+        const remaining = sourceContainer.querySelectorAll('.draggable').length;
+        if (remaining > 0) {
+            feedback.className = 'feedback-msg feedback-wrong';
+            feedback.style.display = 'block';
+            feedback.innerHTML = '⚠️ 還有卡片沒分類完喔！請將所有卡片拖入籃子。';
+            return;
+        }
+
+        let errors = [];
+
+        // 檢查邏輯區
+        logicCards.forEach(card => {
+            if (card.dataset.type !== 'logic') {
+                errors.push(`❌ ${card.innerText} 是算術運算，跑錯棚囉！`);
+            }
+        });
+
+        // 檢查算術區
+        arithCards.forEach(card => {
+            if (card.dataset.type !== 'arithmetic') {
+                errors.push(`❌ ${card.innerText} 是邏輯運算，它不屬於這裡！`);
+            }
+        });
+
+        if (errors.length === 0) {
+            feedback.className = 'feedback-msg feedback-correct';
+            feedback.style.display = 'block';
+            feedback.innerHTML = '🎉 太棒了！分類完全正確！觀念很清楚喔！';
+        } else {
+            feedback.className = 'feedback-msg feedback-wrong';
+            feedback.style.display = 'block';
+            feedback.innerHTML = errors.join('<br>');
+        }
+    }
+
+    /* ========== 2. 迷你測試邏輯 (Mini Test) ========== */
+    function toggleResult(element) {
+        const resultDiv = element.querySelector('.result');
+        if (resultDiv.style.display === 'block') {
+            resultDiv.style.display = 'none';
+        } else {
+            resultDiv.style.display = 'block';
+        }
+    }
+
+    /* ========== 3. 複選題作答邏輯 (Quiz) ========== */
+    function submitQuiz() {
+        const checkboxes = document.querySelectorAll('input[name="q45"]:checked');
+        const feedback = document.getElementById('quiz-feedback');
+        const analysis = document.getElementById('analysis-section');
+        
+        let selectedValues = [];
+        checkboxes.forEach((checkbox) => {
+            selectedValues.push(checkbox.value);
+        });
+
+        // 排序以便比較
+        selectedValues.sort();
+        const correctAnswers = ['C', 'E'];
+        
+        // 比對答案
+        const isCorrect = JSON.stringify(selectedValues) === JSON.stringify(correctAnswers);
+
+        feedback.style.display = 'block';
+        
+        if (isCorrect) {
+            feedback.className = 'feedback-msg feedback-correct';
+            feedback.innerHTML = '✨ 恭喜答對！完全正確！<br>你已經掌握了「算術」與「邏輯」的區別。';
+            analysis.style.display = 'block'; // 顯示解析
+            // 自動捲動到解析區
+            setTimeout(() => {
+                 analysis.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+        } else {
+            feedback.className = 'feedback-msg feedback-wrong';
+            
+            // 根據錯誤給予提示
+            if (selectedValues.length === 0) {
+                feedback.innerHTML = '⚠️ 你還沒選擇任何選項喔！';
+                return;
+            }
+            
+            let msg = '❌ 答案不對喔！<br>';
+            
+            // 檢查是否選到了邏輯運算 (A, B, D)
+            if (selectedValues.includes('A') || selectedValues.includes('B') || selectedValues.includes('D')) {
+                msg += '👉 你選到了 XOR、AND 或 OR，這些是「邏輯運算」。題目問的是「不是」喔！<br>';
+            }
+            
+            // 檢查是否漏選
+            if ((selectedValues.includes('C') && !selectedValues.includes('E')) || (!selectedValues.includes('C') && selectedValues.includes('E'))) {
+                msg += '👉 你只選對了一半，這題是複選題，還有另一個也是算術運算！<br>';
+            }
+            
+            msg += '<br>再試一次看看！';
+            feedback.innerHTML = msg;
+            analysis.style.display = 'none'; // 答錯先不顯示解析
+        }
+    }
+
+    /* ========== 4. 自我檢測與重置 (Utils) ========== */
+    function toggleHint(id) {
+        const hint = document.getElementById(id);
+        if (hint.style.display === 'block') {
+            hint.style.display = 'none';
+        } else {
+            hint.style.display = 'block';
+        }
+    }
+
+    function resetAll() {
+        // 重置拖放
+        const cards = document.querySelectorAll('.draggable');
+        cards.forEach(card => sourceContainer.appendChild(card));
+        document.getElementById('drag-feedback').style.display = 'none';
+
+        // 重置題目
+        const checkboxes = document.querySelectorAll('input[name="q45"]');
+        checkboxes.forEach(cb => cb.checked = false);
+        document.getElementById('quiz-feedback').style.display = 'none';
+        document.getElementById('analysis-section').style.display = 'none';
+        
+        // 重置陷阱卡 (如果被關掉的話)
+        const traps = document.querySelectorAll('.trap-card');
+        traps.forEach(trap => {
+            trap.style.display = 'block';
+            trap.style.opacity = '1';
+        });
+
+        // 重置提示
+        const hints = document.querySelectorAll('.hint-box');
+        hints.forEach(hint => hint.style.display = 'none');
+        
+        // 重置小測試
+        const testResults = document.querySelectorAll('.test-card .result');
+        testResults.forEach(res => res.style.display = 'none');
+
+        alert('🔄 頁面已重置，請重新挑戰！');
+    }
+</script>
+
+</body>
+</html>

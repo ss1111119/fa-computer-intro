@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>記憶體階層與存取速度 - 互動教學</title>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
+            --success-dark: #00b4d8;
+            --danger: #f72585;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --card-bg: #ffffff;
+            --shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        * { box-sizing: border-box; font-family: "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif; }
+        body { margin: 0; padding: 0; background-color: #f0f2f5; color: var(--dark); line-height: 1.6; }
+
+        /* 版面與導覽 */
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .header-content {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header-title { font-weight: bold; font-size: 1.1rem; }
+        .progress-container {
+            width: 100%;
+            max-width: 800px;
+            margin: 10px auto 0;
+            background: rgba(255,255,255,0.3);
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background: #4cc9f0;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        /* 主內容區 */
+        main { max-width: 800px; margin: 20px auto; padding: 0 15px; padding-bottom: 60px; }
+        
+        .card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: var(--shadow);
+            border-left: 5px solid var(--primary);
+            transition: transform 0.2s;
+        }
+        .card:hover { transform: translateY(-2px); }
+        h2 { color: var(--secondary); margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px; font-size: 1.3rem; }
+        h3 { color: var(--primary); font-size: 1.1rem; margin-top: 1.5rem; }
+        
+        .keyword-highlight { color: var(--danger); font-weight: bold; background: #fff0f5; padding: 2px 5px; border-radius: 4px; }
+        
+        /* 題目互動區 */
+        .question-text { font-size: 1.2rem; font-weight: bold; margin-bottom: 1rem; }
+        .options-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+        @media(min-width: 600px) { .options-grid { grid-template-columns: 1fr 1fr; } }
+        
+        .option-btn {
+            background: var(--light);
+            border: 2px solid #e9ecef;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: left;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        .option-btn:hover { border-color: var(--primary); background: #eef2ff; }
+        .option-btn.selected { border-color: var(--primary); background: #eef2ff; font-weight: bold; }
+        .option-btn.correct { border-color: var(--success); background: #e0fbfd; }
+        .option-btn.wrong { border-color: var(--danger); background: #ffe6eb; }
+
+        /* 下拉選單動畫 */
+        .reason-section {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-out;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        .reason-section.show { max-height: 200px; padding: 15px; border: 1px solid #dee2e6; }
+        
+        select { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc; font-size: 1rem; margin-bottom: 10px; }
+        .submit-btn {
+            background: var(--primary); color: white; border: none; padding: 10px 20px;
+            border-radius: 5px; cursor: pointer; width: 100%; font-size: 1rem;
+        }
+
+        /* 拖曳排序遊戲 */
+        .sort-container {
+            background: #f0f4f8; padding: 15px; border-radius: 10px;
+            display: flex; flex-direction: column; gap: 8px;
+        }
+        .sort-item {
+            background: white; padding: 12px; border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            cursor: grab; display: flex; justify-content: space-between; align-items: center;
+            border: 1px solid #ddd;
+        }
+        .sort-item:active { cursor: grabbing; background: #eef2ff; }
+        .sort-actions button {
+            background: none; border: none; cursor: pointer; color: #666; font-size: 1.2rem; padding: 0 5px;
+        }
+        .sort-actions button:hover { color: var(--primary); }
+        
+        /* 階層視覺化 */
+        .pyramid-level {
+            margin: 5px 0; padding: 10px; text-align: center;
+            color: white; border-radius: 5px; cursor: pointer;
+            transition: transform 0.2s; position: relative;
+        }
+        .pyramid-level:hover { transform: scale(1.02); }
+        .p-cpu { background: #212529; font-weight: bold; }
+        .p-cache { background: #f72585; width: 90%; margin: 5px auto; }
+        .p-ram { background: #4361ee; width: 80%; margin: 5px auto; }
+        .p-rom { background: #4cc9f0; width: 70%; margin: 5px auto; color: #212529; }
+        .p-flash { background: #4895ef; width: 60%; margin: 5px auto; }
+        .p-hdd { background: #adb5bd; width: 50%; margin: 5px auto; color: #212529; }
+        
+        .level-detail {
+            display: none; background: white; color: #333;
+            padding: 10px; margin-top: 5px; border-radius: 5px;
+            font-size: 0.9rem; border: 1px solid #ddd; text-align: left;
+        }
+
+        /* 迷思破解 */
+        .quiz-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 0; border-bottom: 1px dashed #ddd;
+        }
+        .quiz-btns button {
+            margin-left: 5px; padding: 5px 15px; border-radius: 20px;
+            border: 1px solid #ddd; background: white; cursor: pointer;
+        }
+        .quiz-feedback { font-size: 0.9rem; margin-top: 5px; color: var(--secondary); display: none;}
+
+        /* 自我檢測 */
+        .self-check-item { margin-bottom: 15px; background: #f8f9fa; padding: 10px; border-radius: 8px; }
+        .hint-btn { background: none; border: 1px solid var(--secondary); color: var(--secondary); padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.8rem; margin-top: 5px;}
+        .hint-text { display: none; margin-top: 5px; color: #666; font-style: italic; font-size: 0.9rem;}
+
+        /* 教師備註 */
+        footer {
+            margin-top: 30px; border-top: 1px solid #ccc; padding-top: 20px;
+        }
+        details { background: #e9ecef; padding: 10px; border-radius: 5px; }
+        summary { cursor: pointer; font-weight: bold; color: #495057; }
+        
+        .badge { background: #ffc107; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; margin-right: 5px; }
+        .correct-answer-reveal { margin-top: 20px; padding: 15px; background: #d4edda; border: 1px solid #c3e6cb; color: #155724; border-radius: 5px; text-align: center; font-weight: bold; display: none; }
+
+        /* Animation */
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+        .shake { animation: shake 0.3s ease-in-out; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-content">
+        <div class="header-title">題號：11 | 電腦概論</div>
+        <div style="font-size: 0.9rem;">主題：記憶體階層與存取速度</div>
+    </div>
+    <div class="progress-container">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+</header>
+
+<main>
+    <!-- 卡片 1: 題目 -->
+    <section class="card" id="q-card">
+        <h2>📝 題目挑戰</h2>
+        <div class="question-text">11. 下列哪一種記憶體存取資料之速度最快？</div>
+        <div class="options-grid">
+            <button class="option-btn" onclick="selectOption('A', this)">(A) 快取記憶體 (Cache)</button>
+            <button class="option-btn" onclick="selectOption('B', this)">(B) 隨機記憶體 (RAM)</button>
+            <button class="option-btn" onclick="selectOption('C', this)">(C) 唯讀記憶體 (ROM)</button>
+            <button class="option-btn" onclick="selectOption('D', this)">(D) 快閃記憶體 (Flash)</button>
+        </div>
+
+        <!-- 互動：選理由 -->
+        <div class="reason-section" id="reasonArea">
+            <p>🤔 <strong>等等！先別急著看答案，告訴我你為什麼選 <span id="selectedChoiceText" style="font-weight:bold; color:var(--primary);"></span>？</strong></p>
+            <select id="reasonSelect">
+                <option value="" disabled selected>請選擇你的理由...</option>
+                <option value="name">因為「快取」的名字聽起來就很快</option>
+                <option value="cpu">因為它離 CPU 最近，是 CPU 的小幫手</option>
+                <option value="new">因為我覺得越新的科技越快</option>
+                <option value="guess">我完全是用猜的</option>
+            </select>
+            <button class="submit-btn" onclick="submitAnswer()">確認送出</button>
+        </div>
+        
+        <!-- 結果回饋 -->
+        <div id="feedbackArea" style="display:none; margin-top:15px; padding:15px; border-radius:8px;"></div>
+    </section>
+
+    <!-- 卡片 2: 視覺化階層 -->
+    <section class="card">
+        <h2>📐 記憶體階層圖 (由快到慢)</h2>
+        <p style="font-size:0.9rem; color:#666;">👇 點擊下方色塊，查看白話解釋</p>
+        
+        <div class="pyramid-level p-cpu" onclick="toggleDetail('cpu-detail')">🧠 CPU (中央處理器)</div>
+        <div id="cpu-detail" class="level-detail">雖然不是記憶體，但它是大腦，所有資料都要送給它處理。速度最快。</div>
+
+        <div class="pyramid-level p-cache" onclick="toggleDetail('cache-detail')">⚡ Cache 快取記憶體</div>
+        <div id="cache-detail" class="level-detail">
+            <strong>白話翻譯：</strong>貼近 CPU 的「超快速小倉庫」。<br>
+            <strong>功能：</strong>放 CPU 等一下馬上要用的資料。不用跑到遠處搬。
+        </div>
+
+        <div class="pyramid-level p-ram" onclick="toggleDetail('ram-detail')">📝 RAM 隨機存取記憶體</div>
+        <div id="ram-detail" class="level-detail">
+            <strong>白話翻譯：</strong>你的「書桌桌面」。<br>
+            <strong>功能：</strong>正在執行的程式、正在打的報告暫放這裡。關機資料會消失。
+        </div>
+
+        <div class="pyramid-level p-rom" onclick="toggleDetail('rom-detail')">📖 ROM 唯讀記憶體</div>
+        <div id="rom-detail" class="level-detail">
+            <strong>白話翻譯：</strong>出廠時印好的「操作說明書」。<br>
+            <strong>功能：</strong>存 BIOS/韌體。重點不是快，是資料不會不見且不能隨便改。
+        </div>
+
+        <div class="pyramid-level p-flash" onclick="toggleDetail('flash-detail')">💾 Flash 快閃記憶體 (SSD/USB)</div>
+        <div id="flash-detail" class="level-detail">
+            <strong>白話翻譯：</strong>像是「隨身碟」或「硬碟」。<br>
+            <strong>功能：</strong>輔助儲存。關機資料還在，但速度比 RAM 慢很多。
+        </div>
+    </section>
+
+    <!-- 卡片 3: 拖曳排序遊戲 -->
+    <section class="card">
+        <h2>🎮 小遊戲：速度排行榜</h2>
+        <p>請將下列記憶體按<strong>「由快到慢」</strong>（從上到下）排序：</p>
+        
+        <div class="sort-container" id="sortList">
+            <!-- Items injected by JS -->
+        </div>
+        <button class="submit-btn" style="margin-top:10px; background:var(--secondary);" onclick="checkOrder()">檢查排序答案</button>
+        <div id="orderFeedback" style="margin-top:10px; font-weight:bold;"></div>
+    </section>
+
+    <!-- 卡片 4: 觀念解析 -->
+    <section class="card">
+        <h2>💡 觀念大補帖</h2>
+        
+        <h3>1. 關鍵字與白話文</h3>
+        <ul>
+            <li><span class="keyword-highlight">存取速度</span>：CPU 拿到資料的時間，越短越好。</li>
+            <li><span class="keyword-highlight">記憶體階層</span>：電腦為了省錢又要有速度，把記憶體分等級。</li>
+        </ul>
+        
+        <h3>2. 生活比喻 (書房工作法)</h3>
+        <p>想像你在書房寫作業 (CPU)：</p>
+        <ul>
+            <li><strong>手上拿著的筆記 (Cache)：</strong>隨時在看，拿取速度最快 (0.1秒)。</li>
+            <li><strong>桌面上的課本 (RAM)：</strong>要轉頭翻閱，速度普通 (1秒)。</li>
+            <li><strong>書櫃裡的參考書 (SSD/Flash)：</strong>要站起來走去拿，速度慢 (1分鐘)。</li>
+        </ul>
+
+        <h3>3. 選項分析</h3>
+        <ul>
+            <li><strong>(A) 快取記憶體 (Cache)：</strong>⭕ 正確。SRAM 製成，最貴、最小、最靠近 CPU，速度最快。</li>
+            <li><strong>(B) 隨機記憶體 (RAM)：</strong>❌ 這是主記憶體 (DRAM)，速度比 Cache 慢。</li>
+            <li><strong>(C) 唯讀記憶體 (ROM)：</strong>❌ 重點是「唯讀」，速度通常比 RAM 慢。</li>
+            <li><strong>(D) 快閃記憶體 (Flash)：</strong>❌ 這是輔助儲存 (如 SSD)，需透過 I/O 匯流排，是選項中最慢的。</li>
+        </ul>
+    </section>
+
+    <!-- 卡片 5: 迷思與口訣 -->
+    <section class="card">
+        <h2>🚫 迷思破解 & 記憶口訣</h2>
+        
+        <div class="quiz-row">
+            <span>1. 看到「快閃」記憶體，名字有快，所以它最快？</span>
+            <div class="quiz-btns">
+                <button onclick="checkMyth(this, false, '錯！Flash 其實是慢吞吞的輔助儲存，名字是騙人的。')">O</button>
+                <button onclick="checkMyth(this, true, '正解！Flash 是輔助儲存，速度遠慢於 RAM 和 Cache。')">X</button>
+            </div>
+        </div>
+        <div class="quiz-feedback"></div>
+
+        <div class="quiz-row">
+            <span>2. ROM 的優點是速度很快？</span>
+            <div class="quiz-btns">
+                <button onclick="checkMyth(this, false, '錯！ROM 的優點是關機資料不會消失，而非速度。')">O</button>
+                <button onclick="checkMyth(this, true, '沒錯！ROM 速度普通，主要是為了保存開機程式。')">X</button>
+            </div>
+        </div>
+        <div class="quiz-feedback"></div>
+
+        <h3>🧠 記憶口訣</h3>
+        <p style="background:#eef2ff; padding:10px; border-radius:5px; border-left:4px solid var(--primary);">
+            <strong>「錢 (Cache) 亂 (RAM) 花 (Flash) 完 (ROM)」</strong><br>
+            <small>(註：雖然 ROM 的位置比較特別，但在一般比較題中，Cache 最快，RAM 次之，Flash/Disk 最慢)</small>
+        </p>
+        <p style="background:#e0fbfd; padding:10px; border-radius:5px; border-left:4px solid var(--success); margin-top:5px;">
+            <strong>原理記憶法：</strong><br>
+            「越靠近 CPU 越快，越貴的越快。」
+        </p>
+    </section>
+
+    <!-- 卡片 6: 自我檢測 -->
+    <section class="card">
+        <h2>🛡️ 自我檢測 (想一想)</h2>
+        
+        <div class="self-check-item">
+            <strong>Q1: 為什麼不全部都用最快的 Cache 就好？</strong>
+            <br>
+            <button class="hint-btn" onclick="toggleHint(this)">我想看提示</button>
+            <div class="hint-text">提示：Cache 非常昂貴，且體積難以做大。這是一個成本與容量的取捨。</div>
+        </div>
+
+        <div class="self-check-item">
+            <strong>Q2: 手機裡的 8GB RAM 和 256GB 容量，哪一個速度比較快？</strong>
+            <br>
+            <button class="hint-btn" onclick="toggleHint(this)">我想看提示</button>
+            <div class="hint-text">提示：8GB 是 RAM (桌面)，256GB 是 Flash (書櫃)。桌面的存取速度遠快於書櫃。</div>
+        </div>
+    </section>
+
+    <div class="correct-answer-reveal" id="finalAnswer">
+        🎉 正確答案：(A) 快取記憶體 (Cache)
+    </div>
+
+    <!-- 教師備註 -->
+    <footer>
+        <details>
+            <summary>👨‍🏫 教師備註 (點擊展開)</summary>
+            <div style="margin-top: 10px; font-size: 0.95rem;">
+                <p><span class="badge">核心考點</span>記憶體階層 (Memory Hierarchy) 的速度與成本關係。</p>
+                <p><span class="badge">常見誤解</span>學生常被 Flash (快閃) 的名字誤導，或分不清 Storage (儲存) 與 Memory (記憶體) 的速度差異。</p>
+                <p><span class="badge">教學建議</span>
+                    1. 先不破題，讓學生憑直覺選。
+                    2. 利用「書房比喻」建立空間感。
+                    3. 操作拖曳排序，強化「由快到慢」的順序記憶。
+                    4. 強調 CPU 是一個很急躁的老闆，Cache 是他的貼身秘書。
+                </p>
+            </div>
+        </details>
+    </footer>
+
+</main>
+
+<script>
+    // 全域變數
+    let progress = 0;
+    let selectedOption = '';
+
+    // 更新進度條
+    function updateProgress(value) {
+        progress += value;
+        if(progress > 100) progress = 100;
+        document.getElementById('progressBar').style.width = progress + '%';
+    }
+
+    // 1. 選項互動邏輯
+    function selectOption(option, btnElement) {
+        // 重置樣式
+        document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected', 'correct', 'wrong'));
+        
+        // 設定當前選取
+        btnElement.classList.add('selected');
+        selectedOption = option;
+        
+        // 顯示理由選單
+        const reasonArea = document.getElementById('reasonArea');
+        reasonArea.classList.add('show');
+        document.getElementById('selectedChoiceText').innerText = option;
+        
+        // 滾動到理由區
+        reasonArea.scrollIntoView({behavior: 'smooth', block: 'center'});
+    }
+
+    function submitAnswer() {
+        const reason = document.getElementById('reasonSelect').value;
+        if (!reason) {
+            alert("請先選擇一個理由喔！");
+            return;
+        }
+
+        const feedback = document.getElementById('feedbackArea');
+        const btns = document.querySelectorAll('.option-btn');
+        
+        feedback.style.display = 'block';
+        feedback.className = ''; // reset class
+
+        if (selectedOption === 'A') {
+            feedback.style.backgroundColor = '#d4edda';
+            feedback.style.color = '#155724';
+            feedback.innerHTML = `<strong>✅ 答對了！太棒了！</strong><br>理由補充：${getReasonFeedback(reason)}<br>快取記憶體 (Cache) 位於 CPU 內部或旁邊，是速度最快的記憶體。`;
+            btns.forEach(b => { if(b.innerText.includes('(A)')) b.classList.add('correct'); });
+            updateProgress(30);
+            document.getElementById('finalAnswer').style.display = 'block';
+        } else {
+            feedback.style.backgroundColor = '#f8d7da';
+            feedback.style.color = '#721c24';
+            feedback.innerHTML = `<strong>❌ 哎呀，不對喔！</strong><br>你選的選項速度比 Cache 慢。<br>提示：想想看，誰住在 CPU 裡面或離 CPU 最近？`;
+            btns.forEach(b => { 
+                if(b.classList.contains('selected')) b.classList.add('wrong'); 
+            });
+            document.getElementById('q-card').classList.add('shake');
+            setTimeout(() => document.getElementById('q-card').classList.remove('shake'), 500);
+        }
+    }
+
+    function getReasonFeedback(val) {
+        if(val === 'cpu') return '觀念正確！離 CPU 越近通常越快。';
+        if(val === 'name') return '雖然名字有「快」，但這次剛好猜對囉 (Flash 也有快，可是它慢)。';
+        if(val === 'new') return '科技雖新，但在電腦架構中，最快的還是傳統的 SRAM (Cache)。';
+        return '直覺很準喔！';
+    }
+
+    // 2. 視覺化互動
+    function toggleDetail(id) {
+        const el = document.getElementById(id);
+        const isHidden = el.style.display === 'none' || el.style.display === '';
+        el.style.display = isHidden ? 'block' : 'none';
+        if(isHidden) updateProgress(5);
+    }
+
+    // 3. 排序遊戲邏輯 (Click Up/Down implementation for mobile robustness)
+    let sortItems = [
+        {id: 'ram', text: '隨機記憶體 (RAM)'},
+        {id: 'flash', text: '快閃記憶體 (Flash/SSD)'},
+        {id: 'cache', text: '快取記憶體 (Cache)'},
+        {id: 'rom', text: '唯讀記憶體 (ROM)'}
+    ];
+
+    function renderSortList() {
+        const container = document.getElementById('sortList');
+        container.innerHTML = '';
+        sortItems.forEach((item, index) => {
+            const div = document.createElement('div');
+            div.className = 'sort-item';
+            div.innerHTML = `
+                <span>${item.text}</span>
+                <div class="sort-actions">
+                    <button onclick="moveItem(${index}, -1)" ${index===0 ? 'disabled style="opacity:0.3"':''}>▲</button>
+                    <button onclick="moveItem(${index}, 1)" ${index===sortItems.length-1 ? 'disabled style="opacity:0.3"':''}>▼</button>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function moveItem(index, direction) {
+        const temp = sortItems[index];
+        sortItems[index] = sortItems[index + direction];
+        sortItems[index + direction] = temp;
+        renderSortList();
+        document.getElementById('orderFeedback').innerText = ''; // clear feedback
+    }
+
+    function checkOrder() {
+        // Correct order: Cache, RAM, ROM, Flash (Assuming ROM is faster than Flash in general context of embedded, or at least Cache/RAM are top 2)
+        // Strict hierarchy usually: Cache > RAM > SSD/Flash
+        // ROM speed varies but usually considered slower than RAM, faster or similar to Flash.
+        // For this high school level question, the key is Cache is #1.
+        
+        const currentIds = sortItems.map(i => i.id);
+        const feedback = document.getElementById('orderFeedback');
+        
+        // Check 1: Is Cache first?
+        if (currentIds[0] !== 'cache') {
+            feedback.style.color = 'var(--danger)';
+            feedback.innerText = '⚠️ 錯誤：第一名應該是離 CPU 最近的那個！(提示：Cache)';
+            return;
+        }
+        
+        // Check 2: Is RAM second?
+        if (currentIds[1] !== 'ram') {
+            feedback.style.color = 'var(--danger)';
+            feedback.innerText = '⚠️ 錯誤：第二名應該是你的「書桌」(RAM)，Cache 之後就是它。';
+            return;
+        }
+
+        // Check 3: Flash should be towards the end (slower than RAM)
+        if (currentIds.indexOf('flash') < currentIds.indexOf('ram')) {
+             feedback.style.color = 'var(--danger)';
+             feedback.innerText = '⚠️ 錯誤：Flash (硬碟類) 速度比 RAM 慢非常多喔！';
+             return;
+        }
+
+        feedback.style.color = 'var(--success-dark)';
+        feedback.innerText = '🎉 完全正確！順序：Cache > RAM > ROM/Flash。你掌握了速度階層！';
+        updateProgress(40);
+    }
+
+    // 4. 迷思破解
+    function checkMyth(btn, isCorrect, msg) {
+        const parent = btn.parentElement;
+        const feedback = parent.nextElementSibling;
+        const allBtns = parent.querySelectorAll('button');
+        
+        allBtns.forEach(b => b.disabled = true); // disable after click
+        
+        feedback.style.display = 'block';
+        feedback.innerText = msg;
+        
+        if (isCorrect) {
+            btn.style.background = '#d4edda';
+            btn.style.borderColor = '#28a745';
+            feedback.style.color = '#155724';
+            updateProgress(10);
+        } else {
+            btn.style.background = '#f8d7da';
+            btn.style.borderColor = '#dc3545';
+            feedback.style.color = '#721c24';
+        }
+    }
+
+    // 5. 提示功能
+    function toggleHint(btn) {
+        const hint = btn.nextElementSibling;
+        hint.style.display = 'block';
+        btn.style.display = 'none';
+    }
+
+    // 初始化
+    renderSortList();
+</script>
+
+</body>
+</html>

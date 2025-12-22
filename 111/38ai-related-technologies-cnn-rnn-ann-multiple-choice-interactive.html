@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電腦概論 - 複選題 38：AI 相關技術辨識</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #e74c3c;
+            --highlight-color: #f1c40f;
+            --success-color: #27ae60;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --border-radius: 10px;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            background-color: var(--bg-color);
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1, h2, h3 {
+            color: var(--primary-color);
+        }
+
+        h1 {
+            text-align: center;
+            border-bottom: 3px solid var(--accent-color);
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+
+        .section-box {
+            background: #fff;
+            border: 2px solid #e0e0e0;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .section-title {
+            background: var(--primary-color);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 5px;
+            display: inline-block;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        /* 重點觀念區 */
+        .highlight-box {
+            background-color: #fff8e1;
+            border-left: 5px solid var(--highlight-color);
+            padding: 15px;
+            margin: 10px 0;
+        }
+
+        .key-point {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #d35400;
+        }
+
+        .comparison-table {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .col-list {
+            flex: 1;
+            min-width: 250px;
+            background: #ecf0f1;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .col-list h4 {
+            margin-top: 0;
+            border-bottom: 2px solid #bdc3c7;
+            padding-bottom: 5px;
+        }
+
+        /* 互動 A: 拖拉分類 */
+        .drag-area {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .drop-zone {
+            flex: 1;
+            min-width: 200px;
+            min-height: 150px;
+            border: 2px dashed #95a5a6;
+            border-radius: 8px;
+            padding: 10px;
+            background: #fafafa;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: background 0.3s;
+        }
+
+        .drop-zone.active {
+            background: #e8f8f5;
+            border-color: var(--success-color);
+        }
+
+        .draggable-item {
+            background: var(--primary-color);
+            color: white;
+            padding: 8px 15px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: move; /* Fallback */
+            cursor: grab;
+            user-select: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            font-weight: bold;
+        }
+        
+        .draggable-item:active {
+            cursor: grabbing;
+        }
+
+        /* 來源區 */
+        #source-zone {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            width: 100%;
+            min-height: 60px;
+            background: #fff;
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        /* 互動 B: 複選題 */
+        .question-block {
+            background-color: #eef2f3;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .options-group label {
+            display: block;
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .options-group label:hover {
+            background: #f0f0f0;
+        }
+
+        .options-group input[type="checkbox"] {
+            transform: scale(1.2);
+            margin-right: 10px;
+        }
+
+        .btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #34495e;
+        }
+
+        .btn-check {
+            background: var(--accent-color);
+        }
+
+        .btn-check:hover {
+            background: #c0392b;
+        }
+
+        .feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+            font-weight: bold;
+        }
+
+        .feedback.correct {
+            background: #d4edda;
+            color: #155724;
+            display: block;
+        }
+
+        .feedback.wrong {
+            background: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+
+        /* 互動 C: 神經網路家族 */
+        .family-cards {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .card {
+            background: white;
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            width: 180px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            background: #fdfdfd;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .card h3 {
+            margin: 0 0 10px 0;
+            font-size: 24px;
+        }
+
+        .card-desc {
+            display: none;
+            font-size: 14px;
+            color: #555;
+            margin-top: 10px;
+            border-top: 1px dashed #ccc;
+            padding-top: 10px;
+        }
+
+        /* 互動 D: 詳細解析 */
+        .detail-item {
+            margin-bottom: 5px;
+        }
+
+        .detail-btn {
+            width: 100%;
+            text-align: left;
+            padding: 10px;
+            background: #fff;
+            border: 1px solid #ccc;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .detail-content {
+            padding: 15px;
+            background: #f9f9f9;
+            border: 1px solid #eee;
+            border-top: none;
+            display: none;
+        }
+
+        /* 互動 E: 陷阱卡 */
+        .trap-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .trap-card {
+            flex: 1;
+            min-width: 200px;
+            background: #fff0f0;
+            border: 1px solid #ffcccc;
+            padding: 15px;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .trap-close {
+            display: block;
+            margin-top: 10px;
+            background: #e74c3c;
+            color: white;
+            text-align: center;
+            padding: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        /* 自我檢測 */
+        .self-check-item {
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        
+        .hint-text {
+            color: #2980b9;
+            font-style: italic;
+            margin-top: 5px;
+            display: none;
+        }
+
+        /* 頁尾控制 */
+        .footer-controls {
+            text-align: center;
+            margin-top: 40px;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+        }
+
+        .btn-reset {
+            background: #7f8c8d;
+        }
+
+        /* 手機適配 */
+        @media (max-width: 600px) {
+            .comparison-table, .drag-area, .family-cards {
+                flex-direction: column;
+            }
+            .drop-zone {
+                min-height: 100px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>電腦概論：AI 技術高分速成</h1>
+    <p style="text-align: center;">適合對象：高中電腦概論初學者 | 主題：複選題 38</p>
+
+    <!-- 1. 核心觀念說明區 -->
+    <div class="section-box">
+        <div class="section-title">第一步：建立秒殺觀念</div>
+        
+        <p>在人工智慧 (AI) 的考題中，最常出現的關鍵字就是「神經網路」。</p>
+        
+        <div class="highlight-box">
+            <h3>⚡ 考試秒殺判斷法：</h3>
+            <p class="key-point">看到「NN (Neural Network)」結尾，幾乎 100% 是 AI 技術！</p>
+            <ul>
+                <li><strong>NN</strong> = <strong>N</strong>eural <strong>N</strong>etwork (神經網路) → 模仿人腦 → <span style="color:red; font-weight:bold;">AI</span></li>
+                <li><strong>VLAN, ISDN</strong> 等 = 網路線、電話線、設備設定 → <span style="color:blue; font-weight:bold;">非 AI</span></li>
+            </ul>
+        </div>
+
+        <div class="comparison-table">
+            <div class="col-list">
+                <h4 style="color: var(--success-color);">⭕ 屬於 AI 技術 (神經網路家族)</h4>
+                <ul>
+                    <li><strong>ANN</strong>：人工神經網路 (家族總稱)</li>
+                    <li><strong>CNN</strong>：卷積神經網路 (擅長看圖)</li>
+                    <li><strong>RNN</strong>：循環神經網路 (擅長語言、時間)</li>
+                </ul>
+            </div>
+            <div class="col-list">
+                <h4 style="color: var(--accent-color);">❌ 非 AI 技術 (通訊網路)</h4>
+                <ul>
+                    <li><strong>VLAN</strong>：虛擬區域網路 (網管技術)</li>
+                    <li><strong>ISDN</strong>：整體服務數位網路 (電話線技術)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. 互動 C: 神經網路家族 (先認識名詞) -->
+    <div class="section-box">
+        <div class="section-title">第二步：認識神經網路三兄弟</div>
+        <p>點擊卡片，查看生活化解釋：</p>
+        <div class="family-cards">
+            <div class="card" onclick="toggleCard(this)">
+                <h3>ANN</h3>
+                <div>人工神經網路</div>
+                <div class="card-desc">
+                    <strong>Artificial Neural Network</strong><br>
+                    這是「老祖宗」，所有模仿大腦神經元運作的 AI 模型都統稱為 ANN。
+                </div>
+            </div>
+            <div class="card" onclick="toggleCard(this)">
+                <h3>CNN</h3>
+                <div>卷積神經網路</div>
+                <div class="card-desc">
+                    <strong>Convolutional Neural Network</strong><br>
+                    就像「眼睛」。看到 C 想成 Camera。專門用來做<strong>影像辨識</strong> (如：FaceID)。
+                </div>
+            </div>
+            <div class="card" onclick="toggleCard(this)">
+                <h3>RNN</h3>
+                <div>循環神經網路</div>
+                <div class="card-desc">
+                    <strong>Recurrent Neural Network</strong><br>
+                    就像「記憶」。擅長處理有<strong>順序</strong>的東西，像語音、文字翻譯、股票走勢。
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. 互動 A: 拖拉分類 -->
+    <div class="section-box">
+        <div class="section-title">第三步：動手分分看</div>
+        <p>請將上方的名詞卡片，拖曳至正確的分類框中：(電腦版請用拖曳，手機版請點擊選取再點擊目標)</p>
+        
+        <div id="source-zone" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <div class="draggable-item" draggable="true" ondragstart="drag(event)" id="drag-vlan" data-type="not-ai" onclick="mobileMove(this)">VLAN</div>
+            <div class="draggable-item" draggable="true" ondragstart="drag(event)" id="drag-cnn" data-type="ai" onclick="mobileMove(this)">CNN</div>
+            <div class="draggable-item" draggable="true" ondragstart="drag(event)" id="drag-isdn" data-type="not-ai" onclick="mobileMove(this)">ISDN</div>
+            <div class="draggable-item" draggable="true" ondragstart="drag(event)" id="drag-rnn" data-type="ai" onclick="mobileMove(this)">RNN</div>
+            <div class="draggable-item" draggable="true" ondragstart="drag(event)" id="drag-ann" data-type="ai" onclick="mobileMove(this)">ANN</div>
+        </div>
+
+        <div class="drag-area">
+            <div class="drop-zone" id="zone-ai" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="mobileDrop('ai')">
+                <h4 style="color: var(--success-color);">🤖 人工智慧 (AI) 相關</h4>
+            </div>
+            <div class="drop-zone" id="zone-not-ai" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="mobileDrop('not-ai')">
+                <h4 style="color: var(--accent-color);">📡 網路/通訊技術 (非 AI)</h4>
+            </div>
+        </div>
+
+        <button class="btn" onclick="checkDragAnswer()">檢查分類答案</button>
+        <div id="drag-feedback" class="feedback"></div>
+    </div>
+
+    <!-- 4. 互動 B: 複選題 38 -->
+    <div class="section-box question-block">
+        <div class="section-title">第四步：實戰演練 (複選題 38)</div>
+        <h3>題目：下列何者為人工智慧（AI）相關的技術？<span style="font-size:0.8em; color:red;">(本題為複選題)</span></h3>
+        
+        <div class="options-group">
+            <label><input type="checkbox" name="q38" value="A"> (A) VLAN (虛擬區域網路)</label>
+            <label><input type="checkbox" name="q38" value="B"> (B) CNN (卷積神經網路)</label>
+            <label><input type="checkbox" name="q38" value="C"> (C) ISDN (整體服務數位網路)</label>
+            <label><input type="checkbox" name="q38" value="D"> (D) RNN (循環神經網路)</label>
+            <label><input type="checkbox" name="q38" value="E"> (E) ANN (人工神經網路)</label>
+        </div>
+
+        <button class="btn btn-check" onclick="checkQuizAnswer()">送出答案</button>
+        <div id="quiz-feedback" class="feedback"></div>
+    </div>
+
+    <!-- 5. 互動 D: 選項解析 -->
+    <div class="section-box">
+        <div class="section-title">選項逐一解析</div>
+        <p>點選下方選項查看詳細理由：</p>
+        
+        <div class="detail-item">
+            <button class="detail-btn" onclick="toggleDetail('detail-a')">(A) VLAN</button>
+            <div id="detail-a" class="detail-content">
+                <strong>❌ 不是 AI</strong><br>
+                解釋：Virtual Local Area Network。這是在交換器(Switch)上切割網路的技術，屬於「網路管理」。
+            </div>
+        </div>
+        <div class="detail-item">
+            <button class="detail-btn" onclick="toggleDetail('detail-b')">(B) CNN</button>
+            <div id="detail-b" class="detail-content">
+                <strong>✅ 是 AI</strong><br>
+                解釋：Convolutional Neural Network。神經網路的一種，是 AI 影像辨識的核心技術。
+            </div>
+        </div>
+        <div class="detail-item">
+            <button class="detail-btn" onclick="toggleDetail('detail-c')">(C) ISDN</button>
+            <div id="detail-c" class="detail-content">
+                <strong>❌ 不是 AI</strong><br>
+                解釋：Integrated Services Digital Network。這是一種早期的數位電話通訊標準，跟 AI 無關。
+            </div>
+        </div>
+        <div class="detail-item">
+            <button class="detail-btn" onclick="toggleDetail('detail-d')">(D) RNN</button>
+            <div id="detail-d" class="detail-content">
+                <strong>✅ 是 AI</strong><br>
+                解釋：Recurrent Neural Network。神經網路的一種，有「記憶」功能，常把處理文字和時間序列資料。
+            </div>
+        </div>
+        <div class="detail-item">
+            <button class="detail-btn" onclick="toggleDetail('detail-e')">(E) ANN</button>
+            <div id="detail-e" class="detail-content">
+                <strong>✅ 是 AI</strong><br>
+                解釋：Artificial Neural Network。這是神經網路的統稱，當然是 AI。
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. 互動 E: 陷阱卡 -->
+    <div class="section-box" style="background-color: #fffaf0;">
+        <div class="section-title" style="background-color: #d35400;">⚠️ 常見考試陷阱</div>
+        <div class="trap-container">
+            <div class="trap-card">
+                <strong>陷阱 1</strong>
+                <p>看到英文縮寫就以為是 AI？</p>
+                <small>錯！VLAN 和 ISDN 也是縮寫，要認得 "NN" 結尾才是神經網路。</small>
+                <div class="trap-close" onclick="this.parentElement.style.opacity='0'; setTimeout(()=>this.parentElement.style.display='none', 300)">我懂了 (點擊移除)</div>
+            </div>
+            <div class="trap-card">
+                <strong>陷阱 2</strong>
+                <p>沒看過 VLAN 就亂選？</p>
+                <small>考試中看到「網路」、「通訊」、「協定」通常不是 AI 核心算法。</small>
+                <div class="trap-close" onclick="this.parentElement.style.opacity='0'; setTimeout(()=>this.parentElement.style.display='none', 300)">我懂了 (點擊移除)</div>
+            </div>
+            <div class="trap-card">
+                <strong>陷阱 3</strong>
+                <p>複選題只選一個？</p>
+                <small>題目已標示「複選」，通常 AI 相關的技術會有一整組 (ANN, CNN, RNN)。</small>
+                <div class="trap-close" onclick="this.parentElement.style.opacity='0'; setTimeout(()=>this.parentElement.style.display='none', 300)">我懂了 (點擊移除)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 7. 自我檢測 -->
+    <div class="section-box">
+        <div class="section-title">最後確認：自我檢測</div>
+        <div class="self-check-item">
+            <p>Q1：為什麼 CNN、RNN 都算 ANN 的一種？</p>
+            <button class="btn" style="padding: 5px 10px; font-size: 14px;" onclick="toggleHint('hint1')">顯示提示</button>
+            <p id="hint1" class="hint-text">因為 ANN (人工神經網路) 是總稱，CNN 和 RNN 是針對不同功能特化的「神經網路」。</p>
+        </div>
+        <div class="self-check-item">
+            <p>Q2：如果考題出現 "DNN" (Deep Neural Network)，它會是 AI 技術嗎？</p>
+            <button class="btn" style="padding: 5px 10px; font-size: 14px;" onclick="toggleHint('hint2')">顯示提示</button>
+            <p id="hint2" class="hint-text">沒錯！只要看到最後兩個字是 "NN" (Neural Network)，它就是 AI 家族成員。</p>
+        </div>
+        <div class="self-check-item">
+            <p>Q3：考試中看到「網路管理」、「數據通訊」等關鍵字，該選為 AI 嗎？</p>
+            <button class="btn" style="padding: 5px 10px; font-size: 14px;" onclick="toggleHint('hint3')">顯示提示</button>
+            <p id="hint3" class="hint-text">通常不選。那是電腦網路 (Network) 的範疇，不是神經網路 (Neural Network)。</p>
+        </div>
+    </div>
+
+    <div class="footer-controls">
+        <button class="btn btn-reset" onclick="resetAll()">🔄 重置所有練習</button>
+    </div>
+
+</div>
+
+<script>
+    // --- 互動 C: 卡片翻轉效果 ---
+    function toggleCard(card) {
+        const desc = card.querySelector('.card-desc');
+        if (desc.style.display === 'block') {
+            desc.style.display = 'none';
+        } else {
+            desc.style.display = 'block';
+        }
+    }
+
+    // --- 互動 A: 拖拉功能 ---
+    let mobileSelectedItem = null;
+
+    // 手機版/點擊版移動邏輯
+    function mobileMove(element) {
+        // 如果已經在來源區，選取它
+        if (element.parentElement.id === 'source-zone' || element.parentElement.classList.contains('drop-zone')) {
+            // 清除之前的選取樣式
+            document.querySelectorAll('.draggable-item').forEach(el => el.style.border = 'none');
+            
+            mobileSelectedItem = element;
+            element.style.border = '3px solid #f1c40f'; // 黃色邊框表示選取
+        }
+    }
+
+    function mobileDrop(zoneType) {
+        if (!mobileSelectedItem) return;
+
+        let targetZone;
+        if (zoneType === 'ai') {
+            targetZone = document.getElementById('zone-ai');
+        } else {
+            targetZone = document.getElementById('zone-not-ai');
+        }
+
+        targetZone.appendChild(mobileSelectedItem);
+        mobileSelectedItem.style.border = 'none';
+        mobileSelectedItem = null;
+    }
+
+    // 電腦版原生 Drag & Drop
+    function allowDrop(ev) {
+        ev.preventDefault();
+    }
+
+    function drag(ev) {
+        ev.dataTransfer.setData("text", ev.target.id);
+    }
+
+    function drop(ev) {
+        ev.preventDefault();
+        var data = ev.dataTransfer.getData("text");
+        var draggedElement = document.getElementById(data);
+        
+        // 確保放置目標是 drop-zone 或 source-zone，而不是裡面的子元素
+        let target = ev.target;
+        while (!target.classList.contains('drop-zone') && target.id !== 'source-zone' && target.tagName !== 'BODY') {
+            target = target.parentElement;
+        }
+
+        if (target.classList.contains('drop-zone') || target.id === 'source-zone') {
+            target.appendChild(draggedElement);
+        }
+    }
+
+    // 檢查拖拉答案
+    function checkDragAnswer() {
+        const aiZone = document.getElementById('zone-ai');
+        const notAiZone = document.getElementById('zone-not-ai');
+        const feedback = document.getElementById('drag-feedback');
+        
+        let correct = true;
+        let msg = "";
+
+        // 檢查 AI 區
+        const aiItems = aiZone.querySelectorAll('.draggable-item');
+        aiItems.forEach(item => {
+            if (item.dataset.type !== 'ai') {
+                correct = false;
+                msg += `❌ ${item.innerText} 是網路通訊技術，不是 AI 喔！<br>`;
+            }
+        });
+
+        // 檢查非 AI 區
+        const notAiItems = notAiZone.querySelectorAll('.draggable-item');
+        notAiItems.forEach(item => {
+            if (item.dataset.type !== 'not-ai') {
+                correct = false;
+                msg += `❌ ${item.innerText} 是神經網路 (NN)，屬於 AI 技術！<br>`;
+            }
+        });
+
+        // 檢查是否有未分類的
+        const sourceItems = document.getElementById('source-zone').querySelectorAll('.draggable-item');
+        if (sourceItems.length > 0) {
+            feedback.className = "feedback wrong";
+            feedback.innerHTML = "還有卡片沒分類喔！請全部拖拉完畢再檢查。";
+            return;
+        }
+
+        if (correct) {
+            feedback.className = "feedback correct";
+            feedback.innerHTML = "🎉 太棒了！分類完全正確！<br>記住：NN 結尾的通常就是 AI。";
+        } else {
+            feedback.className = "feedback wrong";
+            feedback.innerHTML = msg || "分類有誤，請再試試看！";
+        }
+    }
+
+    // --- 互動 B: 複選題檢查 ---
+    function checkQuizAnswer() {
+        const checkboxes = document.querySelectorAll('input[name="q38"]:checked');
+        const feedback = document.getElementById('quiz-feedback');
+        
+        let selected = [];
+        checkboxes.forEach((cb) => {
+            selected.push(cb.value);
+        });
+
+        // 正確答案：B, D, E
+        // 邏輯判斷
+        const isB = selected.includes('B');
+        const isD = selected.includes('D');
+        const isE = selected.includes('E');
+        const isA = selected.includes('A');
+        const isC = selected.includes('C');
+
+        if (selected.length === 0) {
+            feedback.className = "feedback wrong";
+            feedback.innerHTML = "請先勾選選項再送出！";
+            return;
+        }
+
+        if (isB && isD && isE && !isA && !isC) {
+            feedback.className = "feedback correct";
+            feedback.innerHTML = "💯 完全正確！<br>CNN、RNN、ANN 都是神經網路技術 (AI)。";
+        } else {
+            feedback.className = "feedback wrong";
+            let wrongMsg = "答案不完全正確喔：<br>";
+            if (isA) wrongMsg += "👉 VLAN 是虛擬區域網路，非 AI。<br>";
+            if (isC) wrongMsg += "👉 ISDN 是數位電話網路，非 AI。<br>";
+            if (!isB || !isD || !isE) wrongMsg += "👉 你少選了 AI 相關的技術 (找找看有沒有 NN 結尾的)。<br>";
+            feedback.innerHTML = wrongMsg;
+        }
+    }
+
+    // --- 互動 D: 詳細解析開關 ---
+    function toggleDetail(id) {
+        const el = document.getElementById(id);
+        if (el.style.display === 'block') {
+            el.style.display = 'none';
+        } else {
+            el.style.display = 'block';
+        }
+    }
+
+    // --- 自我檢測提示 ---
+    function toggleHint(id) {
+        const el = document.getElementById(id);
+        el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+    }
+
+    // --- 重置功能 ---
+    function resetAll() {
+        // 1. 重置拖拉區
+        const sourceZone = document.getElementById('source-zone');
+        const items = document.querySelectorAll('.draggable-item');
+        items.forEach(item => {
+            sourceZone.appendChild(item);
+            item.style.border = 'none';
+        });
+        document.getElementById('drag-feedback').style.display = 'none';
+        mobileSelectedItem = null;
+
+        // 2. 重置複選題
+        const checkboxes = document.querySelectorAll('input[name="q38"]');
+        checkboxes.forEach(cb => cb.checked = false);
+        document.getElementById('quiz-feedback').style.display = 'none';
+
+        // 3. 重置卡片說明
+        document.querySelectorAll('.card-desc').forEach(d => d.style.display = 'none');
+
+        // 4. 重置解析與提示
+        document.querySelectorAll('.detail-content').forEach(d => d.style.display = 'none');
+        document.querySelectorAll('.hint-text').forEach(d => d.style.display = 'none');
+
+        // 5. 重置陷阱卡 (淡入)
+        document.querySelectorAll('.trap-card').forEach(card => {
+            card.style.display = 'block';
+            setTimeout(() => card.style.opacity = '1', 10);
+        });
+
+        alert("已重置所有練習狀態！");
+    }
+</script>
+
+</body>
+</html>

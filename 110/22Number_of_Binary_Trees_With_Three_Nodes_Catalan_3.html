@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電腦概論互動講義：三節點二元樹數量</title>
+    <style>
+        /* * 全域樣式設定 
+         * 使用簡單的黑、白、灰配色，強調閱讀舒適度
+         */
+        :root {
+            --primary-color: #333;
+            --accent-color: #2563eb; /* 藍色用於按鈕 */
+            --highlight-bg: #fff3cd; /* 淡黃色螢光筆 */
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --border-color: #e5e7eb;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+        }
+
+        body {
+            font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+            line-height: 1.6;
+            color: var(--primary-color);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        /* 容器限制寬度，置中顯示 */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        /* 標題區塊 */
+        header {
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin: 0;
+            color: #1f2937;
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            color: #4b5563;
+            margin-top: 5px;
+            border-left: 4px solid var(--accent-color);
+            padding-left: 10px;
+        }
+
+        h3 {
+            font-size: 1.1rem;
+            margin-top: 25px;
+            margin-bottom: 10px;
+            color: #374151;
+            display: flex;
+            align-items: center;
+        }
+
+        /* 題目樣式 */
+        .question-box {
+            background-color: #f3f4f6;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .option-list {
+            list-style-type: none;
+            padding: 0;
+            margin-top: 10px;
+        }
+
+        .option-list li {
+            margin: 5px 0;
+        }
+
+        /* 螢光筆效果 */
+        .highlight {
+            background-color: var(--highlight-bg);
+            padding: 0 4px;
+            border-radius: 2px;
+            font-weight: bold;
+        }
+
+        /* 解說區塊樣式 */
+        .section-card {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        /* 互動視覺化區塊 (重點) */
+        .visualization-area {
+            background-color: #ffffff;
+            border: 2px dashed var(--accent-color);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        /* SVG 容器 */
+        .tree-container {
+            min-height: 220px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        /* 網格佈局用於顯示全部 */
+        .tree-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+            width: 100%;
+        }
+
+        .tree-card {
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            background: #fafafa;
+        }
+
+        svg circle {
+            fill: #fff;
+            stroke: #333;
+            stroke-width: 2;
+        }
+        
+        svg line {
+            stroke: #333;
+            stroke-width: 2;
+        }
+        
+        svg text {
+            font-size: 12px;
+            text-anchor: middle;
+            alignment-baseline: middle;
+        }
+
+        /* 控制按鈕 */
+        .btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 5px;
+            transition: background-color 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #1d4ed8;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        .btn-outline:hover {
+            background-color: #eff6ff;
+        }
+
+        /* 選項分析 */
+        .analysis-item {
+            margin-bottom: 8px;
+            padding-left: 10px;
+            border-left: 3px solid #ddd;
+        }
+
+        .analysis-item.correct {
+            border-left-color: var(--success-color);
+            background-color: #ecfdf5;
+        }
+
+        /* 互動答題區 */
+        .quiz-area {
+            background-color: #eff6ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+
+        .quiz-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .quiz-btn {
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            background: white;
+            cursor: pointer;
+            border-radius: 4px;
+            text-align: left;
+            transition: all 0.2s;
+        }
+
+        .quiz-btn:hover {
+            background-color: #f3f4f6;
+        }
+
+        .quiz-btn.selected-correct {
+            background-color: #d1fae5;
+            border-color: var(--success-color);
+            color: #065f46;
+        }
+
+        .quiz-btn.selected-wrong {
+            background-color: #fee2e2;
+            border-color: var(--error-color);
+            color: #991b1b;
+        }
+
+        .feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+
+        /* 折疊內容 */
+        details {
+            margin-top: 10px;
+            background: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #eee;
+        }
+        
+        summary {
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
+        /* RWD 適應手機 */
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+            .quiz-options {
+                grid-template-columns: 1fr;
+            }
+            header h1 {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>22. 電腦概論 / 資料結構</h1>
+        <p style="color: #666; margin-top: 5px;">主題：二元樹的數量與卡特蘭數</p>
+    </header>
+
+    <!-- B. 題目區 -->
+    <div class="question-box">
+        <div>22. 有三個節點的樹，組成二元樹的個數最多為何?</div>
+        <ul class="option-list">
+            <li>(A) 3</li>
+            <li>(B) 4</li>
+            <li>(C) 5</li>
+            <li>(D) 6</li>
+        </ul>
+        <details>
+            <summary>顯示答案</summary>
+            <p>答案：<span style="color: var(--success-color); font-weight: bold; font-size: 1.2em;">C</span></p>
+        </details>
+    </div>
+
+    <!-- C. 第一步：找關鍵字 -->
+    <div class="section-card">
+        <h2>第一步：找關鍵字</h2>
+        <p>
+            <span class="highlight">三個節點</span>、<span class="highlight">二元樹</span>、<span class="highlight">個數最多</span>
+        </p>
+        <p style="font-size: 0.9rem; color: #555;">
+            💡 <strong>老師的話：</strong> 這裡最大的陷阱在於「二元樹」這三個字。一般的樹形可能不分左右，但二元樹的定義非常嚴格，形狀稍微不同就算不同棵。
+        </p>
+    </div>
+
+    <!-- D. 第二步：白話翻譯 -->
+    <div class="section-card">
+        <h2>第二步：白話翻譯</h2>
+        <p>「給你 3 個小圓點，按照二元樹的規則（每個點最多兩個小孩，還要分左邊小孩或右邊小孩），請問你可以拼出幾種完全不同形狀的樹？」</p>
+    </div>
+
+    <!-- E. 第三步：解題思路 -->
+    <div class="section-card">
+        <h2>第三步：解題思路</h2>
+        <ul>
+            <li><strong>觀念：</strong> 二元樹（Binary Tree）是非常講究「方向」的資料結構。左邊的小孩跟右邊的小孩是不一樣的。</li>
+            <li><strong>步驟：</strong>
+                <ol>
+                    <li>先固定一個點當作頭（Root，根節點）。</li>
+                    <li>剩下 2 個點，可以怎麼擺？
+                        <ul>
+                            <li>都在左邊</li>
+                            <li>都在右邊</li>
+                            <li>一左一右</li>
+                        </ul>
+                    </li>
+                    <li>畫出來數數看！</li>
+                </ol>
+            </li>
+        </ul>
+    </div>
+
+    <!-- F. 互動列舉：5 種樹形一鍵展示 (核心功能) -->
+    <div class="section-card">
+        <h2 style="color: var(--accent-color);">第四步：互動列舉（必看！）</h2>
+        <p>讓我們直接把 3 個節點能組成的 5 種形狀畫出來。請點擊按鈕切換。</p>
+        
+        <div class="visualization-area">
+            <div id="treeDisplayArea" class="tree-container">
+                <!-- SVG 會在這裡動態生成 -->
+                <svg width="200" height="150" id="singleTreeSvg"></svg>
+            </div>
+            <!-- 將文字描述移到 treeDisplayArea 外面，避免被 innerHTML 清除 -->
+            <p id="treeDescription" style="font-weight: bold; margin-top: 10px;">請點擊下方按鈕開始</p>
+            
+            <div style="margin-top: 15px;">
+                <button class="btn" onclick="showNextTree()">下一種形狀 ▶</button>
+                <button class="btn btn-outline" onclick="toggleShowAll()">顯示全部 / 切換單張</button>
+            </div>
+            <p id="counterText" style="font-size: 0.8rem; color: #888; margin-top: 5px;">目前：尚未開始</p>
+        </div>
+    </div>
+
+    <!-- G. 選項分析 -->
+    <div class="section-card">
+        <h2>選項分析</h2>
+        <div class="analysis-item">
+            <strong>(A) 3：</strong> 這是最常見的錯誤。這是因為只算到「全部向左」、「全部向右」、「左右平衡」這三種，忘記了「先左再右」這種折彎的情況。
+        </div>
+        <div class="analysis-item">
+            <strong>(B) 4：</strong> 通常是漏算了其中一種折彎的形狀。
+        </div>
+        <div class="analysis-item correct">
+            <strong>(C) 5：</strong> 正確。包含：1種平衡、2種直鏈（全左/全右）、2種折彎（左右/右左）。
+        </div>
+        <div class="analysis-item">
+            <strong>(D) 6：</strong> 3 個節點已經沒有其他組合方式了。
+        </div>
+    </div>
+
+    <!-- H. 觀念補充與延伸 -->
+    <div class="section-card" style="background-color: #fffaf0; border-color: #fbd38d;">
+        <h2>觀念補充：Catalan Number</h2>
+        <p>這種「計算二元樹形狀數量」的問題，在數學上有個專有名詞叫做 <strong>Catalan Number（卡特蘭數）</strong>。</p>
+        <ul>
+            <li><strong>定義：</strong> 用來計算幾何形狀組合或括號配對數量的數列。</li>
+            <li><strong>數列：</strong> 1, 1, 2, 5, 14, 42... (分別對應 0, 1, 2, 3, 4, 5 個節點)</li>
+            <li><strong>本題：</strong> 當節點數 n=3 時，卡特蘭數就是 5。</li>
+            <li><strong>延伸思考：</strong> 如果題目改成 2 個節點？答案是 2 (左斜、右斜)。</li>
+        </ul>
+    </div>
+
+    <!-- I. 記憶口訣 & J. 常見陷阱 -->
+    <div class="section-card">
+        <h2>記憶口訣 & 避坑指南</h2>
+        <p>⚡ <strong>口訣：</strong> 「三點二元樹，形狀剛好五」</p>
+        <p>💣 <strong>常見陷阱：</strong> 
+            <ul>
+                <li>不要把「二元樹」當成一般的樹，左右方向一定要分清楚。</li>
+                <li>不要死背公式，考試時用畫的最保險（反正只有 5 種）。</li>
+            </ul>
+        </p>
+    </div>
+
+    <!-- K. 作答區互動題 -->
+    <div class="quiz-area">
+        <h3 style="margin-top: 0;">🎯 立即練習</h3>
+        <p>題目：有三個節點的樹，組成二元樹的個數最多為何?</p>
+        <div class="quiz-options">
+            <button class="quiz-btn" onclick="checkAnswer('A', this)">(A) 3</button>
+            <button class="quiz-btn" onclick="checkAnswer('B', this)">(B) 4</button>
+            <button class="quiz-btn" onclick="checkAnswer('C', this)">(C) 5</button>
+            <button class="quiz-btn" onclick="checkAnswer('D', this)">(D) 6</button>
+        </div>
+        <div id="quizFeedback" class="feedback"></div>
+    </div>
+
+    <!-- M. 自我檢測 -->
+    <div class="section-card">
+        <h2>自我檢測 (想一想，不看答案)</h2>
+        <ol>
+            <li>如果只有 2 個節點，二元樹會有幾種形狀？你能用手畫出來嗎？</li>
+            <li>「二元搜尋樹 (BST)」跟這裡講的「二元樹」形狀計算有什麼關係？(提示：如果把數字 1,2,3 填進去，有幾種填法？)</li>
+        </ol>
+    </div>
+
+</div>
+
+<!-- 互動邏輯 Script -->
+<script>
+    /* * 定義 5 種二元樹的結構資料 
+     * 使用簡單的座標系統 (0-200, 0-150)
+     * nodes: 每個節點的座標 {x, y}
+     * lines: 連接線的起點與終點索引 [fromIndex, toIndex]
+     */
+    const treeShapes = [
+        {
+            name: "1. 平衡型 (人字形)",
+            desc: "根節點有左小孩，也有右小孩",
+            nodes: [{x: 100, y: 30}, {x: 60, y: 80}, {x: 140, y: 80}],
+            lines: [[0, 1], [0, 2]]
+        },
+        {
+            name: "2. 左斜鍊 (Left Skewed)",
+            desc: "全部往左邊長",
+            nodes: [{x: 100, y: 30}, {x: 70, y: 70}, {x: 40, y: 110}],
+            lines: [[0, 1], [1, 2]]
+        },
+        {
+            name: "3. 左拐右 (Left-Right)",
+            desc: "先往左，左小孩再往右長",
+            nodes: [{x: 100, y: 30}, {x: 60, y: 70}, {x: 90, y: 110}],
+            lines: [[0, 1], [1, 2]]
+        },
+        {
+            name: "4. 右斜鍊 (Right Skewed)",
+            desc: "全部往右邊長",
+            nodes: [{x: 100, y: 30}, {x: 130, y: 70}, {x: 160, y: 110}],
+            lines: [[0, 1], [1, 2]]
+        },
+        {
+            name: "5. 右拐左 (Right-Left)",
+            desc: "先往右，右小孩再往左長",
+            nodes: [{x: 100, y: 30}, {x: 140, y: 70}, {x: 110, y: 110}],
+            lines: [[0, 1], [1, 2]]
+        }
+    ];
+
+    let currentTreeIndex = -1; // 尚未開始
+    let isShowAllMode = false;
+
+    // 繪製單一棵樹的函數
+    function generateTreeSVG(treeData, width=200, height=150) {
+        let svgContent = '';
+        
+        // 畫線
+        treeData.lines.forEach(line => {
+            const start = treeData.nodes[line[0]];
+            const end = treeData.nodes[line[1]];
+            svgContent += `<line x1="${start.x}" y1="${start.y}" x2="${end.x}" y2="${end.y}" />`;
+        });
+
+        // 畫點 (節點)
+        treeData.nodes.forEach((node, index) => {
+            svgContent += `<circle cx="${node.x}" cy="${node.y}" r="10" />`;
+            // 可以在這裡加節點編號，但題目強調形狀，故留白
+        });
+
+        return `<svg width="${width}" height="${height}" viewBox="0 0 200 150">${svgContent}</svg>`;
+    }
+
+    // 顯示下一棵樹
+    function showNextTree() {
+        // 如果在顯示全部模式，先切回單張模式
+        if (isShowAllMode) {
+            toggleShowAll();
+        }
+
+        currentTreeIndex = (currentTreeIndex + 1) % treeShapes.length;
+        renderSingleTree(currentTreeIndex);
+    }
+
+    // 渲染單張樹視圖
+    function renderSingleTree(index) {
+        const tree = treeShapes[index];
+        const displayArea = document.getElementById('treeDisplayArea');
+        const descText = document.getElementById('treeDescription');
+        const counterText = document.getElementById('counterText');
+
+        // 清空並重繪 (不會再清除到 treeDescription 了)
+        displayArea.innerHTML = generateTreeSVG(tree);
+        displayArea.className = "tree-container"; // 恢復單張樣式
+        
+        // 更新文字
+        descText.innerHTML = `<span style="color:#2563eb">${tree.name}</span><br><span style="font-weight:normal; font-size:0.9em">${tree.desc}</span>`;
+        counterText.innerText = `目前顯示：第 ${index + 1} / 5 種`;
+    }
+
+    // 切換「顯示全部」模式
+    function toggleShowAll() {
+        const displayArea = document.getElementById('treeDisplayArea');
+        const descText = document.getElementById('treeDescription');
+        const counterText = document.getElementById('counterText');
+
+        isShowAllMode = !isShowAllMode;
+
+        if (isShowAllMode) {
+            // 進入顯示全部模式
+            let gridHtml = '<div class="tree-grid">';
+            treeShapes.forEach((tree, idx) => {
+                gridHtml += `
+                    <div class="tree-card">
+                        ${generateTreeSVG(tree, 120, 100)}
+                        <div style="font-size: 12px; margin-top:5px;">${idx + 1}. ${tree.name.split(' ')[1] || tree.name}</div>
+                    </div>
+                `;
+            });
+            gridHtml += '</div>';
+            
+            displayArea.innerHTML = gridHtml;
+            displayArea.style.display = "block"; // 確保 Grid 正常顯示
+            descText.innerText = "已列出所有 5 種可能的二元樹形狀";
+            counterText.innerText = "模式：總覽";
+        } else {
+            // 回到單張模式
+            displayArea.style.display = "flex";
+            if(currentTreeIndex === -1) currentTreeIndex = 0;
+            renderSingleTree(currentTreeIndex);
+        }
+    }
+
+    // 檢查答案功能
+    function checkAnswer(option, btnElement) {
+        const feedback = document.getElementById('quizFeedback');
+        const allBtns = document.querySelectorAll('.quiz-btn');
+        
+        // 重置按鈕樣式
+        allBtns.forEach(btn => {
+            btn.classList.remove('selected-correct', 'selected-wrong');
+        });
+
+        if (option === 'C') {
+            btnElement.classList.add('selected-correct');
+            feedback.style.display = 'block';
+            feedback.style.backgroundColor = '#d1fae5';
+            feedback.style.color = '#065f46';
+            feedback.innerHTML = `
+                <strong>✅ 答對了！</strong><br>
+                3 個節點的二元樹形狀就是 5 種 (Catalan Number)。<br>
+                如果你還記得圖形長什麼樣子，這題就是送分題！
+            `;
+        } else {
+            btnElement.classList.add('selected-wrong');
+            feedback.style.display = 'block';
+            feedback.style.backgroundColor = '#fee2e2';
+            feedback.style.color = '#991b1b';
+            
+            let hint = "";
+            if(option === 'A') hint = "3 是少算了折彎的情況喔！再試試看。";
+            if(option === 'B') hint = "4 通常是少畫了一種，再檢查一下！";
+            if(option === 'D') hint = "3 個點拼不出 6 種形狀啦，太多了。";
+            
+            feedback.innerHTML = `<strong>❌ 答錯囉！</strong> ${hint}`;
+        }
+    }
+</script>
+
+</body>
+</html>

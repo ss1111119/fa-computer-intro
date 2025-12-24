@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第 5 題：Queue 是否為 FIFO？互動教學</title>
+    <style>
+        /* --- 全域設定 --- */
+        :root {
+            --primary-color: #2c3e50; /* 深藍專業感 */
+            --accent-color: #e67e22; /* 亮橘強調重點 */
+            --success-color: #27ae60; /* 綠色正確 */
+            --error-color: #c0392b; /* 紅色錯誤 */
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg-color);
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* --- 標題區 --- */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+
+        header p {
+            margin: 10px 0 0;
+            opacity: 0.9;
+        }
+
+        /* --- 卡片樣式 --- */
+        .card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: var(--shadow);
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            color: var(--primary-color);
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .highlight {
+            color: var(--error-color);
+            font-weight: bold;
+            font-size: 1.1em;
+            background-color: #fff3cd;
+            padding: 2px 5px;
+            border-radius: 4px;
+        }
+
+        /* --- 是非題互動區 --- */
+        .question-box {
+            text-align: center;
+            background-color: #e8f6f3;
+            border: 2px solid #1abc9c;
+        }
+
+        .question-text {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .options {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .btn-option {
+            font-size: 2rem;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .btn-o { background-color: #fff; border: 3px solid var(--success-color); color: var(--success-color); }
+        .btn-x { background-color: #fff; border: 3px solid var(--error-color); color: var(--error-color); }
+
+        .btn-option:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-option.selected {
+            background-color: #333;
+            color: #fff;
+            border-color: #333;
+        }
+
+        #answer-feedback {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none; /* 預設隱藏 */
+            font-weight: bold;
+        }
+
+        .feedback-correct { background-color: #d5f5e3; color: var(--success-color); border: 1px solid var(--success-color); }
+        .feedback-wrong { background-color: #fadbd8; color: var(--error-color); border: 1px solid var(--error-color); }
+
+        /* --- 觀念講解區 --- */
+        .concept-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .concept-grid { grid-template-columns: 1fr; }
+        }
+
+        .concept-box {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        .badge {
+            display: inline-block;
+            background: var(--accent-color);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            margin-right: 5px;
+        }
+
+        /* --- 視覺化互動區 (Queue Demo) --- */
+        .queue-container-wrapper {
+            position: relative;
+            margin: 30px 0;
+            padding: 40px 20px;
+            background: #fff;
+            border: 2px dashed #bbb;
+            border-radius: 10px;
+            overflow-x: auto;
+        }
+
+        .queue-visual {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start; /* 靠左對齊，左邊是出口 */
+            min-height: 80px;
+            gap: 10px;
+            padding-left: 50px; /* 留給 Front 標籤 */
+            padding-right: 50px; /* 留給 Rear 標籤 */
+        }
+
+        .queue-item {
+            width: 60px;
+            height: 60px;
+            background: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border-radius: 8px;
+            flex-shrink: 0;
+            position: relative;
+            animation: fadeIn 0.5s ease;
+        }
+
+        /* 標示 Front 和 Rear */
+        .label-marker {
+            position: absolute;
+            bottom: -30px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: #666;
+            background: #eee;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .queue-controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn-action {
+            padding: 10px 20px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            color: white;
+            transition: background 0.3s;
+        }
+
+        .btn-enqueue { background-color: var(--accent-color); }
+        .btn-enqueue:hover { background-color: #d35400; }
+
+        .btn-dequeue { background-color: var(--success-color); }
+        .btn-dequeue:hover { background-color: #219150; }
+
+        .btn-reset { background-color: #95a5a6; }
+        .btn-reset:hover { background-color: #7f8c8d; }
+
+        .log-area {
+            margin-top: 15px;
+            background: #333;
+            color: #0f0; /* 駭客風格綠字 */
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            height: 100px;
+            overflow-y: auto;
+            font-size: 0.9rem;
+        }
+
+        /* --- 測驗區 --- */
+        .quiz-visual {
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: var(--primary-color);
+        }
+        
+        .quiz-options {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        /* --- 陷阱卡與提示 --- */
+        .trap-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .trap-card {
+            flex: 1 1 200px;
+            background: #fff0f0;
+            border: 1px solid #ffcccc;
+            padding: 15px;
+            border-radius: 8px;
+            position: relative;
+            transition: opacity 0.5s;
+        }
+
+        .trap-card h3 { margin-top: 0; color: var(--error-color); font-size: 1rem;}
+        
+        .btn-dismiss {
+            display: block;
+            margin-top: 10px;
+            width: 100%;
+            padding: 5px;
+            background: rgba(0,0,0,0.1);
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .btn-dismiss:hover { background: rgba(0,0,0,0.2); }
+
+        .hint-box {
+            background: #edf7ff;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+            display: none; /* 預設隱藏 */
+            border-left: 4px solid #3498db;
+        }
+
+        /* --- 動畫定義 --- */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes slideOut {
+            to { opacity: 0; transform: translateX(-50px); }
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <!-- 標題區 -->
+    <header>
+        <h1>資料結構互動講義：第 5 題</h1>
+        <p>主題：Queue 是否為 FIFO？</p>
+    </header>
+
+    <!-- 1. 核心是非題 -->
+    <section class="card question-box">
+        <span class="badge">題目</span>
+        <div class="question-text">
+            第 5 題：佇列（Queue）是一種先進先出（FIFO）的資料結構。
+        </div>
+        <div class="options">
+            <button class="btn-option btn-o" onclick="checkAnswer('O')">O</button>
+            <button class="btn-option btn-x" onclick="checkAnswer('X')">X</button>
+        </div>
+        <div id="answer-feedback"></div>
+    </section>
+
+    <!-- 2. 觀念講解 -->
+    <section class="card">
+        <h2>📚 核心觀念：Queue 就像排隊買飲料！</h2>
+        <div class="concept-grid">
+            <div class="concept-box">
+                <h3>🛒 生活實例建立直覺</h3>
+                <p>想像你在學校福利社排隊買飲料：</p>
+                <ul>
+                    <li>如果你<b>第一個來排隊</b>，你就會<b>第一個買到</b>離開。</li>
+                    <li>新來的人，必須排在<b>隊伍的最後面</b>。</li>
+                    <li>這就是 <b>FIFO (First In, First Out)</b>。</li>
+                </ul>
+            </div>
+            <div class="concept-box">
+                <h3>📝 專有名詞對照表</h3>
+                <ul>
+                    <li><span class="badge">Queue</span> <b>佇列</b>：像排隊一樣的資料結構。</li>
+                    <li><span class="badge">FIFO</span> <b>先進先出</b>：First In First Out。</li>
+                    <li><span class="badge">Enqueue</span> <b>入隊</b>：把資料放進隊伍<b>尾端</b>。</li>
+                    <li><span class="badge">Dequeue</span> <b>出隊</b>：把資料從隊伍<b>前端</b>取出。</li>
+                </ul>
+            </div>
+        </div>
+
+        <div style="margin-top: 20px; background: #ffeaa7; padding: 15px; border-radius: 8px; text-align: center;">
+            👉 一句話記憶：<b>「Queue 像排隊：先來先走（FIFO）」</b>
+        </div>
+    </section>
+
+    <!-- 3. 視覺化互動模擬 -->
+    <section class="card">
+        <h2>🎮 互動實驗室：親自操作 Queue</h2>
+        <p>請點擊按鈕，觀察資料如何進出。注意看<b>前端 (Front)</b> 和 <b>尾端 (Rear)</b> 的位置！</p>
+        
+        <div class="queue-container-wrapper">
+            <!-- 視覺標籤 -->
+            <div style="position: absolute; left: 10px; top: 10px; color: #27ae60; font-weight: bold;">
+                ⬅️ 出口 (Dequeue)
+            </div>
+            <div style="position: absolute; right: 10px; top: 10px; color: #e67e22; font-weight: bold;">
+                入口 (Enqueue) ⬅️
+            </div>
+
+            <!-- 佇列本體 -->
+            <div class="queue-visual" id="queue-display">
+                <!-- JS 會動態產生方塊 -->
+            </div>
+        </div>
+
+        <div class="queue-controls">
+            <button class="btn-action btn-enqueue" onclick="demoEnqueue()">📥 入隊 (Enqueue)</button>
+            <button class="btn-action btn-dequeue" onclick="demoDequeue()">📤 出隊 (Dequeue)</button>
+            <button class="btn-action btn-reset" onclick="resetDemo()">🔄 重置</button>
+        </div>
+
+        <div class="log-area" id="action-log">
+            > 系統準備就緒...<br>
+            > 等待操作...
+        </div>
+    </section>
+
+    <!-- 4. FIFO 小測驗 -->
+    <section class="card">
+        <h2>🧠 FIFO 觀念小測驗</h2>
+        <p>現在佇列裡面有三個人：<b>A (最早來)</b>、<b>B</b>、<b>C (最晚來)</b>。</p>
+        
+        <div class="quiz-visual">
+            [ 前端 (Front) ]  &nbsp; 🅰️ &nbsp; 🅱️ &nbsp; ©️ &nbsp; [ 尾端 (Rear) ]
+        </div>
+
+        <p style="text-align: center;">請問：若執行一次 <b>Dequeue (出隊)</b>，誰會出來？</p>
+
+        <div class="quiz-options">
+            <button class="btn-action btn-enqueue" onclick="checkQuiz('A')">是 A</button>
+            <button class="btn-action btn-enqueue" onclick="checkQuiz('B')">是 B</button>
+            <button class="btn-action btn-enqueue" onclick="checkQuiz('C')">是 C</button>
+        </div>
+        <div id="quiz-feedback" style="text-align: center; margin-top: 15px; font-weight: bold;"></div>
+    </section>
+
+    <!-- 5. 比較與陷阱 -->
+    <section class="card">
+        <h2>⚠️ 別掉進陷阱！Stack vs Queue</h2>
+        <p>考試最常把這兩個搞混，請記清楚差異：</p>
+        
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            <tr style="background: #eee;">
+                <th style="padding: 10px; border: 1px solid #ddd;">資料結構</th>
+                <th style="padding: 10px; border: 1px solid #ddd;">生活比喻</th>
+                <th style="padding: 10px; border: 1px solid #ddd;">規則</th>
+                <th style="padding: 10px; border: 1px solid #ddd;">英文縮寫</th>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold; color: var(--primary-color);">Queue (佇列)</td>
+                <td style="padding: 10px; border: 1px solid #ddd;">排隊買票</td>
+                <td style="padding: 10px; border: 1px solid #ddd;">先來先服務</td>
+                <td style="padding: 10px; border: 1px solid #ddd; color: var(--success-color); font-weight: bold;">FIFO</td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold; color: #8e44ad;">Stack (堆疊)</td>
+                <td style="padding: 10px; border: 1px solid #ddd;">疊盤子/洗碗</td>
+                <td style="padding: 10px; border: 1px solid #ddd;">最後放的先拿</td>
+                <td style="padding: 10px; border: 1px solid #ddd; color: #8e44ad; font-weight: bold;">LIFO</td>
+            </tr>
+        </table>
+
+        <h3>常見誤區 (點擊卡片可移除)</h3>
+        <div class="trap-grid">
+            <div class="trap-card" onclick="dismissTrap(this)">
+                <h3>💣 陷阱 1</h3>
+                <p>以為 Queue 是 LIFO (後進先出)。</p>
+                <small style="color: #666;">(點擊表示我懂了)</small>
+            </div>
+            <div class="trap-card" onclick="dismissTrap(this)">
+                <h3>💣 陷阱 2</h3>
+                <p>以為 Enqueue 是從前端加入。</p>
+                <small style="color: #666;">(錯！是從尾端)</small>
+            </div>
+            <div class="trap-card" onclick="dismissTrap(this)">
+                <h3>💣 陷阱 3</h3>
+                <p>把 Queue 跟 Stack 的名字記反。</p>
+                <small style="color: #666;">(Queue = 排隊)</small>
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. 自我檢測 -->
+    <section class="card">
+        <h2>🧐 自我檢測 (不給答案，請思考)</h2>
+        
+        <div style="margin-bottom: 20px;">
+            <p><b>Q1：如果題目改成「堆疊 Stack」，它會是 FIFO 嗎？</b></p>
+            <button class="btn-action btn-reset" style="padding: 5px 10px; font-size: 0.8rem;" onclick="toggleHint('hint1')">💡 顯示提示</button>
+            <div id="hint1" class="hint-box">
+                提示：Stack 像是疊盤子，最後放上去的要先拿下來，所以是 LIFO (Last In First Out)。
+            </div>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <p><b>Q2：為什麼印表機的列印工作適合用 Queue？</b></p>
+            <button class="btn-action btn-reset" style="padding: 5px 10px; font-size: 0.8rem;" onclick="toggleHint('hint2')">💡 顯示提示</button>
+            <div id="hint2" class="hint-box">
+                提示：你希望先按下列印的文件先印出來，還是最後按的先印？當然是先按的先印 (FIFO)！
+            </div>
+        </div>
+
+        <div>
+            <p><b>Q3：Enqueue 與 Dequeue 分別發生在佇列哪一端？</b></p>
+            <button class="btn-action btn-reset" style="padding: 5px 10px; font-size: 0.8rem;" onclick="toggleHint('hint3')">💡 顯示提示</button>
+            <div id="hint3" class="hint-box">
+                提示：想像排隊，新的人從「尾端」排入 (Enqueue)，買完的人從「前端」離開 (Dequeue)。
+            </div>
+        </div>
+    </section>
+
+</div>
+
+<script>
+    // --- 1. 是非題互動邏輯 ---
+    function checkAnswer(answer) {
+        const feedbackEl = document.getElementById('answer-feedback');
+        
+        if (answer === 'O') {
+            feedbackEl.className = 'feedback-correct';
+            feedbackEl.style.display = 'block';
+            feedbackEl.innerHTML = '🎉 答對了！<br>Queue 正是 FIFO (先進先出)。就像排隊一樣，先來的先享受！';
+        } else {
+            feedbackEl.className = 'feedback-wrong';
+            feedbackEl.style.display = 'block';
+            feedbackEl.innerHTML = '❌ 答錯囉！<br>別被騙了，Queue 是「排隊」，當然是先進先出 (FIFO)。<br>Stack (堆疊) 才是 LIFO。';
+        }
+    }
+
+    // --- 2. Queue 視覺化互動邏輯 ---
+    const queueData = []; // 用陣列模擬 Queue
+    let counter = 1;      // 用來產生編號
+
+    function renderQueue() {
+        const container = document.getElementById('queue-display');
+        container.innerHTML = ''; // 清空畫面
+
+        // 畫出 Queue 裡面的每個元素
+        queueData.forEach((item, index) => {
+            const div = document.createElement('div');
+            div.className = 'queue-item';
+            div.innerText = item;
+            
+            // 標示 Front (第一個元素)
+            if (index === 0) {
+                const label = document.createElement('div');
+                label.className = 'label-marker';
+                label.innerText = 'Front (前端)';
+                label.style.left = '0';
+                div.appendChild(label);
+            }
+
+            // 標示 Rear (最後一個元素)
+            if (index === queueData.length - 1) {
+                const label = document.createElement('div');
+                label.className = 'label-marker';
+                label.innerText = 'Rear (尾端)';
+                label.style.right = '0';
+                // 避免只有一個元素時標籤重疊，稍微錯開
+                if(queueData.length === 1) {
+                    label.style.bottom = '-55px'; 
+                }
+                div.appendChild(label);
+            }
+
+            container.appendChild(div);
+        });
+    }
+
+    function addLog(message) {
+        const logArea = document.getElementById('action-log');
+        const time = new Date().toLocaleTimeString('zh-TW', { hour12: false });
+        logArea.innerHTML = `> [${time}] ${message}<br>` + logArea.innerHTML;
+    }
+
+    function demoEnqueue() {
+        if (queueData.length >= 8) {
+            alert("佇列滿了！(版面限制)");
+            return;
+        }
+        const newItem = counter++;
+        queueData.push(newItem); // Enqueue: 加入陣列尾端
+        renderQueue();
+        addLog(`入隊 (Enqueue): 元素 ${newItem} 加入尾端。目前長度: ${queueData.length}`);
+    }
+
+    function demoDequeue() {
+        if (queueData.length === 0) {
+            alert("佇列是空的 (Empty)！無法出隊。");
+            return;
+        }
+        
+        // 視覺特效：先移除 DOM 的動畫，再更新資料
+        const firstElement = document.querySelector('.queue-item');
+        if(firstElement) {
+            firstElement.style.animation = 'slideOut 0.3s forwards';
+            
+            setTimeout(() => {
+                const removedItem = queueData.shift(); // Dequeue: 移除陣列第一個元素
+                renderQueue();
+                addLog(`出隊 (Dequeue): 元素 ${removedItem} 離開前端。目前長度: ${queueData.length}`);
+            }, 300); // 等動畫跑完
+        }
+    }
+
+    function resetDemo() {
+        queueData.length = 0; // 清空陣列
+        counter = 1;
+        renderQueue();
+        document.getElementById('action-log').innerHTML = '> 系統重置完成。<br>> 等待操作...';
+    }
+
+    // --- 3. FIFO 小測驗邏輯 ---
+    function checkQuiz(ans) {
+        const feedback = document.getElementById('quiz-feedback');
+        if (ans === 'A') {
+            feedback.style.color = 'var(--success-color)';
+            feedback.innerHTML = '✅ 正確！<br>因為 A 是最早進來的 (First In)，所以它必須第一個出去 (First Out)。';
+        } else {
+            feedback.style.color = 'var(--error-color)';
+            feedback.innerHTML = '❌ 錯誤！<br>Queue 是先進先出。A 排在最前面，怎麼會輪到 ' + ans + ' 呢？';
+        }
+    }
+
+    // --- 4. 陷阱卡邏輯 ---
+    function dismissTrap(card) {
+        card.style.opacity = '0';
+        setTimeout(() => {
+            card.style.display = 'none';
+        }, 500);
+    }
+
+    // --- 5. 提示按鈕邏輯 ---
+    function toggleHint(id) {
+        const hint = document.getElementById(id);
+        if (hint.style.display === 'block') {
+            hint.style.display = 'none';
+        } else {
+            hint.style.display = 'block';
+        }
+    }
+
+    // 初始化
+    renderQueue();
+
+</script>
+
+</body>
+</html>

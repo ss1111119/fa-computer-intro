@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電腦概論互動講義：真值表與組合數</title>
+    <style>
+        /* --- 全域設定 --- */
+        :root {
+            --primary-color: #333;
+            --accent-color: #e63946; /* 重點紅 */
+            --highlight-color: #fff59d; /* 螢光黃 */
+            --bg-color: #f4f4f4;
+            --card-bg: #ffffff;
+            --text-color: #2c3e50;
+            --border-radius: 12px;
+            --success-color: #2a9d8f;
+            --error-color: #e76f51;
+        }
+
+        body {
+            font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* --- 卡片式設計 --- */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 25px;
+            margin-bottom: 25px;
+            border-left: 5px solid #666; /* 裝飾線 */
+        }
+
+        h1, h2, h3 {
+            color: var(--primary-color);
+            margin-top: 0;
+        }
+
+        h2 {
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            font-size: 1.4rem;
+        }
+
+        .badge {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        /* --- 特效與標示 --- */
+        .highlight {
+            background-color: var(--highlight-color);
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-weight: bold;
+            box-decoration-break: clone;
+        }
+
+        .keyword-def {
+            background-color: #e3f2fd;
+            border: 1px solid #bbdefb;
+            color: #0d47a1;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            margin: 10px 0;
+        }
+
+        .math-formula {
+            font-family: "Courier New", monospace;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #d32f2f;
+            background: #ffebee;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        /* --- 題目區 --- */
+        .question-box {
+            font-size: 1.1rem;
+            font-weight: bold;
+            background-color: #fafafa;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        .options-list {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .options-list li {
+            margin: 8px 0;
+            padding: 8px 12px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+
+        /* --- 互動模擬器區 --- */
+        .simulation-area {
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            text-align: center;
+        }
+
+        .slider-container {
+            margin: 20px 0;
+        }
+
+        input[type=range] {
+            width: 80%;
+            height: 10px;
+            border-radius: 5px;
+            background: #d3d3d3;
+            outline: none;
+        }
+
+        .result-display {
+            font-size: 1.5rem;
+            margin: 15px 0;
+        }
+
+        .visual-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .bit-box {
+            width: 20px;
+            height: 20px;
+            background-color: #4fc3f7;
+            border-radius: 3px;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .bit-box.target {
+            background-color: #ffd700; /* 目標變數數量時變成金色 */
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        /* --- 作答互動區 --- */
+        .quiz-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 2px solid #ddd;
+            background: white;
+            text-align: left;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .quiz-btn:hover {
+            background-color: #f0f0f0;
+            border-color: #bbb;
+        }
+
+        .quiz-btn.correct {
+            background-color: #d1e7dd;
+            border-color: var(--success-color);
+            color: #0f5132;
+        }
+
+        .quiz-btn.wrong {
+            background-color: #f8d7da;
+            border-color: var(--error-color);
+            color: #842029;
+        }
+
+        .feedback-msg {
+            margin-top: 10px;
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 6px;
+            display: none;
+        }
+
+        .reveal-btn {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .answer-block {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 6px;
+        }
+
+        /* --- 補充資料區 --- */
+        .concept-list li {
+            margin-bottom: 8px;
+        }
+        
+        .trap-box {
+            border-left: 4px solid var(--error-color);
+            background-color: #fff5f5;
+            padding: 10px 15px;
+            margin-top: 10px;
+        }
+
+        /* --- RWD 微調 --- */
+        @media (max-width: 600px) {
+            .card { padding: 15px; }
+            h2 { font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- A. 標題區 -->
+    <div class="card" style="border-left-color: var(--primary-color);">
+        <h1><span class="badge">題目 20</span>數位邏輯：真值表與組合數</h1>
+        <p>單元：基本邏輯閘與布林代數 | 難度：★☆☆☆☆</p>
+    </div>
+
+    <!-- B. 題目區 -->
+    <div class="card">
+        <h2>【題目】</h2>
+        <div class="question-box">
+            20. 真值表中，5個輸入變數，最多有幾種不同的變化?
+        </div>
+        <ul class="options-list">
+            <li>(A) 5</li>
+            <li>(B) 32</li>
+            <li>(C) 50</li>
+            <li>(D) 64</li>
+        </ul>
+    </div>
+
+    <!-- C. 第一步：找關鍵字 -->
+    <div class="card">
+        <h2>第一步：找關鍵字</h2>
+        <p>請先圈出題目中的重點：</p>
+        <p style="font-size: 1.1rem;">
+            「<span class="highlight">真值表</span>」中，「<span class="highlight">5個輸入變數</span>」，最多有「<span class="highlight">幾種不同的變化</span>」?
+        </p>
+        
+        <div class="keyword-def">
+            <strong>📖 名詞解釋：Truth Table（真值表）</strong><br>
+            這是一種列表，把所有輸入變數可能的 <strong>0 與 1 組合</strong>全部列出來，用來分析邏輯電路的輸出結果。題目問「幾種變化」，其實就是問「這個表會有幾列」。
+        </div>
+    </div>
+
+    <!-- D. 第二步：白話翻譯 -->
+    <div class="card">
+        <h2>第二步：白話翻譯</h2>
+        <p>讓我們用高中生聽得懂的話來說：</p>
+        <blockquote style="border-left: 4px solid #aaa; padding-left: 10px; color: #555; font-style: italic;">
+            「如果有 5 個開關，每個開關只能是『開(1)』或『關(0)』，請問總共有幾種不同的開關組合狀態？」
+        </blockquote>
+    </div>
+
+    <!-- E. 第三步：解題思路 -->
+    <div class="card">
+        <h2>第三步：解題思路（必考公式）</h2>
+        <p>這題考的是「排列組合」的基本觀念，請跟著以下步驟：</p>
+        <ol>
+            <li>每一個變數（開關）只有 <strong>2</strong> 種狀態（0 或 1）。</li>
+            <li>當我們有 $n$ 個變數時，組合數就是把每個變數的狀態數相乘。</li>
+            <li>公式：<span class="math-formula">2 × 2 × ... × 2 = 2ⁿ</span> (2 的 n 次方)。</li>
+            <li>題目說有 <strong>5</strong> 個變數，所以 $n = 5$。</li>
+            <li>計算：<span class="math-formula">2⁵ = 2 × 2 × 2 × 2 × 2</span></li>
+        </ol>
+    </div>
+
+    <!-- F. 互動式組合數模擬 -->
+    <div class="card">
+        <h2>🎯 互動實驗室：變數 vs 組合數</h2>
+        <p>試著拖動下方的滑桿，觀察當變數增加時，組合數是如何「爆炸式」成長的！</p>
+        
+        <div class="simulation-area">
+            <label for="inputRange">輸入變數數量 (n)：<span id="nValue" style="color:#ffd700; font-weight:bold; font-size:1.2rem;">1</span> 個</label>
+            
+            <div class="slider-container">
+                <input type="range" id="inputRange" min="1" max="6" value="1" step="1">
+            </div>
+
+            <div class="result-display">
+                公式：2<sup><span id="nPower">1</span></sup> = 
+                <span id="totalValue" style="color:#4fc3f7; font-weight:bold;">2</span> 種變化
+            </div>
+
+            <p style="font-size:0.9rem; opacity: 0.8;">每一格代表一種組合（真值表的一列）：</p>
+            <div class="visual-grid" id="visualGrid">
+                <!-- JS 會在這裡產生方塊 -->
+            </div>
+            <div id="targetMsg" style="display:none; color:#ffd700; margin-top:10px; font-weight:bold;">★ 這是題目的情況 (n=5)！</div>
+        </div>
+    </div>
+
+    <!-- G. 第四步：選項分析 -->
+    <div class="card">
+        <h2>第四步：選項分析</h2>
+        <ul style="padding-left: 20px;">
+            <li>❌ <strong>(A) 5</strong>：這是陷阱！這只是變數的數量 $n$，不是組合數。</li>
+            <li>✅ <strong>(B) 32</strong>：正確！$2^5 = 32$。</li>
+            <li>❌ <strong>(C) 50</strong>：這是計算錯誤，可能誤以為是 $5 \times 10$ 之類的直覺猜測。</li>
+            <li>❌ <strong>(D) 64</strong>：這是 $2^6$。如果你有 6 個變數才是這個答案。</li>
+        </ul>
+    </div>
+
+    <!-- H, I, J. 觀念補充與記憶 -->
+    <div class="card">
+        <h2>💡 觀念補充與防雷</h2>
+        
+        <h3>記憶口訣</h3>
+        <p style="font-size: 1.2rem; font-weight: bold; color: var(--accent-color); text-align: center; border: 2px dashed var(--accent-color); padding: 10px; border-radius: 8px;">
+            「一個變數兩種變，n 個就是 2ⁿ 變」
+        </p>
+
+        <h3>常見陷阱 (Don't do this!)</h3>
+        <div class="trap-box">
+            <ul>
+                <li>⚠️ <strong>不要用乘法：</strong> $n \times 2$ 是錯的！(5個變數不是 10種)</li>
+                <li>⚠️ <strong>不要平方：</strong> $n^2$ 是錯的！(5個變數不是 25種)</li>
+                <li>⚠️ <strong>不要背錯次方：</strong> 記得 $2^5=32$, $2^6=64$, $2^8=256$, $2^{10}=1024$ (電腦概論常用數值)。</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- K. 作答區 -->
+    <div class="card">
+        <h2>✍️ 隨堂測驗</h2>
+        <p>回到題目，請選出正確答案：</p>
+        <div class="question-box">
+            題目：真值表中，5個輸入變數，最多有幾種不同的變化?
+        </div>
+        
+        <div style="margin-top: 15px;">
+            <button class="quiz-btn" onclick="checkAnswer('A', this)">(A) 5</button>
+            <button class="quiz-btn" onclick="checkAnswer('B', this)">(B) 32</button>
+            <button class="quiz-btn" onclick="checkAnswer('C', this)">(C) 50</button>
+            <button class="quiz-btn" onclick="checkAnswer('D', this)">(D) 64</button>
+        </div>
+
+        <div id="feedback" class="feedback-msg"></div>
+
+        <button class="reveal-btn" onclick="toggleAnswer()">顯示/隱藏解析</button>
+        
+        <!-- L. 正確答案區 -->
+        <div id="answerBlock" class="answer-block">
+            <h3 style="color: var(--success-color);">正確答案：(B)</h3>
+            <p><strong>一句話理由：</strong> 因為每個變數有 0/1 兩種狀態，5 個變數共有 $2^5 = 32$ 種組合。</p>
+        </div>
+    </div>
+
+    <!-- M. 自我檢測 -->
+    <div class="card">
+        <h2>📝 自我檢測 (Self Check)</h2>
+        <p>確保你真的懂了，試著回答以下問題（心算即可）：</p>
+        <ol>
+            <li>如果增加到 <strong>6 個輸入變數</strong>，真值表會有幾列？ (提示：32 × 2)</li>
+            <li>如果只有 <strong>3 個輸入變數</strong> (A, B, C)，變化有幾種？</li>
+            <li>常聽到的 <strong>8-bit (8位元)</strong> 影像，代表每個像素有幾種顏色變化？ (提示：$2^8$)</li>
+        </ol>
+    </div>
+
+</div>
+
+<script>
+    // --- 互動模擬器邏輯 ---
+    const inputRange = document.getElementById('inputRange');
+    const nValue = document.getElementById('nValue');
+    const nPower = document.getElementById('nPower');
+    const totalValue = document.getElementById('totalValue');
+    const visualGrid = document.getElementById('visualGrid');
+    const targetMsg = document.getElementById('targetMsg');
+
+    // 初始化
+    updateSimulation(inputRange.value);
+
+    // 監聽滑桿變化
+    inputRange.addEventListener('input', function() {
+        updateSimulation(this.value);
+    });
+
+    function updateSimulation(n) {
+        const num = parseInt(n);
+        const total = Math.pow(2, num);
+
+        // 更新文字
+        nValue.textContent = num;
+        nPower.textContent = num;
+        totalValue.textContent = total;
+
+        // 題目是 n=5，特別標示
+        if (num === 5) {
+            targetMsg.style.display = 'block';
+            nValue.style.color = '#ffd700'; 
+        } else {
+            targetMsg.style.display = 'none';
+            nValue.style.color = 'white';
+        }
+
+        // 繪製視覺方塊
+        visualGrid.innerHTML = ''; // 清空
+        
+        // 為了效能，如果數量太多(例如超過256)，就不全部畫，但這裡最多64，沒問題
+        for (let i = 0; i < total; i++) {
+            const box = document.createElement('div');
+            box.className = 'bit-box';
+            if (num === 5) {
+                box.classList.add('target'); // 加金色特效
+            }
+            // 讓方塊稍微有點延遲出現的特效
+            box.style.animationDelay = (i * 0.01) + 's';
+            visualGrid.appendChild(box);
+        }
+    }
+
+    // --- 測驗邏輯 ---
+    function checkAnswer(option, btnElement) {
+        const feedback = document.getElementById('feedback');
+        
+        // 重置所有按鈕樣式
+        const allBtns = document.querySelectorAll('.quiz-btn');
+        allBtns.forEach(btn => {
+            btn.classList.remove('correct', 'wrong');
+            btn.disabled = false;
+        });
+
+        if (option === 'B') {
+            // 答對
+            btnElement.classList.add('correct');
+            feedback.textContent = "🎉 答對了！2 的 5 次方等於 32。";
+            feedback.style.backgroundColor = "#d1e7dd";
+            feedback.style.color = "#0f5132";
+            feedback.style.display = "block";
+        } else {
+            // 答錯
+            btnElement.classList.add('wrong');
+            feedback.textContent = "😅 哎呀，不對喔。請再回頭看看「互動實驗室」或「公式」！";
+            feedback.style.backgroundColor = "#f8d7da";
+            feedback.style.color = "#842029";
+            feedback.style.display = "block";
+        }
+    }
+
+    function toggleAnswer() {
+        const block = document.getElementById('answerBlock');
+        if (block.style.display === 'none' || block.style.display === '') {
+            block.style.display = 'block';
+        } else {
+            block.style.display = 'none';
+        }
+    }
+</script>
+
+</body>
+</html>

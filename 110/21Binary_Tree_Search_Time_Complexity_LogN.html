@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電腦概論：二元樹搜尋與時間複雜度</title>
+    <style>
+        /* --- 全域設定 --- */
+        :root {
+            --primary-color: #333; /* 主要文字黑 */
+            --secondary-color: #666; /* 次要文字灰 */
+            --highlight-bg: #fff9c4; /* 螢光筆黃 */
+            --accent-blue: #007bff; /* 按鈕藍 */
+            --bg-color: #f9f9f9; /* 背景灰白 */
+            --card-bg: #ffffff; /* 卡片白 */
+            --correct-color: #d4edda; /* 正確綠底 */
+            --correct-text: #155724; /* 正確綠字 */
+            --wrong-color: #f8d7da; /* 錯誤紅底 */
+            --wrong-text: #721c24; /* 錯誤紅字 */
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        /* --- 容器與版面 --- */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        /* --- 標題區 --- */
+        header {
+            border-bottom: 2px solid #eee;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin: 0;
+            color: #2c3e50;
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            color: #555;
+            margin-top: 10px;
+            border-left: 5px solid var(--accent-blue);
+            padding-left: 10px;
+        }
+
+        /* --- 題目區 --- */
+        .question-box {
+            background-color: #fff;
+            border: 2px solid #333;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .options {
+            list-style: none;
+            padding: 0;
+            margin-top: 10px;
+        }
+
+        .options li {
+            margin: 5px 0;
+        }
+
+        .answer-reveal {
+            margin-top: 10px;
+            color: var(--secondary-color);
+            cursor: pointer;
+            font-weight: normal;
+        }
+
+        /* --- 教學步驟區塊 --- */
+        .step-section {
+            margin-bottom: 25px;
+            padding: 15px;
+            background-color: #fff;
+            border: 1px solid #eee;
+            border-radius: 8px;
+        }
+
+        .highlight {
+            background-color: var(--highlight-bg);
+            padding: 0 4px;
+            border-radius: 2px;
+            font-weight: bold;
+        }
+
+        /* --- 視覺化互動區 (重點) --- */
+        .visualizer-container {
+            background: #fafafa;
+            border: 2px dashed #ccc;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .controls {
+            margin-bottom: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .canvas-wrapper {
+            width: 100%;
+            height: 250px;
+            border: 1px solid #ddd;
+            background: #fff;
+            position: relative;
+            margin-top: 10px;
+            border-radius: 4px;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .data-display {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 10px;
+            font-weight: bold;
+            color: var(--accent-blue);
+        }
+
+        input[type=range] {
+            width: 200px;
+        }
+
+        /* --- 作答互動區 --- */
+        .quiz-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .quiz-btn {
+            padding: 15px;
+            background: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        .quiz-btn:hover {
+            background: #e0e0e0;
+        }
+
+        .feedback {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .feedback.correct {
+            display: block;
+            background: var(--correct-color);
+            color: var(--correct-text);
+            border: 1px solid #c3e6cb;
+        }
+
+        .feedback.wrong {
+            display: block;
+            background: var(--wrong-color);
+            color: var(--wrong-text);
+            border: 1px solid #f5c6cb;
+        }
+
+        /* --- 補充資料區 --- */
+        .info-card {
+            background: #f8f9fa;
+            border-left: 4px solid #6c757d;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .tips {
+            color: #d63384;
+            font-weight: bold;
+        }
+
+        /* RWD Mobile 調整 */
+        @media (max-width: 600px) {
+            .quiz-area {
+                grid-template-columns: 1fr;
+            }
+            .container {
+                padding: 15px;
+            }
+            .controls {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- A. 標題區 -->
+    <header>
+        <h1>電腦概論重點複習</h1>
+        <p>單元：資料結構 - 二元樹搜尋</p>
+    </header>
+
+    <!-- B. 題目區 -->
+    <section class="question-box">
+        <div>21. 在有 N 個節點的二元樹中作搜尋的運算，其執行時間跟何者成正比?</div>
+        <ul class="options">
+            <li>(A) N</li>
+            <li>(B) log N</li>
+            <li>(C) N<sup>2</sup></li>
+            <li>(D) N log N</li>
+        </ul>
+        
+        <details>
+            <summary class="answer-reveal">點擊查看答案</summary>
+            <div style="margin-top: 10px; color: green; font-weight: bold;">答案：B</div>
+        </details>
+    </section>
+
+    <!-- C. 第一步：找關鍵字 -->
+    <section class="step-section">
+        <h2>第一步：找關鍵字</h2>
+        <p>請拿出你的螢光筆，將以下詞彙畫起來：</p>
+        <p>
+            「<span class="highlight">N 個節點</span>」
+            「<span class="highlight">二元樹</span>」
+            「<span class="highlight">搜尋</span>」
+            「<span class="highlight">成正比</span>」
+        </p>
+        <p style="font-size: 0.9em; color: #666;">
+            💡 <strong>老師解析</strong>：題目問「成正比」，其實就是在考 <strong>Time Complexity（時間複雜度：資料量變大時，花時間變多的速度）</strong> 的大方向（Big O）。
+        </p>
+    </section>
+
+    <!-- D. 第二步：白話翻譯 -->
+    <section class="step-section">
+        <h2>第二步：白話翻譯</h2>
+        <p>這題如果用白話文問，意思是：</p>
+        <div style="background: #eef; padding: 10px; border-radius: 5px;">
+            「如果一棵樹有 N 個資料點，我想找到某一個特定的數字，大概需要檢查幾次？這個次數跟 N 的關係，比較像 N 還是 log N？」
+        </div>
+    </section>
+
+    <!-- E. 第三步：解題思路 -->
+    <section class="step-section">
+        <h2>第三步：解題思路</h2>
+        <ul>
+            <li><strong>觀念連結：</strong> 樹的搜尋次數，通常取決於樹的 <strong>Height（高度：從樹根走到最底層葉子的層數）</strong>。</li>
+            <li><strong>二元樹特性：</strong> 
+                <br>每個節點最多生 2 個孩子。
+                <br>第 1 層：1 個
+                <br>第 2 層：2 個
+                <br>第 3 層：4 個
+                <br>...
+                <br>每次往下找一層，資料範圍就縮小一半（類似「終極密碼」猜數字）。
+            </li>
+            <li><strong>數學關係：</strong> 如果樹有 $N$ 個節點且長得很「飽滿」，高度大約是 $\log_2 N$。</li>
+            <li><strong>結論：</strong> 因為搜尋就是沿著樹高往下走，所以步數與高度成正比，即 $\log N$。</li>
+        </ul>
+    </section>
+
+    <!-- F. 互動視覺化：樹高度與搜尋步數 -->
+    <section class="step-section visualizer-container">
+        <h2 style="border:none; margin-top:0;">F. 互動實驗室：高度 vs 步數</h2>
+        
+        <div class="controls">
+            <div>
+                <label for="nSlider">節點數量 (N)：<span id="nValueDisplay">16</span></label>
+                <br>
+                <input type="range" id="nSlider" min="2" max="1024" value="16">
+            </div>
+            
+            <div style="text-align: left;">
+                <label><input type="radio" name="treeMode" value="balanced" checked> 平衡樹 (Balanced)</label>
+                <br>
+                <label><input type="radio" name="treeMode" value="degenerate"> 退化樹 (Degenerate)</label>
+            </div>
+        </div>
+
+        <div class="canvas-wrapper">
+            <canvas id="treeCanvas"></canvas>
+        </div>
+
+        <div class="data-display">
+            <div>預估樹高 (步數)：<span id="heightDisplay">4</span></div>
+            <div>時間複雜度：<span id="complexityDisplay">O(log N)</span></div>
+        </div>
+        <p style="font-size: 0.8em; color: #888; margin-top: 5px;">*示意圖僅呈現樹的形狀趨勢，非真實 1024 個點</p>
+    </section>
+
+    <!-- G. 選項分析 -->
+    <section class="step-section">
+        <h2>第四步：選項大解剖</h2>
+        <ul style="list-style-type: none; padding-left: 0;">
+            <li style="margin-bottom: 10px;">
+                ❌ <strong>(A) N</strong><br>
+                這是在「退化成一條線」或「陣列線性搜尋」時的最差情況。但題目問「二元樹搜尋」時，通常預設指有效率的狀態（或指 BST），或是問平均情況。
+            </li>
+            <li style="margin-bottom: 10px; background: #e8f5e9; padding: 5px; border-radius: 4px;">
+                ✅ <strong>(B) log N</strong><br>
+                這是 <strong>Balanced Binary Tree（平衡二元樹：左右子樹高度差很小）</strong> 的特徵。因為 $2^{\text{height}} \approx N$，所以 $\text{height} \approx \log_2 N$。
+            </li>
+            <li style="margin-bottom: 10px;">
+                ❌ <strong>(C) N<sup>2</sup></strong><br>
+                這是「雙層迴圈」或「氣泡排序法」的等級，搜尋不會這麼慢。
+            </li>
+            <li style="margin-bottom: 10px;">
+                ❌ <strong>(D) N log N</strong><br>
+                這是「快速排序 Quick Sort」或「合併排序 Merge Sort」的平均複雜度，不是單純搜尋一個值。
+            </li>
+        </ul>
+    </section>
+
+    <!-- H, I, J 觀念補充區 -->
+    <section class="info-card">
+        <h3>📚 考前速記錦囊</h3>
+        
+        <h4>觀念定義</h4>
+        <ul>
+            <li><strong>Balanced（平衡）：</strong> 樹長得胖胖的，層數最少，效率最好。</li>
+            <li><strong>Degenerate（退化）：</strong> 樹長得像一條線（只有右腳或左腳），效率最差（變回 O(N)）。</li>
+        </ul>
+
+        <h4>記憶口訣</h4>
+        <p class="tips">「二元樹切一半，次數就是 Log (對數) 算！」</p>
+
+        <h4>常見陷阱 ⚠️</h4>
+        <ul>
+            <li>如果題目問「最差情況 (Worst Case)」，答案要選 (A) N。但若沒特別講，一般二元搜尋樹相關題目多指 O(log N) 的優勢。</li>
+            <li>不要把「搜尋」跟「排序 (N log N)」搞混。</li>
+        </ul>
+    </section>
+
+    <!-- K. 作答互動區 -->
+    <section class="step-section" style="border: 2px solid var(--accent-blue);">
+        <h2>K. 實戰演練</h2>
+        <p>21. 在有 N 個節點的二元樹中作搜尋的運算，其執行時間跟何者成正比?</p>
+        <div class="quiz-area">
+            <button class="quiz-btn" onclick="checkAnswer('A')">(A) N</button>
+            <button class="quiz-btn" onclick="checkAnswer('B')">(B) log N</button>
+            <button class="quiz-btn" onclick="checkAnswer('C')">(C) N<sup>2</sup></button>
+            <button class="quiz-btn" onclick="checkAnswer('D')">(D) N log N</button>
+        </div>
+        
+        <div id="quizFeedback" class="feedback"></div>
+    </section>
+
+    <!-- M. 自我檢測 -->
+    <section class="step-section">
+        <h2>M. 自我檢測 (想一想，不看答案)</h2>
+        <ol>
+            <li>如果 N = 1024，在平衡二元樹中搜尋，大約只要找幾次？(提示：$2^{10}=1024$)</li>
+            <li>為什麼我們說「鏈結串列 (Linked List)」搜尋很慢？它對應到二元樹的哪種形狀？</li>
+        </ol>
+    </section>
+
+    <footer style="text-align: center; margin-top: 30px; font-size: 0.8em; color: #888;">
+        &copy; 2023 互動式電腦概論教學 | Design by Frontend Teacher
+    </footer>
+</div>
+
+<script>
+    /* --- 互動視覺化邏輯 --- */
+    const canvas = document.getElementById('treeCanvas');
+    const ctx = canvas.getContext('2d');
+    const slider = document.getElementById('nSlider');
+    const nDisplay = document.getElementById('nValueDisplay');
+    const heightDisplay = document.getElementById('heightDisplay');
+    const complexityDisplay = document.getElementById('complexityDisplay');
+    const radioButtons = document.querySelectorAll('input[name="treeMode"]');
+
+    // 初始化 Canvas 尺寸
+    function resizeCanvas() {
+        const wrapper = document.querySelector('.canvas-wrapper');
+        canvas.width = wrapper.clientWidth;
+        canvas.height = wrapper.clientHeight;
+        updateVisual();
+    }
+    window.addEventListener('resize', resizeCanvas);
+
+    // 繪製樹的函數
+    function drawTree(n, mode) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.strokeStyle = '#333';
+        ctx.fillStyle = '#4CAF50'; // 節點顏色
+        
+        const startX = canvas.width / 2;
+        const startY = 30;
+        const nodeRadius = 4;
+        
+        if (mode === 'balanced') {
+            // 繪製平衡樹 (示意圖：只畫幾層代表)
+            const levels = Math.min(Math.floor(Math.log2(n)), 6); // 最多畫 6 層避免太密
+            
+            function drawBranch(x, y, level, maxLevel, spread) {
+                if (level > maxLevel) return;
+
+                // 畫節點
+                ctx.beginPath();
+                ctx.arc(x, y, nodeRadius, 0, Math.PI * 2);
+                ctx.fill();
+
+                if (level < maxLevel) {
+                    const nextSpread = spread / 2;
+                    const nextY = y + 35;
+                    
+                    // 左腳
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                    ctx.lineTo(x - spread, nextY);
+                    ctx.stroke();
+                    drawBranch(x - spread, nextY, level + 1, maxLevel, nextSpread);
+
+                    // 右腳
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                    ctx.lineTo(x + spread, nextY);
+                    ctx.stroke();
+                    drawBranch(x + spread, nextY, level + 1, maxLevel, nextSpread);
+                }
+            }
+            
+            drawBranch(startX, startY, 0, levels, canvas.width / 4);
+            
+        } else {
+            // 繪製退化樹 (鏈狀)
+            const maxNodesToDraw = Math.min(n, 10); // 最多畫 10 個點示意
+            let currentX = startX - 50; // 稍微偏左開始
+            let currentY = startY;
+
+            for (let i = 0; i < maxNodesToDraw; i++) {
+                // 畫節點
+                ctx.beginPath();
+                ctx.arc(currentX, currentY, nodeRadius, 0, Math.PI * 2);
+                ctx.fillStyle = '#dc3545'; // 退化樹用紅色警示
+                ctx.fill();
+
+                if (i < maxNodesToDraw - 1) {
+                    // 畫線到右下 (模擬偏斜)
+                    ctx.beginPath();
+                    ctx.moveTo(currentX, currentY);
+                    ctx.lineTo(currentX + 15, currentY + 20);
+                    ctx.stroke();
+                    currentX += 15;
+                    currentY += 20;
+                }
+            }
+            // 如果 N 很大，畫虛線示意
+            if (n > 10) {
+                ctx.setLineDash([5, 5]);
+                ctx.beginPath();
+                ctx.moveTo(currentX, currentY);
+                ctx.lineTo(currentX + 30, currentY + 40);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.font = "12px Arial";
+                ctx.fillStyle = "#333";
+                ctx.fillText(`... 共 ${n} 層`, currentX + 35, currentY + 50);
+            }
+        }
+    }
+
+    function updateVisual() {
+        const n = parseInt(slider.value);
+        nDisplay.textContent = n;
+        
+        // 取得目前模式
+        let mode = 'balanced';
+        for(const rb of radioButtons) {
+            if(rb.checked) mode = rb.value;
+        }
+
+        let estimatedSteps;
+        let complexityText;
+
+        if (mode === 'balanced') {
+            // 平衡：log2(N)
+            estimatedSteps = Math.floor(Math.log2(n));
+            if (n === 1) estimatedSteps = 1;
+            complexityText = "O(log N) - 效率高";
+            complexityDisplay.style.color = "#155724"; // 綠色
+        } else {
+            // 退化：N
+            estimatedSteps = n;
+            complexityText = "O(N) - 效率差 (退化)";
+            complexityDisplay.style.color = "#721c24"; // 紅色
+        }
+
+        heightDisplay.textContent = estimatedSteps;
+        complexityDisplay.textContent = complexityText;
+
+        drawTree(n, mode);
+    }
+
+    // 事件監聽
+    slider.addEventListener('input', updateVisual);
+    radioButtons.forEach(btn => btn.addEventListener('change', updateVisual));
+
+    // 初始化執行一次
+    setTimeout(resizeCanvas, 100);
+
+    /* --- 考題互動邏輯 --- */
+    function checkAnswer(userChoice) {
+        const feedbackEl = document.getElementById('quizFeedback');
+        feedbackEl.className = 'feedback'; // 重置 class
+        
+        if (userChoice === 'B') {
+            feedbackEl.classList.add('correct');
+            feedbackEl.innerHTML = `
+                <h3>🎉 答對了！</h3>
+                <p><strong>正確思路：</strong>二元樹在理想（平衡）狀態下，每次搜尋都可以排除一半的可能性，就像猜數字一樣，高度為 log N，所以時間複雜度與 log N 成正比。</p>
+            `;
+        } else {
+            feedbackEl.classList.add('wrong');
+            let explanation = "";
+            if(userChoice === 'A') explanation = "這是「最差情況」或「線性搜尋」的複雜度，不是二元樹搜尋的一般特徵。";
+            if(userChoice === 'C') explanation = "這通常是兩層迴圈的複雜度，搜尋沒那麼慢。";
+            if(userChoice === 'D') explanation = "這是高效排序法（如 Merge Sort）的複雜度，不是單純搜尋。";
+
+            feedbackEl.innerHTML = `
+                <h3>⚠️ 再想一下...</h3>
+                <p>你選了 (${userChoice})，但${explanation}</p>
+                <p>提示：想想看「切一半、切一半」的數學函數是什麼？</p>
+            `;
+        }
+    }
+</script>
+
+</body>
+</html>

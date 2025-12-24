@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電腦概論互動教學：位元組組合數計算</title>
+    <style>
+        /* --- 基礎設定 --- */
+        :root {
+            --primary-color: #333;
+            --accent-color: #2c3e50;
+            --highlight-bg: #fff9c4; /* 螢光筆黃 */
+            --bg-color: #f4f4f9;
+            --card-bg: #ffffff;
+            --border-color: #ddd;
+            --correct-color: #27ae60;
+            --wrong-color: #c0392b;
+            --fixed-bit-bg: #e0e0e0;
+            --free-bit-bg: #fff;
+            --free-bit-active: #e3f2fd;
+        }
+
+        body {
+            font-family: "Noto Sans TC", "Microsoft JhengHei", Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--primary-color);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* --- 卡片式設計 --- */
+        .card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 1px solid var(--border-color);
+        }
+
+        h1, h2, h3 {
+            color: var(--accent-color);
+            margin-top: 0;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            text-align: center;
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 15px;
+        }
+
+        h2 {
+            font-size: 1.4rem;
+            border-left: 5px solid var(--accent-color);
+            padding-left: 10px;
+            margin-bottom: 15px;
+        }
+
+        h3 {
+            font-size: 1.2rem;
+            margin-top: 20px;
+            color: #555;
+        }
+
+        /* --- 文字樣式 --- */
+        .highlight {
+            background-color: var(--highlight-bg);
+            padding: 0 4px;
+            border-radius: 2px;
+            font-weight: bold;
+        }
+
+        .note {
+            font-size: 0.95rem;
+            color: #666;
+            background: #f9f9f9;
+            padding: 10px;
+            border-left: 4px solid #bbb;
+            margin: 10px 0;
+        }
+
+        code {
+            background-color: #eee;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 1.1em;
+            color: #d35400;
+        }
+
+        /* --- 互動位元格子區 (核心功能) --- */
+        .bit-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 20px 0;
+            user-select: none;
+        }
+
+        .bit-box-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .bit-label {
+            font-size: 0.8rem;
+            color: #888;
+            margin-bottom: 4px;
+        }
+
+        .bit-box {
+            width: 50px;
+            height: 50px;
+            border: 2px solid var(--accent-color);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .bit-index {
+            font-size: 0.7rem;
+            color: #aaa;
+            margin-top: 4px;
+        }
+
+        /* 固定位元樣式 */
+        .bit-box.fixed {
+            background-color: var(--fixed-bit-bg);
+            color: #555;
+            cursor: not-allowed;
+            border-style: dashed;
+        }
+
+        /* 鎖頭圖示 (純 CSS 繪製或 Emoji) */
+        .bit-box.fixed::after {
+            content: "🔒";
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            font-size: 12px;
+            background: #fff;
+            border-radius: 50%;
+            padding: 2px;
+        }
+
+        /* 自由位元樣式 */
+        .bit-box.free {
+            background-color: var(--free-bit-bg);
+            box-shadow: 0 4px 0 #ccc;
+        }
+
+        .bit-box.free:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #ccc;
+            background-color: var(--free-bit-active);
+        }
+
+        .bit-info {
+            text-align: center;
+            font-size: 1.1rem;
+            margin-top: 15px;
+            padding: 10px;
+            background: #e8f6f3;
+            border-radius: 5px;
+            color: #16a085;
+            font-weight: bold;
+        }
+
+        /* --- 按鈕樣式 --- */
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: var(--accent-color);
+            color: white;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #34495e;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 2px solid var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        /* --- 選項區 (Quiz) --- */
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .option-btn {
+            padding: 15px;
+            text-align: left;
+            background: #f8f9fa;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .option-btn:hover {
+            background: #e9ecef;
+            border-color: #aaa;
+        }
+
+        .feedback-area {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .feedback-correct {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .feedback-wrong {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* --- 隱藏/展開區 --- */
+        .toggle-content {
+            display: none;
+            margin-top: 15px;
+            border-top: 1px dashed #ccc;
+            padding-top: 15px;
+        }
+
+        .example-list {
+            font-family: monospace;
+            background: #333;
+            color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre;
+        }
+
+        /* --- 手機版適配 --- */
+        @media (max-width: 600px) {
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+            .bit-box {
+                width: 35px;
+                height: 35px;
+                font-size: 1.1rem;
+            }
+            h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- A. 標題區 -->
+        <header class="card" style="text-align: center;">
+            <div style="font-size: 0.9rem; color: #777; margin-bottom: 5px;">電腦概論／數位邏輯精選題型</div>
+            <h1>30. 位元與位元組組合數計算</h1>
+            <p>適合程度：高中職資訊科 / 大一計概初學者</p>
+        </header>
+
+        <!-- B. 題目區 -->
+        <section class="card">
+            <h2>【題目】</h2>
+            <p style="font-size: 1.2rem; font-weight: bold;">
+                30. 一個以 1 開頭但不以 1 結束的位元組（註：8 個位元為一位元組），有多少種可能的組合?
+            </p>
+            <ul style="list-style: none; padding-left: 0;">
+                <li>(A) 32</li>
+                <li>(B) 64</li>
+                <li>(C) 66</li>
+                <li>(D) 128</li>
+            </ul>
+            <button class="btn btn-outline" onclick="toggleDisplay('answer-key')">顯示/隱藏正確答案</button>
+            <div id="answer-key" class="toggle-content">
+                <p style="font-size: 1.5rem; color: var(--correct-color); font-weight: bold;">答案：B</p>
+            </div>
+        </section>
+
+        <!-- C. 第一步：找關鍵字 -->
+        <section class="card">
+            <h2>Step 1：找關鍵字</h2>
+            <p>請拿螢光筆圈出以下重點：</p>
+            <p>
+                「<span class="highlight">以 1 開頭</span>」
+                「<span class="highlight">不以 1 結束</span>」
+                「<span class="highlight">位元組 (8 個位元)</span>」
+                「<span class="highlight">多少種組合</span>」
+            </p>
+            <div class="note">
+                <strong>老師解說：</strong> 這題是標準的「條件式排列組合」。看到「組合數」與「位元」，馬上要想到 <code>2 的 n 次方</code>，重點在於算出 n (自由位元) 是多少。
+            </div>
+        </section>
+
+        <!-- D. 第二步：白話翻譯 -->
+        <section class="card">
+            <h2>Step 2：白話翻譯</h2>
+            <p>把題目翻譯成人類聽得懂的規則：</p>
+            <ul style="line-height: 2;">
+                <li><strong>位元組：</strong>代表有 8 個格子可以填數字。</li>
+                <li><strong>位元限制：</strong>每個格子只能填 <code>0</code> 或 <code>1</code>。</li>
+                <li><strong>以 1 開頭：</strong>第 1 格被鎖住了，只能填 <code>1</code>。</li>
+                <li><strong>不以 1 結束：</strong>二進位只有 0 和 1，既然不能是 1，代表第 8 格也被鎖住了，<span class="highlight">只能填 0</span>。</li>
+                <li><strong>問題：</strong>中間剩下的格子隨便變，總共有幾種排法？</li>
+            </ul>
+        </section>
+
+        <!-- E. 第三步：解題思路 -->
+        <section class="card">
+            <h2>Step 3：解題思路</h2>
+            <p>解題三步驟，一步步來：</p>
+            <ol>
+                <li><strong>畫格子：</strong>畫出 8 個空位 (Bit 7 ~ Bit 0)。</li>
+                <li><strong>填限制：</strong>
+                    <ul>
+                        <li>第 1 個位置固定為 <code>1</code> (佔用 1 格)。</li>
+                        <li>第 8 個位置固定為 <code>0</code> (佔用 1 格)。</li>
+                    </ul>
+                </li>
+                <li><strong>數自由位元：</strong>
+                    <ul>
+                        <li>總共 8 格 - 頭尾 2 個固定格 = <strong>6 個自由位元</strong>。</li>
+                        <li>這 6 個位元，每一個都可以是 0 或 1 (2種變化)。</li>
+                    </ul>
+                </li>
+                <li><strong>算總數：</strong>
+                    <ul>
+                        <li>公式：<code>2<sup>自由位元數</sup></code></li>
+                        <li>計算：<code>2<sup>6</sup> = 64</code></li>
+                    </ul>
+                </li>
+            </ol>
+        </section>
+
+        <!-- F. 互動位元格子區 (重點) -->
+        <section class="card" style="border: 2px solid var(--accent-color);">
+            <h2>互動模擬器：8-Bit Byte</h2>
+            <p>試著點擊中間白色的格子，看看它們如何變化！(灰色格子代表被題目鎖定)</p>
+            
+            <div class="bit-container" id="bitGrid">
+                <!-- 由 JavaScript 動態生成 -->
+            </div>
+
+            <div class="bit-info">
+                目前自由位元數 (n) = <span id="freeBitCount">6</span><br>
+                總組合數 = 2<sup><span id="powerCount">6</span></sup> = <span id="totalCombo">64</span>
+            </div>
+
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="btn" onclick="generateCombinations()">顯示全部組合 (精簡版)</button>
+            </div>
+
+            <div id="comboListArea" class="toggle-content">
+                <p>為了版面整潔，僅列出前 8 筆與後 8 筆：</p>
+                <div id="comboOutput" class="example-list"></div>
+            </div>
+        </section>
+
+        <!-- G. 第四步：選項分析 -->
+        <section class="card">
+            <h2>Step 4：選項分析</h2>
+            <p>為什麼選 (B)？其他選項錯在哪？</p>
+            <ul style="list-style-type: none; padding: 0;">
+                <li style="margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                    ❌ <strong>(A) 32</strong><br>
+                    <span style="color: #666; font-size: 0.9rem;">
+                        錯把自由位元算成 5 個 (2<sup>5</sup>=32)。可能是以為「不以1結束」的條件比較寬鬆，或者是數格子數錯了。
+                    </span>
+                </li>
+                <li style="margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                    ✅ <strong>(B) 64</strong><br>
+                    <span style="color: var(--correct-color); font-weight: bold; font-size: 0.9rem;">
+                        正解。8 個位元扣掉頭尾 2 個固定格，剩 6 個自由格。2<sup>6</sup> = 64。
+                    </span>
+                </li>
+                <li style="margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                    ❌ <strong>(C) 66</strong><br>
+                    <span style="color: #666; font-size: 0.9rem;">
+                        二進位的組合數通常是 2 的次方 (2, 4, 8, 16, 32, 64...)。除非題目有特殊刪減條件，否則不會出現 66 這種數字。
+                    </span>
+                </li>
+                <li>
+                    ❌ <strong>(D) 128</strong><br>
+                    <span style="color: #666; font-size: 0.9rem;">
+                        這是 7 個自由位元的結果 (2<sup>7</sup>=128)。通常是忘了扣掉「不以1結束」那個固定位元才會選這個。
+                    </span>
+                </li>
+            </ul>
+        </section>
+
+        <!-- H. 觀念補充與延伸 -->
+        <section class="card">
+            <h2>觀念補充站</h2>
+            
+            <h3>1. 名詞定義</h3>
+            <ul>
+                <li><strong>Bit (位元)</strong>：電腦最小單位，像開關一樣，只有 0 或 1。</li>
+                <li><strong>Byte (位元組)</strong>：由 8 個 Bit 組成的單位。通常用來存一個英文字母或數字。</li>
+            </ul>
+
+            <h3>2. 觸類旁通 (變形題)</h3>
+            <table border="1" style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                <tr style="background: #f0f0f0;">
+                    <th style="padding: 8px;">題目條件</th>
+                    <th style="padding: 8px;">固定格數</th>
+                    <th style="padding: 8px;">自由格數</th>
+                    <th style="padding: 8px;">組合數</th>
+                </tr>
+                <tr>
+                    <td style="padding: 8px;">以 1 開頭，以 1 結束</td>
+                    <td style="padding: 8px; text-align: center;">2</td>
+                    <td style="padding: 8px; text-align: center;">6</td>
+                    <td style="padding: 8px; text-align: center;">64</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px;">以 1 開頭 (尾巴不限)</td>
+                    <td style="padding: 8px; text-align: center;">1</td>
+                    <td style="padding: 8px; text-align: center;">7</td>
+                    <td style="padding: 8px; text-align: center;">128</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px;">16 位元，頭尾固定</td>
+                    <td style="padding: 8px; text-align: center;">2</td>
+                    <td style="padding: 8px; text-align: center;">14</td>
+                    <td style="padding: 8px; text-align: center;">2<sup>14</sup>=16384</td>
+                </tr>
+            </table>
+        </section>
+
+        <!-- I. 記憶口訣 & J. 常見陷阱 -->
+        <section class="card">
+            <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+                <div style="flex: 1; min-width: 250px;">
+                    <h3>⚡ 記憶口訣</h3>
+                    <p class="highlight" style="display: inline-block; font-size: 1.1rem;">
+                        「總格數 減 固定格，剩下次方算組合」
+                    </p>
+                    <p>
+                        1. 先算總共有幾格 (Byte=8)<br>
+                        2. 扣掉被題目鎖死的格子<br>
+                        3. 剩下的數目 n，答案就是 2<sup>n</sup>
+                    </p>
+                </div>
+                <div style="flex: 1; min-width: 250px;">
+                    <h3>⚠️ 常見陷阱 (避坑指南)</h3>
+                    <ul>
+                        <li><strong>陷阱一：</strong>看到「不以 1 結束」以為最後一格可以隨便填。<br>👉 <strong>正解：</strong>二進位非 1 即 0，所以這是「固定為 0」的意思！</li>
+                        <li><strong>陷阱二：</strong>忘記 Byte 是 8 bit。<br>👉 <strong>正解：</strong>這是基本常識，考試一定要背起來。</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- K. 作答區 -->
+        <section class="card" style="border-top: 5px solid var(--accent-color);">
+            <h2>📝 即時測驗</h2>
+            <p><strong>題目：</strong>一個以 1 開頭但不以 1 結束的位元組，有多少種可能的組合?</p>
+            
+            <div class="options-grid">
+                <button class="option-btn" onclick="checkAnswer('A')">(A) 32</button>
+                <button class="option-btn" onclick="checkAnswer('B')">(B) 64</button>
+                <button class="option-btn" onclick="checkAnswer('C')">(C) 66</button>
+                <button class="option-btn" onclick="checkAnswer('D')">(D) 128</button>
+            </div>
+
+            <div id="quizFeedback" class="feedback-area"></div>
+        </section>
+
+        <!-- M. 自我檢測 -->
+        <section class="card">
+            <h2>🧠 自我檢測 (想一想，不看答案)</h2>
+            <ol>
+                <li>如果題目改成「以 0 開頭，且以 0 結束」，答案會變嗎？為什麼？</li>
+                <li>如果是 10 個位元 (10 bits) 的資料，頭尾都固定為 1，中間隨便，請問組合數是多少？</li>
+            </ol>
+        </section>
+        
+        <footer style="text-align: center; color: #888; margin-top: 40px; font-size: 0.8rem;">
+            <p>Made for Computer Science Education | 數位邏輯與位元教學專用</p>
+        </footer>
+    </div>
+
+    <!-- JavaScript 邏輯區 -->
+    <script>
+        // --- 1. 初始化互動位元格子 ---
+        function initBitGrid() {
+            const container = document.getElementById('bitGrid');
+            const bits = 8; // 1 Byte = 8 Bits
+            
+            let html = '';
+
+            // 從左到右：第1位 (index 0) ~ 第8位 (index 7)
+            // 題目規定：第1位固定為1，第8位不為1(即固定為0)
+            
+            for (let i = 0; i < bits; i++) {
+                let isFixed = false;
+                let fixedValue = '';
+                let label = `第 ${i + 1} 位`;
+                let bitIndex = `b${7-i}`; // 對應 2^7 ... 2^0
+
+                // 判斷邏輯
+                if (i === 0) {
+                    isFixed = true;
+                    fixedValue = '1'; // 開頭為 1
+                    label += ' (開頭)';
+                } else if (i === bits - 1) {
+                    isFixed = true;
+                    fixedValue = '0'; // 不以1結束 -> 0
+                    label += ' (結尾)';
+                }
+
+                if (isFixed) {
+                    html += `
+                        <div class="bit-box-wrapper">
+                            <div class="bit-label">${label}</div>
+                            <div class="bit-box fixed" title="此位元被題目固定，無法更動">${fixedValue}</div>
+                            <div class="bit-index">${bitIndex}</div>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div class="bit-box-wrapper">
+                            <div class="bit-label">${label}</div>
+                            <div class="bit-box free" onclick="toggleBit(this)" title="自由位元，點擊切換">0</div>
+                            <div class="bit-index">${bitIndex}</div>
+                        </div>
+                    `;
+                }
+            }
+            container.innerHTML = html;
+        }
+
+        // --- 2. 點擊切換位元 (視覺效果) ---
+        function toggleBit(element) {
+            // 切換 0 與 1
+            if (element.innerText === '0') {
+                element.innerText = '1';
+                element.style.backgroundColor = '#e3f2fd'; // 稍微變亮代表 1
+            } else {
+                element.innerText = '0';
+                element.style.backgroundColor = '#fff';
+            }
+        }
+
+        // --- 3. 生成組合列表 (展示前8後8) ---
+        function generateCombinations() {
+            const outputDiv = document.getElementById('comboOutput');
+            const listArea = document.getElementById('comboListArea');
+            
+            // 展開區域
+            listArea.style.display = 'block';
+
+            // 邏輯：中間有 6 個位元 (2^6 = 64)
+            // 固定頭 '1', 固定尾 '0'
+            // 我們產生中間 6 位的所有變化
+            
+            let content = '';
+            const totalCombos = 64;
+
+            // 產生前 8 筆
+            content += `--- 前 8 筆 (中間位元從 000000 開始) ---\n`;
+            for (let i = 0; i < 8; i++) {
+                // 將數字轉為 6 位二進位字串
+                let binaryMid = i.toString(2).padStart(6, '0');
+                content += `1 ${binaryMid} 0  (第 ${i+1} 種)\n`;
+            }
+
+            content += `\n... (中間省略 48 筆) ...\n\n`;
+
+            // 產生後 8 筆
+            content += `--- 後 8 筆 (中間位元直到 111111 結束) ---\n`;
+            for (let i = totalCombos - 8; i < totalCombos; i++) {
+                let binaryMid = i.toString(2).padStart(6, '0');
+                content += `1 ${binaryMid} 0  (第 ${i+1} 種)\n`;
+            }
+
+            content += `\n總計：2^6 = 64 種組合`;
+            
+            outputDiv.innerText = content;
+        }
+
+        // --- 4. 顯示/隱藏內容 ---
+        function toggleDisplay(id) {
+            const el = document.getElementById(id);
+            if (el.style.display === 'block') {
+                el.style.display = 'none';
+            } else {
+                el.style.display = 'block';
+            }
+        }
+
+        // --- 5. 測驗功能 ---
+        function checkAnswer(answer) {
+            const feedbackEl = document.getElementById('quizFeedback');
+            feedbackEl.style.display = 'block';
+            
+            if (answer === 'B') {
+                feedbackEl.className = 'feedback-area feedback-correct';
+                feedbackEl.innerHTML = `
+                    <strong>🎉 答對了！</strong><br>
+                    解析：8 個位元扣掉頭尾 2 個固定格，剩下 6 個自由位元。<br>
+                    計算：2<sup>6</sup> = 64。
+                `;
+            } else {
+                feedbackEl.className = 'feedback-area feedback-wrong';
+                let reason = '';
+                if(answer === 'A') reason = '這只有 5 個自由位元的量 (32)，你可能少算了一格自由格。';
+                if(answer === 'C') reason = '二進位組合通常是 2 的次方，不會是 66。';
+                if(answer === 'D') reason = '這是 7 個自由位元 (128)，你可能忘了扣掉「不以 1 結束」的限制。';
+                
+                feedbackEl.innerHTML = `
+                    <strong>⚠️ 答錯囉！</strong><br>
+                    ${reason}<br>
+                    再回頭看看上面的「解題思路」吧！
+                `;
+            }
+        }
+
+        // 頁面載入時執行
+        window.onload = function() {
+            initBitGrid();
+        };
+
+    </script>
+</body>
+</html>

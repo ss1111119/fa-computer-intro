@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電腦概論 第13題：1TB 等於多少 bytes？</title>
+    <style>
+        /* --- 全域設定 --- */
+        :root {
+            --primary-color: #2c3e50; /* 深藍色 - 專業感 */
+            --accent-color: #e67e22; /* 橘色 - 重點強調 */
+            --correct-color: #27ae60; /* 綠色 - 正確 */
+            --wrong-color: #c0392b; /* 紅色 - 錯誤 */
+            --bg-color: #f4f7f6; /* 淺灰背景 - 護眼 */
+            --card-bg: #ffffff;
+            --text-color: #333333;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: var(--card-bg);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-top: 8px solid var(--accent-color); /* 補習班講義風格頂部 */
+        }
+
+        h1, h2, h3 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            text-align: center;
+            border-bottom: 2px dashed #ddd;
+            padding-bottom: 20px;
+        }
+
+        .teacher-intro {
+            background-color: #e8f6f3;
+            padding: 15px;
+            border-left: 5px solid var(--primary-color);
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+
+        /* --- 題目區 --- */
+        .question-section {
+            background-color: #fff8e1; /* 淡黃色紙張感 */
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #ffe082;
+            margin-bottom: 30px;
+        }
+
+        .question-text {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .option-btn {
+            background-color: white;
+            border: 2px solid #ddd;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        .option-btn:hover {
+            border-color: var(--primary-color);
+            background-color: #f0f4f8;
+        }
+
+        .option-btn.correct {
+            background-color: var(--correct-color);
+            color: white;
+            border-color: var(--correct-color);
+        }
+
+        .option-btn.wrong {
+            background-color: var(--wrong-color);
+            color: white;
+            border-color: var(--wrong-color);
+        }
+
+        #feedback-area {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            display: none;
+        }
+
+        /* --- 觀念教學區 (階梯圖) --- */
+        .concept-section {
+            margin-top: 40px;
+            padding: 20px;
+            background-color: #fdfdfd;
+            border: 1px solid #eee;
+            border-radius: 10px;
+        }
+
+        .ladder-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px 0;
+        }
+
+        .ladder-step {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 30px;
+            border-radius: 20px;
+            margin: 5px 0;
+            width: 200px;
+            text-align: center;
+            position: relative;
+            font-weight: bold;
+        }
+
+        .ladder-arrow {
+            color: var(--accent-color);
+            font-size: 1.2em;
+            font-weight: bold;
+            margin: 2px 0;
+        }
+
+        .highlight-box {
+            background-color: #fff3cd;
+            border: 2px solid #ffecb5;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.2em;
+            color: #856404;
+            margin-top: 20px;
+        }
+
+        .strong-text {
+            color: #d35400;
+            font-weight: 900;
+            font-size: 1.2em;
+        }
+
+        /* --- 互動換算區 --- */
+        .converter-section {
+            background-color: #eaf2f8;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        select {
+            padding: 10px;
+            font-size: 1.2em;
+            border-radius: 5px;
+            border: 2px solid var(--primary-color);
+        }
+
+        .result-display {
+            font-size: 2em;
+            color: var(--primary-color);
+            margin-top: 15px;
+            font-weight: bold;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        /* --- 陷阱卡區 --- */
+        .trap-cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .trap-card {
+            background-color: #ffebee;
+            border: 1px solid #ffcdd2;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.5s;
+            position: relative;
+        }
+
+        .trap-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .trap-badge {
+            background-color: var(--wrong-color);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            position: absolute;
+            top: -10px;
+            left: 10px;
+        }
+
+        /* --- 自我檢測與測驗 --- */
+        .quiz-section, .self-check-section {
+            margin-top: 30px;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+        }
+
+        .hint-btn {
+            background-color: #95a5a6;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+
+        .hint-box {
+            display: none;
+            color: var(--primary-color);
+            font-style: italic;
+            margin-top: 5px;
+            background-color: #f0f0f0;
+            padding: 5px;
+            border-left: 3px solid #95a5a6;
+        }
+        
+        /* --- 快速記憶測驗 --- */
+        #memory-quiz-area {
+            text-align: center;
+            padding: 20px;
+            background: #fdf2e9;
+            border-radius: 10px;
+        }
+        
+        .memory-btn {
+            margin: 5px;
+            padding: 8px 16px;
+            background: white;
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        .memory-btn:hover {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        /* --- 底部與重置 --- */
+        .footer-controls {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px dashed #ccc;
+        }
+
+        .reset-btn {
+            background-color: #7f8c8d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        
+        .reset-btn:hover {
+            background-color: #2c3e50;
+        }
+
+        /* 手機版調整 */
+        @media (max-width: 600px) {
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+            .container {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- 頁面標題 -->
+    <h1>電腦概論 - 單元 13：資料儲存單位</h1>
+
+    <div class="teacher-intro">
+        <strong>👨‍🏫 老師的話：</strong><br>
+        各位同學好！資料儲存單位是電腦概論中最基礎、也最常考的題目。很多人會被那堆 2 的次方搞混，但其實只要記住一個「階梯口訣」，這題就是送分題！讓我們一起來拿下這一分！
+    </div>
+
+    <!-- 1. 題目區 -->
+    <div class="question-section">
+        <div class="question-text">第 13 題：資料儲存單位中，1TB 表示多少 bytes？</div>
+        <div class="options-grid" id="options-container">
+            <!-- 按鈕將由 JS 功能控制，這裡先給結構 -->
+            <button class="option-btn" onclick="checkAnswer('a')">(a) 2^15 bytes</button>
+            <button class="option-btn" onclick="checkAnswer('b')">(b) 2^12 bytes</button>
+            <button class="option-btn" onclick="checkAnswer('c')">(c) 2^10 bytes</button>
+            <button class="option-btn" onclick="checkAnswer('d')">(d) 2^40 bytes</button>
+        </div>
+        <div id="feedback-area"></div>
+    </div>
+
+    <!-- 2. 核心觀念說明區 -->
+    <div class="concept-section">
+        <h2>📚 核心觀念解析：為什麼是 2^40？</h2>
+        
+        <p>首先，我們要先搞懂這些英文縮寫代表什麼意思（括號內為白話文）：</p>
+        <ul>
+            <li><strong>bit</strong> (位元)：電腦最小單位，只有 0 或 1。</li>
+            <li><strong>byte</strong> (位元組)：1 byte = 8 bits，通常一個英文字母佔 1 byte。</li>
+        </ul>
+
+        <div class="highlight-box">
+            👉 超強記憶口訣：<br>
+            <span class="strong-text">「K、M、G、T，每一階都多 10 個 2」</span>
+        </div>
+
+        <div class="ladder-container">
+            <div class="ladder-step" style="background-color: #95a5a6;">Byte (基礎)</div>
+            <div class="ladder-arrow">↓ × 2^10 (約一千)</div>
+            <div class="ladder-step" style="background-color: #3498db;">KB (Kilo) = 2^10</div>
+            <div class="ladder-arrow">↓ × 2^10 (再乘一千)</div>
+            <div class="ladder-step" style="background-color: #9b59b6;">MB (Mega) = 2^20</div>
+            <div class="ladder-arrow">↓ × 2^10 (再乘一千)</div>
+            <div class="ladder-step" style="background-color: #e67e22;">GB (Giga) = 2^30</div>
+            <div class="ladder-arrow">↓ × 2^10 (再乘一千)</div>
+            <div class="ladder-step" style="background-color: #c0392b; font-size: 1.2em;">TB (Tera) = 2^40</div>
+        </div>
+        
+        <p><strong>邏輯推導：</strong></p>
+        <ul>
+            <li>1 KB = 2^10 bytes</li>
+            <li>1 MB = 2^10 × 2^10 = <strong>2^20</strong> bytes</li>
+            <li>1 GB = 2^20 × 2^10 = <strong>2^30</strong> bytes</li>
+            <li>1 TB = 2^30 × 2^10 = <span class="strong-text">2^40</span> bytes</li>
+        </ul>
+    </div>
+
+    <!-- 3. 互動：單位換算器 -->
+    <div class="converter-section">
+        <h3>🧮 互動式單位換算器</h3>
+        <p>試著切換下方的單位，看看它是 2 的幾次方：</p>
+        
+        <label for="unit-select" style="font-size:1.2em;">1 </label>
+        <select id="unit-select" onchange="updateConverter()">
+            <option value="KB">KB</option>
+            <option value="MB">MB</option>
+            <option value="GB">GB</option>
+            <option value="TB" selected>TB</option>
+        </select>
+        <span style="font-size:1.2em;"> = </span>
+        
+        <div id="converter-result" class="result-display">2^40 bytes</div>
+        <div id="converter-desc" style="margin-top:10px; color:#666;">(這是正確答案！)</div>
+    </div>
+
+    <!-- 4. 選項解析與陷阱 -->
+    <div class="concept-section">
+        <h3>🧐 選項詳細解析</h3>
+        <ul>
+            <li>(a) <strong>2^15</strong> ❌：這數字太小了，介於 1KB (2^10) 和 1MB (2^20) 之間。</li>
+            <li>(b) <strong>2^12</strong> ❌：這才 4KB 而已，非常小。</li>
+            <li>(c) <strong>2^10</strong> ❌：這是 <strong>1 KB</strong> 的大小，一定要背起來。</li>
+            <li>(d) <strong>2^40</strong> ✅：完全正確！從 byte 往上數四階 (K, M, G, T)，每階 10 次方，總共 40。</li>
+        </ul>
+
+        <h3>⚠️ 常見考試陷阱卡 (點擊卡片消滅陷阱)</h3>
+        <p style="font-size: 0.9em; color: #666;">點擊下方的錯誤觀念卡片來「修正」它們：</p>
+        <div class="trap-cards-container">
+            <div class="trap-card" onclick="removeTrap(this)">
+                <span class="trap-badge">陷阱 1</span>
+                <strong>以為 TB 是 2^30</strong><br>
+                <small>錯！GB 才是 30，TB 是更大的 40。</small>
+                <div style="margin-top:10px; text-align:right; color:var(--wrong-color); font-weight:bold;">[點我懂了]</div>
+            </div>
+            <div class="trap-card" onclick="removeTrap(this)">
+                <span class="trap-badge">陷阱 2</span>
+                <strong>只背了 2^10 就停了</strong><br>
+                <small>不能只背 KB，要記得往上還有 M, G, T。</small>
+                <div style="margin-top:10px; text-align:right; color:var(--wrong-color); font-weight:bold;">[點我懂了]</div>
+            </div>
+            <div class="trap-card" onclick="removeTrap(this)">
+                <span class="trap-badge">陷阱 3</span>
+                <strong>十進位跟二進位混淆</strong><br>
+                <small>硬碟廠商常說 1TB=10^12，但電腦概論考題通常指二進位的 2^40。</small>
+                <div style="margin-top:10px; text-align:right; color:var(--wrong-color); font-weight:bold;">[點我懂了]</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. 快速記憶測驗 -->
+    <div class="quiz-section">
+        <h3>⚡ 快速記憶測驗</h3>
+        <p>電腦隨機出題，請點選正確的次方數：</p>
+        <div id="memory-quiz-area">
+            <div id="mq-question" style="font-size: 1.5em; font-weight: bold; margin-bottom: 15px;">題目準備中...</div>
+            <div id="mq-options">
+                <!-- JS 生成按鈕 -->
+            </div>
+            <div id="mq-feedback" style="height: 30px; margin-top: 10px; font-weight: bold;"></div>
+        </div>
+    </div>
+
+    <!-- 6. 自我檢測 -->
+    <div class="self-check-section">
+        <h3>📝 課後自我檢測 (不給答案，請思考)</h3>
+        
+        <div style="margin-bottom: 15px;">
+            <strong>題目 1：</strong>如果 1TB = 2^40 bytes，那 2TB 是多少 bytes？ (注意是 2 倍喔)<br>
+            <button class="hint-btn" onclick="toggleHint('h1')">顯示提示</button>
+            <div id="h1" class="hint-box">提示：2TB = 2 × 2^40。根據指數律，2 是 2^1，相乘是指數相加... 所以是 2^41。</div>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <strong>題目 2：</strong>為什麼電腦要用 2 的次方，不用 10 的次方？<br>
+            <button class="hint-btn" onclick="toggleHint('h2')">顯示提示</button>
+            <div id="h2" class="hint-box">提示：因為電腦最底層的電路是「開」與「關」，也就是二進位 (0與1) 系統。</div>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <strong>題目 3：</strong>考試看到 TB，第一步該想到哪個數字？<br>
+            <button class="hint-btn" onclick="toggleHint('h3')">顯示提示</button>
+            <div id="h3" class="hint-box">提示：口訣 K, M, G, T (10, 20, 30, 40)。看到 T 就直接反射動作想到 40！</div>
+        </div>
+    </div>
+
+    <div class="footer-controls">
+        <button class="reset-btn" onclick="resetPage()">🔄 清除所有狀態重來</button>
+        <p style="font-size: 0.8em; color: #999; margin-top: 10px;">Created for Computer Concepts Learning</p>
+    </div>
+
+</div>
+
+<script>
+    /* --- 1. 單選題互動邏輯 --- */
+    function checkAnswer(selectedOption) {
+        const feedback = document.getElementById('feedback-area');
+        const buttons = document.querySelectorAll('.option-btn');
+        
+        // 重置按鈕樣式
+        buttons.forEach(btn => {
+            btn.classList.remove('correct', 'wrong');
+            btn.disabled = true; // 作答後鎖定
+        });
+
+        if (selectedOption === 'd') {
+            // 答對
+            buttons[3].classList.add('correct'); // (d) 是第四個按鈕
+            feedback.style.display = 'block';
+            feedback.style.backgroundColor = '#d4edda';
+            feedback.style.color = '#155724';
+            feedback.innerHTML = `
+                ✅ <strong>答對了！太棒了！</strong><br>
+                1 TB 確實等於 2^40 bytes。<br>
+                記住口訣：K(10) -> M(20) -> G(30) -> T(40)！
+            `;
+        } else {
+            // 答錯
+            // 標示選錯的
+            if(selectedOption === 'a') buttons[0].classList.add('wrong');
+            if(selectedOption === 'b') buttons[1].classList.add('wrong');
+            if(selectedOption === 'c') buttons[2].classList.add('wrong');
+            
+            // 標示正確的
+            buttons[3].classList.add('correct');
+
+            feedback.style.display = 'block';
+            feedback.style.backgroundColor = '#f8d7da';
+            feedback.style.color = '#721c24';
+            feedback.innerHTML = `
+                ❌ <strong>答錯囉，沒關係！</strong><br>
+                正確答案是 (d) 2^40。<br>
+                別忘了：每往上一個單位就要加 10 次方。<br>
+                KB(10) -> MB(20) -> GB(30) -> <strong>TB(40)</strong>
+            `;
+        }
+    }
+
+    /* --- 2. 單位換算器邏輯 --- */
+    function updateConverter() {
+        const unit = document.getElementById('unit-select').value;
+        const resultDiv = document.getElementById('converter-result');
+        const descDiv = document.getElementById('converter-desc');
+        
+        let power = 0;
+        let text = "";
+
+        switch(unit) {
+            case 'KB':
+                power = 10;
+                text = "(這是 2^10，基礎單位)";
+                break;
+            case 'MB':
+                power = 20;
+                text = "(這是 2^20，比 KB 大一千倍)";
+                break;
+            case 'GB':
+                power = 30;
+                text = "(這是 2^30，硬碟常見單位)";
+                break;
+            case 'TB':
+                power = 40;
+                text = "(這是 2^40，本題正確答案！)";
+                break;
+        }
+
+        resultDiv.textContent = `2^${power} bytes`;
+        // 加入簡單動畫效果
+        resultDiv.style.transform = "scale(1.2)";
+        setTimeout(() => {
+            resultDiv.style.transform = "scale(1)";
+        }, 200);
+
+        descDiv.textContent = text;
+    }
+
+    /* --- 3. 陷阱卡邏輯 --- */
+    function removeTrap(element) {
+        element.style.opacity = '0';
+        element.style.transform = 'scale(0.8)';
+        setTimeout(() => {
+            element.style.display = 'none';
+        }, 500); // 等待動畫結束
+    }
+
+    /* --- 4. 自我檢測提示 --- */
+    function toggleHint(id) {
+        const hint = document.getElementById(id);
+        if (hint.style.display === 'block') {
+            hint.style.display = 'none';
+        } else {
+            hint.style.display = 'block';
+        }
+    }
+
+    /* --- 5. 快速記憶測驗邏輯 --- */
+    const memoryQuestions = [
+        { q: "1 KB", a: 10 },
+        { q: "1 MB", a: 20 },
+        { q: "1 GB", a: 30 },
+        { q: "1 TB", a: 40 }
+    ];
+    let currentMq = null;
+
+    function initMemoryQuiz() {
+        // 隨機選一題
+        currentMq = memoryQuestions[Math.floor(Math.random() * memoryQuestions.length)];
+        document.getElementById('mq-question').textContent = `${currentMq.q} = 2 的幾次方？`;
+        document.getElementById('mq-feedback').textContent = "";
+        
+        // 生成選項按鈕 (打亂順序)
+        const optionsDiv = document.getElementById('mq-options');
+        optionsDiv.innerHTML = '';
+        const powers = [10, 20, 30, 40]; // 固定選項
+        
+        powers.forEach(p => {
+            const btn = document.createElement('button');
+            btn.className = 'memory-btn';
+            btn.textContent = `2^${p}`;
+            btn.onclick = () => checkMemoryAnswer(p, btn);
+            optionsDiv.appendChild(btn);
+        });
+    }
+
+    function checkMemoryAnswer(ans, btnElement) {
+        const feedback = document.getElementById('mq-feedback');
+        if (ans === currentMq.a) {
+            feedback.textContent = "✨ 答對了！反應很快喔！(再出一題...)";
+            feedback.style.color = "green";
+            btnElement.style.backgroundColor = "var(--correct-color)";
+            btnElement.style.color = "white";
+            setTimeout(initMemoryQuiz, 1500); // 1.5秒後下一題
+        } else {
+            feedback.textContent = "😓 答錯了，再想想階梯口訣！";
+            feedback.style.color = "red";
+            btnElement.style.backgroundColor = "var(--wrong-color)";
+            btnElement.style.color = "white";
+        }
+    }
+
+    /* --- 全域重置 --- */
+    function resetPage() {
+        // 簡單暴力：重新整理頁面
+        window.location.reload();
+    }
+
+    // 初始化執行
+    window.onload = function() {
+        initMemoryQuiz();
+    };
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電腦概論題型解析：邏輯運算辨識</title>
+    <style>
+        /* --- 基礎設定 (Reset & Typography) --- */
+        :root {
+            --primary-color: #333;
+            --accent-color: #0056b3;
+            --highlight-color: #fffde7; /* 淡黃色螢光筆 */
+            --highlight-border: #ffd600;
+            --bg-color: #f4f4f4;
+            --card-bg: #ffffff;
+            --correct-color: #2e7d32;
+            --wrong-color: #c62828;
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "PingFang TC", Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--primary-color);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        /* --- 版面結構 (Layout) --- */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* --- 卡片通用樣式 (Card Style) --- */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .card.interactive {
+            border-left-color: var(--accent-color);
+        }
+
+        h1, h2, h3 {
+            margin-top: 0;
+            color: #222;
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        /* --- 題目區塊樣式 --- */
+        .question-box {
+            font-size: 1.1rem;
+            font-weight: bold;
+            background-color: #eef;
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        .options-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 10px;
+        }
+
+        .options-list li {
+            margin-bottom: 5px;
+            padding: 5px 10px;
+        }
+
+        /* --- 螢光筆特效 (Highlight) --- */
+        .highlight {
+            background-color: var(--highlight-color);
+            border-bottom: 2px solid var(--highlight-border);
+            padding: 0 2px;
+            font-weight: bold;
+        }
+
+        /* --- 互動示範區 (Logic vs Arithmetic) --- */
+        .comparison-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .comparison-box {
+            flex: 1;
+            min-width: 280px;
+            background: #fafafa;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .comparison-title {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #555;
+            background: #eee;
+            padding: 5px;
+            border-radius: 3px;
+        }
+
+        /* --- 真值表 (Truth Table) --- */
+        .truth-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        .truth-table th, .truth-table td {
+            border: 1px solid #ccc;
+            padding: 4px;
+        }
+
+        .truth-table th {
+            background-color: #e0e0e0;
+        }
+
+        /* --- 選項分析 (Analysis) --- */
+        .analysis-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-bottom: 1px dashed #eee;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            color: white;
+            margin-right: 8px;
+        }
+
+        .tag-logic { background-color: #795548; } /* 咖啡色代表邏輯 */
+        .tag-math { background-color: #009688; } /* 綠松色代表算術 */
+        .tag-wrong { background-color: var(--wrong-color); }
+        .tag-correct { background-color: var(--correct-color); }
+
+        /* --- 作答區 (Quiz) --- */
+        .quiz-form label {
+            display: block;
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .quiz-form label:hover {
+            background-color: #f0f8ff;
+        }
+
+        .quiz-form input[type="checkbox"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+
+        .btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        .result-box {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none; /* 預設隱藏 */
+        }
+
+        .result-box.correct {
+            background-color: #e8f5e9;
+            color: var(--correct-color);
+            border: 1px solid var(--correct-color);
+        }
+
+        .result-box.wrong {
+            background-color: #ffebee;
+            color: var(--wrong-color);
+            border: 1px solid var(--wrong-color);
+        }
+
+        /* --- 隱藏內容 (Collapsible) --- */
+        .hidden-content {
+            display: none;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+
+        /* --- 響應式調整 (RWD) --- */
+        @media (max-width: 600px) {
+            .comparison-container {
+                flex-direction: column;
+            }
+            body {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- A. 標題區 -->
+    <header class="card" style="text-align: center; border-left: none;">
+        <h1>電腦概論：重點題型解析</h1>
+        <p>單元：數位邏輯與二進位運算</p>
+    </header>
+
+    <!-- B. 題目區 -->
+    <section class="card">
+        <h2>【題目】複選題</h2>
+        <div class="question-box">
+            41. 下列何者不是二進位系統的邏輯運算?
+        </div>
+        <ul class="options-list">
+            <li>(A) XOR</li>
+            <li>(B) AND</li>
+            <li>(C) DIV</li>
+            <li>(D) OR</li>
+            <li>(E) MOD</li>
+        </ul>
+    </section>
+
+    <!-- K. 作答區 (互動擺在前面，讓學生先試試看) -->
+    <section class="card interactive">
+        <h2>【作答區】請先試著選出正確答案（複選）</h2>
+        <form class="quiz-form" id="quizForm">
+            <label><input type="checkbox" name="option" value="A"> (A) XOR</label>
+            <label><input type="checkbox" name="option" value="B"> (B) AND</label>
+            <label><input type="checkbox" name="option" value="C"> (C) DIV</label>
+            <label><input type="checkbox" name="option" value="D"> (D) OR</label>
+            <label><input type="checkbox" name="option" value="E"> (E) MOD</label>
+            
+            <div style="margin-top: 20px;">
+                <button type="button" class="btn" onclick="checkAnswer()">送出作答</button>
+                <button type="button" class="btn btn-outline" onclick="toggleAnswer()">顯示解析與答案</button>
+            </div>
+        </form>
+
+        <div id="resultMessage" class="result-box"></div>
+    </section>
+
+    <!-- 解析區塊，預設隱藏，點擊按鈕後展開 -->
+    <div id="explanationArea" class="hidden-content" style="display: none;">
+        
+        <!-- C. 第一步：找關鍵字 -->
+        <section class="card">
+            <h2>第一步：找關鍵字</h2>
+            <p>請拿起你心中的螢光筆，將以下字詞圈起來：</p>
+            <p class="question-box" style="background: white; border: 1px solid #ccc;">
+                下列何者 <span class="highlight">不是</span> 二進位系統的 <span class="highlight">邏輯運算</span> ?
+            </p>
+            <p><strong>💡 提示：</strong> 題目要找的是「例外」，也就是要找出那些「屬於算術運算（做數學計算）」的選項。</p>
+        </section>
+
+        <!-- D. 第二步：白話翻譯 -->
+        <section class="card">
+            <h2>第二步：白話翻譯</h2>
+            <p>這題其實在問：</p>
+            <blockquote>
+                「下面五個選項中，哪些是用來做加減乘除的數學計算，而不是用來對 0 和 1 做『是非判斷』的？」
+            </blockquote>
+        </section>
+
+        <!-- E & F. 第三步：解題思路與互動示範 -->
+        <section class="card">
+            <h2>第三步：解題思路（邏輯 vs 算術）</h2>
+            <p>我們可以用「功能」來區分這兩大類運算：</p>
+            
+            <div class="comparison-container">
+                <!-- 左側：邏輯運算 -->
+                <div class="comparison-box">
+                    <div class="comparison-title">邏輯運算 (Logical)</div>
+                    <p>👉 <strong>像是在做「是非題」判斷</strong></p>
+                    <p>針對位元 (Bit) 的 0 或 1 進行運算，結果通常是 0 或 1。</p>
+                    <hr>
+                    <p><strong>常見例子：AND (且), OR (或), XOR (互斥或)</strong></p>
+                    <p><em>範例 (AND)：</em> 兩個都為真(1)，結果才為真(1)。</p>
+                    <table class="truth-table">
+                        <tr><th>A</th><th>B</th><th>A AND B</th></tr>
+                        <tr><td>0</td><td>0</td><td>0</td></tr>
+                        <tr><td>0</td><td>1</td><td>0</td></tr>
+                        <tr><td>1</td><td>0</td><td>0</td></tr>
+                        <tr><td>1</td><td>1</td><td><strong>1</strong></td></tr>
+                    </table>
+                </div>
+
+                <!-- 右側：算術運算 -->
+                <div class="comparison-box">
+                    <div class="comparison-title">算術運算 (Arithmetic)</div>
+                    <p>👉 <strong>像是在做「數學課」的計算</strong></p>
+                    <p>針對數值進行加減乘除，結果是數字。</p>
+                    <hr>
+                    <p><strong>常見例子：DIV (整數除法), MOD (取餘數)</strong></p>
+                    <p><em>範例：</em> 計算 7 除以 2</p>
+                    <div style="background: #fff; padding: 10px; border: 1px dashed #ccc; font-family: monospace;">
+                        <p><strong>DIV (除法商數)</strong></p>
+                        <p>7 DIV 2 = <strong>3</strong></p>
+                        <br>
+                        <p><strong>MOD (取餘數)</strong></p>
+                        <p>7 MOD 2 = <strong>1</strong></p>
+                    </div>
+                    <p style="color: #c62828; font-size: 0.9rem; margin-top: 10px;">
+                        ⚠️ 這是數學運算，不是邏輯判斷！
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- G. 第四步：選項分析 -->
+        <section class="card">
+            <h2>第四步：選項逐一分析</h2>
+            
+            <div class="analysis-item">
+                <span class="tag tag-logic">邏輯</span>
+                <strong>(A) XOR (Exclusive OR，互斥或)</strong>
+                <p>規則：輸入「不同」時為 1，相同時為 0。這是標準的邏輯閘運算。</p>
+                <p>👉 是邏輯運算，所以<span style="color:red">不選</span>。</p>
+            </div>
+
+            <div class="analysis-item">
+                <span class="tag tag-logic">邏輯</span>
+                <strong>(B) AND (且)</strong>
+                <p>規則：輸入「同時為 1」時才為 1。就像電路串聯。</p>
+                <p>👉 是邏輯運算，所以<span style="color:red">不選</span>。</p>
+            </div>
+
+            <div class="analysis-item" style="background-color: #e8f5e9;">
+                <span class="tag tag-math">算術</span>
+                <strong>(C) DIV (Division，整數除法)</strong>
+                <p>規則：計算除法並取整數商。例如 10 DIV 3 = 3。</p>
+                <p>👉 這是數學計算，<span style="color:green; font-weight:bold;">我們要找的就是它！(選)</span></p>
+            </div>
+
+            <div class="analysis-item">
+                <span class="tag tag-logic">邏輯</span>
+                <strong>(D) OR (或)</strong>
+                <p>規則：輸入「只要有一個是 1」就為 1。就像電路並聯。</p>
+                <p>👉 是邏輯運算，所以<span style="color:red">不選</span>。</p>
+            </div>
+
+            <div class="analysis-item" style="background-color: #e8f5e9;">
+                <span class="tag tag-math">算術</span>
+                <strong>(E) MOD (Modulus，取餘數)</strong>
+                <p>規則：計算除法後的餘數。例如 10 MOD 3 = 1。</p>
+                <p>👉 這是數學計算，<span style="color:green; font-weight:bold;">我們要找的就是它！(選)</span></p>
+            </div>
+        </section>
+
+        <!-- L. 正確答案 -->
+        <section class="card" style="border-left-color: var(--correct-color);">
+            <h2>✅ 正確答案</h2>
+            <div style="font-size: 1.5rem; color: var(--correct-color); font-weight: bold;">
+                C, E
+            </div>
+        </section>
+
+        <!-- H, I, J. 補充、口訣與陷阱 -->
+        <section class="card">
+            <h2>💡 考前衝刺筆記</h2>
+            
+            <h3>1. 記憶口訣</h3>
+            <p style="background: #fff3e0; padding: 10px; border-radius: 5px;">
+                <strong>「邏輯看判斷，DIV、MOD 是計算」</strong><br>
+                看到 XOR、AND、OR ➔ 畫真值表 (0/1) ➔ 邏輯<br>
+                看到 DIV、MOD ➔ 做數學 (商數/餘數) ➔ 算術
+            </p>
+
+            <h3>2. 常見陷阱 🚧</h3>
+            <ul>
+                <li><strong>誤區：</strong> 看到 XOR 很陌生，以為它不是邏輯運算。其實 XOR (互斥或) 在電腦加密與錯誤偵測非常重要！</li>
+                <li><strong>誤區：</strong> 以為 MOD 是邏輯運算。MOD 雖然在寫程式很常用 (判斷奇偶數)，但它的本質是「算出一個餘數」，屬於算術運算。</li>
+            </ul>
+
+            <h3>3. 觀念延伸</h3>
+            <p>除了題目提到的，你還應該認識：</p>
+            <ul>
+                <li><strong>邏輯家族：</strong> NOT (反相), NAND (反及), NOR (反或)</li>
+                <li><strong>算術家族：</strong> ADD (加), SUB (減), MUL (乘)</li>
+            </ul>
+        </section>
+
+        <!-- M. 自我檢測 -->
+        <section class="card">
+            <h2>📝 自我檢測 (不附答案，想一想)</h2>
+            <ol>
+                <li>運算子 <strong>NOT</strong> 屬於邏輯運算還是算術運算？為什麼？</li>
+                <li>如果我想知道一個數字是奇數還是偶數，我應該用 AND 運算還是 MOD 運算比較直覺？</li>
+                <li>在電腦 CPU 中，負責這些運算的單元叫做什麼？ (提示：ALU)</li>
+            </ol>
+        </section>
+
+    </div> <!-- End of hidden-content -->
+
+    <footer style="text-align: center; margin-top: 40px; font-size: 0.8rem; color: #777;">
+        <p>Created for Learning | 電腦概論數位邏輯單元</p>
+    </footer>
+
+</div>
+
+<script>
+    // --- 互動解題邏輯 ---
+    function checkAnswer() {
+        // 取得所有被勾選的選項
+        const checkboxes = document.querySelectorAll('input[name="option"]:checked');
+        let selectedValues = [];
+        checkboxes.forEach((checkbox) => {
+            selectedValues.push(checkbox.value);
+        });
+
+        // 排序以便比對 (雖然這題順序沒差，但養成好習慣)
+        selectedValues.sort();
+
+        const resultBox = document.getElementById('resultMessage');
+        const explanationArea = document.getElementById('explanationArea');
+        
+        // 清除舊樣式
+        resultBox.classList.remove('correct', 'wrong');
+        resultBox.style.display = 'block';
+
+        // 正確答案是 C 和 E
+        // 邏輯：必須選 C 和 E，且不能選其他
+        const correctAnswers = ['C', 'E'];
+        const isCorrect = JSON.stringify(selectedValues) === JSON.stringify(correctAnswers);
+
+        if (isCorrect) {
+            resultBox.textContent = "🎉 答對了！太棒了！DIV 和 MOD 確實是算術運算而非邏輯運算。";
+            resultBox.classList.add('correct');
+            // 答對自動展開解析
+            explanationArea.style.display = 'block';
+            window.scrollTo({ top: explanationArea.offsetTop, behavior: 'smooth' });
+        } else {
+            // 根據錯誤給予不同提示
+            let msg = "❌ 答案不完全正確喔！";
+            
+            if (selectedValues.length === 0) {
+                msg += " 你還沒選擇任何選項。";
+            } else if (selectedValues.includes('A') || selectedValues.includes('B') || selectedValues.includes('D')) {
+                msg += " \n提示：XOR、AND、OR 都是對 0 和 1 做判斷的邏輯運算，題目要找「不是」的。";
+            } else if (!selectedValues.includes('C') || !selectedValues.includes('E')) {
+                msg += " \n提示：還有漏掉的選項喔！想想看數學課會學到哪些運算？";
+            }
+            
+            msg += "\n(再試試看，或者點擊下方按鈕看解析)";
+            resultBox.textContent = msg;
+            resultBox.classList.add('wrong');
+        }
+    }
+
+    // --- 切換顯示解析與答案 ---
+    function toggleAnswer() {
+        const area = document.getElementById('explanationArea');
+        if (area.style.display === 'none' || area.style.display === '') {
+            area.style.display = 'block';
+            // 滾動到解析區
+            window.scrollTo({ top: area.offsetTop, behavior: 'smooth' });
+        } else {
+            area.style.display = 'none';
+        }
+    }
+</script>
+
+</body>
+</html>

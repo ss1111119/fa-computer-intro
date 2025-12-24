@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電腦概論 - 題號44 - CPU 指令週期</title>
+    <style>
+        /* * 全域設定
+         * 使用乾淨的無襯線字體，並設定變數以便統一管理顏色
+         */
+        :root {
+            --primary-color: #333;
+            --accent-color: #0056b3;
+            --highlight-bg: #fff9c4; /* 螢光筆淡黃 */
+            --bg-color: #f4f4f4;
+            --card-bg: #ffffff;
+            --border-color: #ddd;
+            --success-color: #28a745;
+            --error-color: #dc3545;
+            --step-active: #e3f2fd;
+            --step-active-border: #2196f3;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans TC", sans-serif;
+            line-height: 1.6;
+            color: var(--primary-color);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* 卡片式設計 */
+        .section-card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+        }
+
+        h1, h2, h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            background-color: #eee;
+            padding: 8px;
+            border-left: 5px solid var(--accent-color);
+            margin-bottom: 15px;
+        }
+
+        h3 {
+            font-size: 1.1rem;
+            color: #555;
+            margin-top: 15px;
+        }
+
+        /* 強調文字與螢光筆效果 */
+        .highlight {
+            background-color: var(--highlight-bg);
+            padding: 0 4px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+
+        .important {
+            color: #d32f2f;
+            font-weight: bold;
+        }
+
+        /* 題目區域 */
+        .question-box {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+        
+        .options-list {
+            list-style-type: none;
+            padding-left: 0;
+            margin-top: 10px;
+        }
+
+        .options-list li {
+            margin-bottom: 5px;
+            padding: 5px 10px;
+            background-color: #fafafa;
+            border: 1px solid #eee;
+            border-radius: 4px;
+        }
+
+        /* 按鈕樣式 */
+        .btn {
+            display: inline-block;
+            padding: 8px 16px;
+            font-size: 1rem;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            transition: background 0.3s;
+            color: white;
+            background-color: var(--accent-color);
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 2px solid var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .btn-reset {
+            background-color: #757575;
+        }
+
+        /* 動畫流程圖區域 */
+        .cycle-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .cycle-step {
+            flex: 1;
+            min-width: 120px;
+            padding: 15px;
+            text-align: center;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background-color: #fff;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        /* 手機版調整：變成垂直排列 */
+        @media (max-width: 600px) {
+            .cycle-container {
+                flex-direction: column;
+            }
+            .cycle-step {
+                width: 100%;
+            }
+            .arrow-down {
+                display: block !important;
+                margin: 5px auto;
+            }
+            .arrow-right {
+                display: none !important;
+            }
+        }
+
+        .cycle-step.active {
+            border-color: var(--step-active-border);
+            background-color: var(--step-active);
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(33, 150, 243, 0.2);
+        }
+
+        .step-number {
+            display: block;
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .step-title {
+            font-weight: bold;
+            display: block;
+        }
+
+        .arrow-right {
+            font-size: 1.5rem;
+            color: #999;
+        }
+
+        .arrow-down {
+            display: none; /* 電腦版隱藏 */
+            font-size: 1.5rem;
+            color: #999;
+        }
+
+        .animation-controls {
+            text-align: center;
+            margin-top: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+
+        .animation-status {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            border-radius: 5px;
+            color: #856404;
+            font-weight: bold;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 互動小問答區 */
+        .interactive-qa {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .qa-box {
+            flex: 1;
+            border: 1px dashed #999;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        
+        .qa-box:hover {
+            background-color: #f0f0f0;
+        }
+
+        .qa-answer {
+            margin-top: 5px;
+            font-size: 0.9rem;
+            color: var(--accent-color);
+            display: none;
+        }
+
+        /* 選項分析區 */
+        .analysis-item {
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #eee;
+        }
+
+        .analysis-item:last-child {
+            border-bottom: none;
+        }
+
+        /* 作答區 */
+        .quiz-area {
+            background-color: #e8f5e9;
+            border: 1px solid #c8e6c9;
+        }
+
+        .checkbox-group label {
+            display: block;
+            margin: 8px 0;
+            cursor: pointer;
+        }
+
+        .feedback-msg {
+            margin-top: 10px;
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .feedback-correct {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .feedback-error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        /* 隱藏/展開內容 */
+        .toggle-content {
+            display: none;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #ccc;
+        }
+
+        /* 口訣區 */
+        .mnemonic-box {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #0d47a1;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- A. 標題區 -->
+        <div class="section-card">
+            <h1>電腦概論 題號 44：CPU 指令週期</h1>
+            <p>主題：Instruction Cycle（Fetch / Decode / Operand / Execute / Store）</p>
+        </div>
+
+        <!-- B. 題目區 -->
+        <div class="section-card">
+            <h2>【題目】</h2>
+            <div class="question-box">
+                44. 下列何者屬於 CPU 指令的執行過程?<br>
+                <ul class="options-list">
+                    <li>(A) 擷取</li>
+                    <li>(B) 解碼</li>
+                    <li>(C) 提取運算元內容</li>
+                    <li>(D) 執行</li>
+                    <li>(E) 儲存</li>
+                </ul>
+            </div>
+            <!-- 答案預設隱藏，最後才揭曉 -->
+        </div>
+
+        <!-- C. 第一步：找關鍵字 -->
+        <div class="section-card">
+            <h2>第一步：找關鍵字</h2>
+            <p>請用螢光筆圈出題目重點：</p>
+            <p style="font-size: 1.1rem;">
+                下列何者屬於 <span class="highlight">CPU 指令</span> 的 <span class="highlight">執行過程</span> ?
+            </p>
+            <p><strong>💡 老師解說：</strong><br>
+                題目問的是「執行過程」，也就是完整的「指令週期（Instruction Cycle）」。只要是 CPU 處理一條指令必經的步驟，都算在內。
+            </p>
+        </div>
+
+        <!-- D. 第二步：白話翻譯 -->
+        <div class="section-card">
+            <h2>第二步：白話翻譯</h2>
+            <p>想像 CPU 是一個勤勞的工人，老闆（程式）給他一張單子（指令），他會做什麼？</p>
+            <ol>
+                <li>去信箱拿單子回來（擷取指令）。</li>
+                <li>讀懂單子上寫什麼（解碼）。</li>
+                <li>去倉庫拿需要的材料（提取運算元）。</li>
+                <li>開始動手做（執行）。</li>
+                <li>把做好的成品放回架子上（儲存）。</li>
+            </ol>
+            <p>題目問的就是：<strong>「上面這五個動作，哪些屬於他的工作流程？」</strong></p>
+        </div>
+
+        <!-- F. 互動核心：指令週期流程動畫 (將重點提到前面) -->
+        <div class="section-card">
+            <h2>【核心觀念】指令週期流程動畫</h2>
+            <p>讓我們以執行這條指令為例：<span class="highlight">ADD R1, R2</span> (將 R2 的數值加到 R1)</p>
+            
+            <div class="cycle-container">
+                <!-- 步驟 1 -->
+                <div class="cycle-step" id="step-1">
+                    <span class="step-number">Step 1</span>
+                    <span class="step-title">Fetch<br>擷取指令</span>
+                </div>
+                <div class="arrow-right">→</div>
+                <div class="arrow-down">↓</div>
+
+                <!-- 步驟 2 -->
+                <div class="cycle-step" id="step-2">
+                    <span class="step-number">Step 2</span>
+                    <span class="step-title">Decode<br>解碼</span>
+                </div>
+                <div class="arrow-right">→</div>
+                <div class="arrow-down">↓</div>
+
+                <!-- 步驟 3 -->
+                <div class="cycle-step" id="step-3">
+                    <span class="step-number">Step 3</span>
+                    <span class="step-title">Operand Fetch<br>提取運算元</span>
+                </div>
+                <div class="arrow-right">→</div>
+                <div class="arrow-down">↓</div>
+
+                <!-- 步驟 4 -->
+                <div class="cycle-step" id="step-4">
+                    <span class="step-number">Step 4</span>
+                    <span class="step-title">Execute<br>執行</span>
+                </div>
+                <div class="arrow-right">→</div>
+                <div class="arrow-down">↓</div>
+
+                <!-- 步驟 5 -->
+                <div class="cycle-step" id="step-5">
+                    <span class="step-number">Step 5</span>
+                    <span class="step-title">Store<br>儲存/寫回</span>
+                </div>
+            </div>
+
+            <div class="animation-status" id="anim-status">
+                點擊下方按鈕開始演示 CPU 如何工作...
+            </div>
+
+            <div class="animation-controls">
+                <button class="btn" onclick="playNextStep()">▶ 下一步</button>
+                <button class="btn btn-reset" onclick="resetAnimation()">↺ 重播</button>
+            </div>
+        </div>
+
+        <!-- E. 第三步：解題思路 -->
+        <div class="section-card">
+            <h2>第三步：解題思路</h2>
+            
+            <h3>1. 食譜比喻法</h3>
+            <p>記住這個流程，就像照食譜做菜一樣自然：</p>
+            <ul>
+                <li><strong>Fetch (擷取)</strong>：先拿食譜。</li>
+                <li><strong>Decode (解碼)</strong>：讀懂食譜說要「炒蛋」。</li>
+                <li><strong>Operand Fetch (提取運算元)</strong>：去冰箱拿雞蛋（食材）。</li>
+                <li><strong>Execute (執行)</strong>：開火炒蛋（動作）。</li>
+                <li><strong>Store (儲存)</strong>：把炒好的蛋盛盤（結果放回去）。</li>
+            </ul>
+
+            <h3>2. 對照選項</h3>
+            <p>回頭看題目的選項 A, B, C, D, E，你會發現每一個步驟都在我們剛剛演示的流程圖中。因此，這題是全選。</p>
+        </div>
+
+        <!-- G. 互動補強：區分『指令』與『運算元』 -->
+        <div class="section-card">
+            <h2>觀念釐清：指令 vs 運算元</h2>
+            <p>很多同學分不清楚「指令擷取」跟「運算元提取」有什麼不一樣。點擊下方卡片查看說明：</p>
+
+            <div class="interactive-qa">
+                <div class="qa-box" onclick="toggleQA('qa1')">
+                    <strong>指令 (Instruction)</strong><br>
+                    <small>點擊看解釋</small>
+                    <div id="qa1" class="qa-answer">
+                        是整句話，告訴 CPU <strong>「要做什麼動作」</strong>。<br>
+                        例如：<code>ADD</code> (加法)、<code>MOV</code> (搬移)。
+                        <br>👉 第一步 Fetch 就是在抓這個。
+                    </div>
+                </div>
+                <div class="qa-box" onclick="toggleQA('qa2')">
+                    <strong>運算元 (Operand)</strong><br>
+                    <small>點擊看解釋</small>
+                    <div id="qa2" class="qa-answer">
+                        是被拿來運算的 <strong>「資料或參數」</strong>。<br>
+                        例如：<code>ADD R1, R2</code> 中的 <strong>R1</strong> 和 <strong>R2</strong>。
+                        <br>👉 第三步 Operand Fetch 是去拿 R2 裡面的數值。
+                    </div>
+                </div>
+            </div>
+            <p style="font-size: 0.9rem; color: #666; margin-top: 10px;">
+                * 簡單來說：先拿「要做什麼」(指令)，再去拿「要對誰做」(運算元)。
+            </p>
+        </div>
+
+        <!-- H. 第四步：選項分析 -->
+        <div class="section-card">
+            <h2>第四步：選項逐一分析</h2>
+            
+            <div class="analysis-item">
+                <strong>(A) 擷取 (Fetch) ✅</strong>
+                <p>正確。這是週期的第一步，程式計數器 (PC) 指向記憶體位置，把指令讀入 CPU 的指令暫存器 (IR)。</p>
+            </div>
+
+            <div class="analysis-item">
+                <strong>(B) 解碼 (Decode) ✅</strong>
+                <p>正確。控制單元 (CU) 分析剛剛拿到的指令，判斷是加法、減法還是存取資料。</p>
+            </div>
+
+            <div class="analysis-item">
+                <strong>(C) 提取運算元內容 (Operand Fetch) ✅</strong>
+                <p>正確。如果指令需要資料（例如把 R1 加 R2），CPU 必須先去把 R1 和 R2 的數值讀出來放到暫存器或 ALU 輸入端。</p>
+            </div>
+
+            <div class="analysis-item">
+                <strong>(D) 執行 (Execute) ✅</strong>
+                <p>正確。算術邏輯單元 (ALU) 實際進行加減乘除或邏輯運算。</p>
+            </div>
+
+            <div class="analysis-item">
+                <strong>(E) 儲存 (Store / Write Back) ✅</strong>
+                <p>正確。運算完的結果不能丟掉，必須寫回暫存器或記憶體中，這條指令才算真正完成。</p>
+            </div>
+        </div>
+
+        <!-- I, J, K. 補充與口訣 -->
+        <div class="section-card">
+            <h2>衝刺筆記區</h2>
+            
+            <h3>🧠 記憶口訣</h3>
+            <div class="mnemonic-box">
+                「擷取、解碼、拿資料，<br>執行、寫回、就結束！」
+            </div>
+
+            <h3>⚠️ 常見陷阱 (避坑指南)</h3>
+            <ul style="list-style-type: none; padding-left: 0;">
+                <li>❌ <strong>誤區 1：</strong>以為「擷取」只有一次。<br>→ 其實有分「指令擷取」和「運算元擷取」兩階段。</li>
+                <li>❌ <strong>誤區 2：</strong>以為算完 (Execute) 就沒事了。<br>→ 沒寫回去 (Store) 等於白算。</li>
+                <li>❌ <strong>誤區 3：</strong>混淆 I/O。<br>→ 如果選項出現「列印」、「掃描」，那是外部設備動作，通常不屬於 CPU 內部的基本指令週期定義。</li>
+            </ul>
+        </div>
+
+        <!-- L. 作答區 -->
+        <div class="section-card quiz-area">
+            <h2>【自我測試】現在換你來答題</h2>
+            <p>44. 下列何者屬於 CPU 指令的執行過程? (複選)</p>
+            
+            <div class="checkbox-group">
+                <label><input type="checkbox" name="quiz" value="A"> (A) 擷取</label>
+                <label><input type="checkbox" name="quiz" value="B"> (B) 解碼</label>
+                <label><input type="checkbox" name="quiz" value="C"> (C) 提取運算元內容</label>
+                <label><input type="checkbox" name="quiz" value="D"> (D) 執行</label>
+                <label><input type="checkbox" name="quiz" value="E"> (E) 儲存</label>
+            </div>
+
+            <button class="btn" onclick="checkAnswer()">送出作答</button>
+            <button class="btn btn-outline" onclick="toggleAnswer()">顯示正確答案</button>
+
+            <div id="feedback" class="feedback-msg"></div>
+
+            <!-- M. 正確答案區 -->
+            <div id="real-answer" class="toggle-content">
+                <h3 style="color: var(--success-color);">正確答案：A, B, C, D, E</h3>
+                <p>恭喜你！這五個步驟完整構成了一個機器的指令週期 (Machine Cycle)。</p>
+            </div>
+        </div>
+
+        <!-- N. 自我檢測 -->
+        <div class="section-card">
+            <h2>【自我檢測】延伸思考</h2>
+            <p>想一想，確認你真的懂了：</p>
+            <ol>
+                <li>如果這條指令只是「讓 CPU 休息 (NOP)」，不需要任何資料，那還會有 Step 3 (提取運算元) 嗎？(提示：可能跳過)</li>
+                <li>為什麼 CPU 不一拿到指令就直接「執行」，一定要先「解碼」？(提示：不解碼怎麼知道要加還是要減？)</li>
+            </ol>
+        </div>
+
+    </div>
+
+    <!-- JavaScript 邏輯 -->
+    <script>
+        // --- 動畫邏輯 ---
+        let currentStep = 0;
+        const totalSteps = 5;
+        const statusText = document.getElementById('anim-status');
+        
+        // 定義每一步驟的狀態描述
+        const stepDescriptions = [
+            "準備開始：CPU 準備處理下一條指令...",
+            "Step 1 擷取 (Fetch)：CPU 從記憶體中把「ADD R1, R2」這行指令抓進指令暫存器 (IR)。",
+            "Step 2 解碼 (Decode)：控制單元 (CU) 翻譯指令，發現這是「加法運算」。",
+            "Step 3 提取運算元 (Operand Fetch)：CPU 去讀取 R1 和 R2 裡面的數值（例如 10 和 20）。",
+            "Step 4 執行 (Execute)：ALU 進行加法運算，計算 10 + 20 = 30。",
+            "Step 5 儲存 (Store)：將結果 30 寫回 R1 暫存器中。週期結束！"
+        ];
+
+        function playNextStep() {
+            // 如果已經結束，先重置
+            if (currentStep >= totalSteps) {
+                resetAnimation();
+                // 為了流暢體驗，重置後稍微延遲或直接開始第一步，這裡選擇直接重置等待再次點擊
+                return; 
+            }
+
+            currentStep++;
+            updateAnimationUI();
+        }
+
+        function resetAnimation() {
+            currentStep = 0;
+            // 移除所有 active class
+            for (let i = 1; i <= totalSteps; i++) {
+                document.getElementById(`step-${i}`).classList.remove('active');
+            }
+            statusText.innerText = stepDescriptions[0];
+            statusText.style.backgroundColor = "#fff3cd"; // 恢復黃色背景
+            statusText.style.color = "#856404";
+        }
+
+        function updateAnimationUI() {
+            // 1. 更新文字描述
+            statusText.innerText = stepDescriptions[currentStep];
+            statusText.style.backgroundColor = "#d4edda"; // 進行中變綠色背景
+            statusText.style.color = "#155724";
+
+            // 2. 高亮當前步驟
+            // 先移除所有 highlight (如果想要保留之前的 highlight 可以不移除，但這邊是一步步走)
+            for (let i = 1; i <= totalSteps; i++) {
+                document.getElementById(`step-${i}`).classList.remove('active');
+            }
+            // 加上目前的 highlight
+            const activeEl = document.getElementById(`step-${currentStep}`);
+            if (activeEl) {
+                activeEl.classList.add('active');
+            }
+
+            // 如果到了最後一步
+            if (currentStep === totalSteps) {
+                statusText.innerHTML += " <br><strong>🎉 指令完成！準備下一條...</strong>";
+            }
+        }
+
+        // --- 互動問答開關 ---
+        function toggleQA(id) {
+            const el = document.getElementById(id);
+            if (el.style.display === 'block') {
+                el.style.display = 'none';
+            } else {
+                el.style.display = 'block';
+            }
+        }
+
+        // --- 作答檢查邏輯 ---
+        function checkAnswer() {
+            const checkboxes = document.querySelectorAll('input[name="quiz"]:checked');
+            const feedback = document.getElementById('feedback');
+            
+            // 將選中的值轉為陣列
+            let values = [];
+            checkboxes.forEach((checkbox) => {
+                values.push(checkbox.value);
+            });
+            values.sort(); // 排序以便比對
+
+            // 正確答案
+            const correct = ['A', 'B', 'C', 'D', 'E'];
+
+            // 比對
+            if (JSON.stringify(values) === JSON.stringify(correct)) {
+                feedback.className = "feedback-msg feedback-correct";
+                feedback.innerHTML = "✅ 答對了！太棒了！<br>你也發現了嗎？這五個步驟缺一不可。";
+                feedback.style.display = "block";
+            } else {
+                feedback.className = "feedback-msg feedback-error";
+                feedback.innerHTML = "❌ 差一點點喔！<br>提示：再回頭看看上面的動畫流程，每一個步驟都有用到喔！";
+                feedback.style.display = "block";
+            }
+        }
+
+        function toggleAnswer() {
+            const answerDiv = document.getElementById('real-answer');
+            if (answerDiv.style.display === 'block') {
+                answerDiv.style.display = 'none';
+            } else {
+                answerDiv.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>

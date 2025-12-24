@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電腦概論互動講義：TCP/IP 分層辨識</title>
+    <style>
+        /* --- 基礎設定 --- */
+        :root {
+            --primary-color: #2c3e50; /* 深藍：專業感 */
+            --accent-color: #3498db;  /* 亮藍：重點 */
+            --highlight-bg: #fff9c4;  /* 淡黃：螢光筆效果 */
+            --correct-color: #27ae60; /* 綠色：正確 */
+            --wrong-color: #e74c3c;   /* 紅色：錯誤 */
+            --gray-light: #f8f9fa;
+            --gray-border: #ddd;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+
+        /* --- 標題區 --- */
+        header {
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            margin: 0;
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            color: #666;
+            margin: 5px 0 0;
+        }
+
+        /* --- 區塊通用樣式 --- */
+        .section-box {
+            margin-bottom: 25px;
+            padding: 15px;
+            border: 1px solid var(--gray-border);
+            border-radius: 6px;
+            background-color: #fff;
+        }
+
+        .section-title {
+            font-weight: bold;
+            color: var(--accent-color);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title::before {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 18px;
+            background-color: var(--accent-color);
+            margin-right: 8px;
+            border-radius: 2px;
+        }
+
+        /* --- 題目區 --- */
+        .question-box {
+            background-color: var(--gray-light);
+            font-size: 1.1rem;
+            font-weight: bold;
+            padding: 20px;
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .options {
+            margin-top: 15px;
+            font-weight: normal;
+        }
+
+        .option-item {
+            display: block;
+            margin: 5px 0;
+        }
+
+        /* --- 螢光筆特效 --- */
+        .highlight {
+            background-color: var(--highlight-bg);
+            padding: 0 4px;
+            border-radius: 2px;
+            font-weight: bold;
+            color: #d35400;
+        }
+
+        /* --- 互動對照圖 (核心) --- */
+        .comparison-chart {
+            display: flex;
+            justify-content: space-around;
+            align-items: stretch;
+            margin-top: 20px;
+            user-select: none; /* 防止選取文字影響體驗 */
+        }
+
+        .model-col {
+            width: 45%;
+            text-align: center;
+        }
+
+        .model-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+
+        .layer {
+            border: 1px solid #999;
+            margin-bottom: 4px;
+            padding: 8px 2px;
+            background-color: #fff;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+        }
+
+        .layer:hover {
+            transform: scale(1.02);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* TCP/IP 的層次高度需要特別處理以對齊 OSI */
+        .tcp-app { height: 110px; background-color: #e8f6f3; } /* 對應 7,6,5 */
+        .tcp-trans { height: 32px; background-color: #fdf2e9; } /* 對應 4 */
+        .tcp-net { height: 32px; background-color: #ebf5fb; } /* 對應 3 */
+        .tcp-link { height: 72px; background-color: #f4ecf7; } /* 對應 2,1 */
+
+        /* OSI 樣式 */
+        .osi-layer { height: 32px; background-color: #f9f9f9; }
+
+        /* 互動啟動樣式 */
+        .active-layer {
+            background-color: var(--accent-color) !important;
+            color: white;
+            border-color: #2980b9;
+        }
+
+        .related-layer {
+            background-color: #aed6f1 !important; /* 淺藍色 */
+            color: #154360;
+            border: 2px dashed var(--accent-color);
+        }
+
+        .hint-text {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+
+        /* --- 作答區 --- */
+        .quiz-form label {
+            display: block;
+            margin: 8px 0;
+            cursor: pointer;
+            padding: 8px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+        }
+
+        .quiz-form label:hover {
+            background-color: #f0f0f0;
+        }
+
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 10px;
+            margin-right: 10px;
+        }
+
+        .btn:hover {
+            background-color: #34495e;
+        }
+
+        .btn-toggle {
+            background-color: #7f8c8d;
+        }
+
+        #result-area {
+            margin-top: 15px;
+            padding: 15px;
+            display: none;
+            border-radius: 4px;
+        }
+
+        .correct-feedback { background-color: #d5f5e3; color: #196f3d; border: 1px solid #abebc6; }
+        .wrong-feedback { background-color: #fadbd8; color: #943126; border: 1px solid #f5b7b1; }
+
+        /* --- 自我檢測 --- */
+        .self-check-list li {
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+
+        /* --- RWD --- */
+        @media (max-width: 600px) {
+            .comparison-chart {
+                font-size: 0.8rem;
+            }
+            .layer {
+                padding: 4px 1px;
+            }
+            .tcp-app { height: 116px; } /* 手機微調 */
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- A. 標題區 -->
+    <header>
+        <h1>電腦網路：TCP/IP 分層架構</h1>
+        <h2>主題：OSI 模型與 TCP/IP 模型的層次對照</h2>
+    </header>
+
+    <!-- B. 題目區 -->
+    <div class="section-box question-box">
+        <div><span style="background:#333; color:#fff; padding:2px 6px; border-radius:3px; font-size:0.8em; margin-right:5px;">複選題 46</span></div>
+        <div style="margin-top:10px;">
+            下列何者<span class="highlight">不屬</span> TCP/IP 網路架構中之層次定義的名稱?
+        </div>
+        <div class="options">
+            (A) 應用層<br>
+            (B) 展示層<br>
+            (C) 會議層<br>
+            (D) 傳輸層<br>
+            (E) 實體層
+        </div>
+    </div>
+
+    <!-- C. 第一步：找關鍵字 -->
+    <div class="section-box">
+        <div class="section-title">第一步：找關鍵字</div>
+        <p>請用「螢光筆」在腦中圈出重點：</p>
+        <ul>
+            <li><span class="highlight">不屬</span>：題目要找「沒有」的、「例外」的。</li>
+            <li><span class="highlight">TCP/IP</span>：注意！不是問 OSI，是問 Internet 最常用的 TCP/IP 模型。</li>
+            <li><span class="highlight">層次定義的名稱</span>：專有名詞要精確。</li>
+        </ul>
+    </div>
+
+    <!-- D. 第二步：白話翻譯 -->
+    <div class="section-box">
+        <div class="section-title">第二步：題目翻譯蒟蒻</div>
+        <p>這題其實在問：<strong>「有哪幾個層次名稱，是 OSI 模型獨有，但在 TCP/IP 架構裡被『吃掉』（合併）了？」</strong></p>
+    </div>
+
+    <!-- E. 第三步：解題思路 -->
+    <div class="section-box">
+        <div class="section-title">第三步：解題思路</div>
+        <p><strong>觀念：</strong>比較兩套分層標準。</p>
+        <ol>
+            <li><strong>OSI 七層模型 (理論)：</strong>分工超細，像大公司的 SOP。
+                <br><small>口訣：應、展、會、傳、網、鏈、實 (由上而下)</small>
+            </li>
+            <li><strong>TCP/IP 模型 (實務)：</strong>講求效率，把工作相近的合併。
+                <br><small>常見四層：應用、傳輸、網際網路、網路介面</small>
+            </li>
+        </ol>
+        <p><strong>關鍵差異：</strong>OSI 的第 5、6、7 層（會議、展示、應用），在 TCP/IP 裡面全部打包叫做「應用層」！</p>
+    </div>
+
+    <!-- F. 互動核心：OSI vs TCP/IP 對照圖 -->
+    <div class="section-box" style="border: 2px solid var(--accent-color);">
+        <div class="section-title">★ 互動圖解：點擊層次看對應關係 ★</div>
+        <p class="hint-text">試試看：點擊左邊的 OSI 層次，看它在右邊跑到哪去了？</p>
+        
+        <div class="comparison-chart">
+            <!-- 左側 OSI -->
+            <div class="model-col">
+                <div class="model-title">OSI 模型 (7層)</div>
+                <!-- data-map 對應到右側的 id -->
+                <div class="layer osi-layer" data-map="tcp-4">7. 應用層 (Application)</div>
+                <div class="layer osi-layer" data-map="tcp-4">6. 展示層 (Presentation)</div>
+                <div class="layer osi-layer" data-map="tcp-4">5. 會議層 (Session)</div>
+                <div class="layer osi-layer" data-map="tcp-3">4. 傳輸層 (Transport)</div>
+                <div class="layer osi-layer" data-map="tcp-2">3. 網路層 (Network)</div>
+                <div class="layer osi-layer" data-map="tcp-1">2. 資料鏈結層 (Data Link)</div>
+                <div class="layer osi-layer" data-map="tcp-1">1. 實體層 (Physical)</div>
+            </div>
+
+            <!-- 右側 TCP/IP -->
+            <div class="model-col">
+                <div class="model-title">TCP/IP 模型 (4層)</div>
+                <!-- id 用於被選取 -->
+                <div id="tcp-4" class="layer tcp-app" data-map-reverse="7,6,5">應用層<br>(Application)</div>
+                <div id="tcp-3" class="layer tcp-trans" data-map-reverse="4">傳輸層<br>(Transport)</div>
+                <div id="tcp-2" class="layer tcp-net" data-map-reverse="3">網際網路層<br>(Internet)</div>
+                <div id="tcp-1" class="layer tcp-link" data-map-reverse="2,1">網路介面層<br>(Network Interface)</div>
+            </div>
+        </div>
+        <p class="hint-text">↑ 發現了嗎？TCP/IP 沒有「展示」與「會議」這兩個名字！</p>
+    </div>
+
+    <!-- G. 第四步：選項分析 -->
+    <div class="section-box">
+        <div class="section-title">第四步：逐一檢查選項</div>
+        <ul style="list-style: none; padding-left: 0;">
+            <li class="option-item">❌ <strong>(A) 應用層</strong>：兩邊都有 (Application Layer)。</li>
+            <li class="option-item">✅ <strong>(B) 展示層</strong>：這是 OSI 特產！TCP/IP 把它併入應用層了。<strong>(選它)</strong></li>
+            <li class="option-item">✅ <strong>(C) 會議層</strong>：這也是 OSI 特產！TCP/IP 把它併入應用層了。<strong>(選它)</strong></li>
+            <li class="option-item">❌ <strong>(D) 傳輸層</strong>：兩邊都有 (Transport Layer)。</li>
+            <li class="option-item">❌ <strong>(E) 實體層</strong>：雖然 TCP/IP 4 層模型最底層常叫「網路介面層」，但實體層概念在網路中無所不在。相較之下，(B)與(C)是「完全消失」的層名，是本題更精確的答案。</li>
+        </ul>
+    </div>
+
+    <!-- H & I & J 綜合觀念補充 -->
+    <div class="section-box" style="background-color: #fdfefe;">
+        <div class="section-title">必考重點筆記</div>
+        <p><strong>1. 名詞解釋 (第一次看到必背)：</strong></p>
+        <ul>
+            <li><strong>Presentation Layer (展示層)：</strong> 負責翻譯。例如把資料編碼 (ASCII vs EBCDIC)、加密/解密、壓縮/解壓縮。</li>
+            <li><strong>Session Layer (會議層)：</strong> 負責管連線。就像打電話要先「建立連線」，講完要「切斷連線」，並確認雙方還在線上。</li>
+        </ul>
+        <p><strong>2. 記憶口訣：</strong></p>
+        <blockquote style="border-left: 4px solid var(--accent-color); padding-left: 10px; color: #555;">
+            「OSI 的<strong>會議</strong>跟<strong>展示</strong>，TCP/IP 全部都在<strong>應用</strong>程式裡做完了！」
+        </blockquote>
+    </div>
+
+    <!-- K. 作答區 -->
+    <div class="section-box" style="border: 2px solid var(--primary-color);">
+        <div class="section-title">換你試試看 (複選題)</div>
+        <div class="quiz-form">
+            <label><input type="checkbox" name="q46" value="A"> (A) 應用層</label>
+            <label><input type="checkbox" name="q46" value="B"> (B) 展示層</label>
+            <label><input type="checkbox" name="q46" value="C"> (C) 會議層</label>
+            <label><input type="checkbox" name="q46" value="D"> (D) 傳輸層</label>
+            <label><input type="checkbox" name="q46" value="E"> (E) 實體層</label>
+            
+            <button class="btn" onclick="checkAnswer()">送出作答</button>
+            <button class="btn btn-toggle" onclick="toggleAnswer()">偷看答案</button>
+        </div>
+
+        <div id="result-area"></div>
+        
+        <!-- L. 正確答案 (隱藏區) -->
+        <div id="hidden-answer" style="display:none; margin-top:15px; border-top:1px dashed #ccc; padding-top:10px;">
+            <strong>正確答案：B, C</strong>
+        </div>
+    </div>
+
+    <!-- M. 自我檢測 -->
+    <div class="section-box">
+        <div class="section-title">自我檢測 (想一想，不給答案)</div>
+        <ul class="self-check-list">
+            <li>Q1. 如果你要寫一個加密軟體 (Encryption)，在 OSI 模型中主要是在哪一層的工作？</li>
+            <li>Q2. TCP/IP 的「網際網路層 (Internet Layer)」，對應到 OSI 的哪一層？</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+    // --- 互動圖表邏輯 ---
+    // 當滑鼠移入或點擊左側 OSI 層
+    document.querySelectorAll('.osi-layer').forEach(item => {
+        // 設定點擊事件
+        item.addEventListener('click', function() {
+            clearHighlights();
+            // 亮起自己
+            this.classList.add('active-layer');
+            // 找出對應的 TCP/IP 層 ID
+            const targetId = this.getAttribute('data-map');
+            const targetEl = document.getElementById(targetId);
+            if(targetEl) {
+                targetEl.classList.add('related-layer');
+            }
+        });
+    });
+
+    // 當滑鼠移入或點擊右側 TCP/IP 層
+    document.querySelectorAll('.layer[id^="tcp-"]').forEach(item => {
+        item.addEventListener('click', function() {
+            clearHighlights();
+            // 亮起自己
+            this.classList.add('active-layer');
+            // 找出對應的 OSI 層 index (7,6,5...)
+            const mapIndexes = this.getAttribute('data-map-reverse').split(',');
+            const osiLayers = document.querySelectorAll('.osi-layer');
+            
+            // 遍歷所有 OSI 層，找到對應的並亮起
+            osiLayers.forEach((osiLayer, index) => {
+                // OSI DOM 順序是 7,6,5,4,3,2,1 (index 0 is layer 7)
+                // Layer 7 is index 0. Layer 6 is index 1.
+                // Current logic: Layer N maps to index (7-N).
+                const currentLayerNum = 7 - index; 
+                if (mapIndexes.includes(currentLayerNum.toString())) {
+                    osiLayer.classList.add('related-layer');
+                }
+            });
+        });
+    });
+
+    function clearHighlights() {
+        document.querySelectorAll('.layer').forEach(el => {
+            el.classList.remove('active-layer');
+            el.classList.remove('related-layer');
+        });
+    }
+
+    // --- 作答區邏輯 ---
+    function checkAnswer() {
+        const checkboxes = document.querySelectorAll('input[name="q46"]:checked');
+        let userAnswers = [];
+        checkboxes.forEach((checkbox) => {
+            userAnswers.push(checkbox.value);
+        });
+        userAnswers.sort(); // 排序以便比較
+
+        const correctAnswers = ['B', 'C'];
+        const resultArea = document.getElementById('result-area');
+        resultArea.style.display = 'block';
+
+        // 比較陣列內容
+        const isCorrect = JSON.stringify(userAnswers) === JSON.stringify(correctAnswers);
+
+        if (isCorrect) {
+            resultArea.className = 'correct-feedback';
+            resultArea.innerHTML = '<strong>🎉 答對了！</strong><br>展示層與會議層正是 OSI 獨有，TCP/IP 沒有這兩層。';
+        } else {
+            resultArea.className = 'wrong-feedback';
+            let msg = '<strong>⚠️ 差一點點！</strong><br>你的回答：' + (userAnswers.length ? userAnswers.join(', ') : '未作答') + '<br>';
+            
+            // 簡單除錯提示
+            if (userAnswers.includes('A') || userAnswers.includes('D')) {
+                msg += '提示：應用層和傳輸層在 TCP/IP 裡都有喔。<br>';
+            }
+            if (userAnswers.includes('E')) {
+                msg += '提示：雖然實體層有爭議，但 B 和 C 是最明確消失的層名。<br>';
+            }
+            if (!userAnswers.includes('B') || !userAnswers.includes('C')) {
+                msg += '提示：要找出兩個 TCP/IP 「沒有」的層次喔。';
+            }
+            resultArea.innerHTML = msg;
+        }
+    }
+
+    function toggleAnswer() {
+        const answerDiv = document.getElementById('hidden-answer');
+        if (answerDiv.style.display === 'none') {
+            answerDiv.style.display = 'block';
+        } else {
+            answerDiv.style.display = 'none';
+        }
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電腦概論：OSI 模型與鏈結層解析</title>
+    <style>
+        /* --- 基礎設定 --- */
+        :root {
+            --primary-color: #333; /* 主色調：深灰 */
+            --accent-color: #2c3e50; /* 強調色：藍灰 */
+            --highlight-bg: #fff9c4; /* 螢光筆黃 */
+            --highlight-text: #d32f2f; /* 重點紅 */
+            --correct-color: #2e7d32; /* 正確綠 */
+            --wrong-color: #c62828; /* 錯誤紅 */
+            --bg-color: #f5f5f5; /* 背景灰 */
+            --card-bg: #ffffff; /* 卡片白 */
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* --- 通用卡片樣式 --- */
+        .card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 5px solid var(--accent-color);
+        }
+
+        h1, h2, h3 {
+            margin-top: 0;
+            color: var(--accent-color);
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            background-color: #eee;
+            padding: 8px;
+            border-radius: 4px;
+        }
+
+        /* --- 題目區域 --- */
+        .question-box {
+            font-size: 1.1rem;
+            font-weight: bold;
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 5px solid #2196f3;
+        }
+
+        .options {
+            list-style: none;
+            padding: 0;
+        }
+
+        .options li {
+            margin: 5px 0;
+            padding: 5px 10px;
+        }
+
+        /* --- 螢光筆特效 --- */
+        .highlight {
+            background-color: var(--highlight-bg);
+            padding: 0 4px;
+            border-radius: 2px;
+            font-weight: bold;
+            color: #000;
+        }
+
+        .keyword-red {
+            color: var(--highlight-text);
+            font-weight: bold;
+        }
+
+        /* --- 互動式 OSI 圖表區 (重點) --- */
+        .osi-container {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .osi-layer {
+            background-color: #ddd;
+            padding: 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-weight: bold;
+            position: relative;
+            border: 2px solid transparent;
+        }
+
+        .osi-layer:hover {
+            background-color: #ccc;
+            transform: scale(1.02);
+        }
+
+        /* OSI 層級顏色區分 */
+        .layer-top { background-color: #e0f7fa; } /* 應用層群組 */
+        .layer-mid { background-color: #fff3e0; } /* 傳輸/網路 */
+        .layer-bot { background-color: #e8f5e9; } /* 實體/鏈結 */
+
+        /* 選中狀態 */
+        .osi-layer.active {
+            border-color: #ff9800;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .layer-detail {
+            display: none;
+            padding: 10px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-top: none;
+            margin-bottom: 5px;
+            border-radius: 0 0 5px 5px;
+            font-size: 0.9rem;
+            color: #555;
+            text-align: left;
+        }
+
+        /* 標籤徽章 */
+        .badge {
+            display: inline-block;
+            background: #333;
+            color: #fff;
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+
+        /* --- 按鈕樣式 --- */
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.2s;
+        }
+
+        .btn-quiz {
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            width: 100%;
+            text-align: left;
+        }
+
+        .btn-quiz:hover {
+            background-color: #e0e0e0;
+        }
+
+        .btn-toggle {
+            background-color: #607d8b;
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        /* --- 回饋區域 --- */
+        #feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .correct {
+            background-color: #dcedc8;
+            color: #1b5e20;
+            border: 1px solid #1b5e20;
+        }
+
+        .wrong {
+            background-color: #ffcdd2;
+            color: #b71c1c;
+            border: 1px solid #b71c1c;
+        }
+
+        .hidden-answer {
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            border-top: 1px dashed #ccc;
+        }
+
+        /* RWD 調整 */
+        @media (max-width: 600px) {
+            .container { padding: 10px; }
+            h1 { font-size: 1.2rem; }
+            .osi-layer { padding: 10px; font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- A. 標題區 -->
+    <div class="card">
+        <h1>題號 17：電腦概論 - OSI 七層網路模型</h1>
+        <p style="color: #666; font-size: 0.9rem;">單元：網路通訊原理 / 鏈結層 (Data Link Layer)</p>
+    </div>
+
+    <!-- B. 題目區 -->
+    <div class="card">
+        <h2>【題目】</h2>
+        <div class="question-box">
+            17. OSI網路模式中，鏈結層(data link layer)屬於第幾層的通訊協定?<br>
+            <ul class="options">
+                <li>(A) 5</li>
+                <li>(B) 4</li>
+                <li>(C) 3</li>
+                <li>(D) 2</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- C. 第一步：找關鍵字 -->
+    <div class="card">
+        <h2>第一步：找關鍵字</h2>
+        <p>請拿出你心中的螢光筆，把以下重點畫起來：</p>
+        <p>
+            「<span class="highlight">OSI網路模式</span>」、
+            「<span class="highlight">鏈結層 (data link layer)</span>」、
+            「<span class="highlight">第幾層</span>」
+        </p>
+        <p><strong>💡 為什麼這是關鍵？</strong><br>
+        題目很直接，就是考「名稱」與「層數」的配對。看到「OSI」就要立刻在腦海中浮現那座七層高塔。</p>
+    </div>
+
+    <!-- D. 第二步：白話翻譯 -->
+    <div class="card">
+        <h2>第二步：白話翻譯</h2>
+        <p>如果把這題翻譯成高中生平常講話的樣子，就是：</p>
+        <blockquote style="border-left: 4px solid #ff9800; padding-left: 10px; color: #555;">
+            「欸，在 OSI 那七層裡面，負責處理 MAC 位址、Switch 交換器，還有管同一條網路線上資料怎麼傳的那一層，我們由下往上數，它是第幾樓？」
+        </blockquote>
+    </div>
+
+    <!-- F. 互動式 OSI 七層對照圖 (解題核心) -->
+    <div class="card">
+        <h2>OSI 七層透視塔 (點擊展開)</h2>
+        <p>請點擊下方的積木，看看每一層在做什麼。<br>
+        <span style="font-size: 0.9rem; color: #d32f2f;">🔥 提示：OSI 模型是從下往上數的喔！(由 Layer 1 數到 Layer 7)</span></p>
+
+        <button class="btn btn-toggle" onclick="toggleHints()">開關記憶提示</button>
+
+        <div class="osi-container">
+            <!-- Layer 7 -->
+            <div class="osi-layer layer-top" onclick="toggleLayer('l7')">
+                <span class="badge">Layer 7</span> 應用層 (Application Layer)
+                <span class="hint-text" style="display:none; color: #888; font-size: 0.8rem;"> - 軟體介面</span>
+            </div>
+            <div id="l7" class="layer-detail">
+                <strong>功能：</strong>提供使用者操作介面 (HTTP, FTP, SMTP)<br>
+                <strong>口訣：</strong>最靠近你的那一層。
+            </div>
+
+            <!-- Layer 6 -->
+            <div class="osi-layer layer-top" onclick="toggleLayer('l6')">
+                <span class="badge">Layer 6</span> 表現層 (Presentation Layer)
+                <span class="hint-text" style="display:none; color: #888; font-size: 0.8rem;"> - 翻譯/加密</span>
+            </div>
+            <div id="l6" class="layer-detail">
+                <strong>功能：</strong>資料格式轉換、加密解密 (JPEG, ASCII)。
+            </div>
+
+            <!-- Layer 5 -->
+            <div class="osi-layer layer-top" onclick="toggleLayer('l5')">
+                <span class="badge">Layer 5</span> 會話層 (Session Layer)
+                <span class="hint-text" style="display:none; color: #888; font-size: 0.8rem;"> - 建立連線</span>
+            </div>
+            <div id="l5" class="layer-detail">
+                <strong>功能：</strong>建立、管理應用程式之間的連線對話。
+            </div>
+
+            <!-- Layer 4 -->
+            <div class="osi-layer layer-mid" onclick="toggleLayer('l4')">
+                <span class="badge">Layer 4</span> 傳輸層 (Transport Layer)
+                <span class="hint-text" style="display:none; color: #888; font-size: 0.8rem;"> - TCP/UDP</span>
+            </div>
+            <div id="l4" class="layer-detail">
+                <strong>功能：</strong>端對端的傳送，確保資料完整性 (TCP, UDP, Port)。
+            </div>
+
+            <!-- Layer 3 -->
+            <div class="osi-layer layer-mid" onclick="toggleLayer('l3')">
+                <span class="badge">Layer 3</span> 網路層 (Network Layer)
+                <span class="hint-text" style="display:none; color: #888; font-size: 0.8rem;"> - IP/路由器</span>
+            </div>
+            <div id="l3" class="layer-detail">
+                <strong>功能：</strong>決定路徑 (Routing)、IP 位址。<br>
+                <strong>設備：</strong>Router (路由器)。
+            </div>
+
+            <!-- Layer 2 (Target) -->
+            <div class="osi-layer layer-bot" id="target-layer" onclick="toggleLayer('l2')" style="border: 2px dashed #d32f2f;">
+                <span class="badge" style="background: #d32f2f;">Layer 2</span> 鏈結層 (Data Link Layer)
+                <span class="hint-text" style="display:none; color: #d32f2f; font-weight:bold;"> - 這裡！</span>
+            </div>
+            <div id="l2" class="layer-detail">
+                <strong style="color: #d32f2f;">本題主角！</strong><br>
+                <strong>功能：</strong>同一條網路上點對點傳輸、錯誤偵測。<br>
+                <strong>關鍵字：</strong><span class="highlight">MAC 位址</span>、<span class="highlight">Frame (訊框)</span>、<span class="highlight">Switch (交換器)</span>。<br>
+                <strong>位置：</strong>從底下數上來第 2 層。
+            </div>
+
+            <!-- Layer 1 -->
+            <div class="osi-layer layer-bot" onclick="toggleLayer('l1')">
+                <span class="badge">Layer 1</span> 實體層 (Physical Layer)
+                <span class="hint-text" style="display:none; color: #888; font-size: 0.8rem;"> - 線材/訊號</span>
+            </div>
+            <div id="l1" class="layer-detail">
+                <strong>功能：</strong>傳送 0 與 1 的電子訊號。<br>
+                <strong>設備：</strong>網路線、集線器 (Hub)。
+            </div>
+        </div>
+    </div>
+
+    <!-- E. 解題思路 -->
+    <div class="card">
+        <h2>第三步：解題思路</h2>
+        <p>這題考的是最基本的「層數對應」。</p>
+        <ol>
+            <li><strong>方向很重要：</strong>OSI 七層必須是「<span class="keyword-red">由下往上</span>」數。</li>
+            <li><strong>底層基礎：</strong>
+                <ul>
+                    <li>地基 (Layer 1)：實體層 (Physical)</li>
+                    <li><strong>2 樓 (Layer 2)：鏈結層 (Data Link)</strong></li>
+                    <li>3 樓 (Layer 3)：網路層 (Network)</li>
+                </ul>
+            </li>
+            <li><strong>結論：</strong>看到「鏈結層」，直接對應數字 <strong>2</strong>。</li>
+        </ol>
+    </div>
+
+    <!-- G. 選項分析 -->
+    <div class="card">
+        <h2>第四步：選項逐一分析</h2>
+        <ul>
+            <li>❌ <strong>(A) 5</strong>：第 5 層是會話層 (Session)，負責管對話的。</li>
+            <li>❌ <strong>(B) 4</strong>：第 4 層是傳輸層 (Transport)，負責 TCP/UDP 的。</li>
+            <li>❌ <strong>(C) 3</strong>：第 3 層是網路層 (Network)，負責 IP 和找路 (Routing) 的。很多同學看到「網路」兩字就選這層，是常見陷阱！</li>
+            <li>✅ <strong>(D) 2</strong>：<strong>第 2 層是鏈結層 (Data Link)</strong>，負責 MAC 位址與交換器，正確！</li>
+        </ul>
+    </div>
+
+    <!-- H, I, J. 觀念補充與延伸 -->
+    <div class="card" style="background-color: #fffde7;">
+        <h2>💡 觀念補充與記憶口訣</h2>
+        
+        <h3>1. 核心觀念：L2 vs L3 大對決</h3>
+        <table border="1" style="width:100%; border-collapse: collapse; margin-bottom: 15px;">
+            <tr style="background: #eee;">
+                <th>比較項目</th>
+                <th>Layer 2 鏈結層</th>
+                <th>Layer 3 網路層</th>
+            </tr>
+            <tr>
+                <td><strong>地址</strong></td>
+                <td>MAC 位址 (實體位址)</td>
+                <td>IP 位址 (邏輯位址)</td>
+            </tr>
+            <tr>
+                <td><strong>設備</strong></td>
+                <td>Switch (交換器)</td>
+                <td>Router (路由器)</td>
+            </tr>
+            <tr>
+                <td><strong>傳輸單位</strong></td>
+                <td>Frame (訊框)</td>
+                <td>Packet (封包)</td>
+            </tr>
+        </table>
+
+        <h3>2. 記憶口訣</h3>
+        <ul>
+            <li><strong>簡單版：</strong>「一實體、二鏈結、三網路」。</li>
+            <li><strong>進階版：</strong>「2 看 MAC，3 看 IP」。</li>
+            <li><strong>英文縮寫法：</strong>PDN T SPA (Physical, DataLink, Network...) <br>記法：<strong>P</strong>lease <strong>D</strong>o <strong>N</strong>ot <strong>T</strong>hrow <strong>S</strong>ausage <strong>P</strong>izza <strong>A</strong>way (請不要把香腸披薩丟掉)。</li>
+        </ul>
+
+        <h3>3. 避坑指南</h3>
+        <p>看到題目有「網路」兩個字，不要急著選 Network Layer (L3)！<br>
+        要看清楚是問「網路模式 (OSI Model)」還是「網路層 (Network Layer)」。<br>
+        <strong>鏈結層 (Data Link) 永遠是老二 (Layer 2)。</strong></p>
+    </div>
+
+    <!-- K. 作答區 -->
+    <div class="card">
+        <h2>🎯 考前模擬作答區</h2>
+        <p>請點選正確答案：</p>
+        <button class="btn btn-quiz" onclick="checkAnswer('A')">(A) 5</button>
+        <button class="btn btn-quiz" onclick="checkAnswer('B')">(B) 4</button>
+        <button class="btn btn-quiz" onclick="checkAnswer('C')">(C) 3</button>
+        <button class="btn btn-quiz" onclick="checkAnswer('D')">(D) 2</button>
+
+        <div id="feedback"></div>
+
+        <div style="margin-top: 20px;">
+            <button class="btn btn-toggle" onclick="toggleAnswer()">顯示/隱藏 正確答案</button>
+            <div id="correct-answer" class="hidden-answer">
+                <strong>正確答案：(D)</strong><br>
+                解析：鏈結層位於 OSI 模型由下數上來的第 2 層。
+            </div>
+        </div>
+    </div>
+
+    <!-- M. 自我檢測 -->
+    <div class="card">
+        <h2>📝 自我檢測 (想一想，不給答案)</h2>
+        <ol>
+            <li>如果不使用 Switch 而使用 Router，那是屬於第幾層的設備？</li>
+            <li>MAC 位址 (例如 00:1A:2B:3C:4D:5E) 是在哪一層被讀取的？</li>
+            <li>大家常說的「寫網頁」通常是指第幾層 (HTTP) 的工作？</li>
+        </ol>
+    </div>
+
+</div>
+
+<script>
+    // 展開/收合每一層的詳細說明
+    function toggleLayer(layerId) {
+        const detail = document.getElementById(layerId);
+        const allDetails = document.querySelectorAll('.layer-detail');
+        const allLayers = document.querySelectorAll('.osi-layer');
+        
+        // 點擊時，先關閉其他已開啟的 (手風琴效果)
+        allDetails.forEach(el => {
+            if (el.id !== layerId) el.style.display = 'none';
+        });
+
+        allLayers.forEach(el => el.classList.remove('active'));
+
+        // 切換目前的顯示狀態
+        if (detail.style.display === 'block') {
+            detail.style.display = 'none';
+        } else {
+            detail.style.display = 'block';
+            // 找到對應的標題 div 並加上 active class
+            // 簡單查找方式：detail 的前一個兄弟元素
+            detail.previousElementSibling.classList.add('active');
+        }
+    }
+
+    // 開關記憶提示
+    function toggleHints() {
+        const hints = document.querySelectorAll('.hint-text');
+        hints.forEach(hint => {
+            hint.style.display = (hint.style.display === 'none') ? 'inline' : 'none';
+        });
+    }
+
+    // 檢查答案
+    function checkAnswer(option) {
+        const feedback = document.getElementById('feedback');
+        feedback.style.display = 'block';
+
+        if (option === 'D') {
+            feedback.className = 'correct';
+            feedback.innerHTML = '<strong>✅ 答對了！</strong><br>太棒了！鏈結層 (Data Link Layer) 正是第 2 層。<br>關鍵字：MAC、Switch、Frame。';
+        } else {
+            feedback.className = 'wrong';
+            let msg = '';
+            if (option === 'A') msg = '第 5 層是會話層 (Session Layer) 哦。';
+            if (option === 'B') msg = '第 4 層是傳輸層 (Transport Layer)，管 TCP 的。';
+            if (option === 'C') msg = '第 3 層是網路層 (Network Layer)，管 IP 的。';
+            
+            feedback.innerHTML = `<strong>❌ 答錯囉！</strong><br>${msg}<br>請記得口訣：一實體、二鏈結...`;
+        }
+    }
+
+    // 顯示隱藏答案
+    function toggleAnswer() {
+        const ans = document.getElementById('correct-answer');
+        ans.style.display = (ans.style.display === 'block') ? 'none' : 'block';
+    }
+</script>
+
+</body>
+</html>

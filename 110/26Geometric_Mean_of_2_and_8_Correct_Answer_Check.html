@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>題號26：幾何平均數解題與驗算</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --highlight-bg: #fff9c4;
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+            --warning-bg: #fff3cd;
+            --warning-text: #856404;
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg-color);
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* 卡片通用樣式 */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--accent-color);
+        }
+
+        h1, h2, h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+
+        h1 { font-size: 1.5rem; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        h2 { font-size: 1.2rem; display: flex; align-items: center; }
+        h2::before { content: '📍'; margin-right: 8px; }
+
+        /* 題目區塊 */
+        .question-box {
+            font-size: 1.2rem;
+            font-weight: bold;
+            background-color: #eef2f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .options {
+            list-style: none;
+            padding: 0;
+            margin: 10px 0;
+        }
+
+        .options li {
+            padding: 8px 0;
+            border-bottom: 1px dashed #ddd;
+        }
+
+        /* 重點標示 */
+        .highlight {
+            background-color: var(--highlight-bg);
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        /* 驗算警告區塊 */
+        .alert-box {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: flex;
+            align-items: flex-start;
+        }
+        .alert-icon { font-size: 1.5rem; margin-right: 10px; }
+
+        /* 互動計算器 */
+        .calculator-area {
+            background-color: #f0f8ff;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #bcdbf3;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        input[type="number"] {
+            padding: 10px;
+            font-size: 1.2rem;
+            width: 80px;
+            text-align: center;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .calc-steps {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        .step-item {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            padding: 10px;
+            background: #fafafa;
+            border-left: 3px solid #ccc;
+        }
+
+        .step-num {
+            background: var(--primary-color);
+            color: white;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-size: 0.8rem;
+        }
+
+        button.reset-btn {
+            background-color: #95a5a6;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button.reset-btn:hover { background-color: #7f8c8d; }
+
+        /* 作答按鈕 */
+        .quiz-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .option-btn {
+            padding: 15px;
+            font-size: 1.1rem;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-btn:hover { background-color: #f1f1f1; }
+        .option-btn.correct { background-color: #d4edda; border-color: #c3e6cb; color: #155724; }
+        .option-btn.wrong { background-color: #f8d7da; border-color: #f5c6cb; color: #721c24; }
+
+        /* 比較表格 */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .comparison-table th, .comparison-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+        .comparison-table th { background-color: #eee; }
+
+        /* RWD 調整 */
+        @media (max-width: 600px) {
+            .quiz-buttons { grid-template-columns: 1fr; }
+            h1 { font-size: 1.3rem; }
+            .step-item { flex-direction: column; align-items: flex-start; }
+            .step-num { margin-bottom: 5px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- A. 標題區 -->
+    <div class="card" style="border-left-color: var(--primary-color);">
+        <h1>題號 26：電腦概論數學基礎 - 幾何平均數</h1>
+        <p style="color: #666; margin-bottom: 0;">單元：數據分析與基礎數學運算</p>
+    </div>
+
+    <!-- B. 題目區 -->
+    <div class="card">
+        <h2>題目預覽</h2>
+        <div class="question-box">
+            26. 2跟8這兩個整數的幾何平均為何?<br>
+            <ul class="options">
+                <li>(A) 3</li>
+                <li>(B) 4</li>
+                <li>(C) 5</li>
+                <li>(D) 6</li>
+            </ul>
+            <div style="font-size: 0.9rem; color: #666;">
+                題目附的參考答案：<strong style="color: red;">C</strong>
+            </div>
+        </div>
+
+        <!-- H. 答案驗算與誤植提醒 (核心區塊) -->
+        <div class="alert-box">
+            <div class="alert-icon">⚠️</div>
+            <div>
+                <strong>題目答案疑義警示：</strong>
+                <p style="margin: 5px 0;">
+                    題目給定答案為 <strong>(C)</strong>，但經系統公式自動驗算，正確答案應為 <strong>(B)</strong>。<br>
+                    <span style="font-size: 0.9em;">(題目附的答案 C 應是誤將「算術平均」當作「幾何平均」)</span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- C & D. 關鍵字與白話翻譯 -->
+    <div class="card">
+        <h2>第一步：拆解題目</h2>
+        <p>請用螢光筆將關鍵字圈起來：<span class="highlight">2</span>、<span class="highlight">8</span>、<span class="highlight">幾何平均</span></p>
+        
+        <h3>白話翻譯機：</h3>
+        <p>看到「幾何平均 (Geometric Mean)」，腦袋要馬上浮現：「先相乘，再開根號」。</p>
+        <p>題目翻成白話文就是：<strong>「把 2 和 8 乘起來，得到的數字再開平方根，答案是多少？」</strong></p>
+    </div>
+
+    <!-- F. 互動計算器 (解題思路視覺化) -->
+    <div class="card">
+        <h2>互動實驗室：直接算給你看</h2>
+        <p>輸入題目數字來驗證結果（預設為 2 與 8）：</p>
+        
+        <div class="calculator-area">
+            <div class="input-group">
+                <input type="number" id="num1" value="2" oninput="calculate()">
+                <span>×</span>
+                <input type="number" id="num2" value="8" oninput="calculate()">
+            </div>
+
+            <div class="calc-steps" id="stepsResult">
+                <!-- JS 動態生成結果 -->
+                計算中...
+            </div>
+            
+            <button class="reset-btn" onclick="resetCalculator()">重置為題目數字 (2, 8)</button>
+        </div>
+    </div>
+
+    <!-- E & G. 解題思路與選項分析 -->
+    <div class="card">
+        <h2>解題思路與選項分析</h2>
+        
+        <h3>標準解題三步驟：</h3>
+        <ol>
+            <li><strong>先相乘：</strong> $2 \times 8 = 16$</li>
+            <li><strong>再開根號：</strong> $\sqrt{16} = 4$</li>
+            <li><strong>找選項：</strong> 答案就是 4，對應選項 (B)。</li>
+        </ol>
+
+        <h3>選項逐一檢視：</h3>
+        <ul style="list-style: none; padding-left: 0;">
+            <li>❌ <strong>(A) 3：</strong> $\sqrt{9}=3$，不是這題的答案。</li>
+            <li>✅ <strong>(B) 4：</strong> 正確！因為 $2 \times 8 = 16$，而 $4 \times 4 = 16$。</li>
+            <li>❌ <strong>(C) 5：</strong> <span style="color: #e74c3c;">這是常見陷阱！</span>這是「算術平均數」的算法 $\frac{2+8}{2} = 5$。題目問的是「幾何」，不是「算術」。</li>
+            <li>❌ <strong>(D) 6：</strong> 計算錯誤。</li>
+        </ul>
+    </div>
+
+    <!-- I, J, K. 觀念統整 -->
+    <div class="card" style="background-color: #fdfdfe;">
+        <h2>觀念大補帖</h2>
+        
+        <h3>超級比一比：算術平均 vs 幾何平均</h3>
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th width="30%">項目</th>
+                    <th>算術平均 (Arithmetic Mean)</th>
+                    <th>幾何平均 (Geometric Mean)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>定義</strong></td>
+                    <td>加起來除以個數</td>
+                    <td>乘起來開 n 次方根</td>
+                </tr>
+                <tr>
+                    <td><strong>口訣</strong></td>
+                    <td>先加再除</td>
+                    <td>先乘再開根</td>
+                </tr>
+                <tr>
+                    <td><strong>本題應用<br>(2與8)</strong></td>
+                    <td>$\frac{2+8}{2} = 5$<br><span style="font-size:0.8em; color:red;">(這是題目誤植的答案C)</span></td>
+                    <td>$\sqrt{2 \times 8} = 4$<br><span style="font-size:0.8em; color:green;">(這才是正確答案B)</span></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>💡 記憶口訣</h3>
+        <div style="background:#e8f8f5; padding:10px; border-radius:5px; text-align:center; margin-top:10px;">
+            <strong>「幾何先相乘，再開根；算術先相加，再除分」</strong>
+        </div>
+
+        <h3>⚠️ 常見陷阱</h3>
+        <p>考試緊張時，最容易看到「平均」兩個字就直接相加除以 2。請務必看清楚前面的形容詞是「幾何 (Geometric)」還是「算術 (Arithmetic)」。</p>
+    </div>
+
+    <!-- L. 作答區 -->
+    <div class="card" id="quiz-section">
+        <h2>考前模擬測驗</h2>
+        <p>已知題目提供的答案 C 可能有誤，請根據剛才的學習，選出正確答案：</p>
+        <div class="question-box" style="background: white; border: 2px solid #eee;">
+            26. 2跟8這兩個整數的幾何平均為何?
+        </div>
+        
+        <div class="quiz-buttons">
+            <button class="option-btn" onclick="checkAnswer('A')">(A) 3</button>
+            <button class="option-btn" onclick="checkAnswer('B')">(B) 4</button>
+            <button class="option-btn" onclick="checkAnswer('C')">(C) 5</button>
+            <button class="option-btn" onclick="checkAnswer('D')">(D) 6</button>
+        </div>
+
+        <div id="feedback" style="margin-top: 15px; display: none;"></div>
+    </div>
+
+    <!-- N. 自我檢測 -->
+    <div class="card">
+        <h2>自我檢測 (舉一反三)</h2>
+        <p>遮住答案想一想：</p>
+        <ol>
+            <li>如果是 2 和 18 的幾何平均？<br>
+                <span style="font-size:0.9em; color:#666; cursor:pointer;" onclick="this.innerText='答案：√(2×18)=√36=6'">[點擊看答案]</span>
+            </li>
+            <li>三個數 1、4、16 的幾何平均？(提示：三個數要開三次方)<br>
+                <span style="font-size:0.9em; color:#666; cursor:pointer;" onclick="this.innerText='答案：∛(1×4×16)=∛64=4'">[點擊看答案]</span>
+            </li>
+        </ol>
+    </div>
+
+</div>
+
+<script>
+    // 頁面載入時執行一次計算
+    window.onload = function() {
+        calculate();
+    };
+
+    function calculate() {
+        const n1 = parseFloat(document.getElementById('num1').value);
+        const n2 = parseFloat(document.getElementById('num2').value);
+        const resultsDiv = document.getElementById('stepsResult');
+
+        // 簡單的輸入驗證
+        if (isNaN(n1) || isNaN(n2)) {
+            resultsDiv.innerHTML = '<span style="color:red;">請輸入有效的數字</span>';
+            return;
+        }
+
+        const product = n1 * n2;
+        const geoMean = Math.sqrt(product);
+        
+        // 判斷是否為整數，若不是則顯示小數點後兩位
+        const displayGeoMean = Number.isInteger(geoMean) ? geoMean : geoMean.toFixed(2);
+        const displayProduct = Number.isInteger(product) ? product : product.toFixed(2);
+
+        resultsDiv.innerHTML = `
+            <div class="step-item">
+                <div class="step-num">1</div>
+                <div style="flex:1;">
+                    <strong>先相乘：</strong><br>
+                    ${n1} × ${n2} = <span style="color:var(--accent-color); font-weight:bold; font-size:1.2em;">${displayProduct}</span>
+                </div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">2</div>
+                <div style="flex:1;">
+                    <strong>再開根號 (幾何平均)：</strong><br>
+                    √${displayProduct} = <span style="color:var(--success-color); font-weight:bold; font-size:1.5em;">${displayGeoMean}</span>
+                </div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">3</div>
+                <div>
+                    <strong>對照本題選項：</strong><br>
+                    ${displayGeoMean == 4 ? '計算結果為 4，對應選項 (B)。' : '當前數字非題目預設，請自行對照。'}
+                </div>
+            </div>
+        `;
+    }
+
+    function resetCalculator() {
+        document.getElementById('num1').value = 2;
+        document.getElementById('num2').value = 8;
+        calculate();
+    }
+
+    function checkAnswer(option) {
+        const feedback = document.getElementById('feedback');
+        feedback.style.display = 'block';
+        
+        if (option === 'B') {
+            feedback.innerHTML = `
+                <div style="background:#d4edda; color:#155724; padding:15px; border-radius:5px; border:1px solid #c3e6cb;">
+                    <strong>🎉 完全正確！</strong><br>
+                    即使題目給的答案是 C，你也能堅持真理算出 B (4)，代表你完全懂了！
+                </div>
+            `;
+        } else if (option === 'C') {
+            feedback.innerHTML = `
+                <div style="background:#fff3cd; color:#856404; padding:15px; border-radius:5px; border:1px solid #ffeeba;">
+                    <strong>⚠️ 小心陷阱！</strong><br>
+                    你選了 (C) 5，這是題目誤植的答案。<br>
+                    5 是「算術平均」(2+8)/2，題目問的是「幾何平均」喔！
+                </div>
+            `;
+        } else {
+            feedback.innerHTML = `
+                <div style="background:#f8d7da; color:#721c24; padding:15px; border-radius:5px; border:1px solid #f5c6cb;">
+                    <strong>❌ 答案不對喔</strong><br>
+                    請重新看一下上方的計算過程：√(2×8) = √16 = ?
+                </div>
+            `;
+        }
+    }
+</script>
+
+</body>
+</html>

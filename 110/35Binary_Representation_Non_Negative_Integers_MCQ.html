@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電腦概論題庫解析 - 二進位表示法</title>
+    <style>
+        /* --- 基礎設定 (Reset & Base) --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Helvetica Neue", Arial, "Heiti TC", "LiHei Pro", "微軟正黑體", sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f4f4f4; /* 淺灰背景護眼 */
+            padding: 20px;
+        }
+
+        /* --- 版面容器 (Container) --- */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        /* --- 通用區塊樣式 (Section Styles) --- */
+        .section-box {
+            margin-bottom: 25px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background-color: #fff;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #444;
+            border-left: 5px solid #555; /* 深灰裝飾線 */
+            padding-left: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #222;
+        }
+
+        h2 {
+            text-align: center;
+            font-size: 1rem;
+            color: #666;
+            font-weight: normal;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 15px;
+        }
+
+        /* --- 重點標示 (Highlighter) --- */
+        .highlight {
+            background-color: #fff9c4; /* 淡黃色螢光筆 */
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: #000;
+            border-bottom: 2px solid #fbc02d; /* 模擬手繪底線 */
+        }
+        
+        .important-text {
+            color: #d32f2f;
+            font-weight: bold;
+        }
+
+        /* --- 題目區 (Question) --- */
+        .question-content {
+            font-size: 1.1rem;
+            background-color: #fafafa;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #333;
+        }
+        
+        .option-list {
+            list-style-type: none;
+            margin-top: 10px;
+        }
+        
+        .option-list li {
+            padding: 5px 0;
+        }
+
+        /* --- 互動示範區 (Interactive Demo) --- */
+        .demo-box {
+            background-color: #fcfcfc;
+            border: 2px dashed #ccc;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+
+        /* Byte 視覺化框框 */
+        .byte-visualizer {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        
+        .bit-box {
+            width: 30px;
+            height: 40px;
+            border: 1px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            background: #fff;
+            position: relative;
+        }
+        
+        .bit-box.msb {
+            background-color: #eeeeee; /* 最高位顏色不同 */
+            color: #888;
+        }
+        
+        .bit-label {
+            font-size: 0.7rem;
+            color: #888;
+            position: absolute;
+            top: -20px;
+        }
+
+        /* 輸入框樣式 */
+        input[type="text"] {
+            padding: 10px;
+            font-size: 1.2rem;
+            width: 200px;
+            text-align: center;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            margin-right: 10px;
+            font-family: monospace;
+        }
+
+        input[type="text"]:focus {
+            border-color: #666;
+            outline: none;
+        }
+
+        .result-display {
+            font-size: 1.2rem;
+            margin-top: 10px;
+            color: #0277bd;
+            font-weight: bold;
+        }
+
+        /* --- 步驟解析區 (Steps) --- */
+        .step-content p {
+            margin-bottom: 10px;
+        }
+        
+        ul.analysis-list {
+            padding-left: 20px;
+        }
+        
+        ul.analysis-list li {
+            margin-bottom: 8px;
+        }
+
+        /* --- 作答區 (Quiz Area) --- */
+        .quiz-options label {
+            display: block;
+            padding: 10px;
+            margin: 5px 0;
+            background: #f9f9f9;
+            border: 1px solid #eee;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .quiz-options label:hover {
+            background: #f0f0f0;
+        }
+
+        .quiz-btn {
+            background-color: #333;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+            width: 100%;
+            transition: background 0.3s;
+        }
+
+        .quiz-btn:hover {
+            background-color: #555;
+        }
+
+        .feedback-area {
+            margin-top: 15px;
+            padding: 15px;
+            background: #e8f5e9;
+            border: 1px solid #c8e6c9;
+            border-radius: 5px;
+            display: none; /* 預設隱藏 */
+        }
+        
+        .feedback-area.error {
+            background: #ffebee;
+            border: 1px solid #ffcdd2;
+        }
+
+        /* --- 折疊內容 (Collapsible) --- */
+        details {
+            margin-top: 10px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+        }
+        
+        summary {
+            cursor: pointer;
+            font-weight: bold;
+            color: #555;
+        }
+
+        /* --- RWD 手機版調整 --- */
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+            h1 { font-size: 1.3rem; }
+            .bit-box { width: 25px; height: 35px; }
+            input[type="text"] { width: 100%; margin-bottom: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- A. 標題區 -->
+    <header>
+        <h1>電腦概論 / 數位系統精選題</h1>
+        <h2>主題：二進位表示法 (Binary Representation) 與非負整數</h2>
+    </header>
+
+    <!-- B. 題目區 -->
+    <section class="section-box">
+        <div class="section-title">【題目】</div>
+        <div class="question-content">
+            <p><strong>35. 以二進位表示非負整數的系統中，下列何者正確?</strong> (複選)</p>
+            <ul class="option-list">
+                <li>(A) 一個 byte 可以表示 127 個整數</li>
+                <li>(B) 一個 byte 可以表示的最大整數為 127</li>
+                <li>(C) 0 可以有兩種表示法</li>
+                <li>(D) 位元串「000111」跟「111」表示的數值是一樣的</li>
+                <li>(E) 位元串「000111」跟「00111」表示的數值是一樣的</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- C. 第一步：找關鍵字 -->
+    <section class="section-box">
+        <div class="section-title">第一步：找關鍵字</div>
+        <div class="step-content">
+            <p>請拿起你的螢光筆，圈出以下重點：</p>
+            <p>「<span class="highlight">二進位</span>」、「<span class="highlight">非負整數</span>」、「<span class="highlight">byte (位元組)</span>」、「<span class="highlight">位元串</span>」</p>
+            <hr style="margin: 10px 0; border:0; border-top:1px dashed #ccc;">
+            <p><strong>老師解說：</strong> 這題同時考兩個核心觀念：<br>
+            1. <strong>範圍 (Range)</strong>：一個 byte 能裝多大的數字？<br>
+            2. <strong>唯一性 (Uniqueness)</strong>：數字前面的 0 (Leading Zeros) 會不會影響大小？</p>
+        </div>
+    </section>
+
+    <!-- D. 第二步：白話翻譯 -->
+    <section class="section-box">
+        <div class="section-title">第二步：白話翻譯</div>
+        <div class="step-content">
+            <p>我們把題目翻譯成「人話」：</p>
+            <p class="important-text">「當我們用 8 個格子 (1 byte) 的 0 和 1 來存那些 >= 0 的整數時，以下哪些是對的？」</p>
+        </div>
+    </section>
+
+    <!-- E. 第三步：解題思路 -->
+    <section class="section-box">
+        <div class="section-title">第三步：解題思路</div>
+        <div class="step-content">
+            
+            <h3>【觀念一：一個 byte 能表示多少？】</h3>
+            <ul class="analysis-list">
+                <li><strong>定義：</strong> 一個 <span class="highlight">Byte (位元組)</span> = 8 個 <span class="highlight">bit (位元)</span>。</li>
+                <li><strong>組合數：</strong> 每個 bit 有 0 或 1 兩種變化，所以總組合數 = $2^8$ = <strong>256 種</strong>。</li>
+                <li><strong>非負整數 (Non-negative Integers)：</strong> 包含 0 與正整數。</li>
+            </ul>
+
+            <!-- F. 互動示範 1 -->
+            <div class="demo-box">
+                <h4>互動示範 1：Byte 與最大值</h4>
+                <p style="font-size:0.9rem; color:#666; margin-bottom:10px;">(考試慣例設定：最高位 bit 0 為正號，有效數值為 7 bits)</p>
+                
+                <div class="byte-visualizer">
+                    <div class="bit-box msb">0<span class="bit-label">MSB</span></div>
+                    <div class="bit-box">1</div>
+                    <div class="bit-box">1</div>
+                    <div class="bit-box">1</div>
+                    <div class="bit-box">1</div>
+                    <div class="bit-box">1</div>
+                    <div class="bit-box">1</div>
+                    <div class="bit-box">1<span class="bit-label">LSB</span></div>
+                </div>
+                <p>二進位：<strong>01111111</strong></p>
+                <p>十進位：<strong>127</strong></p>
+                <p style="margin-top:10px; font-size:0.9rem; color:#d32f2f;">注意：若是非負整數且依照本題 (B) 選項正確的邏輯，這是採用 7-bit 數值 (0~127) 的慣例。</p>
+            </div>
+
+            <hr style="margin: 20px 0; border:0; border-top:1px solid #eee;">
+
+            <h3>【觀念二：位元串的表示是否相同？】</h3>
+            <ul class="analysis-list">
+                <li><strong>核心規則：</strong> <span class="highlight">Leading Zeros (前導 0)</span> 也就是數字最左邊補上的 0，<strong>完全不影響數值大小</strong>。</li>
+                <li>就像銀行存摺顯示 $00100 元，跟 $100 元是一樣的道理。</li>
+            </ul>
+
+            <!-- G. 互動示範 2 -->
+            <div class="demo-box">
+                <h4>互動示範 2：前導 0 不影響數值</h4>
+                <p style="margin-bottom:10px;">試著輸入位元串 (例如：000101)，系統會自動翻譯！</p>
+                
+                <input type="text" id="binaryInput" placeholder="輸入 0 或 1 (如 000111)" maxlength="16" oninput="convertBinary()">
+                
+                <div id="demoResult" class="result-display">
+                    請輸入數值...
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- H. 第四步：選項分析 -->
+    <section class="section-box">
+        <div class="section-title">第四步：選項分析</div>
+        <div class="step-content">
+            <ul class="analysis-list">
+                <li>
+                    <strong>(A) 一個 byte 可以表示 127 個整數 ❌</strong><br>
+                    <span style="color:#666;">解析：錯在「個數」。即使最大值是 127 (0~127)，總個數也是 128 個 (因為要算上 0)。如果是 8-bit 全用，則是 256 個。絕對不是 127 個。</span>
+                </li>
+                <li>
+                    <strong>(B) 一個 byte 可以表示的最大整數為 127 ✅</strong><br>
+                    <span style="color:#666;">解析：雖然 8-bit 無號數最大可到 255，但在這類考試的「非負整數」慣例中 (或視為有號數的正數部分)，常將最高位視為符號位 (0)，故最大值為 $2^7 - 1 = 127$。本題以此為正解。</span>
+                </li>
+                <li>
+                    <strong>(C) 0 可以有兩種表示法 ❌</strong><br>
+                    <span style="color:#666;">解析：在一般的二進位或 2's complement 系統中，0 只有一種表示法 (00000000)。只有在較舊的「1補數系統」或「符號大小表示法」才會有 +0 和 -0，但題目說「非負整數」，通常指標準二進位，0 只有唯一一種。</span>
+                </li>
+                <li>
+                    <strong>(D) 位元串「000111」跟「111」表示的數值是一樣的 ✅</strong><br>
+                    <span style="color:#666;">解析：前面的 0 (Leading Zeros) 不影響數值。 $111_2 = 7_{10}$，$000111_2 = 7_{10}$。</span>
+                </li>
+                <li>
+                    <strong>(E) 位元串「000111」跟「00111」表示的數值是一樣的 ✅</strong><br>
+                    <span style="color:#666;">解析：同上，移除開頭的 0 之後，本質都是 $111_2$，也就是十進位的 7。</span>
+                </li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- I. 觀念補充與記憶口訣 -->
+    <section class="section-box" style="background-color: #fffde7; border-color: #fbc02d;">
+        <div class="section-title">觀念補充 & 記憶口訣</div>
+        <div class="step-content">
+            <p><strong>【記憶口訣】</strong></p>
+            <ul>
+                <li>⚡ <strong>前面補 0 不改值</strong> (007 還是 7)。</li>
+                <li>⚡ <strong>個數要從 0 開始數</strong> (0~127 是 128 個，別忘了 0)。</li>
+            </ul>
+            <br>
+            <p><strong>【常見陷阱】</strong></p>
+            <ul>
+                <li>把「最大值」跟「個數」搞混。最大值是 N，個數通常是 N+1 (因為有 0)。</li>
+                <li>以為位元串長度不同，數值就不同。請記得先看數值，再看格式。</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- L. 作答區 -->
+    <section class="section-box">
+        <div class="section-title">作答區 (複選題)</div>
+        <div class="quiz-options">
+            <label><input type="checkbox" name="quiz" value="A"> (A) 一個 byte 可以表示 127 個整數</label>
+            <label><input type="checkbox" name="quiz" value="B"> (B) 一個 byte 可以表示的最大整數為 127</label>
+            <label><input type="checkbox" name="quiz" value="C"> (C) 0 可以有兩種表示法</label>
+            <label><input type="checkbox" name="quiz" value="D"> (D) 位元串「000111」跟「111」表示的數值是一樣的</label>
+            <label><input type="checkbox" name="quiz" value="E"> (E) 位元串「000111」跟「00111」表示的數值是一樣的</label>
+        </div>
+        
+        <button class="quiz-btn" onclick="checkAnswer()">送出作答</button>
+
+        <div id="feedback" class="feedback-area"></div>
+
+        <details style="margin-top: 20px;">
+            <summary>顯示正確答案 (考前最後確認)</summary>
+            <p style="margin-top:10px; font-size:1.5rem; color:#d32f2f; font-weight:bold; text-align:center;">
+                B、D、E
+            </p>
+        </details>
+    </section>
+
+    <!-- N. 自我檢測 -->
+    <section class="section-box">
+        <div class="section-title">自我檢測 (延伸思考)</div>
+        <div class="step-content">
+            <p>試著回答以下問題，確認觀念是否通透：</p>
+            <ol style="padding-left: 20px; margin-top: 10px;">
+                <li style="margin-bottom: 10px;">若是 7 個 bit (無號數)，可以表示的最大整數是多少？ (提示：$2^7 - 1$)</li>
+                <li style="margin-bottom: 10px;">「010」和「10」在二進位中是否相等？</li>
+                <li>如果在二進位後面補 0 (例如 1 變成 10)，數值會變怎樣？ (提示：乘以 2)</li>
+            </ol>
+        </div>
+    </section>
+
+</div>
+
+<script>
+    // --- 互動示範 2 的邏輯 ---
+    function convertBinary() {
+        const input = document.getElementById('binaryInput');
+        const display = document.getElementById('demoResult');
+        
+        // 1. 只允許輸入 0 和 1 (用 Regex 過濾)
+        let cleanVal = input.value.replace(/[^01]/g, '');
+        
+        // 如果使用者輸入了非法字符，更新輸入框內容
+        if (input.value !== cleanVal) {
+            input.value = cleanVal;
+        }
+
+        if (cleanVal.length === 0) {
+            display.innerHTML = "請輸入數值...";
+            display.style.color = "#0277bd";
+            return;
+        }
+
+        // 2. 移除前導 0 (為了顯示邏輯)
+        // parseInt 會自動忽略前導 0 計算數值
+        const decimalValue = parseInt(cleanVal, 2);
+        
+        // 手動移除字串前導 0 顯示用 (如果是 '000', 顯示 '0')
+        let trimmedStr = cleanVal.replace(/^0+/, '');
+        if (trimmedStr === '') trimmedStr = '0';
+
+        // 3. 顯示結果
+        display.innerHTML = `
+            <div>原始輸入：${cleanVal}</div>
+            <div style="color:#4caf50;">↓ 去掉前導 0 ↓</div>
+            <div>有效位元：${trimmedStr}</div>
+            <div style="margin-top:5px; border-top:1px dashed #ccc; padding-top:5px;">
+                十進位數值 = <span style="font-size:1.5rem; color:#d32f2f;">${decimalValue}</span>
+            </div>
+        `;
+    }
+
+    // --- 作答區邏輯 ---
+    function checkAnswer() {
+        // 取得所有被選中的 checkbox
+        const checkboxes = document.querySelectorAll('input[name="quiz"]:checked');
+        const userAnswers = Array.from(checkboxes).map(cb => cb.value).sort();
+        
+        // 正確答案
+        const correctAnswers = ['B', 'D', 'E'];
+        
+        const feedbackDiv = document.getElementById('feedback');
+        feedbackDiv.style.display = 'block';
+
+        // 判斷是否完全正確
+        const isCorrect = JSON.stringify(userAnswers) === JSON.stringify(correctAnswers);
+
+        if (isCorrect) {
+            feedbackDiv.className = 'feedback-area'; // 綠色背景
+            feedbackDiv.innerHTML = `
+                <h3 style="color:#2e7d32;">🎉 答對了！太棒了！</h3>
+                <p>觀念完全正確：</p>
+                <ul>
+                    <li>(B) 符合本題非負整數慣例 (Max 127)</li>
+                    <li>(D)(E) 前導 0 不影響數值</li>
+                </ul>
+            `;
+        } else {
+            feedbackDiv.className = 'feedback-area error'; // 紅色背景
+            feedbackDiv.innerHTML = `
+                <h3 style="color:#c62828;">⚠️ 差一點點，再想一下！</h3>
+                <p>你選了：${userAnswers.length > 0 ? userAnswers.join(', ') : '沒選'}</p>
+                <p><strong>提示：</strong></p>
+                <ul>
+                    <li>(A) 0~127 是幾個數字？(記得算 0)</li>
+                    <li>(C) 00 和 000 是一樣的 0 喔。</li>
+                    <li>別忘了這是複選題，還有其他選項正確嗎？</li>
+                </ul>
+            `;
+        }
+    }
+</script>
+
+</body>
+</html>

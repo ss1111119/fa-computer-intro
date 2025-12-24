@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電腦概論：磁碟結構與基本儲存單位</title>
+    <style>
+        /* --- CSS reset 與 基礎設定 --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Noto Sans TC", "Microsoft JhengHei", Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        /* --- 標題區 --- */
+        header {
+            border-bottom: 2px solid #333;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            color: #222;
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            color: #444;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            border-left: 5px solid #2c3e50;
+            padding-left: 10px;
+            background-color: #eee;
+        }
+
+        /* --- 題目區 --- */
+        .question-box {
+            background-color: #fafafa;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+
+        .option {
+            display: block;
+            margin: 5px 0;
+        }
+
+        /* --- 重點標示 --- */
+        .highlight {
+            background-color: #fff9c4; /* 淡黃色螢光筆 */
+            padding: 0 4px;
+            border-radius: 2px;
+            font-weight: bold;
+        }
+
+        .explanation-text {
+            margin-bottom: 15px;
+            color: #555;
+        }
+
+        /* --- 互動圖解區 (Canvas) --- */
+        .interactive-area {
+            background-color: #fff;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        canvas {
+            background-color: #fff;
+            border: 1px solid #eee;
+            border-radius: 50%; /* 讓畫布看起來像圓盤背景 */
+            max-width: 100%;
+            height: auto;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .controls {
+            margin-top: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        button {
+            padding: 8px 16px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+        }
+
+        button:hover {
+            background-color: #e9e9e9;
+        }
+
+        button.active {
+            background-color: #2c3e50;
+            color: white;
+            border-color: #2c3e50;
+        }
+
+        /* --- 碎片模擬區 --- */
+        .fragmentation-sim {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px dashed #ccc;
+            text-align: left;
+        }
+
+        .slider-container {
+            margin: 15px 0;
+        }
+
+        input[type="range"] {
+            width: 100%;
+        }
+
+        .bar-container {
+            height: 30px;
+            background-color: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+            margin-top: 10px;
+            display: flex;
+        }
+
+        .bar-used {
+            background-color: #4caf50; /* 綠色：實際資料 */
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8rem;
+            transition: width 0.3s;
+        }
+
+        .bar-wasted {
+            background-color: #f44336; /* 紅色：浪費空間 */
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8rem;
+            transition: width 0.3s;
+        }
+
+        /* --- 互動答題區 --- */
+        .quiz-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 600px) {
+            .quiz-options {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .quiz-btn {
+            padding: 15px;
+            text-align: left;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .quiz-btn.correct {
+            border-color: #4caf50;
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .quiz-btn.wrong {
+            border-color: #f44336;
+            background-color: #ffebee;
+            color: #c62828;
+        }
+
+        .feedback-box {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .feedback-correct {
+            background-color: #e8f5e9;
+            border: 1px solid #c8e6c9;
+            color: #2e7d32;
+        }
+
+        .feedback-wrong {
+            background-color: #ffebee;
+            border: 1px solid #ffcdd2;
+            color: #c62828;
+        }
+
+        /* --- 補充區塊 --- */
+        .info-card {
+            background-color: #fff;
+            border-left: 4px solid #ff9800;
+            padding: 15px;
+            margin: 10px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .mnemonic {
+            background-color: #e3f2fd;
+            border: 2px dashed #2196f3;
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin: 20px 0;
+            border-radius: 8px;
+            color: #0d47a1;
+        }
+
+        .trap-list li {
+            margin-bottom: 8px;
+            list-style-type:  "⚠️ ";
+            padding-left: 5px;
+        }
+
+        /* 自我檢測樣式 */
+        .self-check li {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>題號 15：磁碟結構與基本儲存單位</h1>
+    </header>
+
+    <!-- B. 【題目】區 -->
+    <section>
+        <div class="question-box">
+            <p>15. 磁碟的基本儲存單位為</p>
+            <span class="option">(A) 磁區(sector)</span>
+            <span class="option">(B) 讀寫頭(r/w head)</span>
+            <span class="option">(C) 磁軌(track)</span>
+            <span class="option">(D) 磁柱(cluster)</span>
+        </div>
+    </section>
+
+    <!-- C. 【第一步：找關鍵字】 -->
+    <section>
+        <h2>第一步：找關鍵字</h2>
+        <p class="explanation-text">
+            請圈出題目中的：<span class="highlight">基本儲存單位</span>。<br>
+            <strong>為何這是線索？</strong> 因為磁碟裡有很多結構（像跑道、像手臂），但題目問的是用來「裝資料」的最小格子，而不是零件或排列形狀。
+        </p>
+    </section>
+
+    <!-- D. 【第二步：白話翻譯】 -->
+    <section>
+        <h2>第二步：白話翻譯</h2>
+        <p class="explanation-text">
+            用高中生聽得懂的話來說，這題在問：<br>
+            <strong>「硬碟這張大披薩，切下來最小、可以拿來寫資料的那一小片叫做什麼？」</strong>
+        </p>
+    </section>
+
+    <!-- E. 【第三步：解題思路】 -->
+    <section>
+        <h2>第三步：解題思路</h2>
+        <div class="info-card">
+            <p><strong>考點觀念：</strong> 硬體層面的資料儲存最小單位。</p>
+            <ol style="margin-left: 20px; margin-top: 10px;">
+                <li><strong>想像披薩：</strong> 磁碟盤面像一個圓形披薩。</li>
+                <li><strong>切格子：</strong> 我們先畫一圈圈的同心圓（磁軌 Track），再像切蛋糕一樣切成扇形。</li>
+                <li><strong>鎖定目標：</strong> 這一圈圈切下來的「扇形小區塊」，就是硬體能讀寫的最小單位。</li>
+            </ol>
+        </div>
+    </section>
+
+    <!-- F. 【互動圖解】區 -->
+    <section>
+        <h2>互動圖解：磁碟結構可視化</h2>
+        <div class="interactive-area">
+            <canvas id="diskCanvas" width="300" height="300"></canvas>
+            
+            <div class="controls">
+                <button onclick="drawDisk('track')" id="btn-track">顯示 Track (磁軌)</button>
+                <button onclick="drawDisk('sector')" id="btn-sector">顯示 Sector (磁區)</button>
+                <button onclick="drawDisk('cluster')" id="btn-cluster">顯示 Cluster (叢集)</button>
+                <button onclick="drawDisk('head')" id="btn-head">顯示 R/W Head (讀寫頭)</button>
+                <button onclick="drawDisk('reset')" id="btn-reset">重置</button>
+            </div>
+
+            <div class="fragmentation-sim">
+                <h3>💾 檔案儲存模擬 (內部碎片概念)</h3>
+                <p style="font-size: 0.9rem; margin-bottom: 10px;">
+                    假設 1 個 Cluster (叢集) = 4KB。<br>
+                    若檔案大小不足 4KB，系統還是會給它一整個 Cluster，剩下的空間就浪費了（內部碎片）。
+                </p>
+                <div class="slider-container">
+                    <label for="fileSizeSlider">檔案大小: <span id="fileSizeDisplay">2.5</span> KB</label>
+                    <input type="range" id="fileSizeSlider" min="0.1" max="8" step="0.1" value="2.5">
+                </div>
+                <div class="bar-container">
+                    <div id="barUsed" class="bar-used" style="width: 62.5%;">資料 2.5KB</div>
+                    <div id="barWasted" class="bar-wasted" style="width: 37.5%;">浪費 1.5KB</div>
+                </div>
+                <p id="simText" style="margin-top: 10px; font-size: 0.9rem; color: #666;">
+                    佔用 1 個 Cluster (4KB)。
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- G. 【第四步：選項分析】 -->
+    <section>
+        <h2>第四步：選項分析</h2>
+        <ul>
+            <li class="explanation-text">
+                <span class="highlight">(A) 磁區 (Sector)</span>：<strong>正確！</strong> 這是磁軌上切分出來的扇形區塊。它是硬體讀寫資料的<strong>最小物理單位</strong>，傳統容量通常為 512 Bytes。
+            </li>
+            <li class="explanation-text">
+                (B) 讀寫頭 (R/W Head)：<strong>錯誤。</strong> 這是負責讀取與寫入資料的「零件」（像唱片機的唱針），不是儲存單位。
+            </li>
+            <li class="explanation-text">
+                (C) 磁軌 (Track)：<strong>錯誤。</strong> 這是盤面上的「同心圓跑道」。一個 Track 包含很多個 Sector，所以它不是「最小」單位。
+            </li>
+            <li class="explanation-text">
+                (D) 磁柱 (Cluster)：<strong>錯誤。</strong>
+                <br><small style="color:#666;">註：這裡題目中文寫磁柱，英文寫 Cluster。正確對照應為：Cylinder=磁柱，Cluster=叢集。</small>
+                <br>不管是哪個翻譯，<strong>Cluster (叢集)</strong> 是作業系統（檔案系統）為了管理方便，把幾個 Sector 打包在一起的單位（邏輯單位）。通常 Cluster > Sector，所以最「基本」的還是 Sector。
+            </li>
+        </ul>
+    </section>
+
+    <!-- H. 【觀念補充與延伸】 -->
+    <section>
+        <h2>觀念補充：Sector vs Cluster</h2>
+        <div class="info-card">
+            <p>這兩個很容易搞混，請這樣記：</p>
+            <ul>
+                <li><strong>Sector (磁區) - 硬體層面：</strong> 工廠出廠時切好的最小格子，就像作文紙上的一小格。</li>
+                <li><strong>Cluster (叢集) - 軟體層面：</strong> 作業系統（如 Windows）覺得一格一格管太累，決定「一次抓一把」來用。這一把（通常是 2/4/8 個 sectors）就叫 Cluster。</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- I. 【記憶口訣】 -->
+    <section>
+        <div class="mnemonic">
+            ✨ 口訣：最小一格叫「磁區」，作業系統用「叢集」！
+        </div>
+    </section>
+
+    <!-- J. 【常見陷阱】 -->
+    <section>
+        <h2>常見陷阱 ⚠️</h2>
+        <ul class="trap-list">
+            <li><strong>混淆硬體與零件：</strong> 看到「讀寫頭」以為是單位，其實它是工具。</li>
+            <li><strong>混淆 Sector 與 Cluster：</strong> 題目問「基本」或「最小」，答案選 Sector。若題目問「作業系統檔案配置單位」或「造成內部碎片的原因」，答案選 Cluster。</li>
+            <li><strong>中英翻譯陷阱：</strong> 注意題目選項 (D) 把 Cluster 翻成磁柱（通常是指 Cylinder），但考試請以英文單字為主，Cluster 是「叢集」。</li>
+        </ul>
+    </section>
+
+    <!-- K. 【作答區】 -->
+    <section>
+        <h2>互動試題</h2>
+        <p>確認你懂了嗎？請點選正確答案：</p>
+        <div class="quiz-options">
+            <button class="quiz-btn" onclick="checkAnswer('A', this)">(A) 磁區 (sector)</button>
+            <button class="quiz-btn" onclick="checkAnswer('B', this)">(B) 讀寫頭 (r/w head)</button>
+            <button class="quiz-btn" onclick="checkAnswer('C', this)">(C) 磁軌 (track)</button>
+            <button class="quiz-btn" onclick="checkAnswer('D', this)">(D) 磁柱 (cluster)</button>
+        </div>
+        
+        <div id="quizFeedback" class="feedback-box">
+            <h3 id="feedbackTitle"></h3>
+            <p id="feedbackContent"></p>
+        </div>
+
+        <button onclick="toggleAnswer()" style="margin-top: 15px; font-size: 0.8rem; background: #ddd;">顯示/隱藏正確答案</button>
+        <div id="correctAnswerArea" style="display:none; margin-top: 10px; color: green; font-weight: bold;">
+            正確答案：(A)
+        </div>
+    </section>
+
+    <!-- M. 【自我檢測】 -->
+    <section>
+        <h2>自我檢測 (想一想，不給答案)</h2>
+        <ul class="self-check">
+            <li>1. 如果一個 Cluster 大小是 4KB，我存一個 1KB 的文字檔，實際上會佔用硬碟多少空間？(提示：內部碎片)</li>
+            <li>2. 磁碟格式化時，主要是在劃分 Track 還是 Cluster？</li>
+        </ul>
+    </section>
+
+</div>
+
+<script>
+    // --- Canvas 繪圖邏輯 ---
+    const canvas = document.getElementById('diskCanvas');
+    const ctx = canvas.getContext('2d');
+    const centerX = 150;
+    const centerY = 150;
+    
+    // 初始化繪製
+    window.onload = function() {
+        drawDisk('reset');
+        updateFragmentation(); // 初始化滑桿
+    };
+
+    function drawDisk(mode) {
+        // 重置按鈕樣式
+        document.querySelectorAll('.controls button').forEach(btn => btn.classList.remove('active'));
+        if(mode !== 'reset') {
+            document.getElementById('btn-' + mode).classList.add('active');
+        }
+
+        // 清除畫布
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // 1. 畫底盤 (灰色圓)
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, 140, 0, 2 * Math.PI);
+        ctx.fillStyle = '#f0f0f0';
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#999';
+        ctx.stroke();
+
+        // 2. 畫磁軌 (Tracks) - 同心圓
+        // 無論什麼模式都淡淡地顯示 Track 結構，以便定位
+        const tracks = [40, 70, 100, 130];
+        tracks.forEach((radius, index) => {
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            ctx.strokeStyle = (mode === 'track') ? '#ff5722' : '#ddd'; // Track 模式變橘色
+            ctx.lineWidth = (mode === 'track') ? 3 : 1;
+            ctx.stroke();
+            
+            if (mode === 'track' && index === 2) {
+                // 標示 Track 文字
+                ctx.fillStyle = '#ff5722';
+                ctx.font = '14px Arial';
+                ctx.fillText('Track (磁軌)', centerX - 30, centerY - radius - 5);
+            }
+        });
+
+        // 3. 畫磁區 (Sectors)
+        if (mode === 'sector' || mode === 'cluster' || mode === 'reset') {
+            const numSectors = 8;
+            for (let i = 0; i < numSectors; i++) {
+                const angle = (i * 2 * Math.PI) / numSectors;
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.lineTo(centerX + 140 * Math.cos(angle), centerY + 140 * Math.sin(angle));
+                ctx.strokeStyle = '#ccc';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+        }
+
+        // 特效：Sector 模式 - 高亮一個 Sector
+        if (mode === 'sector') {
+            highlightSector(100, 130, 0, Math.PI / 4, '#4caf50', 'Sector (基本單位)');
+        }
+
+        // 特效：Cluster 模式 - 高亮一組 Sector (例如 2 個 sector 組成一個 cluster)
+        if (mode === 'cluster') {
+            // 這裡模擬一個 Cluster 包含同磁軌的兩個相鄰 Sector
+            highlightSector(100, 130, 0, Math.PI / 2, '#2196f3', 'Cluster (檔案配置)');
+            // 畫個框框表示打包
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 100, 0, Math.PI / 2);
+            ctx.arc(centerX, centerY, 130, Math.PI / 2, 0, true);
+            ctx.closePath();
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = '#0d47a1';
+            ctx.stroke();
+        }
+
+        // 特效：R/W Head
+        if (mode === 'head') {
+            // 畫一個簡單的讀寫臂
+            ctx.save();
+            ctx.translate(centerX, centerY);
+            ctx.rotate(-Math.PI / 4); // 轉一下角度
+            
+            // 臂
+            ctx.fillStyle = '#607d8b';
+            ctx.fillRect(20, -10, 140, 20);
+            
+            // 頭 (三角形)
+            ctx.beginPath();
+            ctx.moveTo(100, 10);
+            ctx.lineTo(110, 20);
+            ctx.lineTo(120, 10);
+            ctx.fillStyle = '#000';
+            ctx.fill();
+            
+            ctx.fillStyle = '#000';
+            ctx.font = 'bold 14px Arial';
+            ctx.fillText('R/W Head', 40, -15);
+            ctx.fillText('(零件非單位)', 40, 0);
+
+            ctx.restore();
+            
+            // 中心軸
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 10, 0, 2 * Math.PI);
+            ctx.fillStyle = '#333';
+            ctx.fill();
+        }
+    }
+
+    // 輔助函式：畫扇形並填色
+    function highlightSector(innerR, outerR, startAngle, endAngle, color, text) {
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, outerR, startAngle, endAngle);
+        ctx.arc(centerX, centerY, innerR, endAngle, startAngle, true);
+        ctx.closePath();
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.stroke();
+
+        // 標示文字
+        ctx.fillStyle = '#333';
+        ctx.font = 'bold 12px Arial';
+        // 簡單計算文字位置
+        const midAngle = (startAngle + endAngle) / 2;
+        const textR = (innerR + outerR) / 2;
+        const textX = centerX + textR * Math.cos(midAngle);
+        const textY = centerY + textR * Math.sin(midAngle);
+        
+        ctx.save();
+        ctx.translate(textX, textY);
+        // 避免文字倒著
+        ctx.fillText(text, -30, 5);
+        ctx.restore();
+    }
+
+    // --- 碎片模擬邏輯 ---
+    const slider = document.getElementById('fileSizeSlider');
+    const fileSizeDisplay = document.getElementById('fileSizeDisplay');
+    const barUsed = document.getElementById('barUsed');
+    const barWasted = document.getElementById('barWasted');
+    const simText = document.getElementById('simText');
+    const clusterSize = 4; // 4KB
+
+    slider.oninput = updateFragmentation;
+
+    function updateFragmentation() {
+        const size = parseFloat(slider.value);
+        fileSizeDisplay.textContent = size.toFixed(1);
+
+        // 計算邏輯
+        // 佔用的 Cluster 數量 = 無條件進位(檔案大小 / 4)
+        const clustersNeeded = Math.ceil(size / clusterSize);
+        const allocatedSpace = clustersNeeded * clusterSize;
+        const wastedSpace = allocatedSpace - size;
+
+        // 更新長條圖 (以 2 個 Cluster max 為顯示基準，比較好 demo)
+        // 為了顯示效果，我們假設最大顯示範圍是 allocation
+        const totalWidthPercent = 100; 
+        const usedPercent = (size / allocatedSpace) * 100;
+        const wastedPercent = 100 - usedPercent;
+
+        barUsed.style.width = usedPercent + '%';
+        barUsed.textContent = `資料 ${size.toFixed(1)}KB`;
+        
+        barWasted.style.width = wastedPercent + '%';
+        barWasted.textContent = `浪費 ${wastedSpace.toFixed(1)}KB`;
+
+        simText.innerHTML = `檔案 ${size.toFixed(1)} KB ➜ 需要 ${clustersNeeded} 個 Cluster (${allocatedSpace} KB)。<br>其中紅色部分就是 <span class="highlight">內部碎片 (Internal Fragmentation)</span>。`;
+    }
+
+    // --- 答題互動邏輯 ---
+    function checkAnswer(option, btnElement) {
+        const feedbackBox = document.getElementById('quizFeedback');
+        const feedbackTitle = document.getElementById('feedbackTitle');
+        const feedbackContent = document.getElementById('feedbackContent');
+        
+        // 重置按鈕樣式
+        document.querySelectorAll('.quiz-btn').forEach(b => {
+            b.classList.remove('correct', 'wrong');
+        });
+
+        feedbackBox.style.display = 'block';
+        feedbackBox.className = 'feedback-box'; // reset class
+
+        if (option === 'A') {
+            btnElement.classList.add('correct');
+            feedbackBox.classList.add('feedback-correct');
+            feedbackTitle.textContent = '✅ 答對了！';
+            feedbackContent.textContent = '太棒了！磁區 (Sector) 就是硬碟劃分格子的最小物理單位。';
+        } else {
+            btnElement.classList.add('wrong');
+            feedbackBox.classList.add('feedback-wrong');
+            feedbackTitle.textContent = '❌ 答錯囉！';
+            
+            if(option === 'B') feedbackContent.textContent = '讀寫頭是零件，不是儲存單位喔。';
+            if(option === 'C') feedbackContent.textContent = '磁軌是那一整圈跑道，裡面還包含很多個磁區，所以不是「最小」單位。';
+            if(option === 'D') feedbackContent.textContent = 'Cluster 是作業系統把好幾個 Sector 包在一起用的，比 Sector 大，不是最基本的單位。';
+        }
+    }
+
+    function toggleAnswer() {
+        const area = document.getElementById('correctAnswerArea');
+        if (area.style.display === 'none') {
+            area.style.display = 'block';
+        } else {
+            area.style.display = 'none';
+        }
+    }
+</script>
+
+</body>
+</html>

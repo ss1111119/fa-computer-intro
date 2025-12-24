@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電腦概論題庫解析：SQL 保留關鍵字</title>
+    <style>
+        /* --- 基礎設定 (Reset & Typography) --- */
+        :root {
+            --primary-color: #333;       /* 主要文字色 */
+            --secondary-color: #555;     /* 次要文字色 */
+            --accent-color: #2c3e50;     /* 標題強調色 */
+            --highlight-bg: #fff9c4;     /* 螢光筆背景色 */
+            --border-color: #ddd;        /* 邊框顏色 */
+            --bg-color: #f9f9f9;         /* 整體背景色 */
+            --card-bg: #ffffff;          /* 卡片背景色 */
+            --interactive-blue: #e3f2fd; /* 互動區塊底色 */
+            --interactive-hover: #bbdefb;/* 互動區塊懸停 */
+            --correct-color: #2e7d32;    /* 正確綠色 */
+            --wrong-color: #c62828;      /* 錯誤紅色 */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+            line-height: 1.6;
+            color: var(--primary-color);
+            background-color: var(--bg-color);
+            padding: 20px;
+        }
+
+        /* --- 版面配置 (Layout) --- */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: var(--card-bg);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            padding-bottom: 40px;
+        }
+
+        /* --- 標題區 (Header) --- */
+        header {
+            background-color: var(--accent-color);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        header .subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            font-weight: normal;
+        }
+
+        /* --- 通用區塊樣式 (Sections) --- */
+        section {
+            padding: 20px 30px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            color: var(--accent-color);
+            margin-bottom: 15px;
+            border-left: 5px solid var(--accent-color);
+            padding-left: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        h3 {
+            font-size: 1.1rem;
+            margin: 15px 0 10px 0;
+            color: var(--secondary-color);
+        }
+
+        p {
+            margin-bottom: 10px;
+            text-align: justify;
+        }
+
+        ul, ol {
+            margin-left: 25px;
+            margin-bottom: 15px;
+        }
+
+        li {
+            margin-bottom: 5px;
+        }
+
+        /* --- 強調與標記 (Highlights) --- */
+        .highlight-text {
+            background-color: var(--highlight-bg);
+            padding: 0 4px;
+            border-radius: 2px;
+            font-weight: bold;
+        }
+
+        .keyword-en {
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            color: #d32f2f;
+            background-color: #ffebee;
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+
+        /* --- 題目顯示區 (Question Display) --- */
+        .question-box {
+            background-color: #fff;
+            border: 2px solid var(--accent-color);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .question-text {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+
+        .options-list {
+            list-style-type: none;
+            margin-left: 0;
+        }
+
+        .options-list li {
+            padding: 5px 0;
+        }
+
+        /* --- 互動核心：SQL 拆解 (Interactive SQL) --- */
+        .sql-container {
+            background-color: #282c34;
+            color: #abb2bf;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+            position: relative;
+            margin-bottom: 15px;
+            overflow-x: auto; /* 支援手機橫向捲動 */
+        }
+
+        .sql-word {
+            display: inline-block;
+            cursor: pointer;
+            padding: 2px 5px;
+            border-radius: 4px;
+            transition: all 0.2s;
+            margin: 2px 0;
+        }
+
+        /* 可互動的保留字樣式 */
+        .interactive-keyword {
+            color: #c678dd; /* 紫色 */
+            font-weight: bold;
+            border: 1px dashed rgba(255, 255, 255, 0.3);
+        }
+
+        .interactive-keyword:hover, .interactive-keyword.active {
+            background-color: rgba(198, 120, 221, 0.2);
+            border-color: #c678dd;
+            transform: scale(1.05);
+        }
+
+        .sql-variable { color: #61afef; } /* 藍色 - 欄位 */
+        .sql-value { color: #d19a66; }    /* 橘色 - 數值 */
+
+        .explanation-display {
+            background-color: var(--interactive-blue);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 5px solid #2196f3;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            font-weight: bold;
+            color: #0d47a1;
+        }
+
+        .instruction-tip {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 5px;
+            text-align: right;
+        }
+
+        /* --- 選項分析區 (Analysis) --- */
+        .analysis-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-bottom: 1px dashed #eee;
+        }
+        .analysis-item strong {
+            color: #d32f2f;
+        }
+
+        /* --- 測驗區 (Quiz) --- */
+        .quiz-section {
+            background-color: #f0f4c3; /* 淡綠色背景 */
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .quiz-form {
+            margin-top: 15px;
+        }
+
+        .checkbox-group label {
+            display: block;
+            margin-bottom: 10px;
+            cursor: pointer;
+            padding: 8px;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            transition: background 0.2s;
+        }
+
+        .checkbox-group label:hover {
+            background-color: #f5f5f5;
+        }
+
+        .checkbox-group input {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: var(--accent-color);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 10px;
+            margin-right: 10px;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 2px solid var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .feedback-area {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none; /* 預設隱藏 */
+        }
+
+        .feedback-correct {
+            background-color: #e8f5e9;
+            border: 1px solid #a5d6a7;
+            color: var(--correct-color);
+        }
+
+        .feedback-wrong {
+            background-color: #ffebee;
+            border: 1px solid #ef9a9a;
+            color: var(--wrong-color);
+        }
+
+        .hidden-answer {
+            display: none;
+            margin-top: 10px;
+            font-weight: bold;
+            color: var(--correct-color);
+            font-size: 1.2rem;
+        }
+
+        /* --- 響應式調整 (Mobile) --- */
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            header h1 {
+                font-size: 1.2rem;
+            }
+            section {
+                padding: 15px;
+            }
+            .sql-container {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- A. 標題區 -->
+    <header>
+        <h1>電腦概論 題庫解析</h1>
+        <div class="subtitle">單元：資料庫 (Database) — SQL 保留關鍵字</div>
+    </header>
+
+    <!-- B. 【題目】區 -->
+    <section>
+        <h2>【題目】</h2>
+        <div class="question-box">
+            <p class="question-text">48. SQL 資料庫語言中，下列何者屬於保留的關鍵字? (複選)</p>
+            <ul class="options-list">
+                <li>(A) SELECT</li>
+                <li>(B) FROM</li>
+                <li>(C) WHERE</li>
+                <li>(D) ORDER BY</li>
+                <li>(E) GROUP BY</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- C. 【第一步：找關鍵字】區 -->
+    <section>
+        <h2>第一步：找題目關鍵字</h2>
+        <p>這題的重點在於這兩個詞：</p>
+        <ul>
+            <li><span class="highlight-text">SQL</span>：Structured Query Language（結構化查詢語言），操作資料庫的標準語言。</li>
+            <li><span class="highlight-text">保留的關鍵字</span> (Reserved Keywords)：表示這些字是 SQL 語言<strong>內建、官方已經規定好用途</strong>的指令字。</li>
+        </ul>
+        <p><strong>觀念點撥：</strong>題目不是在考「語法順序」，而是在考「哪些字是系統專用，不能隨便拿來當作你自己取的表格名或欄位名」。</p>
+    </section>
+
+    <!-- D. 【第二步：白話翻譯】區 -->
+    <section>
+        <h2>第二步：白話翻譯</h2>
+        <div style="background-color: #eee; padding: 15px; border-radius: 5px; border-left: 4px solid #666;">
+            <p>「下面這五個選項，哪幾個是 SQL 規定用來下指令的『專用單字』？」</p>
+        </div>
+    </section>
+
+    <!-- E. 【第三步：解題思路】區 -->
+    <section>
+        <h2>第三步：解題思路</h2>
+        <h3>1. 回想最基本的 SQL 查詢句型</h3>
+        <p>如果我們要從資料庫找資料，最少一定要寫：</p>
+        <p style="text-align: center; font-weight: bold; margin: 10px 0;">
+            <span class="keyword-en">SELECT</span> 欄位 <span class="keyword-en">FROM</span> 表格 <span class="keyword-en">WHERE</span> 條件
+        </p>
+        
+        <h3>2. 進階一點，如果我要排序或分組？</h3>
+        <p>這時候就會用到專屬的指令：</p>
+        <ul>
+            <li>排序用：<span class="keyword-en">ORDER BY</span></li>
+            <li>分組用：<span class="keyword-en">GROUP BY</span></li>
+        </ul>
+
+        <h3>3. 結論與原理</h3>
+        <p>就像寫作文一定要用逗號、句號一樣，上述這些字在 SQL 裡都是<strong>「官方指定用途」的標點符號與指令</strong>。既然是官方指令，它們就全部都是「保留關鍵字」。</p>
+        <p><strong>所以，這題全選！</strong></p>
+    </section>
+
+    <!-- F. 【互動核心：SQL 查詢句型拆解】區 -->
+    <section>
+        <h2>互動核心：SQL 查詢句型拆解</h2>
+        <p class="instruction-tip">👇 點擊下方紫色的關鍵字，看看它們負責什麼工作</p>
+        
+        <div class="sql-container">
+            <!-- 互動式 SQL 語句 -->
+            <div>
+                <span class="sql-word interactive-keyword" onclick="showExplanation('SELECT', '【SELECT】告訴電腦：我要「選取」哪些欄位資料出來看。')">SELECT</span>
+                <span class="sql-word sql-variable">name</span>, 
+                <span class="sql-word sql-variable">score</span>
+                <br>
+                <span class="sql-word interactive-keyword" onclick="showExplanation('FROM', '【FROM】告訴電腦：這些資料是「從」哪一張表格找出來的。')">FROM</span>
+                <span class="sql-word sql-variable">student</span>
+                <br>
+                <span class="sql-word interactive-keyword" onclick="showExplanation('WHERE', '【WHERE】告訴電腦：設定「篩選條件」，只找符合條件的資料（哪裡符合...）。')">WHERE</span>
+                <span class="sql-word sql-variable">score</span> > <span class="sql-word sql-value">60</span>
+                <br>
+                <span class="sql-word interactive-keyword" onclick="showExplanation('GROUP BY', '【GROUP BY】告訴電腦：依照什麼欄位來「分組」（例如：依班級分組算平均）。')">GROUP BY</span>
+                <span class="sql-word sql-variable">class</span>
+                <br>
+                <span class="sql-word interactive-keyword" onclick="showExplanation('ORDER BY', '【ORDER BY】告訴電腦：結果出來後，要依照什麼順序「排序」（例如：由高分到低分）。')">ORDER BY</span>
+                <span class="sql-word sql-variable">score</span>;
+            </div>
+        </div>
+
+        <div id="explanation-box" class="explanation-display">
+            點擊上方的關鍵字 (例如 SELECT) 來查看說明...
+        </div>
+    </section>
+
+    <!-- G. 【第四步：選項分析】區 -->
+    <section>
+        <h2>第四步：逐項分析</h2>
+        <div class="analysis-item">
+            <strong>(A) SELECT ✅</strong><br>
+            意義：選取。用於指定查詢結果要顯示哪些欄位。絕對是關鍵字。
+        </div>
+        <div class="analysis-item">
+            <strong>(B) FROM ✅</strong><br>
+            意義：從...。用於指定資料來源的表格名稱。絕對是關鍵字。
+        </div>
+        <div class="analysis-item">
+            <strong>(C) WHERE ✅</strong><br>
+            意義：哪裡...。用於設定資料的過濾與篩選條件。絕對是關鍵字。
+        </div>
+        <div class="analysis-item">
+            <strong>(D) ORDER BY ✅</strong><br>
+            意義：依...排序。由兩個字組成，用於指定結果的排列順序（升冪或降冪）。是保留片語。
+        </div>
+        <div class="analysis-item">
+            <strong>(E) GROUP BY ✅</strong><br>
+            意義：依...分組。用於統計運算時的群組分類。是保留片語。
+        </div>
+    </section>
+
+    <!-- H. 【觀念補充與延伸】區 -->
+    <section>
+        <h2>觀念補充與延伸</h2>
+        <ul>
+            <li><strong>核心定位：</strong>這是 SQL 的送分題。只要看到是用來「控制查詢結構」的單字，99% 都是保留字。</li>
+            <li><strong>對比概念：</strong>
+                <ul>
+                    <li><strong>保留關鍵字 (Reserved Keywords)：</strong> SELECT, FROM, WHERE, AND, OR, INSERT, UPDATE...</li>
+                    <li><strong>使用者自訂名稱 (User-defined Identifiers)：</strong> student (表名), name (欄位名), score (欄位名)...</li>
+                </ul>
+            </li>
+            <li><strong>變化題型：</strong>
+                <ol>
+                    <li>問「哪一個不是 SQL 關鍵字？」(通常會混入 student, table1 這種自訂名稱)。</li>
+                    <li>問「GROUP BY 通常搭配哪個關鍵字做篩選？」(答案是 HAVING)。</li>
+                </ol>
+            </li>
+        </ul>
+    </section>
+
+    <!-- I. 【記憶口訣】區 -->
+    <section style="background-color: #e3f2fd;">
+        <h2>💡 記憶口訣</h2>
+        <p style="font-size: 1.1rem; font-weight: bold; text-align: center;">
+            「選哪裡、從哪來、怎麼篩、怎麼分、怎麼排」
+        </p>
+        <p style="text-align: center; color: #555; font-size: 0.9rem;">
+            (SELECT) (FROM) (WHERE) (GROUP BY) (ORDER BY)
+        </p>
+    </section>
+
+    <!-- J. 【常見陷阱】區 -->
+    <section>
+        <h2>⚠️ 常見陷阱</h2>
+        <ul>
+            <li><strong>陷阱一：</strong>以為 <span class="keyword-en">ORDER BY</span>、<span class="keyword-en">GROUP BY</span> 因為中間有空白（是兩個字），就覺得它不是「一個」關鍵字。
+                <br>👉 <strong>正解：</strong>它們是「關鍵片語」，一樣屬於保留字。</li>
+            <li><strong>避坑指南：</strong>考試看到這五個字：SELECT / FROM / WHERE / ORDER BY / GROUP BY，不用懷疑，全部勾選！</li>
+        </ul>
+    </section>
+
+    <!-- K. 【作答區】互動複選 -->
+    <section class="quiz-section">
+        <h2>✏️ 考前實戰作答</h2>
+        <p>請試著回答本題：下列何者屬於 SQL 保留關鍵字？(複選)</p>
+        
+        <div class="quiz-form">
+            <div class="checkbox-group">
+                <label><input type="checkbox" name="quiz" value="A"> (A) SELECT</label>
+                <label><input type="checkbox" name="quiz" value="B"> (B) FROM</label>
+                <label><input type="checkbox" name="quiz" value="C"> (C) WHERE</label>
+                <label><input type="checkbox" name="quiz" value="D"> (D) ORDER BY</label>
+                <label><input type="checkbox" name="quiz" value="E"> (E) GROUP BY</label>
+            </div>
+            
+            <button class="btn" onclick="checkAnswer()">送出作答</button>
+            <button class="btn btn-outline" onclick="toggleAnswer()">顯示正確答案</button>
+        </div>
+
+        <div id="quiz-feedback" class="feedback-area"></div>
+        
+        <!-- L. 【正確答案】區 -->
+        <div id="real-answer" class="hidden-answer">
+            正確答案：A, B, C, D, E
+        </div>
+    </section>
+
+    <!-- M. 【自我檢測】區 -->
+    <section>
+        <h2>🚀 自我檢測 (延伸思考)</h2>
+        <p>確認你是否真的懂了，試著思考以下問題（不提供標準答案，請翻課本）：</p>
+        <ol>
+            <li>如果我真的想把一個欄位取名為 `SELECT`，SQL 會報錯嗎？該怎麼處理？(提示：引號或括號)</li>
+            <li>`WHERE` 既然可以篩選資料，那為什麼分組後的篩選要用 `HAVING` 而不能繼續用 `WHERE`？</li>
+        </ol>
+    </section>
+
+    <!-- 頁尾 -->
+    <footer style="text-align: center; padding: 20px; color: #777; font-size: 0.8rem;">
+        &copy; 電腦概論考前衝刺 | 前端互動教學範例
+    </footer>
+
+</div>
+
+<script>
+    // --- 互動核心：顯示解釋 ---
+    function showExplanation(keyword, text) {
+        // 更新文字框內容
+        const box = document.getElementById('explanation-box');
+        box.innerHTML = `<strong>${keyword}</strong>：${text}`;
+        
+        // 移除所有按鈕的 active 樣式
+        const allKeywords = document.querySelectorAll('.interactive-keyword');
+        allKeywords.forEach(el => el.classList.remove('active'));
+
+        // 為當前點擊的按鈕加上 active 樣式 (利用 event.target 的概念，但在這裡是遍歷比對內容)
+        // 簡單做法：因為傳入了 keyword，我們可以直接比對 innerText
+        allKeywords.forEach(el => {
+            if(el.innerText === keyword) {
+                el.classList.add('active');
+            }
+        });
+    }
+
+    // --- 測驗系統邏輯 ---
+    function checkAnswer() {
+        // 取得所有被勾選的選項
+        const checkboxes = document.querySelectorAll('input[name="quiz"]:checked');
+        let userAnswers = [];
+        checkboxes.forEach((checkbox) => {
+            userAnswers.push(checkbox.value);
+        });
+
+        // 排序使用者的答案 (避免順序不同造成判定錯誤)
+        userAnswers.sort();
+        const correctAnswers = ["A", "B", "C", "D", "E"];
+        
+        const feedbackBox = document.getElementById('quiz-feedback');
+        feedbackBox.style.display = 'block';
+
+        // 比較陣列是否相等
+        const isCorrect = JSON.stringify(userAnswers) === JSON.stringify(correctAnswers);
+
+        if (isCorrect) {
+            feedbackBox.className = "feedback-area feedback-correct";
+            feedbackBox.innerHTML = `
+                <h3>🎉 答對了！太棒了！</h3>
+                <p>沒錯，這五個全部都是 SQL 的核心指令保留字。</p>
+            `;
+        } else {
+            feedbackBox.className = "feedback-area feedback-wrong";
+            let msg = "<h3>❌ 再想一下...</h3>";
+            
+            if (userAnswers.length === 0) {
+                msg += "<p>你沒有勾選任何選項喔！</p>";
+            } else {
+                msg += "<p>這題是全選題喔！再看一次上面的「解題思路」吧。</p>";
+                msg += "<p>提示：只要是 SQL 語法結構一定要用的字，都是保留字。</p>";
+            }
+            feedbackBox.innerHTML = msg;
+        }
+    }
+
+    // --- 顯示/隱藏正確答案 ---
+    function toggleAnswer() {
+        const answerDiv = document.getElementById('real-answer');
+        if (answerDiv.style.display === 'block') {
+            answerDiv.style.display = 'none';
+        } else {
+            answerDiv.style.display = 'block';
+        }
+    }
+</script>
+
+</body>
+</html>

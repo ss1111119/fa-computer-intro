@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>遞迴關係式教學 - 電腦概論/數學基礎</title>
+    <style>
+        :root {
+            --primary-color: #333;
+            --accent-color: #2c3e50;
+            --highlight-bg: #fff59d; /* 螢光筆黃 */
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --border-color: #e0e0e0;
+            --success-color: #27ae60;
+            --error-color: #c0392b;
+            --btn-color: #2980b9;
+        }
+
+        body {
+            font-family: "Noto Sans TC", "Microsoft JhengHei", -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* 共用卡片樣式 */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+        }
+
+        /* 標題區 */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        h1 {
+            font-size: 1.5rem;
+            color: var(--accent-color);
+            margin-bottom: 8px;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 0.9rem;
+            font-weight: normal;
+        }
+
+        /* 題目區 */
+        .problem-box {
+            font-size: 1.2rem;
+            font-weight: bold;
+            background-color: #fff;
+            border-left: 5px solid var(--accent-color);
+            padding: 15px 20px;
+        }
+        .options-list {
+            list-style: none;
+            padding-left: 0;
+            margin-top: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .options-list li {
+            font-weight: normal;
+            font-size: 1rem;
+        }
+
+        /* 重點標示 */
+        mark {
+            background-color: var(--highlight-bg);
+            padding: 0 4px;
+            border-radius: 4px;
+            color: inherit;
+        }
+        .keyword-badge {
+            display: inline-block;
+            background: #eee;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            margin-right: 5px;
+            color: #555;
+        }
+
+        /* 解題步驟 */
+        h2 {
+            font-size: 1.2rem;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 8px;
+            margin-top: 0;
+            color: var(--accent-color);
+        }
+        
+        /* 互動表格 */
+        .calc-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 0.95rem;
+        }
+        .calc-table th, .calc-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+        .calc-table th {
+            background-color: #f1f1f1;
+            font-weight: bold;
+        }
+        .calc-table tr:nth-child(even) {
+            background-color: #fafafa;
+        }
+        .calc-note {
+            text-align: left !important;
+            font-family: monospace;
+            color: #555;
+        }
+        
+        /* 按鈕群組 */
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            justify-content: center;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: opacity 0.2s;
+            font-weight: bold;
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .btn-next {
+            background-color: var(--btn-color);
+            color: white;
+        }
+        .btn-reset {
+            background-color: #95a5a6;
+            color: white;
+        }
+        
+        /* 選項分析與觀念 */
+        .analysis-item {
+            margin-bottom: 10px;
+            padding-left: 15px;
+            border-left: 3px solid #ddd;
+        }
+        .analysis-item.correct {
+            border-left-color: var(--success-color);
+        }
+        .analysis-item.wrong {
+            border-left-color: var(--error-color);
+        }
+        .concept-box {
+            background-color: #e8f6f3;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        /* 測驗區 */
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .quiz-btn {
+            background: white;
+            border: 2px solid #ddd;
+            color: #333;
+            text-align: left;
+        }
+        .quiz-btn:hover {
+            background: #f9f9f9;
+            border-color: #bbb;
+        }
+        .quiz-btn.selected {
+            border-color: var(--btn-color);
+            background-color: #eef7fb;
+        }
+        .feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 6px;
+            display: none;
+            font-weight: bold;
+        }
+        .feedback.show {
+            display: block;
+        }
+        .feedback.correct {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .feedback.incorrect {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        /* RWD 調整 */
+        @media (max-width: 600px) {
+            .options-list {
+                flex-direction: column;
+                gap: 5px;
+            }
+            .calc-table {
+                font-size: 0.85rem;
+            }
+            .calc-table td, .calc-table th {
+                padding: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <!-- A. 標題區 -->
+    <header>
+        <h1>題號 19：遞迴關係式與數列計算</h1>
+        <div class="subtitle">電腦概論 ／ 數學基礎 ／ 演算法入門</div>
+    </header>
+
+    <!-- B. 題目區 -->
+    <div class="card">
+        <h2>【題目】</h2>
+        <div class="problem-box">
+            19. f(n+1) = f(n) + (n-1)，若 f(0)=0, f(1)=1，則 f(5) 的值為？
+            <ul class="options-list">
+                <li>(A) 5</li>
+                <li>(B) 6</li>
+                <li>(C) 7</li>
+                <li>(D) 8</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- C. 第一步：找關鍵字 -->
+    <div class="card">
+        <h2>第一步：找關鍵字</h2>
+        <p>請先觀察題目中的「初始值」與「規則」：</p>
+        <p>
+            1. 規則公式：<mark>f(n+1) = f(n) + (n-1)</mark><br>
+            2. 起點（已知）：<mark>f(0) = 0</mark>、<mark>f(1) = 1</mark><br>
+            3. 終點（目標）：求 <mark>f(5)</mark>
+        </p>
+        <div class="concept-box">
+            <strong>為什麼這題要「往後算」？</strong><br>
+            這是一個 <span class="keyword-badge">Recursive Function</span>（遞迴函數：用前一個值定義下一個值）的題目。你想知道第 5 項，就必須先知道第 4 項；想知道第 4 項，得先算第 3 項...依此類推，不能跳步。
+        </div>
+    </div>
+
+    <!-- D. 第二步：白話翻譯 -->
+    <div class="card">
+        <h2>第二步：白話翻譯</h2>
+        <p>我們把數學公式翻譯成中文：</p>
+        <ul>
+            <li><strong>f(n+1)：</strong>代表「下一格的值」。</li>
+            <li><strong>f(n)：</strong>代表「現在這一格的值」。</li>
+            <li><strong>(n-1)：</strong>代表「修正量」（注意這跟 n 有關）。</li>
+        </ul>
+        <p style="font-size: 1.1em; color: var(--btn-color); font-weight: bold;">
+            翻譯：「下一格的值」等於「現在的值」加上「(現在位置 n 減 1)」。
+        </p>
+    </div>
+
+    <!-- E. 第三步：解題思路 -->
+    <div class="card">
+        <h2>第三步：解題思路</h2>
+        <p><strong>考點：</strong>遞迴定義的實際代入計算（Tracing）。</p>
+        <p><strong>標準步驟：</strong></p>
+        <ol>
+            <li>列出已知的 f(0) 和 f(1)。</li>
+            <li>利用公式 $f(n+1) = f(n) + (n-1)$。</li>
+            <li>從 n=1 開始代入（因為要求 f(2) 即 f(1+1)），一路算出 f(2), f(3), f(4), 到 f(5)。</li>
+        </ol>
+        <p style="color: #e74c3c; font-size: 0.9rem;">
+            ⚠️ 注意：這題有給 f(0)，但我們要算 f(2) 時，公式右邊需要 f(1) 和 n=1。所以計算會從 n=1 這行開始往後推。
+        </p>
+    </div>
+
+    <!-- F. 互動式逐步計算表 (核心) -->
+    <div class="card" style="border: 2px solid var(--btn-color);">
+        <h2>第四步：互動計算表 (強烈建議實際按一次)</h2>
+        <p>點擊「計算下一步」來觀察數字的變化：</p>
+        
+        <table class="calc-table" id="calcTable">
+            <thead>
+                <tr>
+                    <th style="width: 15%">n</th>
+                    <th style="width: 20%">f(n) (已知)</th>
+                    <th>計算 f(n+1) 過程說明</th>
+                    <th style="width: 20%">算出下一項<br>f(n+1)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>-</td>
+                    <td>f(0) = 0</td>
+                    <td class="calc-note">題目給定初始值 (本題計算未用到)</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>-</td>
+                    <td>f(1) = 1</td>
+                    <td class="calc-note">題目給定初始值 (從這裡開始往後推)</td>
+                    <td>-</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="btn-group">
+            <button onclick="nextStep()" id="btnNext" class="btn-next">計算下一步</button>
+            <button onclick="resetCalc()" id="btnReset" class="btn-reset">重置表格</button>
+        </div>
+        <div id="finishMsg" style="text-align: center; color: var(--success-color); font-weight: bold; margin-top: 10px; display: none;">
+            🎉 計算完成！f(5) = 7
+        </div>
+    </div>
+
+    <!-- G. 選項分析 -->
+    <div class="card">
+        <h2>第五步：選項分析</h2>
+        
+        <div class="analysis-item">
+            <strong>(A) 5：</strong>
+            <span>錯誤。這通常是費氏數列 (Fibonacci) 的第 5 項 ($0,1,1,2,3,5$)，或是誤以為公式是 $f(n+1)=f(n)+1$ 算出的結果。</span>
+        </div>
+        
+        <div class="analysis-item">
+            <strong>(B) 6：</strong>
+            <span>錯誤。可能是計算過程中，$n$ 的代入值少減了 1，或是加法運算錯誤。</span>
+        </div>
+        
+        <div class="analysis-item correct">
+            <strong>(C) 7：正確答案。</strong>
+            <span>
+                依照遞迴步驟：<br>
+                f(2) = 1 + (1-1) = 1<br>
+                f(3) = 1 + (2-1) = 2<br>
+                f(4) = 2 + (3-1) = 4<br>
+                f(5) = 4 + (4-1) = 7
+            </span>
+        </div>
+
+        <div class="analysis-item">
+            <strong>(D) 8：</strong>
+            <span>錯誤。常見於誤把 $(n-1)$ 看成 $(n)$ 或其他計算失誤。</span>
+        </div>
+    </div>
+
+    <!-- H, I, J. 觀念、口訣、陷阱 -->
+    <div class="card">
+        <h2>觀念總整理</h2>
+        
+        <h3>💡 記憶口訣</h3>
+        <blockquote style="border-left: 4px solid #ffd700; margin: 10px 0; padding-left: 10px; background: #fffbe6; padding: 10px;">
+            「遞迴題，不跳步，一格一格慢慢走。」<br>
+            「看清 n 是多少，再代進去算。」
+        </blockquote>
+
+        <h3>💣 常見陷阱</h3>
+        <ul>
+            <li><strong>搞混 n 與 f(n)：</strong> 公式裡的 $n$ 是「項數」(第幾個)，$f(n)$ 是「數值」。</li>
+            <li><strong>代錯 n：</strong> 要算 $f(5)$ 時，公式 $f(n+1)$ 的 $n$ 是 $4$。千萬別代成 5。</li>
+            <li><strong>計算錯誤：</strong> $n-1$ 忘記減 1。</li>
+        </ul>
+
+        <h3>📚 延伸思考</h3>
+        <p>若公式改為 $f(n+1) = f(n) + f(n-1)$，那就是著名的「費氏數列」。遞迴是程式設計中「Divide and Conquer (分治法)」與「Dynamic Programming (動態規劃)」的基礎觀念。</p>
+    </div>
+
+    <!-- K. 作答區 -->
+    <div class="card">
+        <h2>【自我測試】現在換你選選看</h2>
+        <p>經過上面的計算，這題的正確答案是？</p>
+        
+        <div class="quiz-options">
+            <button class="quiz-btn" onclick="checkAnswer('A')">(A) 5</button>
+            <button class="quiz-btn" onclick="checkAnswer('B')">(B) 6</button>
+            <button class="quiz-btn" onclick="checkAnswer('C')">(C) 7</button>
+            <button class="quiz-btn" onclick="checkAnswer('D')">(D) 8</button>
+        </div>
+
+        <div id="quizFeedback" class="feedback"></div>
+        <button onclick="toggleAnswer()" style="margin-top: 10px; font-size: 0.9rem; text-decoration: underline; background: none; color: #666; padding: 0;">
+            顯示/隱藏參考解答
+        </button>
+        <div id="realAnswer" style="display: none; margin-top: 10px; color: var(--accent-color);">
+            <strong>正確答案：(C)</strong><br>
+            理由：經過逐步推導，f(5) 的值為 7。
+        </div>
+    </div>
+
+    <!-- M. 自我檢測 -->
+    <div class="card">
+        <h2>📝 課後小練習 (不附詳解，考考你的觀念)</h2>
+        <ol>
+            <li>若 f(1)=2，公式不變，請問 f(3) 是多少？</li>
+            <li>如果公式改成 f(n+1) = f(n) + n (少了減1)，f(3) 會變大還是變小？</li>
+        </ol>
+    </div>
+
+</div>
+
+<script>
+    // 初始狀態設定
+    // 我們已知 f(0)=0, f(1)=1
+    // 第一次計算是算 f(2)，此時公式 f(n+1) 對應的 n 為 1
+    // f(1+1) = f(1) + (1-1)
+    
+    let currentN = 1;      // 用於公式中的 n
+    let currentFn = 1;     // 目前已知的 f(n)，也就是 f(1)
+    const targetN = 4;     // 我們要算到 f(5)，也就是 f(4+1)，所以 n 跑到 4 結束
+    
+    // 用於存儲 f(0)~f(1) 的初始數據，雖然 loop 從 f(2) 算起
+    // 其實邏輯上：
+    // Step 1: calculate f(2) using n=1, f(1)
+    // Step 2: calculate f(3) using n=2, f(2)
+    
+    function nextStep() {
+        const table = document.getElementById('calcTable').getElementsByTagName('tbody')[0];
+        const btnNext = document.getElementById('btnNext');
+        const msg = document.getElementById('finishMsg');
+
+        if (currentN > targetN) return;
+
+        // 計算邏輯： f(n+1) = f(n) + (n-1)
+        let nextVal = currentFn + (currentN - 1);
+        let nextN = currentN + 1;
+
+        // 建立新的一列
+        let newRow = table.insertRow();
+        
+        // 欄位 1: n (當前代入公式的 n)
+        let cellN = newRow.insertCell(0);
+        cellN.innerHTML = `<strong>${currentN}</strong>`;
+        
+        // 欄位 2: f(n) (當前已知值)
+        let cellFn = newRow.insertCell(1);
+        cellFn.innerHTML = `f(${currentN}) = ${currentFn}`;
+        
+        // 欄位 3: 計算過程
+        let cellProcess = newRow.insertCell(2);
+        cellProcess.className = "calc-note";
+        // 為了教學清楚，用顏色標示代入的數字
+        cellProcess.innerHTML = `
+            想算 f(<span style="color:red">${nextN}</span>) <br>
+            代公式: f(${currentN}) + (${currentN} - 1) <br>
+            = ${currentFn} + ${currentN - 1}
+        `;
+        
+        // 欄位 4: 結果
+        let cellResult = newRow.insertCell(3);
+        cellResult.innerHTML = `<strong style="color:var(--btn-color)">${nextVal}</strong>`;
+
+        // 更新狀態給下一步用
+        currentFn = nextVal;
+        currentN++;
+
+        // 判斷是否結束
+        if (currentN > targetN) {
+            btnNext.disabled = true;
+            btnNext.textContent = "計算完畢";
+            msg.style.display = "block";
+            
+            // 最後強調 f(5)
+            // 雖然 loop 結束時 currentN 變成 5，但最後一行顯示的是算出了 f(5)
+        }
+    }
+
+    function resetCalc() {
+        // 重置變數
+        currentN = 1;
+        currentFn = 1;
+        
+        // 重置按鈕
+        const btnNext = document.getElementById('btnNext');
+        btnNext.disabled = false;
+        btnNext.textContent = "計算下一步";
+        document.getElementById('finishMsg').style.display = "none";
+
+        // 重置表格 (保留前兩列 f(0), f(1))
+        const tableBody = document.getElementById('calcTable').getElementsByTagName('tbody')[0];
+        // 刪除 index 2 之後的所有列 (0 和 1 是預設的)
+        while(tableBody.rows.length > 2) {
+            tableBody.deleteRow(2);
+        }
+    }
+
+    // 測驗區互動
+    function checkAnswer(option) {
+        const feedback = document.getElementById('quizFeedback');
+        const buttons = document.querySelectorAll('.quiz-btn');
+        
+        // 重置按鈕樣式
+        buttons.forEach(btn => btn.classList.remove('selected'));
+        
+        // 標記選中
+        event.target.classList.add('selected');
+
+        feedback.className = "feedback show";
+        if (option === 'C') {
+            feedback.innerHTML = "✅ 答對了！依照遞迴關係計算，f(5) 確實等於 7。";
+            feedback.classList.add('correct');
+            feedback.classList.remove('incorrect');
+        } else {
+            feedback.innerHTML = "❌ 再試試看？請參考上方的「互動計算表」或「選項分析」。";
+            feedback.classList.add('incorrect');
+            feedback.classList.remove('correct');
+        }
+    }
+
+    function toggleAnswer() {
+        const ans = document.getElementById('realAnswer');
+        if (ans.style.display === "none") {
+            ans.style.display = "block";
+        } else {
+            ans.style.display = "none";
+        }
+    }
+</script>
+
+</body>
+</html>

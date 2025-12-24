@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電腦概論：虛擬記憶體概念解析</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --highlight-color: #fff9c4; /* 淡黃螢光筆 */
+            --correct-color: #27ae60;
+            --wrong-color: #e74c3c;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --ram-color: #4CAF50; /* RAM 綠色 */
+            --disk-color: #FF5722; /* Disk 橘色 */
+        }
+
+        body {
+            font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+            background-color: var(--bg-color);
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* 通用卡片樣式 */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            padding: 24px;
+            margin-bottom: 24px;
+            border-left: 5px solid var(--accent-color);
+        }
+
+        h1, h2, h3 {
+            color: var(--primary-color);
+            margin-top: 0;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            background-color: #eee;
+            padding: 8px 12px;
+            border-radius: 6px;
+            display: inline-block;
+        }
+
+        .highlight {
+            background-color: var(--highlight-color);
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-weight: bold;
+            border: 1px solid #e0e0e0;
+        }
+
+        /* 題目區塊 */
+        .question-box {
+            background-color: #fff;
+            border: 2px solid var(--primary-color);
+            padding: 20px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .options {
+            list-style: none;
+            padding: 0;
+            margin-top: 15px;
+        }
+
+        .options li {
+            margin: 8px 0;
+            padding: 8px;
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        /* 互動模擬區 */
+        .simulation-container {
+            background: #222;
+            color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .controls {
+            margin-bottom: 20px;
+            display: grid;
+            gap: 15px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .control-group label {
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+
+        input[type=range] {
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .visualizer {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .memory-block {
+            flex: 1;
+            min-width: 120px;
+            border: 2px dashed #555;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+            position: relative;
+        }
+
+        .memory-block h4 {
+            color: #fff;
+            font-size: 0.9rem;
+            margin: 0 0 10px 0;
+        }
+
+        .page-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            justify-content: center;
+            min-height: 50px;
+        }
+
+        .page {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+
+        .page.ram { background-color: var(--ram-color); box-shadow: 0 0 5px var(--ram-color); }
+        .page.disk { background-color: var(--disk-color); opacity: 0.8; }
+        
+        .status-text {
+            margin-top: 15px;
+            padding: 10px;
+            background: #333;
+            border-radius: 4px;
+            text-align: center;
+            font-family: monospace;
+        }
+
+        .alert-slow {
+            color: #ff5722;
+            font-weight: bold;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        /* 選項分析表格風 */
+        .analysis-item {
+            display: flex;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .analysis-label {
+            font-weight: bold;
+            min-width: 160px;
+            color: var(--primary-color);
+        }
+
+        /* 按鈕樣式 */
+        .btn-option {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin: 5px 0;
+            background: #fff;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            text-align: left;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .btn-option:hover {
+            background-color: #e3f2fd;
+            border-color: var(--accent-color);
+        }
+
+        .btn-option.correct {
+            background-color: #d4edda;
+            border-color: var(--correct-color);
+            color: var(--correct-color);
+        }
+
+        .btn-option.wrong {
+            background-color: #f8d7da;
+            border-color: var(--wrong-color);
+            color: var(--wrong-color);
+        }
+
+        /* 隱藏內容與折疊 */
+        details {
+            margin-top: 10px;
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        summary {
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
+        /* RWD */
+        @media (max-width: 600px) {
+            .visualizer {
+                flex-direction: column;
+            }
+            .analysis-item {
+                flex-direction: column;
+            }
+            .analysis-label {
+                margin-bottom: 5px;
+            }
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 40px;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <!-- Header -->
+    <header class="card" style="text-align: center; border-left: none; border-top: 5px solid var(--primary-color);">
+        <h1>主題：虛擬記憶體 (Virtual Memory)</h1>
+        <p style="color: #666;">觀念：如何讓程式可用空間 > 實體 RAM？</p>
+    </header>
+
+    <!-- 題目區 -->
+    <section class="card question-box">
+        <div><span style="background: #333; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 0.8em;">題號 25</span></div>
+        <p>下列何種技術讓電腦能執行比 RAM 更大的空間?</p>
+        <ul class="options">
+            <li>(A) multitasking</li>
+            <li>(B) multiprogramming</li>
+            <li>(C) time-sharing</li>
+            <li>(D) virtual memory</li>
+        </ul>
+        
+        <details>
+            <summary>點此查看正確答案</summary>
+            <div style="margin-top: 10px; font-size: 1.2em; color: var(--correct-color); font-weight: bold;">
+                答案：D
+            </div>
+        </details>
+    </section>
+
+    <!-- 第一步：找關鍵字 -->
+    <section class="card">
+        <h2>第一步：找關鍵字</h2>
+        <p>請拿出你的螢光筆（視覺想像），把題目中的這幾個字圈起來：</p>
+        <p style="font-size: 1.2em;">
+            「<span class="highlight">執行</span>」...「<span class="highlight">比 RAM 更大的空間</span>」
+        </p>
+        <p><strong>思考方向：</strong>這題是在問「容量」與「空間」的擴充技術，而不是問「速度」或「多人使用」。</p>
+    </section>
+
+    <!-- 第二步：白話翻譯 -->
+    <section class="card">
+        <h2>第二步：白話翻譯</h2>
+        <div style="background: #eef; padding: 15px; border-radius: 8px;">
+            <p><strong>翻譯蒟蒻：</strong></p>
+            <p>「我的 RAM（記憶體）只有 8GB，但我想要玩一個需要 16GB 的 3A 大作遊戲，或是跑一個超大的運算程式，電腦是用什麼魔法辦到的？」</p>
+        </div>
+    </section>
+
+    <!-- 第三步：解題思路 (包含比喻) -->
+    <section class="card">
+        <h2>第三步：解題思路</h2>
+        <p>這題考的是作業系統最經典的記憶體管理技術。</p>
+        
+        <h3>生活比喻：圖書館讀書</h3>
+        <ul style="list-style-type: none; padding-left: 0;">
+            <li>🪑 <strong>RAM（桌面）：</strong> 你的書桌，空間有限，但在這裡看書最快。</li>
+            <li>📚 <strong>Hard Disk（書架）：</strong> 圖書館的書架，空間超大，但拿書要走來走去（速度慢）。</li>
+            <li>✨ <strong>Virtual Memory（虛擬記憶體）：</strong> 一種機制。當書桌（RAM）堆滿時，管理員幫你把暫時不看的書搬回書架（Disk），把空間騰出來放你要看的新書。</li>
+        </ul>
+        <p><strong>結論：</strong> 對你（程式）來說，你以為你有一個無限大的書桌，其實是管理員（OS）在背後一直搬書（Swap）。</p>
+    </section>
+
+    <!-- 重點：互動模擬區 -->
+    <section class="card" style="border-left-color: #9b59b6;">
+        <h2>⚡ 互動模擬：RAM vs Virtual Memory</h2>
+        <p>動手玩玩看！調整下方的滑桿，觀察當「程式需求」超過「RAM」時會發生什麼事。</p>
+
+        <div class="simulation-container">
+            <div class="controls">
+                <div class="control-group">
+                    <label>🖥️ 實體 RAM 大小: <span id="ramVal" style="color:var(--ram-color); font-weight:bold;">4</span> GB</label>
+                    <input type="range" id="ramSlider" min="2" max="8" value="4" step="1">
+                </div>
+                <div class="control-group">
+                    <label>🎮 程式需求大小: <span id="appVal" style="color:#fff; font-weight:bold;">2</span> GB</label>
+                    <input type="range" id="appSlider" min="1" max="16" value="2" step="1">
+                </div>
+            </div>
+
+            <div class="visualizer">
+                <!-- RAM 區塊 -->
+                <div class="memory-block" style="border-color: var(--ram-color);">
+                    <h4>RAM (快速工作區)</h4>
+                    <div id="ramContainer" class="page-container">
+                        <!-- JS 會填入格子 -->
+                    </div>
+                </div>
+
+                <!-- Disk/Swap 區塊 -->
+                <div class="memory-block" style="border-color: var(--disk-color);">
+                    <h4>Hard Disk (Swap 交換區)</h4>
+                    <div id="diskContainer" class="page-container">
+                        <!-- JS 會填入格子 -->
+                    </div>
+                </div>
+            </div>
+
+            <div id="statusBox" class="status-text">
+                系統狀態：正常
+            </div>
+        </div>
+        
+        <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
+            <small>*圖中每一個方塊代表一個 Page（分頁/記憶體區塊）。當綠色區塊滿了，多出來的必須放到橘色區塊（硬碟）中，這過程稱為 Swapping。</small>
+        </p>
+    </section>
+
+    <!-- 第四步：選項分析 -->
+    <section class="card">
+        <h2>第四步：選項大解剖</h2>
+        <p>為什麼其他選項是錯的？讓我們一一擊破：</p>
+
+        <div class="analysis-item">
+            <div class="analysis-label">(A) multitasking<br><small>多工處理</small></div>
+            <div>
+                這是指 CPU 可以在同一時間段內處理多個工作（例如一邊聽音樂一邊打報告）。
+                <br><span style="color: #e74c3c;">❌ 重點是「同時做很多事」，不是變大空間。</span>
+            </div>
+        </div>
+
+        <div class="analysis-item">
+            <div class="analysis-label">(B) multiprogramming<br><small>多元程式規劃</small></div>
+            <div>
+                這是指記憶體中同時放入多個程式，當某程式在等 I/O 時，CPU 切換去執行別的程式，以提高 CPU 利用率。
+                <br><span style="color: #e74c3c;">❌ 重點是「提高 CPU 效率」，不是變大空間。</span>
+            </div>
+        </div>
+
+        <div class="analysis-item">
+            <div class="analysis-label">(C) time-sharing<br><small>分時系統</small></div>
+            <div>
+                把 CPU 的時間切成很小的碎片（Time slice），輪流分給多個使用者或程式。
+                <br><span style="color: #e74c3c;">❌ 重點是「輪流使用 CPU」，不是變大空間。</span>
+            </div>
+        </div>
+
+        <div class="analysis-item">
+            <div class="analysis-label">(D) virtual memory<br><small>虛擬記憶體</small></div>
+            <div>
+                利用硬碟空間來模擬記憶體，讓邏輯記憶體空間 > 實體記憶體空間。
+                <br><span style="color: var(--correct-color);">✅ 正確！這就是變大空間的魔法。</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- 觀念補充與陷阱 -->
+    <section class="card">
+        <h2>💡 觀念補充 & 避坑指南</h2>
+        
+        <h3>核心定義</h3>
+        <ul>
+            <li><strong>Virtual Memory (虛擬記憶體)：</strong>邏輯上給程式一個完整連續的大空間，物理上則是散落在 RAM 和硬碟(Swap)中。</li>
+            <li><strong>Paging (分頁)：</strong>把記憶體切成固定大小的塊（Page），方便搬運。</li>
+            <li><strong>Thrashing (震盪/抖動)：</strong>如果 RAM 太小，導致系統一直頻繁地在 RAM 和硬碟間搬資料，CPU 都在忙搬運沒空算東西，電腦會變得超級慢。</li>
+        </ul>
+
+        <div style="background: #fff3cd; padding: 15px; border-radius: 8px; border: 1px solid #ffeeba; margin-top: 15px;">
+            <h3>🚧 常見陷阱</h3>
+            <p>同學常把 <strong>Time-sharing (分時)</strong> 和 <strong>Virtual Memory (虛擬記憶體)</strong> 搞混。</p>
+            <ul>
+                <li>Time-sharing 是切分 <strong>CPU 時間</strong>。</li>
+                <li>Virtual Memory 是擴充 <strong>記憶體空間</strong>。</li>
+            </ul>
+        </div>
+
+        <div style="margin-top: 15px; text-align: center;">
+            <span class="highlight" style="font-size: 1.2em;">👄 記憶口訣：RAM 不夠，硬碟來湊 ⮕ 虛擬記憶體</span>
+        </div>
+    </section>
+
+    <!-- 互動測驗區 -->
+    <section class="card">
+        <h2>📝 考前自我檢測</h2>
+        <p>回到題目，現在請自信地選出答案：</p>
+        <div style="margin-bottom: 20px;">
+            <p style="font-weight: bold;">題目：下列何種技術讓電腦能執行比 RAM 更大的空間?</p>
+            <button class="btn-option" onclick="checkAnswer(this, 'A')">(A) multitasking</button>
+            <button class="btn-option" onclick="checkAnswer(this, 'B')">(B) multiprogramming</button>
+            <button class="btn-option" onclick="checkAnswer(this, 'C')">(C) time-sharing</button>
+            <button class="btn-option" onclick="checkAnswer(this, 'D')">(D) virtual memory</button>
+        </div>
+        <div id="quiz-feedback" style="display: none; padding: 15px; border-radius: 8px; font-weight: bold;"></div>
+    </section>
+
+    <!-- 延伸思考 -->
+    <section class="card" style="background: #f4f6f7; border-left-color: #7f8c8d;">
+        <h2>🚀 延伸思考 (不附答案，想一想)</h2>
+        <ol>
+            <li>既然硬碟可以當記憶體用，那我們為什麼不乾脆只用硬碟，不要買昂貴的 RAM？(提示：速度差異)</li>
+            <li>現在 SSD (固態硬碟) 速度很快，這對虛擬記憶體的效能有什麼影響？</li>
+        </ol>
+    </section>
+
+    <footer class="footer">
+        <p>教學設計：前端工程師 & 補教名師 | 適用範圍：高中電腦概論 / 大學作業系統導論</p>
+    </footer>
+
+</div>
+
+<script>
+    // --- 互動模擬邏輯 ---
+    const ramSlider = document.getElementById('ramSlider');
+    const appSlider = document.getElementById('appSlider');
+    const ramVal = document.getElementById('ramVal');
+    const appVal = document.getElementById('appVal');
+    const ramContainer = document.getElementById('ramContainer');
+    const diskContainer = document.getElementById('diskContainer');
+    const statusBox = document.getElementById('statusBox');
+
+    function updateSimulation() {
+        const ramSize = parseInt(ramSlider.value);
+        const appSize = parseInt(appSlider.value);
+
+        // 更新文字顯示
+        ramVal.innerText = ramSize;
+        appVal.innerText = appSize;
+
+        // 清空容器
+        ramContainer.innerHTML = '';
+        diskContainer.innerHTML = '';
+
+        // 計算區塊 (這裡假設 1GB = 1個區塊)
+        // 邏輯：優先填滿 RAM，滿了之後填入 Disk
+        
+        let pagesInRam = 0;
+        let pagesInDisk = 0;
+
+        if (appSize <= ramSize) {
+            // RAM 夠用
+            pagesInRam = appSize;
+            pagesInDisk = 0;
+            statusBox.innerHTML = `系統狀態：<span style="color:#4CAF50">流暢</span> (所有資料都在 RAM)`;
+            statusBox.className = "status-text";
+        } else {
+            // RAM 不夠用，啟用虛擬記憶體
+            pagesInRam = ramSize;
+            pagesInDisk = appSize - ramSize;
+            statusBox.innerHTML = `系統狀態：<span class="alert-slow">⚠ 啟用虛擬記憶體 (Swapping)</span><br>硬碟慢速讀取中...可能發生 Thrashing`;
+            statusBox.className = "status-text"; // 確保樣式重置或保留
+        }
+
+        // 繪製 RAM 區塊
+        for (let i = 0; i < pagesInRam; i++) {
+            const div = document.createElement('div');
+            div.className = 'page ram';
+            div.title = "Page in RAM";
+            ramContainer.appendChild(div);
+        }
+
+        // 繪製 RAM 空位 (為了視覺一致性，可選)
+        for (let i = 0; i < (ramSize - pagesInRam); i++) {
+             const div = document.createElement('div');
+             div.style.width = '20px';
+             div.style.height = '20px';
+             div.style.border = '1px solid #444';
+             div.style.borderRadius = '3px';
+             ramContainer.appendChild(div);
+        }
+
+        // 繪製 Disk 區塊
+        for (let i = 0; i < pagesInDisk; i++) {
+            const div = document.createElement('div');
+            div.className = 'page disk';
+            div.title = "Page swapped to Disk";
+            diskContainer.appendChild(div);
+        }
+    }
+
+    // 監聽滑桿事件
+    ramSlider.addEventListener('input', updateSimulation);
+    appSlider.addEventListener('input', updateSimulation);
+
+    // 初始化
+    updateSimulation();
+
+
+    // --- 測驗邏輯 ---
+    function checkAnswer(btn, option) {
+        // 重置所有按鈕樣式
+        const buttons = document.querySelectorAll('.btn-option');
+        buttons.forEach(b => {
+            b.classList.remove('correct', 'wrong');
+            b.disabled = false;
+        });
+
+        const feedback = document.getElementById('quiz-feedback');
+        feedback.style.display = 'block';
+
+        if (option === 'D') {
+            btn.classList.add('correct');
+            feedback.style.background = '#d4edda';
+            feedback.style.color = '#155724';
+            feedback.innerHTML = "🎉 答對了！Virtual Memory 就是利用硬碟延伸記憶體空間的技術。";
+        } else {
+            btn.classList.add('wrong');
+            feedback.style.background = '#f8d7da';
+            feedback.style.color = '#721c24';
+            let reason = "";
+            if(option === 'A') reason = "Multitasking 是多工處理（同時跑多個程式），不是擴大空間。";
+            if(option === 'B') reason = "Multiprogramming 是為了讓 CPU 不要閒下來，不是擴大空間。";
+            if(option === 'C') reason = "Time-sharing 是輪流分時間給使用者，不是擴大空間。";
+            
+            feedback.innerHTML = `🚫 答錯囉！${reason} 請再試試看！`;
+        }
+    }
+</script>
+
+</body>
+</html>

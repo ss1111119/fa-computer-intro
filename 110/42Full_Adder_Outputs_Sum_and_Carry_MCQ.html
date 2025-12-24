@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電腦概論重點複習：全加法器輸出辨識</title>
+    <style>
+        /* --- 基礎設定 (Base Styles) --- */
+        :root {
+            --primary-color: #333;
+            --accent-color: #d32f2f; /* 重點紅 */
+            --highlight-color: #fff176; /* 螢光筆黃 */
+            --bg-color: #fdfdfd;
+            --section-bg: #fff;
+            --border-color: #e0e0e0;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+            line-height: 1.6;
+            color: var(--primary-color);
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: var(--section-bg);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* --- 排版元件 (Layout Components) --- */
+        h1, h2, h3 {
+            margin-top: 0;
+            color: #222;
+        }
+
+        h1 {
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 10px;
+            font-size: 1.5rem;
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            background-color: #eee;
+            padding: 8px 12px;
+            border-left: 5px solid var(--primary-color);
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+
+        p { margin-bottom: 15px; }
+
+        /* --- 特效與裝飾 (Effects) --- */
+        .highlight {
+            background-color: var(--highlight-color);
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+
+        .note {
+            font-size: 0.9rem;
+            color: #666;
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-left: 3px solid #999;
+            margin: 10px 0;
+        }
+
+        .tag {
+            display: inline-block;
+            background: #e0e0e0;
+            color: #444;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-right: 5px;
+        }
+
+        /* --- 題目區塊 (Question Section) --- */
+        .question-box {
+            border: 2px solid var(--primary-color);
+            padding: 20px;
+            margin-bottom: 20px;
+            background-color: #fff;
+        }
+
+        .options-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .options-list li {
+            margin: 8px 0;
+            padding: 5px;
+        }
+
+        /* --- 互動區塊 (Interactive Section) --- */
+        .interactive-panel {
+            background-color: #f0f7ff;
+            border: 1px solid #cce0ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        /* SVG 容器 */
+        .svg-container {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            overflow: visible;
+        }
+
+        /* 開關按鈕樣式 */
+        .switch-group {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .toggle-btn {
+            background: white;
+            border: 2px solid #555;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: all 0.2s;
+            min-width: 60px;
+        }
+
+        .toggle-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .toggle-btn:hover { transform: translateY(-2px); }
+
+        .result-display {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-top: 15px;
+            padding: 10px;
+            background: white;
+            border: 1px dashed #aaa;
+            display: inline-block;
+        }
+
+        /* --- 作答區 (Quiz Area) --- */
+        .quiz-area {
+            background-color: #fff8e1;
+            border: 1px solid #ffe0b2;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .quiz-options label {
+            display: block;
+            margin: 10px 0;
+            cursor: pointer;
+            padding: 5px;
+        }
+        
+        .quiz-options input { margin-right: 10px; }
+
+        .btn-submit {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        .btn-submit:hover { opacity: 0.9; }
+
+        .feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .feedback.correct { background-color: #dcedc8; color: #33691e; }
+        .feedback.wrong { background-color: #ffcdd2; color: #b71c1c; }
+
+        /* --- RWD 調整 --- */
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            h1 { font-size: 1.2rem; }
+            .switch-group { gap: 10px; }
+            .toggle-btn { padding: 8px 10px; font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- A. 標題區 -->
+    <h1>題號 42. 全加法器 (Full Adder) 輸出辨識</h1>
+
+    <!-- B. 題目區 -->
+    <div class="question-box">
+        <p><strong>42. 下列何者為全加法器 (full adder) 的輸出?</strong></p>
+        <ul class="options-list">
+            <li>(A) 和 (sum)</li>
+            <li>(B) 差 (difference)</li>
+            <li>(C) 積 (product)</li>
+            <li>(D) 前一位元進位 (p-carry)</li>
+            <li>(E) 進位 (carry)</li>
+        </ul>
+        <details>
+            <summary style="cursor: pointer; color: #666;">（點擊查看標準答案）</summary>
+            <p style="margin-top: 10px; font-weight: bold; color: var(--accent-color);">答案：A, E</p>
+        </details>
+    </div>
+
+    <!-- C. 第一步：找關鍵字 -->
+    <h2>第一步：找關鍵字</h2>
+    <p>請拿出你的螢光筆，把題目中的 <span class="highlight">全加法器 (full adder)</span> 和 <span class="highlight">輸出</span> 畫起來。</p>
+    <div class="note">
+        老師提醒：題目問的是電路計算完「吐出來的結果」有哪些，不是問它身上所有的接腳喔！
+    </div>
+
+    <!-- D. 第二步：白話翻譯 -->
+    <h2>第二步：白話翻譯</h2>
+    <p>全加法器就像一個負責算數的小工人，它的工作是：</p>
+    <blockquote>
+        「把手上的三個東西（A、B、上一位的進位）加起來，最後會<strong>吐出哪兩個結果</strong>？」
+    </blockquote>
+
+    <!-- E. 第三步：解題思路 -->
+    <h2>第三步：解題思路</h2>
+    <p>這題考的是你對 <strong>全加法器 (Full Adder)</strong> 輸入與輸出定義的熟悉度。</p>
+    <ol>
+        <li><strong>先記輸入 (Input)</strong>：這是一個 3 輸入的電路。
+            <ul>
+                <li><strong>A</strong>：本位數 1</li>
+                <li><strong>B</strong>：本位數 2</li>
+                <li><strong>Cin</strong>：前一位元進位 (p-carry)，也就是上一位算完剩下的進位，我們要把它加進來。</li>
+            </ul>
+        </li>
+        <li><strong>再記輸出 (Output)</strong>：這是一個 2 輸出的電路。
+            <ul>
+                <li><strong>Sum (S)</strong>：本位加出來的和（個位數）。</li>
+                <li><strong>Carry (Cout)</strong>：要進位到下一位的數值。</li>
+            </ul>
+        </li>
+        <li><strong>排除干擾</strong>：
+            <ul>
+                <li>看到「差」→ 那是減法器 (Subtractor)。</li>
+                <li>看到「積」→ 那是乘法器或 AND 閘。</li>
+                <li>看到「p-carry」→ 這是輸入 (Cin)，不是輸出。</li>
+            </ul>
+        </li>
+    </ol>
+
+    <!-- F. 互動示範 1：方塊圖 -->
+    <h2>互動示範 1：全加法器方塊圖</h2>
+    <p>看圖記憶最快！請觀察左邊進去的是什麼？右邊出來的是什麼？</p>
+    
+    <div class="interactive-panel">
+        <svg class="svg-container" viewBox="0 0 400 200">
+            <!-- 定義箭頭 -->
+            <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+                    <path d="M0,0 L0,6 L9,3 z" fill="#333" />
+                </marker>
+            </defs>
+
+            <!-- 本體方塊 -->
+            <rect x="120" y="30" width="160" height="140" fill="#fff" stroke="#333" stroke-width="3" rx="10"/>
+            <text x="200" y="95" text-anchor="middle" font-size="18" font-weight="bold" fill="#333">Full Adder</text>
+            <text x="200" y="115" text-anchor="middle" font-size="14" fill="#666">(全加法器)</text>
+
+            <!-- 輸入端 (左側) -->
+            <line x1="50" y1="60" x2="115" y2="60" stroke="#2196F3" stroke-width="2" marker-end="url(#arrow)"/>
+            <text x="45" y="65" text-anchor="end" font-size="14" font-weight="bold" fill="#2196F3">A</text>
+
+            <line x1="50" y1="100" x2="115" y2="100" stroke="#2196F3" stroke-width="2" marker-end="url(#arrow)"/>
+            <text x="45" y="105" text-anchor="end" font-size="14" font-weight="bold" fill="#2196F3">B</text>
+
+            <line x1="50" y1="140" x2="115" y2="140" stroke="#2196F3" stroke-width="2" marker-end="url(#arrow)"/>
+            <text x="45" y="145" text-anchor="end" font-size="14" font-weight="bold" fill="#2196F3">Cin</text>
+            <text x="45" y="160" text-anchor="end" font-size="10" fill="#666">(p-carry/輸入)</text>
+
+            <!-- 輸出端 (右側) -->
+            <line x1="280" y1="80" x2="350" y2="80" stroke="#d32f2f" stroke-width="3" marker-end="url(#arrow)"/>
+            <text x="360" y="85" text-anchor="start" font-size="16" font-weight="bold" fill="#d32f2f">Sum (和)</text>
+
+            <line x1="280" y1="120" x2="350" y2="120" stroke="#d32f2f" stroke-width="3" marker-end="url(#arrow)"/>
+            <text x="360" y="125" text-anchor="start" font-size="16" font-weight="bold" fill="#d32f2f">Carry (進位)</text>
+        </svg>
+        <div class="note" style="text-align: center;">藍色是輸入 (材料) → 紅色是輸出 (成品)</div>
+    </div>
+
+    <!-- G. 互動示範 2：真值表模擬 -->
+    <h2>互動示範 2：邏輯模擬器</h2>
+    <p>試著切換下方的輸入開關 (0 或 1)，看看輸出會怎麼變：</p>
+    <div class="interactive-panel">
+        <p><strong>輸入訊號 (Inputs)</strong></p>
+        <div class="switch-group">
+            <div id="btnA" class="toggle-btn" onclick="toggleBit('A')">A = 0</div>
+            <div id="btnB" class="toggle-btn" onclick="toggleBit('B')">B = 0</div>
+            <div id="btnCin" class="toggle-btn" onclick="toggleBit('Cin')">Cin = 0</div>
+        </div>
+
+        <p>↓ 經過 Full Adder 運算 ↓</p>
+        
+        <div class="result-display">
+            <span style="color: #666;">算式：</span> <span id="mathExpr">0 + 0 + 0 = 0</span><br>
+            <hr style="margin: 5px 0; border: 0; border-top: 1px dashed #ccc;">
+            <span style="color: #d32f2f;">輸出結果：</span> 
+            Sum (和) = <span id="valSum" style="font-size: 1.5em;">0</span>, 
+            Carry (進位) = <span id="valCarry" style="font-size: 1.5em;">0</span>
+        </div>
+        
+        <div class="note" id="logicExplain">
+            目前有 0 個 1，不用進位，本位寫 0。
+        </div>
+    </div>
+
+    <!-- H. 第四步：選項分析 -->
+    <h2>第四步：選項分析</h2>
+    <ul class="options-list">
+        <li>✅ <strong>(A) 和 (sum)</strong>：這是全加法器的本位輸出結果（S = A XOR B XOR Cin）。</li>
+        <li>❌ <strong>(B) 差 (difference)</strong>：這是「減法器」的輸出，不是加法器。</li>
+        <li>❌ <strong>(C) 積 (product)</strong>：這是「乘法器」或邏輯 AND 的概念。</li>
+        <li>❌ <strong>(D) 前一位元進位 (p-carry)</strong>：這個詞指的是 previous carry，也就是 <span class="highlight">Cin</span>。它是給加法器的「輸入」，不是輸出。</li>
+        <li>✅ <strong>(E) 進位 (carry)</strong>：這是全加法器算完後，要送給下一位的進位輸出（Cout）。</li>
+    </ul>
+
+    <!-- I. 觀念補充與 J. 記憶口訣 -->
+    <h2>觀念補充與必背口訣</h2>
+    <div style="background: #e8f5e9; padding: 15px; border-radius: 5px;">
+        <h3>💡 核心觀念</h3>
+        <ul>
+            <li><strong>Half Adder (半加法器)</strong>：2 輸入 (A, B)，2 輸出 (Sum, Carry)。只能算個位數，不能處理進位。</li>
+            <li><strong>Full Adder (全加法器)</strong>：3 輸入 (A, B, Cin)，2 輸出 (Sum, Carry)。可以串聯起來做多位元加法。</li>
+        </ul>
+        
+        <h3>🔥 記憶口訣</h3>
+        <p style="font-size: 1.2rem; font-weight: bold; color: #2e7d32;">
+            「全加法器三入二出：輸入 A B 加進位，輸出只有和與進。」
+        </p>
+    </div>
+
+    <!-- K. 常見陷阱 -->
+    <h2>常見陷阱 (避坑指南)</h2>
+    <ul>
+        <li>⚠️ <strong>陷阱 1</strong>：看到 p-carry (previous carry) 就選下去。
+            <br>→ 破解：記住 previous (之前的) 代表是外面送進來的，是輸入！</li>
+        <li>⚠️ <strong>陷阱 2</strong>：把 Full Adder 當成萬能計算機，選了差或積。
+            <br>→ 破解：它的名字叫 Adder (加法器)，只會做加法。</li>
+    </ul>
+
+    <!-- L. 作答區 -->
+    <h2>作答練習</h2>
+    <div class="quiz-area">
+        <p><strong>題目：下列何者為全加法器 (full adder) 的輸出? (複選)</strong></p>
+        <div class="quiz-options">
+            <label><input type="checkbox" id="optA" value="A"> (A) 和 (sum)</label>
+            <label><input type="checkbox" id="optB" value="B"> (B) 差 (difference)</label>
+            <label><input type="checkbox" id="optC" value="C"> (C) 積 (product)</label>
+            <label><input type="checkbox" id="optD" value="D"> (D) 前一位元進位 (p-carry)</label>
+            <label><input type="checkbox" id="optE" value="E"> (E) 進位 (carry)</label>
+        </div>
+        <button class="btn-submit" onclick="checkAnswer()">送出作答</button>
+        
+        <div id="quizFeedback" class="feedback"></div>
+    </div>
+
+    <!-- N. 自我檢測 -->
+    <h2>自我檢測 (思考題)</h2>
+    <p>試著回答以下問題（不提供標準答案，請回想剛剛的內容）：</p>
+    <ol>
+        <li>如果是「半加法器 (Half Adder)」，它的輸入有哪幾個？跟全加法器差在哪裡？</li>
+        <li>如果輸入 A=1, B=1, Cin=1，請問全加法器的輸出 Sum 是多少？Carry 是多少？（提示：1+1+1 = 3，二進位怎麼寫？）</li>
+    </ol>
+</div>
+
+<!-- JavaScript 邏輯區 -->
+<script>
+    // --- 變數狀態 ---
+    let state = {
+        A: 0,
+        B: 0,
+        Cin: 0
+    };
+
+    // --- 互動示範 2：開關切換 ---
+    function toggleBit(bit) {
+        // 切換狀態
+        state[bit] = state[bit] === 0 ? 1 : 0;
+        
+        // 更新按鈕樣式與文字
+        const btn = document.getElementById('btn' + bit);
+        if (state[bit] === 1) {
+            btn.classList.add('active');
+            btn.innerText = bit + ' = 1';
+        } else {
+            btn.classList.remove('active');
+            btn.innerText = bit + ' = 0';
+        }
+
+        // 計算邏輯
+        calculateFullAdder();
+    }
+
+    // --- 計算 Full Adder 邏輯 ---
+    function calculateFullAdder() {
+        const { A, B, Cin } = state;
+        
+        // 數學加總 (十進位概念)
+        const total = A + B + Cin;
+        
+        // 數位邏輯結果
+        // Sum: 奇數個 1 為 1 (XOR)
+        // 也可以看成 total 的二進位個位數 (total % 2)
+        const sum = total % 2;
+        
+        // Carry: 至少兩個 1 則進位
+        // 也可以看成 total 是否 >= 2 (total >> 1)
+        const carry = total >= 2 ? 1 : 0;
+
+        // 更新 UI
+        document.getElementById('valSum').innerText = sum;
+        document.getElementById('valCarry').innerText = carry;
+        document.getElementById('mathExpr').innerText = `${A} + ${B} + ${Cin} = ${total} (binary: ${carry}${sum})`;
+
+        // 白話解釋更新
+        const explanation = document.getElementById('logicExplain');
+        if (total === 0) {
+            explanation.innerText = "三個輸入都是 0，結果當然都是 0。";
+        } else if (total === 1) {
+            explanation.innerText = "只有一個 1，不用進位 (Carry=0)，本位寫 1 (Sum=1)。";
+        } else if (total === 2) {
+            explanation.innerText = "有兩個 1，相加等於 2 (二進位 10)，所以要進位 (Carry=1)，本位寫 0 (Sum=0)。";
+        } else {
+            explanation.innerText = "三個都是 1，相加等於 3 (二進位 11)，所以要進位 (Carry=1)，本位也寫 1 (Sum=1)。";
+        }
+    }
+
+    // --- 作答區邏輯 ---
+    function checkAnswer() {
+        const optA = document.getElementById('optA').checked;
+        const optB = document.getElementById('optB').checked;
+        const optC = document.getElementById('optC').checked;
+        const optD = document.getElementById('optD').checked;
+        const optE = document.getElementById('optE').checked;
+        
+        const feedback = document.getElementById('quizFeedback');
+        feedback.style.display = 'block';
+
+        // 正確答案是 A 和 E
+        // 錯誤情況：沒選 A 或 E，或者選了 B, C, D
+        if (optA && optE && !optB && !optC && !optD) {
+            feedback.className = 'feedback correct';
+            feedback.innerHTML = '<strong>🎉 答對了！</strong><br>全加法器的輸出正是 Sum (本位和) 與 Carry (進位)。';
+        } else {
+            feedback.className = 'feedback wrong';
+            let msg = '<strong>❌ 答錯囉，再想一下：</strong><br>';
+            if (optB) msg += '- (B) 差是減法器的結果。<br>';
+            if (optC) msg += '- (C) 積是乘法器的結果。<br>';
+            if (optD) msg += '- (D) p-carry (前一位進位) 是「輸入」喔！<br>';
+            if (!optA || !optE) msg += '- 記得要把 Sum 和 Carry 都選起來。<br>';
+            msg += '<br>請參考上方的「方塊圖」再試一次！';
+            feedback.innerHTML = msg;
+        }
+    }
+</script>
+
+</body>
+</html>

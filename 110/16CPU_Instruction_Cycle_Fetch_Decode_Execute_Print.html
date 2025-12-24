@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>16. CPU 指令週期 - 互動教學詳解</title>
+    <style>
+        :root {
+            --primary: #2563eb; /* Blue */
+            --secondary: #475569; /* Slate */
+            --accent: #f59e0b; /* Amber for highlights */
+            --success: #10b981; /* Green */
+            --danger: #ef4444; /* Red */
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif;
+            background-color: var(--bg);
+            color: #1e293b;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* 區塊通用樣式 */
+        .section-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: 24px;
+            margin-bottom: 24px;
+            border-left: 5px solid var(--primary);
+        }
+
+        h1 { font-size: 1.5rem; margin-top: 0; color: var(--primary); }
+        h2 { font-size: 1.25rem; margin-top: 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 16px; display: flex; align-items: center; }
+        h3 { font-size: 1.1rem; color: var(--secondary); margin-bottom: 8px; }
+
+        /* 題目區 */
+        .question-box {
+            background-color: #eff6ff;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #bfdbfe;
+        }
+        .question-text { font-size: 1.2rem; font-weight: bold; margin-bottom: 15px; }
+        .option { display: block; margin: 8px 0; padding: 8px 12px; background: white; border-radius: 6px; cursor: pointer; transition: all 0.2s; border: 1px solid #cbd5e1; }
+        .option:hover { background-color: #f1f5f9; }
+        .option.correct { background-color: #dcfce7; border-color: var(--success); color: #065f46; font-weight: bold; }
+        .option.wrong { background-color: #fee2e2; border-color: var(--danger); text-decoration: line-through; opacity: 0.7; }
+
+        /* 螢光筆特效 */
+        .highlight {
+            background: linear-gradient(120deg, rgba(255, 255, 0, 0) 0%, rgba(255, 255, 0, 0.4) 100%);
+            background-repeat: no-repeat;
+            background-size: 100% 40%;
+            background-position: 0 88%;
+            font-weight: bold;
+            color: #b91c1c;
+        }
+
+        /* 互動動畫區 */
+        .sim-container {
+            background: #1e293b;
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            position: relative;
+            min-height: 380px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .diagram-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-top: 20px;
+            position: relative;
+        }
+
+        .component {
+            border: 2px solid #94a3b8;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            width: 30%;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s;
+            position: relative;
+            background: rgba(255,255,255,0.05);
+        }
+
+        .component.active {
+            border-color: var(--accent);
+            box-shadow: 0 0 15px var(--accent);
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        .comp-title { font-weight: bold; margin-bottom: 5px; color: #93c5fd; }
+        .comp-desc { font-size: 0.8rem; color: #cbd5e1; }
+
+        /* 動畫元素：指令 */
+        #instruction-packet {
+            width: 40px;
+            height: 40px;
+            background: var(--accent);
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 15%; /* Start at RAM */
+            transform: translate(-50%, -50%);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            box-shadow: 0 0 10px var(--accent);
+            z-index: 10;
+        }
+
+        /* 控制面板 */
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: #1d4ed8; }
+        .btn-reset { background: var(--secondary); color: white; }
+        .btn-trap { background: transparent; border: 2px solid var(--danger); color: var(--danger); }
+        .btn-trap:hover { background: var(--danger); color: white; }
+
+        .status-display {
+            background: rgba(0,0,0,0.5);
+            padding: 10px 20px;
+            border-radius: 20px;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            text-align: center;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #475569;
+        }
+
+        /* 生活比喻文字 */
+        .analogy-text {
+            color: #fbbf24;
+            font-size: 0.9rem;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        /* 解說區塊樣式 */
+        .step-list { list-style: none; padding: 0; }
+        .step-list li {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+        }
+        .step-num {
+            background: var(--primary);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            flex-shrink: 0;
+            font-size: 0.9rem;
+        }
+        .step-content strong { color: var(--primary); }
+
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-right: 5px;
+            font-weight: bold;
+        }
+        .tag-cpu { background: #dbeafe; color: #1e40af; }
+        .tag-io { background: #fee2e2; color: #991b1b; }
+
+        /* 彈跳視窗 */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 400px;
+            text-align: center;
+            animation: popIn 0.3s ease;
+        }
+        @keyframes popIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .diagram-area { flex-direction: column; gap: 20px; }
+            .component { width: 80%; }
+            #instruction-packet { display: none !important; } /* Simplify animation on mobile */
+            .sim-container { min-height: auto; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- A. 標題區 -->
+    <header style="text-align: center; margin-bottom: 30px;">
+        <h1 style="margin-bottom: 5px;">電腦概論：CPU 指令週期</h1>
+        <span style="background: #e2e8f0; padding: 4px 12px; border-radius: 20px; font-size: 0.9rem; color: #475569;">單元：電腦硬體架構</span>
+    </header>
+
+    <!-- B. 題目區 -->
+    <section class="section-card question-box">
+        <div class="question-text">16. 下列何者不屬於CPU的基本工作？</div>
+        <div class="option" onclick="checkAnswer(this, false)">(A) 擷取</div>
+        <div class="option" onclick="checkAnswer(this, false)">(B) 執行</div>
+        <div class="option" onclick="checkAnswer(this, true)">(C) 列印</div>
+        <div class="option" onclick="checkAnswer(this, false)">(D) 解碼</div>
+        <div id="feedback" style="margin-top: 15px; font-weight: bold; display: none;"></div>
+    </section>
+
+    <!-- C. 第一步：找關鍵字 -->
+    <section class="section-card">
+        <h2>🔍 第一步：找關鍵字</h2>
+        <p>
+            「下列何者 <span class="highlight">不屬於</span> <span class="highlight">CPU</span> 的 <span class="highlight">基本工作</span>」
+        </p>
+        <p style="font-size: 0.95rem; color: var(--secondary);">
+            <strong>👉 線索：</strong> 題目問的是 CPU（中央處理器）這個「大腦」份內該做的事。如果有某個選項是手腳（周邊裝置）在做的，那就是答案。
+        </p>
+    </section>
+
+    <!-- D. 第二步：白話翻譯 -->
+    <section class="section-card">
+        <h2>🗣️ 第二步：白話翻譯</h2>
+        <div style="background: #f1f5f9; padding: 15px; border-radius: 8px; border-left: 4px solid var(--accent);">
+            「CPU 處理事情的基本 SOP 有哪幾步？哪一個步驟不是它親自做的？」
+        </div>
+    </section>
+
+    <!-- F. 互動模擬：指令週期動畫 (放在解題思路前，先體驗再看理論) -->
+    <section class="section-card" style="border-left-color: var(--accent);">
+        <h2>🎮 互動模擬：指令週期 (Instruction Cycle)</h2>
+        <p style="margin-bottom: 15px; font-size:0.9rem;">請觀察 CPU 處理指令的「三步驟」。試著按按看右下角的錯誤選項！</p>
+        
+        <div class="sim-container">
+            <div class="status-display" id="sim-status">
+                準備就緒 (Idle)
+                <div class="analogy-text" id="sim-analogy">等待指令中...</div>
+            </div>
+
+            <div class="diagram-area">
+                <!-- 記憶體 -->
+                <div class="component" id="comp-ram">
+                    <div class="comp-title">記憶體 (RAM)</div>
+                    <div class="comp-desc">存放指令與資料<br>(食譜)</div>
+                </div>
+
+                <!-- 傳輸動畫點 -->
+                <div id="instruction-packet">📄</div>
+
+                <!-- CPU -->
+                <div class="component" id="comp-cpu">
+                    <div class="comp-title">CPU (中央處理器)</div>
+                    <div class="comp-desc">
+                        <span id="part-cu" style="display:block; margin:2px; padding:2px; border-radius:4px;">控制單元 CU</span>
+                        <span id="part-alu" style="display:block; margin:2px; padding:2px; border-radius:4px;">算術邏輯單元 ALU</span>
+                        <span style="font-size:0.7rem; color:#64748b;">(大腦)</span>
+                    </div>
+                </div>
+
+                <!-- I/O -->
+                <div class="component" id="comp-printer" style="border-style: dashed; opacity: 0.6;">
+                    <div class="comp-title">印表機 (Printer)</div>
+                    <div class="comp-desc">輸出周邊裝置<br>(手/嘴巴)</div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="btn btn-primary" id="btn-step" onclick="nextStep()">單步執行 (Step)</button>
+                <button class="btn btn-primary" id="btn-play" onclick="togglePlay()">自動播放 ▶</button>
+                <button class="btn btn-reset" onclick="resetSim()">重置 (Reset)</button>
+                <button class="btn btn-trap" onclick="triggerPrintTrap()">🖨️ 執行「列印」</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- E. 第三步：解題思路 -->
+    <section class="section-card">
+        <h2>💡 第三步：解題思路</h2>
+        <ul class="step-list">
+            <li>
+                <div class="step-num">1</div>
+                <div class="step-content">
+                    <strong>核心觀念：</strong>CPU 的工作就像廚師做菜，有固定的循環流程。
+                </div>
+            </li>
+            <li>
+                <div class="step-num">2</div>
+                <div class="step-content">
+                    <strong>標準三步驟 (Machine Cycle)：</strong><br>
+                    1. <span class="tag tag-cpu">擷取 Fetch</span> 去記憶體拿指令。<br>
+                    2. <span class="tag tag-cpu">解碼 Decode</span> 看懂指令要做什麼。<br>
+                    3. <span class="tag tag-cpu">執行 Execute</span> 進行運算或控制。
+                </div>
+            </li>
+            <li>
+                <div class="step-num">3</div>
+                <div class="step-content">
+                    <strong>判斷關鍵：</strong>「列印」是將結果輸出到紙張上，這是<span class="tag tag-io">I/O 裝置</span>（印表機）的工作，雖然 CPU 會下令，但「列印」這個動作本身發生在 CPU 外部。
+                </div>
+            </li>
+        </ul>
+        <div style="background: #fffbeb; padding: 15px; border-radius: 8px; border: 1px solid #fcd34d;">
+            <strong>🍳 生活比喻：照食譜做菜</strong>
+            <ul>
+                <li><strong>擷取 (Fetch)：</strong>從書架上把食譜拿下來。</li>
+                <li><strong>解碼 (Decode)：</strong>看懂食譜上寫什麼（切菜還是煮湯？）。</li>
+                <li><strong>執行 (Execute)：</strong>實際動手切菜或煮湯。</li>
+                <li><strong>列印 (Print)：</strong>把菜端給客人吃（這是外場服務生/輸出裝置的事，不是廚師/CPU 的核心思考過程）。</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- G. 第四步：選項分析 -->
+    <section class="section-card">
+        <h2>🧐 第四步：選項分析</h2>
+        
+        <div style="margin-bottom: 15px;">
+            <strong style="color: var(--primary);">(A) 擷取 (Fetch)</strong> - <span style="color: var(--success); font-weight: bold;">屬於 CPU</span>
+            <p style="margin: 5px 0 15px 0; font-size: 0.95rem;">
+                CPU 的「控制單元」負責從記憶體中把指令讀取到 CPU 內部的「指令暫存器」中。沒有這一步，CPU 根本不知道要幹嘛。
+            </p>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <strong style="color: var(--primary);">(B) 執行 (Execute)</strong> - <span style="color: var(--success); font-weight: bold;">屬於 CPU</span>
+            <p style="margin: 5px 0 15px 0; font-size: 0.95rem;">
+                由「算術邏輯單元 (ALU)」負責運算，或由控制單元發送信號。這是真正「做事」的階段。
+            </p>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <strong style="color: var(--danger);">(C) 列印 (Print)</strong> - <span style="color: var(--danger); font-weight: bold;">❌ 不屬於 CPU 基本三步驟</span>
+            <p style="margin: 5px 0 15px 0; font-size: 0.95rem;">
+                列印屬於「輸出 (Output)」。CPU 算完結果後，會把資料送到 I/O 控制器，再由印表機印出來。這屬於周邊設備的工作範疇。
+            </p>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <strong style="color: var(--primary);">(D) 解碼 (Decode)</strong> - <span style="color: var(--success); font-weight: bold;">屬於 CPU</span>
+            <p style="margin: 5px 0 15px 0; font-size: 0.95rem;">
+                指令拿進來是二進位代碼 (0101...)，CPU 必須先翻譯（解碼）才知道這是加法、減法還是存檔。
+            </p>
+        </div>
+    </section>
+
+    <!-- H. 觀念補充與延伸 & I. 記憶口訣 -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <section class="section-card">
+            <h3>🧠 記憶口訣</h3>
+            <p style="font-size: 1.2rem; font-weight: bold; color: var(--primary); text-align: center; margin: 20px 0;">
+                「取、解、執」
+            </p>
+            <p style="text-align: center;">
+                拿來 (Fetch) → 看懂 (Decode) → 去做 (Execute)<br>
+                <span style="font-size: 0.9rem; color: #64748b;">列印是手腳在做的事！</span>
+            </p>
+        </section>
+
+        <section class="section-card">
+            <h3>⚠️ 常見陷阱</h3>
+            <ul style="padding-left: 20px;">
+                <li><strong>別選「儲存 (Store/Write Back)」：</strong> 雖然完整的現代指令週期包含「寫回」，但在三步驟基本題型中，Fetch/Decode/Execute 是鐵三角。</li>
+                <li><strong>輸入/輸出混淆：</strong> 看到 Print(列印)、Scan(掃描)、Type(打字)，這些都是 I/O，不是 CPU 核心運算週期。</li>
+            </ul>
+        </section>
+    </div>
+
+</div>
+
+<!-- 互動彈窗 -->
+<div class="modal-overlay" id="print-modal" onclick="closeModal()">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <h2 style="color: var(--danger); border:none;">🚫 答錯了/觀念修正</h2>
+        <div style="font-size: 50px; margin: 10px 0;">🖨️ ≠ 🧠</div>
+        <p><strong>「列印 (Print)」屬於 I/O 輸出功能！</strong></p>
+        <p style="text-align: left; font-size: 0.95rem; color: #475569;">
+            就像廚師（CPU）把菜做好了，交給服務生（印表機）端出去。<br>
+            廚師的工作循環是「看單、備料、炒菜」，端盤子是外場的事喔！
+        </p>
+        <button class="btn btn-primary" onclick="closeModal()" style="width: 100%; margin-top: 15px;">我懂了！</button>
+    </div>
+</div>
+
+<script>
+    // --- 答題邏輯 ---
+    function checkAnswer(element, isCorrect) {
+        // 重置所有選項樣式
+        const options = document.querySelectorAll('.option');
+        options.forEach(opt => {
+            opt.classList.remove('correct', 'wrong');
+            opt.style.opacity = '1';
+        });
+
+        const feedback = document.getElementById('feedback');
+        feedback.style.display = 'block';
+
+        if (isCorrect) {
+            element.classList.add('correct');
+            feedback.innerHTML = "<span style='color:var(--success)'>✅ 答對了！</span> 列印是輸出裝置的工作，不是 CPU 內部的指令週期。";
+        } else {
+            element.classList.add('wrong');
+            feedback.innerHTML = "<span style='color:var(--danger)'>❌ 答錯囉！</span> 這是 CPU 每天都在做的基本工作喔，請往下看詳解！";
+        }
+    }
+
+    // --- 動畫模擬邏輯 ---
+    let currentStep = 0; // 0: Idle, 1: Fetch, 2: Decode, 3: Execute
+    let isPlaying = false;
+    let playInterval;
+
+    const statusText = document.getElementById('sim-status');
+    const analogyText = document.getElementById('sim-analogy');
+    const compRam = document.getElementById('comp-ram');
+    const compCpu = document.getElementById('comp-cpu');
+    const partCu = document.getElementById('part-cu');
+    const partAlu = document.getElementById('part-alu');
+    const instruction = document.getElementById('instruction-packet');
+    const btnPlay = document.getElementById('btn-play');
+
+    function resetSim() {
+        stopPlay();
+        currentStep = 0;
+        updateVisuals();
+    }
+
+    function togglePlay() {
+        if (isPlaying) {
+            stopPlay();
+        } else {
+            isPlaying = true;
+            btnPlay.textContent = "暫停 ⏸";
+            btnPlay.classList.replace('btn-primary', 'btn-reset');
+            // 如果已經在最後一步，先重置
+            if(currentStep === 3) currentStep = 0;
+            
+            nextStep(); // 馬上執行一步
+            playInterval = setInterval(() => {
+                nextStep();
+            }, 2000); // 每2秒一步
+        }
+    }
+
+    function stopPlay() {
+        isPlaying = false;
+        clearInterval(playInterval);
+        btnPlay.textContent = "自動播放 ▶";
+        btnPlay.classList.replace('btn-reset', 'btn-primary');
+    }
+
+    function nextStep() {
+        currentStep++;
+        if (currentStep > 3) {
+            currentStep = 1; // 循環
+        }
+        updateVisuals();
+    }
+
+    function updateVisuals() {
+        // 清除所有狀態
+        compRam.classList.remove('active');
+        compCpu.classList.remove('active');
+        partCu.style.backgroundColor = "transparent";
+        partAlu.style.backgroundColor = "transparent";
+        partCu.style.color = "inherit";
+        partAlu.style.color = "inherit";
+        instruction.style.display = 'none';
+        instruction.style.left = '15%'; 
+
+        switch (currentStep) {
+            case 0: // Idle
+                statusText.innerHTML = "準備就緒 (Idle)";
+                analogyText.innerText = "等待指令中...";
+                break;
+
+            case 1: // Fetch
+                statusText.innerHTML = "步驟 1: 擷取 (Fetch)";
+                analogyText.innerText = "生活比喻：去書架上拿食譜";
+                compRam.classList.add('active');
+                compCpu.classList.add('active'); // CPU也亮因為它在請求
+                
+                // 動畫：指令從 RAM 飛到 CPU
+                instruction.style.display = 'flex';
+                instruction.innerText = '📄';
+                // 使用簡單的 CSS transition
+                setTimeout(() => {
+                    instruction.style.transition = "left 1s ease-in-out";
+                    instruction.style.left = '50%'; // Move to CPU center
+                }, 50);
+                break;
+
+            case 2: // Decode
+                statusText.innerHTML = "步驟 2: 解碼 (Decode)";
+                analogyText.innerText = "生活比喻：看懂食譜步驟 (切菜? 煮湯?)";
+                compCpu.classList.add('active');
+                
+                // Highlight CU
+                partCu.style.backgroundColor = "#f59e0b";
+                partCu.style.color = "#000";
+                
+                instruction.style.display = 'flex';
+                instruction.style.left = '50%';
+                instruction.innerText = '🤔'; // Thinking
+                break;
+
+            case 3: // Execute
+                statusText.innerHTML = "步驟 3: 執行 (Execute)";
+                analogyText.innerText = "生活比喻：實際動手做！";
+                compCpu.classList.add('active');
+                
+                // Highlight ALU
+                partAlu.style.backgroundColor = "#10b981";
+                partAlu.style.color = "#000";
+                
+                instruction.style.display = 'flex';
+                instruction.style.left = '50%';
+                instruction.innerText = '⚙️'; // Working
+                // Pulse effect via CSS embedded or simple logic
+                break;
+        }
+    }
+
+    // --- 陷阱互動 ---
+    function triggerPrintTrap() {
+        stopPlay();
+        document.getElementById('print-modal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('print-modal').style.display = 'none';
+    }
+</script>
+
+</body>
+</html>

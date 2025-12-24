@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電腦概論互動教學：十六進位符號辨識</title>
+    <style>
+        /* --- 全域設定 (Global Styles) --- */
+        :root {
+            --primary-color: #2c3e50; /* 深藍灰 */
+            --accent-color: #3498db; /* 亮藍 */
+            --bg-color: #f4f7f6;     /* 淺灰背景 */
+            --card-bg: #ffffff;      /* 卡片白 */
+            --text-main: #333333;
+            --text-secondary: #666666;
+            --highlight-bg: #fff3cd; /* 螢光筆黃 */
+            --highlight-text: #856404;
+            --success-color: #28a745;
+            --error-color: #dc3545;
+            --border-radius: 12px;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* --- 通用元件 (Components) --- */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            padding: 25px;
+            margin-bottom: 20px;
+            border-left: 5px solid var(--accent-color);
+        }
+
+        h1, h2, h3 {
+            color: var(--primary-color);
+            margin-top: 0;
+        }
+
+        h1 { font-size: 1.8rem; text-align: center; margin-bottom: 10px; }
+        h2 { font-size: 1.4rem; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
+        h3 { font-size: 1.2rem; color: var(--accent-color); margin-bottom: 10px; }
+
+        .highlight-text {
+            background-color: var(--highlight-bg);
+            color: var(--highlight-text);
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .tag {
+            display: inline-block;
+            background: #eee;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            margin-right: 5px;
+            border: 1px solid #ddd;
+        }
+
+        /* --- A. 標題區 --- */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        /* --- B. 題目區 --- */
+        .question-box {
+            background-color: #eef2f5;
+            padding: 20px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+        .options-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 15px;
+        }
+        .options-list li {
+            margin-bottom: 8px;
+            padding: 8px;
+            background: #fff;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+        }
+
+        /* --- F. 互動示範 1：對照表 --- */
+        .hex-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .hex-cell {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .hex-cell:hover, .hex-cell.active {
+            background-color: var(--accent-color);
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .hex-cell .dec-label { font-size: 0.8rem; opacity: 0.8; }
+        .hex-cell .hex-val { font-size: 1.2rem; font-weight: bold; }
+        
+        /* --- G. 互動示範 2：檢查器 --- */
+        .checker-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px dashed #ccc;
+        }
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            text-transform: uppercase; /* 強制大寫顯示，方便閱讀 */
+        }
+        button {
+            padding: 10px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.2s;
+        }
+        button:hover { background-color: #34495e; }
+        button.btn-test {
+            background-color: #6c757d;
+            font-size: 0.9rem;
+            padding: 5px 10px;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+        
+        .result-area {
+            font-family: monospace;
+            font-size: 1.2rem;
+            margin-top: 10px;
+            padding: 10px;
+            background: white;
+            border: 1px solid #eee;
+            border-radius: 6px;
+            min-height: 24px;
+        }
+        .char-valid { color: var(--success-color); }
+        .char-invalid { 
+            color: white; 
+            background-color: var(--error-color); 
+            padding: 0 4px;
+            border-radius: 4px;
+        }
+        .msg-box { margin-top: 10px; font-weight: bold; }
+
+        /* --- L. 作答區 --- */
+        .quiz-option {
+            display: block;
+            margin: 10px 0;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        .quiz-option:hover { background-color: #f1f1f1; }
+        .quiz-option input { margin-right: 10px; transform: scale(1.2); }
+        
+        .explanation-detail {
+            display: none; /* 預設隱藏 */
+            margin-top: 5px;
+            margin-left: 28px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            border-left: 3px solid #ddd;
+            padding-left: 10px;
+        }
+        
+        .quiz-feedback {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+        .feedback-correct { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .feedback-wrong { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+        /* --- 摺疊內容 (Details/Summary) --- */
+        details {
+            margin-top: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 10px;
+            background-color: #fff;
+        }
+        summary {
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
+        /* --- 響應式調整 --- */
+        @media (max-width: 600px) {
+            .container { padding: 10px; }
+            h1 { font-size: 1.5rem; }
+            .input-group { flex-direction: column; }
+            button { width: 100%; }
+            .btn-test { width: auto; display: inline-block; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- A. 標題區 -->
+        <header>
+            <h1>40. 十六進位合法符號辨識</h1>
+            <div class="subtitle">電腦概論 / 數位表示法 / 進位系統</div>
+        </header>
+
+        <!-- B. 題目區 -->
+        <div class="card">
+            <h2>【題目】</h2>
+            <div class="question-box">
+                40. 下列哪個英文字母不是合法的十六進位表示的符號? (複選)<br>
+                <ul class="options-list">
+                    <li>(A) X</li>
+                    <li>(B) C</li>
+                    <li>(C) Y</li>
+                    <li>(D) F</li>
+                    <li>(E) Z</li>
+                </ul>
+            </div>
+            <details>
+                <summary>點擊查看正確答案</summary>
+                <p style="margin-top:10px;">正確答案：<strong>A, C, E</strong></p>
+            </details>
+        </div>
+
+        <!-- C. 第一步：找關鍵字 -->
+        <div class="card">
+            <h2>第一步：找關鍵字</h2>
+            <p>請拿出你心中的螢光筆，將以下關鍵字畫起來：</p>
+            <ul>
+                <li><span class="highlight-text">不是</span>：注意！題目要選「錯誤」的選項。</li>
+                <li><span class="highlight-text">十六進位 (Hexadecimal)</span>：這是本題的核心規則。</li>
+                <li><span class="highlight-text">合法符號</span>：考驗你對 Hex 符號集合的記憶。</li>
+            </ul>
+        </div>
+
+        <!-- D. 第二步：白話翻譯 -->
+        <div class="card">
+            <h2>第二步：白話翻譯</h2>
+            <p>這題其實在問：</p>
+            <blockquote style="border-left: 4px solid var(--accent-color); margin: 0; padding-left: 15px; color: #555;">
+                「十六進位的世界裡，只能使用 0~9 和 A~F 這些符號。請問下面哪些字母 <strong>不屬於</strong> 這個範圍？」
+            </blockquote>
+        </div>
+
+        <!-- E. 第三步：解題思路 -->
+        <div class="card">
+            <h2>第三步：解題思路</h2>
+            <p><strong>觀念定位：</strong>進位系統的符號集合。</p>
+            <ol>
+                <li><strong>背口訣：</strong>十六進位 = <span class="highlight-text">0~9</span> + <span class="highlight-text">A~F</span>。</li>
+                <li><strong>對應值：</strong>10=A, 11=B, ..., 15=F。</li>
+                <li><strong>篩選法：</strong>看到 G 之後的字母（如 G, H, I... X, Y, Z）通通是<strong>非法</strong>的。</li>
+            </ol>
+            <p><em>原理：十六進位需要 16 個符號，阿拉伯數字只有 10 個 (0-9)，不夠用，所以借用了前 6 個英文字母 (A-F)。</em></p>
+        </div>
+
+        <!-- F. 互動示範 1：十六進位對照表 -->
+        <div class="card">
+            <h3>🎮 互動示範 1：十六進位符號表</h3>
+            <p>點擊下方格子，加深記憶！(紅色代表僅十進位有，藍色代表十六進位符號)</p>
+            <div class="hex-grid" id="hexGrid">
+                <!-- JS 會自動生成內容 -->
+            </div>
+            <p style="font-size: 0.9em; color: #666; margin-top: 10px;">* 注意看：9 以後的數字，十六進位是如何變身的。</p>
+        </div>
+
+        <!-- G. 互動示範 2：合法性檢查器 -->
+        <div class="card">
+            <h3>🎮 互動示範 2：合法性檢查器</h3>
+            <p>輸入一串文字，系統會幫你抓出「非法」的間諜符號！</p>
+            
+            <div class="checker-box">
+                <div style="margin-bottom: 10px;">
+                    快速測試：
+                    <button class="btn-test" onclick="setTest('C0FFEE')">☕ C0FFEE (咖啡)</button>
+                    <button class="btn-test" onclick="setTest('FACE')">😊 FACE (臉)</button>
+                    <button class="btn-test" onclick="setTest('XYZ')">❌ XYZ</button>
+                    <button class="btn-test" onclick="setTest('19G')">❌ 19G</button>
+                </div>
+                
+                <div class="input-group">
+                    <input type="text" id="hexInput" placeholder="請輸入字串 (如: 1AF3)" oninput="checkHexValidity()">
+                    <button onclick="checkHexValidity()">檢查</button>
+                </div>
+
+                <div class="result-area" id="resultDisplay">等待輸入...</div>
+                <div class="msg-box" id="msgBox"></div>
+            </div>
+        </div>
+
+        <!-- H. 第四步：選項分析 -->
+        <div class="card">
+            <h2>第四步：選項分析 (逐一擊破)</h2>
+            <ul style="list-style: none; padding: 0;">
+                <li style="margin-bottom: 10px;">
+                    <strong>(A) X</strong> <span class="tag" style="background:#f8d7da; color:#721c24;">非法</span>
+                    <br>❌ X 超過 F 了，不是十六進位符號。 <span class="highlight-text">✅ 符合題意 (應選)</span>
+                </li>
+                <li style="margin-bottom: 10px;">
+                    <strong>(B) C</strong> <span class="tag" style="background:#d4edda; color:#155724;">合法</span>
+                    <br>⭕ C 代表 12，是合法的。 <span>(不選)</span>
+                </li>
+                <li style="margin-bottom: 10px;">
+                    <strong>(C) Y</strong> <span class="tag" style="background:#f8d7da; color:#721c24;">非法</span>
+                    <br>❌ Y 超過 F 了，不是十六進位符號。 <span class="highlight-text">✅ 符合題意 (應選)</span>
+                </li>
+                <li style="margin-bottom: 10px;">
+                    <strong>(D) F</strong> <span class="tag" style="background:#d4edda; color:#155724;">合法</span>
+                    <br>⭕ F 代表 15，是最後一個合法符號。 <span>(不選)</span>
+                </li>
+                <li style="margin-bottom: 10px;">
+                    <strong>(E) Z</strong> <span class="tag" style="background:#f8d7da; color:#721c24;">非法</span>
+                    <br>❌ Z 超過 F 了，不是十六進位符號。 <span class="highlight-text">✅ 符合題意 (應選)</span>
+                </li>
+            </ul>
+        </div>
+
+        <!-- L. 作答區 -->
+        <div class="card" style="border-left-color: #ffc107;">
+            <h2>📝 模擬作答區</h2>
+            <p>請勾選出<strong>不是</strong>合法十六進位符號的選項 (複選)：</p>
+            
+            <form id="quizForm">
+                <label class="quiz-option">
+                    <input type="checkbox" name="q40" value="A"> (A) X
+                    <div class="explanation-detail" id="exp-A">✅ 正確！X 不在 0-9, A-F 範圍內。</div>
+                </label>
+                <label class="quiz-option">
+                    <input type="checkbox" name="q40" value="B"> (B) C
+                    <div class="explanation-detail" id="exp-B">❌ 錯誤。C 是合法的 (代表 12)，題目要選不合法的。</div>
+                </label>
+                <label class="quiz-option">
+                    <input type="checkbox" name="q40" value="C"> (C) Y
+                    <div class="explanation-detail" id="exp-C">✅ 正確！Y 不在 0-9, A-F 範圍內。</div>
+                </label>
+                <label class="quiz-option">
+                    <input type="checkbox" name="q40" value="D"> (D) F
+                    <div class="explanation-detail" id="exp-D">❌ 錯誤。F 是合法的 (代表 15)，題目要選不合法的。</div>
+                </label>
+                <label class="quiz-option">
+                    <input type="checkbox" name="q40" value="E"> (E) Z
+                    <div class="explanation-detail" id="exp-E">✅ 正確！Z 不在 0-9, A-F 範圍內。</div>
+                </label>
+
+                <button type="button" onclick="submitQuiz()">送出作答</button>
+                <button type="button" onclick="showAnswers()" style="background-color: #6c757d; margin-left: 10px;">顯示解析</button>
+            </form>
+
+            <div id="quizFeedback" class="quiz-feedback"></div>
+        </div>
+
+        <!-- I, J, K 觀念補充與陷阱 -->
+        <div class="card">
+            <h2>📚 觀念補充與避坑指南</h2>
+            
+            <h3>🧠 記憶口訣</h3>
+            <p>「<strong>Hex (十六) 到 F，G 後全不對。</strong>」</p>
+            
+            <h3>⚠️ 常見陷阱</h3>
+            <ul>
+                <li><strong>大小寫沒差</strong>：程式中 <code>0xFF</code> 和 <code>0xff</code> 是一樣的，都是合法的。</li>
+                <li><strong>誤以為全英文都行</strong>：記得只有前 6 個 (A~F) 是 VIP，其他的英文字母都是路人。</li>
+            </ul>
+
+            <h3>🔗 延伸思考 (自我檢測)</h3>
+            <p>試著回答以下問題 (不提供標準答案，請自行思考)：</p>
+            <ol>
+                <li>字母 <code>B</code> 在十六進位中，代表十進位的多少？</li>
+                <li>為什麼十六進位不使用字母 <code>G</code>？</li>
+                <li>顏色代碼 <code>#G00000</code> 是合法的紅色嗎？</li>
+            </ol>
+        </div>
+
+    </div>
+
+    <script>
+        // --- 互動示範 1：生成十六進位表格 ---
+        function initHexGrid() {
+            const grid = document.getElementById('hexGrid');
+            const symbols = "0123456789ABCDEF";
+            
+            for (let i = 0; i < 16; i++) {
+                const hexChar = symbols[i];
+                const cell = document.createElement('div');
+                cell.className = 'hex-cell';
+                cell.innerHTML = `
+                    <div class="dec-label">Dec: ${i}</div>
+                    <div class="hex-val">${hexChar}</div>
+                `;
+                cell.onclick = function() {
+                    // 清除其他 active
+                    document.querySelectorAll('.hex-cell').forEach(c => c.classList.remove('active'));
+                    // 加上 active
+                    this.classList.add('active');
+                };
+                grid.appendChild(cell);
+            }
+        }
+
+        // --- 互動示範 2：合法性檢查器 ---
+        function setTest(val) {
+            const input = document.getElementById('hexInput');
+            input.value = val;
+            checkHexValidity();
+        }
+
+        function checkHexValidity() {
+            const inputVal = document.getElementById('hexInput').value;
+            const resultDisplay = document.getElementById('resultDisplay');
+            const msgBox = document.getElementById('msgBox');
+            
+            if (!inputVal) {
+                resultDisplay.innerHTML = "等待輸入...";
+                msgBox.innerHTML = "";
+                msgBox.className = "msg-box";
+                return;
+            }
+
+            let html = '';
+            let allValid = true;
+
+            // 逐字元檢查
+            for (let char of inputVal) {
+                // 使用正規表達式檢查是否為 0-9 或 a-f 或 A-F
+                if (/[0-9A-Fa-f]/.test(char)) {
+                    html += `<span class="char-valid">${char}</span>`;
+                } else {
+                    html += `<span class="char-invalid">${char}</span>`;
+                    allValid = false;
+                }
+            }
+
+            resultDisplay.innerHTML = html;
+
+            if (allValid) {
+                msgBox.innerText = "✅ 這是合法的十六進位字串！";
+                msgBox.style.color = "var(--success-color)";
+            } else {
+                msgBox.innerText = "❌ 發現非法符號 (紅色標記處)！只有 0-9 和 A-F 是合法的。";
+                msgBox.style.color = "var(--error-color)";
+            }
+        }
+
+        // --- 作答區邏輯 ---
+        function submitQuiz() {
+            const checkboxes = document.querySelectorAll('input[name="q40"]:checked');
+            const userAnswers = Array.from(checkboxes).map(cb => cb.value).sort();
+            const correctAnswers = ['A', 'C', 'E'];
+            const feedbackBox = document.getElementById('quizFeedback');
+
+            // 簡單的陣列比較
+            const isCorrect = JSON.stringify(userAnswers) === JSON.stringify(correctAnswers);
+
+            feedbackBox.style.display = 'block';
+            if (isCorrect) {
+                feedbackBox.className = 'quiz-feedback feedback-correct';
+                feedbackBox.innerHTML = `
+                    <strong>🎉 答對了！</strong><br>
+                    你選了 ${userAnswers.join(', ')}，完全正確。<br>
+                    這三個選項的字母都超過了 F，所以不是合法符號。
+                `;
+                showAnswers(); // 答對自動展開解析
+            } else {
+                feedbackBox.className = 'quiz-feedback feedback-wrong';
+                feedbackBox.innerHTML = `
+                    <strong>⚠️ 答案不完全正確</strong><br>
+                    你選了：${userAnswers.length > 0 ? userAnswers.join(', ') : '未作答'}。<br>
+                    提示：題目要找「<strong>不是</strong>」合法符號的選項喔！再檢查一下有沒有漏掉或多選。
+                `;
+            }
+        }
+
+        function showAnswers() {
+            // 展開所有解析
+            const explanations = document.querySelectorAll('.explanation-detail');
+            explanations.forEach(exp => {
+                exp.style.display = 'block';
+            });
+        }
+
+        // --- 初始化 ---
+        window.onload = function() {
+            initHexGrid();
+        };
+
+    </script>
+</body>
+</html>

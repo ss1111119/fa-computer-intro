@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>子集合與冪集合計數教學 - 題號 27</title>
+    <style>
+        /* --- 全域設定 --- */
+        :root {
+            --primary-color: #333;
+            --accent-color: #2c3e50;
+            --highlight-bg: #fff9c4; /* 淡黃色螢光筆 */
+            --border-color: #ddd;
+            --correct-color: #d4edda;
+            --correct-text: #155724;
+            --wrong-color: #f8d7da;
+            --wrong-text: #721c24;
+            --bg-color: #f9f9f9;
+        }
+
+        body {
+            font-family: "Helvetica Neue", Helvetica, Arial, "PingFang TC", "Heiti TC", "Microsoft JhengHei", sans-serif;
+            line-height: 1.6;
+            color: var(--primary-color);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        /* --- 標題區 --- */
+        h1 {
+            font-size: 1.5rem;
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            color: var(--accent-color);
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            padding-left: 10px;
+            border-left: 5px solid var(--accent-color);
+            background-color: #f4f4f4;
+            padding: 8px 10px;
+        }
+
+        /* --- 題目區 --- */
+        .question-box {
+            border: 2px solid var(--accent-color);
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #fff;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .options {
+            list-style: none;
+            padding: 0;
+            margin-top: 10px;
+        }
+
+        .options li {
+            margin: 5px 0;
+        }
+
+        .highlight {
+            background-color: var(--highlight-bg);
+            padding: 0 4px;
+            border-radius: 2px;
+            font-weight: bold;
+        }
+
+        /* --- 解說區塊樣式 --- */
+        .step-content {
+            padding: 0 10px;
+        }
+
+        .concept-card {
+            background-color: #f8f9fa;
+            border: 1px solid #eee;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
+        /* --- 互動示範區 (重點) --- */
+        .interactive-zone {
+            background-color: #eef2f5;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px dashed #aaa;
+            text-align: center;
+        }
+
+        .switches-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .switch-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Toggle Switch CSS */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+            margin-bottom: 5px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .result-display {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #d35400;
+            margin: 15px 0;
+            min-height: 40px;
+        }
+
+        .btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 5px;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .subset-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        .subset-card {
+            background: white;
+            border: 1px solid #ccc;
+            padding: 8px 15px;
+            border-radius: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            font-family: monospace;
+            font-size: 1.1rem;
+        }
+
+        .group-container {
+            text-align: left;
+            margin-top: 15px;
+        }
+        
+        .group-header {
+            font-weight: bold;
+            margin-top: 10px;
+            color: #666;
+        }
+
+        /* --- 選項分析與陷阱 --- */
+        .analysis-item {
+            margin-bottom: 10px;
+        }
+        .correct-tag { color: green; font-weight: bold; }
+        .wrong-tag { color: red; font-weight: bold; }
+
+        /* --- 作答區 --- */
+        .quiz-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        @media (max-width: 600px) {
+            .quiz-options { grid-template-columns: 1fr; }
+        }
+
+        .quiz-btn {
+            padding: 15px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 1rem;
+        }
+
+        .quiz-btn:hover {
+            background-color: #f0f0f0;
+        }
+
+        .feedback {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .feedback.correct { background-color: var(--correct-color); color: var(--correct-text); display: block; }
+        .feedback.wrong { background-color: var(--wrong-color); color: var(--wrong-text); display: block; }
+
+        /* --- 折疊區塊 (答案) --- */
+        details {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #eee;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        summary {
+            font-weight: bold;
+        }
+
+        /* --- 頁尾 --- */
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #888;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- A. 標題區 -->
+    <h1>題號 27：子集合與冪集合計數</h1>
+
+    <!-- B. 題目區 -->
+    <div class="question-box">
+        <p>27. 一個集合 A = {1,2,3}，請問 A 有多少個子集合?</p>
+        <ul class="options">
+            <li>(A) 3</li>
+            <li>(B) 6</li>
+            <li>(C) 8</li>
+            <li>(D) 12</li>
+        </ul>
+        <details>
+            <summary>點擊查看答案</summary>
+            <p>答案：C</p>
+        </details>
+    </div>
+
+    <!-- C. 第一步：找關鍵字 -->
+    <h2>第一步：找關鍵字</h2>
+    <div class="step-content">
+        <p>請拿出你的螢光筆，圈出以下關鍵字：</p>
+        <p class="concept-card">
+            <span class="highlight">集合 A={1,2,3}</span> ... <span class="highlight">多少個子集合</span>
+        </p>
+        <p><strong>解釋：</strong>題目在問這三個數字能組合出多少種不同的「小團體」（所有挑選方法的總數）。</p>
+    </div>
+
+    <!-- D. 第二步：白話翻譯 -->
+    <h2>第二步：白話翻譯</h2>
+    <div class="step-content">
+        <p>把數學語言翻譯成中文：</p>
+        <div class="concept-card">
+            「從 {1, 2, 3} 這三個元素中，<strong>每個元素都可以選擇『要』或『不要』</strong>，請問總共有幾種可能的選法？」
+        </div>
+    </div>
+
+    <!-- E. 第三步：解題思路 -->
+    <h2>第三步：解題思路</h2>
+    <div class="step-content">
+        <p>這題在考的核心觀念是：<strong>子集合數量公式 = 2<sup>n</sup></strong></p>
+        <ol>
+            <li><strong>數個數：</strong>先看集合 A 裡面有幾個元素？ n = 3 (分別是 1, 2, 3)。</li>
+            <li><strong>看狀態：</strong>對每個元素來說，只有兩種命運：被選中 (Yes) 或 沒被選中 (No)。</li>
+            <li><strong>乘法原理：</strong>
+                <ul>
+                    <li>元素 1：2 種選擇 (選/不選)</li>
+                    <li>元素 2：2 種選擇 (選/不選)</li>
+                    <li>元素 3：2 種選擇 (選/不選)</li>
+                </ul>
+            </li>
+            <li><strong>結論：</strong> $2 \times 2 \times 2 = 2^3 = 8$。</li>
+        </ol>
+        <p><strong>原理與規則：</strong>每多一個元素，就像多一個開關，可能的組合數就會<strong>翻倍</strong>。</p>
+    </div>
+
+    <!-- F. 互動示範：選或不選 -->
+    <h2>互動示範：子集合生成器</h2>
+    <div class="interactive-zone">
+        <p>試著切換下方的開關，看看會產生什麼子集合！</p>
+        
+        <!-- 開關區 -->
+        <div class="switches-container">
+            <div class="switch-wrapper">
+                <label>元素 1</label>
+                <label class="switch">
+                    <input type="checkbox" id="sw1" onchange="updateSubset()">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="switch-wrapper">
+                <label>元素 2</label>
+                <label class="switch">
+                    <input type="checkbox" id="sw2" onchange="updateSubset()">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="switch-wrapper">
+                <label>元素 3</label>
+                <label class="switch">
+                    <input type="checkbox" id="sw3" onchange="updateSubset()">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <!-- 顯示目前結果 -->
+        <p>目前的子集合：</p>
+        <div id="currentSubsetDisplay" class="result-display">{ } (∅)</div>
+
+        <hr style="border-top: 1px dashed #ccc; margin: 20px 0;">
+
+        <!-- 列表按鈕 -->
+        <div>
+            <button class="btn" onclick="showAllSubsets()">列出全部子集合 (Show Power Set)</button>
+            <button class="btn" style="background-color: #7f8c8d;" onclick="toggleGroupMode()">切換分組模式</button>
+        </div>
+
+        <!-- 顯示所有結果區 -->
+        <div id="allSubsetsOutput" style="margin-top: 20px;"></div>
+    </div>
+
+    <!-- G. 第四步：選項分析 -->
+    <h2>第四步：選項分析</h2>
+    <div class="step-content">
+        <div class="analysis-item">
+            <span class="wrong-tag">(A) 3：</span><br>
+            錯誤。這只是「元素個數」(n=3)，不是子集合的個數。
+        </div>
+        <div class="analysis-item">
+            <span class="wrong-tag">(B) 6：</span><br>
+            錯誤。很多同學會算成 $2 \times 3 = 6$，或是把「排列」搞混。記住公式是指數 $2^n$！
+        </div>
+        <div class="analysis-item">
+            <span class="correct-tag">(C) 8：</span><br>
+            正確！因為 $2^3 = 8$。包含空集合 $\emptyset$ 以及自己本身 $\{1,2,3\}$。
+        </div>
+        <div class="analysis-item">
+            <span class="wrong-tag">(D) 12：</span><br>
+            錯誤。這是高估了，沒有那麼多種選法。
+        </div>
+    </div>
+
+    <!-- H. 觀念補充與延伸 -->
+    <h2>觀念補充與延伸</h2>
+    <div class="step-content">
+        <div class="concept-card">
+            <h3>核心定義</h3>
+            <ul>
+                <li><strong>Subset（子集合）：</strong>從原集合裡挑一些元素出來形成的小集合。</li>
+                <li><strong>Empty Set（空集合）：</strong>什麼元素都不選，記作 $\emptyset$ 或 { }。它是任何集合的子集合。</li>
+                <li><strong>Power Set（冪集合）：</strong>把一個集合的所有子集合通通收集起來，形成的一個「超級大集合」。</li>
+            </ul>
+        </div>
+        
+        <div class="concept-card" style="border-left: 5px solid #e74c3c;">
+            <h3>常見變形題：非空子集合</h3>
+            <p>如果題目問：「請問 A 有多少個<strong>非空</strong>子集合？」</p>
+            <p>算法：扣掉那個「什麼都不選」的空集合。</p>
+            <p>公式：<strong>$2^n - 1$</strong></p>
+            <p>本題為例：$8 - 1 = 7$ 個。</p>
+        </div>
+    </div>
+
+    <!-- I. 記憶口訣 -->
+    <h2>記憶口訣</h2>
+    <div class="step-content">
+        <p style="font-size: 1.2rem; font-weight: bold; text-align: center; color: #d35400;">
+            「子集合數量二的恩 ($2^n$)，空集合也要算進門」
+        </p>
+    </div>
+
+    <!-- J. 常見陷阱 -->
+    <h2>常見陷阱 (避坑指南)</h2>
+    <div class="step-content">
+        <ul>
+            <li>❌ <strong>陷阱一：</strong>忘記把空集合 $\emptyset$ 算進去。</li>
+            <li>❌ <strong>陷阱二：</strong>把 $2^n$ 算成 $n^2$ (例如 3 個元素算成 $3^2=9$，大錯特錯)。</li>
+            <li>❌ <strong>陷阱三：</strong>把 $2^n$ 算成 $2n$ (例如 3 個元素算成 $2\times3=6$)。</li>
+            <li>✅ <strong>避坑：</strong>看到「子集合總數」先寫 $2^n$；看到「非空」再減 1。</li>
+        </ul>
+    </div>
+
+    <!-- K. 作答區 -->
+    <h2>立即練習</h2>
+    <div class="question-box">
+        <p><strong>題目：</strong>一個集合 A = {1, 2, 3}，請問 A 有多少個子集合?</p>
+        <div class="quiz-options">
+            <button class="quiz-btn" onclick="checkAnswer('A')">(A) 3</button>
+            <button class="quiz-btn" onclick="checkAnswer('B')">(B) 6</button>
+            <button class="quiz-btn" onclick="checkAnswer('C')">(C) 8</button>
+            <button class="quiz-btn" onclick="checkAnswer('D')">(D) 12</button>
+        </div>
+        <div id="quizFeedback" class="feedback"></div>
+        <button class="btn" onclick="document.getElementById('quizFeedback').style.display='none'" style="margin-top:10px; font-size: 0.8rem; background:#777;">重置練習</button>
+    </div>
+
+    <!-- M. 自我檢測 -->
+    <h2>自我檢測 (想一想，不提供答案)</h2>
+    <div class="step-content">
+        <ol>
+            <li>如果集合 B = {a, b, c, d} (有 4 個元素)，子集合會有幾個？為什麼？</li>
+            <li>集合 C = {x, y, z} 的「非空子集合」有幾個？</li>
+            <li>為什麼空集合 $\emptyset$ 是所有集合的子集合？</li>
+        </ol>
+    </div>
+
+    <footer>
+        <p>Designed for High School Math | Discrete Mathematics Intro</p>
+    </footer>
+</div>
+
+<!-- JavaScript 邏輯 -->
+<script>
+    // --- 互動示範區邏輯 ---
+    const elements = [1, 2, 3];
+    let isGroupMode = false;
+
+    // 更新目前單一顯示的子集合
+    function updateSubset() {
+        const sw1 = document.getElementById('sw1').checked;
+        const sw2 = document.getElementById('sw2').checked;
+        const sw3 = document.getElementById('sw3').checked;
+        
+        const selected = [];
+        if (sw1) selected.push(1);
+        if (sw2) selected.push(2);
+        if (sw3) selected.push(3);
+
+        const display = document.getElementById('currentSubsetDisplay');
+        if (selected.length === 0) {
+            display.innerText = "{ } (∅)";
+            display.style.color = "#999";
+        } else {
+            display.innerText = `{ ${selected.join(', ')} }`;
+            display.style.color = "#d35400";
+        }
+    }
+
+    // 切換分組模式
+    function toggleGroupMode() {
+        isGroupMode = !isGroupMode;
+        showAllSubsets(); // 重新渲染
+    }
+
+    // 顯示所有子集合 (核心邏輯)
+    function showAllSubsets() {
+        const outputDiv = document.getElementById('allSubsetsOutput');
+        const totalSubsets = Math.pow(2, elements.length); // 2^3 = 8
+        let allSubsets = [];
+
+        // 使用二進位邏輯生成所有子集合 (000 到 111)
+        for (let i = 0; i < totalSubsets; i++) {
+            let currentSet = [];
+            // 檢查每一位元 (bit)
+            for (let j = 0; j < elements.length; j++) {
+                // 如果第 j 位是 1，代表選取第 j 個元素
+                // (i >> j) & 1 檢查二進位位移
+                if ((i >> j) & 1) {
+                    currentSet.push(elements[j]);
+                }
+            }
+            allSubsets.push(currentSet);
+        }
+
+        // 渲染畫面
+        let htmlContent = '';
+
+        if (isGroupMode) {
+            // 分組模式：按元素個數分類
+            htmlContent += `<p><strong>總數計算：$2^3 = 8$ 個</strong></p>`;
+            
+            // 建立 0 到 3 的桶子
+            for (let size = 0; size <= elements.length; size++) {
+                const group = allSubsets.filter(s => s.length === size);
+                htmlContent += `<div class="group-container">`;
+                htmlContent += `<div class="group-header">包含 ${size} 個元素 (${group.length} 種):</div>`;
+                htmlContent += `<div class="subset-grid">`;
+                group.forEach(set => {
+                    const setText = set.length === 0 ? "∅" : `{${set.join(',')}}`;
+                    htmlContent += `<div class="subset-card">${setText}</div>`;
+                });
+                htmlContent += `</div></div>`;
+            }
+
+        } else {
+            // 一般模式：全部列出來
+            htmlContent += `<p><strong>所有子集合清單 (共 ${totalSubsets} 個)：</strong></p>`;
+            htmlContent += `<div class="subset-grid">`;
+            allSubsets.forEach(set => {
+                const setText = set.length === 0 ? "∅" : `{${set.join(',')}}`;
+                htmlContent += `<div class="subset-card">${setText}</div>`;
+            });
+            htmlContent += `</div>`;
+        }
+
+        outputDiv.innerHTML = htmlContent;
+        
+        // 渲染數學符號 (簡單處理)
+        // 這裡不需要複雜的 MathJax，直接用文字替換即可
+    }
+
+    // --- 練習題回饋邏輯 ---
+    function checkAnswer(option) {
+        const feedbackEl = document.getElementById('quizFeedback');
+        feedbackEl.className = 'feedback'; // 重置 class
+        
+        if (option === 'C') {
+            feedbackEl.innerHTML = "<strong>✅ 答對了！</strong><br>子集合總數 = $2^3 = 8$。觀念正確！";
+            feedbackEl.classList.add('correct');
+        } else if (option === 'A') {
+            feedbackEl.innerHTML = "<strong>❌ 答錯了。</strong><br>3 是元素的個數 (n)，不是子集合的總數喔。";
+            feedbackEl.classList.add('wrong');
+        } else if (option === 'B') {
+            feedbackEl.innerHTML = "<strong>❌ 答錯了。</strong><br>小心！不是 $2 \\times 3$，而是 $2$ 的 $3$ 次方 ($2^3$)。";
+            feedbackEl.classList.add('wrong');
+        } else if (option === 'D') {
+            feedbackEl.innerHTML = "<strong>❌ 答錯了。</strong><br>稍微算太多囉，正確公式是 $2^n$。";
+            feedbackEl.classList.add('wrong');
+        }
+    }
+
+    // 初始化
+    updateSubset();
+</script>
+
+<!-- MathJax 配置 (選用，為了讓指數顯示更好看，雖然題目要求無外部JS，但為了呈現 2^n 有時候會需要，
+     不過為了嚴格遵守「不使用外部套件」要求，我在 HTML 內直接使用 <sup> 標籤處理了上標，
+     這裡不引入 MathJax CDN 以符合規格。) 
+-->
+
+</body>
+</html>

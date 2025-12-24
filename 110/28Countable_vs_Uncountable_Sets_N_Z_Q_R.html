@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>題目 28：可數與不可數集合</title>
+    <style>
+        /* --- 基礎設定 --- */
+        :root {
+            --primary-color: #2c3e50;    /* 深藍灰：專業感 */
+            --accent-color: #3498db;     /* 亮藍：互動按鈕 */
+            --highlight-bg: #fff9c4;     /* 淡黃：螢光筆 */
+            --correct-color: #27ae60;    /* 綠色：正確 */
+            --wrong-color: #c0392b;      /* 紅色：錯誤 */
+            --bg-color: #f4f6f7;         /* 背景色 */
+            --card-bg: #ffffff;          /* 卡片背景 */
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans TC", sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        /* --- 版面結構 --- */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            padding: 24px;
+            margin-bottom: 20px;
+            border-left: 5px solid var(--accent-color);
+        }
+
+        h1, h2, h3 {
+            color: var(--primary-color);
+            margin-top: 0;
+        }
+
+        h1 { font-size: 1.8rem; margin-bottom: 10px; }
+        h2 { font-size: 1.4rem; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
+        h3 { font-size: 1.1rem; color: #555; font-weight: bold; margin-top: 20px; }
+
+        /* --- 教學元件 --- */
+        .highlight {
+            background-color: var(--highlight-bg);
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-weight: bold;
+            border-bottom: 2px solid #fbc02d;
+        }
+
+        .tag {
+            display: inline-block;
+            background: #eee;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            color: #666;
+            margin-right: 5px;
+        }
+
+        ul { padding-left: 20px; }
+        li { margin-bottom: 8px; }
+
+        /* --- 題目與選項 --- */
+        .question-box {
+            font-size: 1.2rem;
+            font-weight: bold;
+            background: #e8f4fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .options-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .option-item {
+            background: #fff;
+            border: 1px solid #ddd;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+        }
+
+        .option-item:hover {
+            background: #f9f9f9;
+            border-color: #bbb;
+        }
+
+        .option-item.selected {
+            background: #e3f2fd;
+            border-color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        /* --- 互動按鈕與區域 --- */
+        .btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.2s;
+        }
+
+        .btn:hover { background-color: #2980b9; }
+
+        .demo-area {
+            background: #f8f9fa;
+            border: 2px dashed #ccc;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            text-align: center;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .number-box {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .num-chip {
+            background: white;
+            border: 1px solid #aaa;
+            padding: 5px 10px;
+            border-radius: 4px;
+            box-shadow: 0 2px 2px rgba(0,0,0,0.1);
+            animation: popIn 0.3s ease-out;
+            font-family: monospace;
+            font-size: 1.1rem;
+        }
+
+        /* --- 對角線法互動樣式 --- */
+        .diagonal-table {
+            border-collapse: collapse;
+            margin: 10px auto;
+            font-family: monospace;
+            background: white;
+        }
+        .diagonal-table td {
+            border: 1px solid #ddd;
+            padding: 5px 10px;
+            font-size: 1.2rem;
+        }
+        .diag-highlight {
+            background-color: #ffe0b2; /* 橘色背景 */
+            color: #d35400;
+            font-weight: bold;
+            border: 2px solid #e67e22 !important;
+        }
+        .new-number-display {
+            font-size: 1.3rem;
+            color: #c0392b;
+            font-weight: bold;
+            margin-top: 10px;
+            font-family: monospace;
+        }
+
+        /* --- 動畫 Keyframes --- */
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            80% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* --- 隱藏/顯示 --- */
+        .hidden { display: none; }
+        
+        /* --- 詳解區塊 --- */
+        .explanation-box {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f1f8e9; /* 淡綠色背景 */
+            border-radius: 8px;
+            border: 1px solid #c5e1a5;
+        }
+
+        /* --- 響應式調整 --- */
+        @media (max-width: 600px) {
+            .card { padding: 15px; }
+            h1 { font-size: 1.5rem; }
+            .btn { width: 100%; margin-bottom: 5px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <!-- Header -->
+    <div style="text-align: center; margin-bottom: 30px;">
+        <span class="tag">離散數學</span> <span class="tag">集合論</span>
+        <h1>28. 可數與不可數集合</h1>
+        <p style="color: #666;">針對高中/大一新手的觀念建立與考前衝刺</p>
+    </div>
+
+    <!-- 1. 題目區 -->
+    <div class="card">
+        <h2>【題目】</h2>
+        <div class="question-box">
+            28. 下列哪個集合是不可以數的(uncountable)?
+        </div>
+        <ul class="options-list">
+            <li class="option-item" onclick="checkAnswer('A', this)">(A) N</li>
+            <li class="option-item" onclick="checkAnswer('B', this)">(B) Z</li>
+            <li class="option-item" onclick="checkAnswer('C', this)">(C) Q</li>
+            <li class="option-item" onclick="checkAnswer('D', this)">(D) R</li>
+        </ul>
+        
+        <!-- 答題回饋區 -->
+        <div id="feedback-area" class="hidden"></div>
+        
+        <div style="margin-top: 15px;">
+            <button class="btn" style="background-color: #7f8c8d;" onclick="toggleAnswer()">顯示正確答案</button>
+            <div id="correct-answer-display" class="hidden" style="margin-top: 10px; font-weight: bold; color: var(--primary-color);">
+                正確答案：(D)
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. 第一步：找關鍵字 -->
+    <div class="card">
+        <h2>第一步：找關鍵字</h2>
+        <p>題目問的是：下列哪個集合是 <span class="highlight">不可以數 (uncountable)</span> 的？</p>
+        
+        <h3>白話翻譯：</h3>
+        <p>
+            「哪一種數多到爆炸，多到你<strong style="color: #c0392b;">沒辦法</strong>用『第 1 個、第 2 個、第 3 個...』這樣的清單把這全部列完？」
+        </p>
+        <p style="font-size: 0.9em; color: #666;">
+            💡 提示：如果能排隊點名，就是「可數」。如果怎麼排都會漏掉一大堆，就是「不可數」。
+        </p>
+    </div>
+
+    <!-- 3. 第二步：解題思路與觀念 -->
+    <div class="card">
+        <h2>第二步：解題思路</h2>
+        <p>這題是標準的定義題，首先要記住這四個符號代表誰：</p>
+        <ul>
+            <li><strong>N (Natural numbers)：</strong>自然數（1, 2, 3...） <span class="tag" style="background:#dcedc8; color: #33691e;">可數</span></li>
+            <li><strong>Z (Integers)：</strong>整數（..., -1, 0, 1...） <span class="tag" style="background:#dcedc8; color: #33691e;">可數</span></li>
+            <li><strong>Q (Rational numbers)：</strong>有理數（分數） <span class="tag" style="background:#dcedc8; color: #33691e;">可數</span></li>
+            <li><strong>R (Real numbers)：</strong>實數（包含無限不循環小數） <span class="tag" style="background:#ffcdd2; color: #b71c1c;">不可數</span></li>
+        </ul>
+    </div>
+
+    <!-- 4. 互動示範 1：可數的直覺 -->
+    <div class="card">
+        <h2>互動示範 1：為什麼 N, Z, Q 都是可數？</h2>
+        <p>可數不代表「有限」，而是代表「可以排成一個隊伍」。</p>
+
+        <!-- N 的示範 -->
+        <h3>(A) 自然數 N</h3>
+        <p>這最簡單，已經排好了。</p>
+        <div class="demo-area">
+            <div class="number-box">
+                <span class="num-chip">1</span>
+                <span class="num-chip">2</span>
+                <span class="num-chip">3</span>
+                <span class="num-chip">4</span>
+                <span class="num-chip">...</span>
+            </div>
+            <p style="margin-top:5px; font-size:0.8rem; color:#666;">一個對一個，沒問題。</p>
+        </div>
+
+        <!-- Z 的示範 -->
+        <h3>(B) 整數 Z</h3>
+        <p>有負數怎麼辦？我們用「左右跳」的方法來點名！</p>
+        <button class="btn" onclick="startZDemo()">播放 Z 的點名動畫</button>
+        <div class="demo-area">
+            <div id="z-demo-box" class="number-box"></div>
+            <p id="z-demo-text" style="margin-top:5px; font-size:0.8rem; color:#666;">(點擊上方按鈕開始)</p>
+        </div>
+
+        <!-- Q 的示範 -->
+        <h3>(C) 有理數 Q (分數)</h3>
+        <p>分數好像比整數多很多？其實可以用「表格」把所有分數列出來，然後用「蛇形」走訪。</p>
+        <button class="btn" onclick="startQDemo()">播放 Q 的走訪動畫</button>
+        <div class="demo-area">
+            <div id="q-demo-box" class="number-box"></div>
+            <p id="q-demo-text" style="margin-top:5px; font-size:0.8rem; color:#666;">(展示前 8 個路徑點)</p>
+        </div>
+        <p style="font-size: 0.9em; color: #666;">
+            💡 結論：只要能想出辦法把它們排成一列，它就是可數的！
+        </p>
+    </div>
+
+    <!-- 5. 互動示範 2：不可數的直覺 -->
+    <div class="card" style="border-left-color: #e74c3c;">
+        <h2>互動示範 2：為什麼 R (實數) 不可數？</h2>
+        <p>這是著名的<strong>「康托爾對角線證明 (Cantor's Diagonal Argument)」</strong>的直覺版。</p>
+        <p>假設我們想把 0 到 1 之間的實數全部列成清單，我們永遠可以「製造」出一個不在清單上的數字。</p>
+
+        <div class="demo-area" style="background: #fff0f0; border-color: #e74c3c;">
+            <p><strong>假設的實數清單 (小數點後 5 位示意)</strong></p>
+            <table class="diagonal-table" id="cantor-table">
+                <!-- JS 會填入這裡 -->
+            </table>
+            
+            <button class="btn" style="background-color: #c0392b; margin-top: 10px;" onclick="generateNewNumber()">
+                生成一個「不在清單上」的新數
+            </button>
+
+            <div id="cantor-result" class="hidden">
+                <p>我們看對角線上的數字 (橘色)，把每個數字都 +1 (如果原本是 9 變 0)：</p>
+                <div class="new-number-display">
+                    新數 = 0.<span id="new-digits"></span>...
+                </div>
+                <p style="text-align: left; margin-top: 10px; font-size: 0.9rem;">
+                    這個新數：<br>
+                    第 1 位跟第 1 列不一樣<br>
+                    第 2 位跟第 2 列不一樣<br>
+                    第 3 位跟第 3 列不一樣...<br>
+                    <strong>結論：不管你的清單列了多少，我永遠能造出一個新的！所以列不完 → 不可數。</strong>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. 選項分析 -->
+    <div class="card">
+        <h2>第四步：選項分析</h2>
+        <ul style="list-style: none; padding: 0;">
+            <li style="margin-bottom: 15px;">
+                <strong>(A) N (自然數)</strong>：<br>
+                最基本的計數集合 (1, 2, 3...)，定義上就是<strong>可數</strong>。
+            </li>
+            <li style="margin-bottom: 15px;">
+                <strong>(B) Z (整數)</strong>：<br>
+                透過 (0, 1, -1, 2, -2...) 的順序可以一一對應到自然數，<strong>可數</strong>。
+            </li>
+            <li style="margin-bottom: 15px;">
+                <strong>(C) Q (有理數)</strong>：<br>
+                可以用二維表格斜線走訪的方式一一列出，<strong>可數</strong>。
+            </li>
+            <li style="margin-bottom: 15px; border-bottom: 2px solid #c0392b; padding-bottom: 10px;">
+                <strong>(D) R (實數)</strong>：<br>
+                包含所有無窮不循環小數，根據對角線證明，無法列成清單，<strong>不可數 (Uncountable)</strong>。
+            </li>
+        </ul>
+    </div>
+
+    <!-- 7. 記憶口訣與陷阱 -->
+    <div class="card">
+        <h2>記憶口訣 & 常見陷阱</h2>
+        
+        <h3>🧠 3 秒記憶法：</h3>
+        <div style="font-size: 1.2rem; font-weight: bold; color: var(--primary-color); text-align: center; margin: 15px 0;">
+            「N、Z、Q 都能排隊 (可數)<br>
+            只有 R 多到滿出來 (不可數)」
+        </div>
+
+        <h3>⚠️ 避坑指南：</h3>
+        <ul>
+            <li><strong>陷阱 1：</strong> 以為「無限多」就是不可數。 <span style="color:red;">(錯！)</span><br>
+            <span style="font-size:0.9rem; color:#666;">解釋：N 有無限多個，但它是可數的。可數指的是「可列舉性」。</span></li>
+            
+            <li><strong>陷阱 2：</strong> 看到分數 Q 覺得很密，所以不可數。<span style="color:red;">(錯！)</span><br>
+            <span style="font-size:0.9rem; color:#666;">解釋：Q 雖然很密，但還是可以用表格法找出來排隊。</span></li>
+            
+            <li><strong>考試技巧：</strong> 只要看到選項有 <strong>R</strong> 或 <strong>(0, 1)區間</strong>，題目問 uncountable，選它就對了！</li>
+        </ul>
+    </div>
+
+    <!-- 8. 自我檢測 -->
+    <div class="card">
+        <h2>自我檢測</h2>
+        <p>試著回答下列小問題，確認是否真懂：</p>
+        
+        <details>
+            <summary style="cursor: pointer; font-weight: bold; color: var(--accent-color); margin-bottom: 10px;">Q1: 偶數集合 (2, 4, 6...) 是可數的嗎？</summary>
+            <p class="explanation-box">
+                <strong>是可數的！</strong><br>
+                雖然它比 N 少一半的感覺，但它可以跟 N 一對一對應 (1→2, 2→4, 3→6...)，所以只要能列清單，就是可數。
+            </p>
+        </details>
+
+        <details>
+            <summary style="cursor: pointer; font-weight: bold; color: var(--accent-color); margin-bottom: 10px;">Q2: 無理數 (R 扣掉 Q) 是可數還是不可數？</summary>
+            <p class="explanation-box">
+                <strong>不可數！</strong><br>
+                實數 R 是不可數的，而 Q 是可數的。如果無理數也是可數，那兩個可數加起來應該要等於可數才對。所以無理數必定是不可數，這才是造成 R 不可數的主因。
+            </p>
+        </details>
+    </div>
+
+</div>
+
+<script>
+    // --- 答題互動邏輯 ---
+    function checkAnswer(option, element) {
+        // 清除舊的選擇樣式
+        const items = document.querySelectorAll('.option-item');
+        items.forEach(item => {
+            item.classList.remove('selected');
+            item.style.backgroundColor = '#fff';
+            item.style.borderColor = '#ddd';
+            item.style.color = '#333';
+        });
+
+        // 標記目前選擇
+        element.classList.add('selected');
+
+        const feedback = document.getElementById('feedback-area');
+        feedback.classList.remove('hidden');
+        
+        if (option === 'D') {
+            feedback.innerHTML = `
+                <div class="explanation-box" style="border-color: var(--correct-color); background: #e8f5e9;">
+                    <strong style="color: var(--correct-color);">✅ 答對了！</strong><br>
+                    R (實數) 是不可數集合。其他 N, Z, Q 都是可數的。
+                </div>
+            `;
+            element.style.backgroundColor = '#dcedc8';
+            element.style.borderColor = 'var(--correct-color)';
+        } else {
+            feedback.innerHTML = `
+                <div class="explanation-box" style="border-color: var(--wrong-color); background: #ffebee;">
+                    <strong style="color: var(--wrong-color);">❌ 答錯囉！</strong><br>
+                    ${option} 是可數的 (Countable)。再想想，哪一個集合大到無法列成清單？(提示：含無理數的那個)
+                </div>
+            `;
+            element.style.backgroundColor = '#ffcdd2';
+            element.style.borderColor = 'var(--wrong-color)';
+        }
+    }
+
+    function toggleAnswer() {
+        const ans = document.getElementById('correct-answer-display');
+        if (ans.classList.contains('hidden')) {
+            ans.classList.remove('hidden');
+        } else {
+            ans.classList.add('hidden');
+        }
+    }
+
+    // --- Z 集合動畫 ---
+    let zInterval;
+    function startZDemo() {
+        const box = document.getElementById('z-demo-box');
+        const text = document.getElementById('z-demo-text');
+        box.innerHTML = ''; // 清空
+        text.innerText = "清單正在產生中...";
+        clearInterval(zInterval); // 防止重複點擊
+
+        // Z 的排序邏輯：0, 1, -1, 2, -2, 3, -3...
+        let sequence = [0, 1, -1, 2, -2, 3, -3, 4];
+        let index = 0;
+
+        zInterval = setInterval(() => {
+            if (index >= sequence.length) {
+                clearInterval(zInterval);
+                text.innerText = "可以這樣一直列下去，每個整數都會被點到！";
+                return;
+            }
+            const chip = document.createElement('span');
+            chip.className = 'num-chip';
+            chip.innerText = sequence[index];
+            box.appendChild(chip);
+            index++;
+        }, 600);
+    }
+
+    // --- Q 集合動畫 ---
+    let qInterval;
+    function startQDemo() {
+        const box = document.getElementById('q-demo-box');
+        const text = document.getElementById('q-demo-text');
+        box.innerHTML = '';
+        text.innerText = "依照表格斜線順序...";
+        clearInterval(qInterval);
+
+        // Q 的簡化排序邏輯 (Cantor pairing function 的視覺化)
+        // 1/1, 1/2, 2/1, 3/1, 2/2(跳過), 1/3, 1/4...
+        // 這裡為了直觀，展示簡單的前幾個路徑點
+        let sequence = ["1/1", "1/2", "2/1", "3/1", "2/2", "1/3", "1/4", "2/3"];
+        let index = 0;
+
+        qInterval = setInterval(() => {
+            if (index >= sequence.length) {
+                clearInterval(qInterval);
+                text.innerText = "雖然是無限多，但我們可以保證每個分數最終都會被數到！";
+                return;
+            }
+            const chip = document.createElement('span');
+            chip.className = 'num-chip';
+            // 標記重複的 (例如 2/2 = 1)
+            if (sequence[index] === "2/2") {
+                chip.style.backgroundColor = "#e0e0e0";
+                chip.style.color = "#999";
+                chip.innerText = sequence[index] + " (重複跳過)";
+                chip.style.fontSize = "0.9rem";
+            } else {
+                chip.innerText = sequence[index];
+            }
+            box.appendChild(chip);
+            index++;
+        }, 600);
+    }
+
+    // --- R 對角線法邏輯 ---
+    // 預先定義一些「隨機」小數
+    const randomDecimals = [
+        "14159", // 0.14159...
+        "38264", // 0.38264...
+        "75028", // 0.75028...
+        "99137", // 0.99137...
+        "25846"  // 0.25846...
+    ];
+
+    function initCantorTable() {
+        const table = document.getElementById('cantor-table');
+        let html = '';
+        
+        randomDecimals.forEach((numStr, rowIndex) => {
+            html += `<tr>`;
+            html += `<td style="background:#eee;">${rowIndex+1}</td>`; // 行號
+            html += `<td>0.</td>`;
+            
+            // 產生每一位的格子
+            for (let colIndex = 0; colIndex < 5; colIndex++) {
+                const digit = numStr[colIndex];
+                // 如果是都角線位置 (row == col)
+                if (rowIndex === colIndex) {
+                    html += `<td class="diag-cell" data-row="${rowIndex}" data-digit="${digit}">${digit}</td>`;
+                } else {
+                    html += `<td>${digit}</td>`;
+                }
+            }
+            html += `<td>...</td></tr>`;
+        });
+        table.innerHTML = html;
+    }
+
+    function generateNewNumber() {
+        // 1. 標記對角線
+        const diagCells = document.querySelectorAll('.diag-cell');
+        let newNumStr = "";
+        
+        diagCells.forEach((cell, index) => {
+            // 視覺標記
+            setTimeout(() => {
+                cell.classList.add('diag-highlight');
+            }, index * 300);
+
+            // 計算新數字 logic: (digit + 1) % 10
+            let originalDigit = parseInt(cell.getAttribute('data-digit'));
+            let newDigit = (originalDigit + 1) % 10;
+            newNumStr += `<span style="color:#c0392b; font-weight:bold; margin:0 2px;">${newDigit}</span>`;
+        });
+
+        // 2. 顯示結果區
+        const resultDiv = document.getElementById('cantor-result');
+        const digitsSpan = document.getElementById('new-digits');
+        
+        resultDiv.classList.remove('hidden');
+        
+        // 稍微延遲顯示新數字，配合對角線動畫
+        setTimeout(() => {
+            digitsSpan.innerHTML = newNumStr;
+        }, 1500);
+    }
+
+    // 初始化 R 的表格
+    initCantorTable();
+
+</script>
+
+</body>
+</html>

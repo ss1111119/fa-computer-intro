@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電腦概論：資料結構辨識教學 (第32題)</title>
+    <style>
+        /* --- CSS Reset & 基礎設定 --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        /* --- 通用樣式 --- */
+        h1, h2, h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 1.4rem;
+            border-left: 5px solid #3498db;
+            padding-left: 10px;
+            background-color: #ecf0f1;
+            padding: 8px 10px;
+            border-radius: 0 5px 5px 0;
+            margin-top: 30px;
+        }
+
+        h3 {
+            font-size: 1.1rem;
+            color: #555;
+            margin-top: 15px;
+        }
+
+        p {
+            margin-bottom: 15px;
+        }
+
+        .highlight {
+            background-color: #fff9c4; /* 螢光筆黃 */
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-weight: bold;
+            color: #d35400;
+        }
+
+        .note-box {
+            background-color: #fdfefe;
+            border: 1px solid #dcdcdc;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        /* --- 題目區塊 --- */
+        .question-block {
+            background-color: #fff3cd;
+            border: 2px solid #ffeeba;
+            padding: 20px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 25px;
+        }
+
+        .options-list {
+            list-style: none;
+            margin-top: 10px;
+        }
+
+        .options-list li {
+            margin: 5px 0;
+        }
+
+        .hidden-answer {
+            display: none;
+            margin-top: 10px;
+            color: #c0392b;
+            font-weight: bold;
+            border-top: 1px dashed #999;
+            padding-top: 10px;
+        }
+
+        .toggle-btn {
+            background-color: #7f8c8d;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+        
+        .toggle-btn:hover {
+            background-color: #616a6b;
+        }
+
+        /* --- 互動圖卡區 (Grid Layout) --- */
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .card {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            transition: transform 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .card-icon svg {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 10px;
+        }
+
+        .card-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 1.1rem;
+        }
+
+        .card-eng {
+            font-size: 0.8rem;
+            color: #777;
+            margin-bottom: 10px;
+        }
+
+        .card-info {
+            display: none; /* 預設隱藏 */
+            margin-top: 10px;
+            font-size: 0.9rem;
+            padding: 5px;
+            border-radius: 4px;
+        }
+
+        .info-hint {
+            background-color: #e8f6f3;
+            color: #16a085;
+            border: 1px solid #a2d9ce;
+        }
+
+        .info-analogy {
+            background-color: #fef9e7;
+            color: #d35400;
+            border: 1px solid #f9e79f;
+        }
+
+        .card-btns {
+            margin-top: auto; /* Push buttons to bottom */
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            width: 100%;
+        }
+
+        .small-btn {
+            padding: 5px;
+            font-size: 0.8rem;
+            border: 1px solid #ccc;
+            background: #f8f9fa;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .small-btn:hover {
+            background: #e2e6ea;
+        }
+
+        /* --- 記憶口訣 & 陷阱 --- */
+        .memory-tip {
+            background-color: #eafaf1;
+            border-left: 5px solid #2ecc71;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .trap-alert {
+            background-color: #fdedec;
+            border-left: 5px solid #e74c3c;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        /* --- 互動測驗區 --- */
+        .quiz-section {
+            border: 2px dashed #3498db;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #fbfdff;
+        }
+
+        .quiz-option {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            font-size: 1.1rem;
+            cursor: pointer;
+        }
+
+        .quiz-option input {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        .quiz-btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1.1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+            width: 100%;
+        }
+
+        .quiz-btn:hover {
+            background-color: #2980b9;
+        }
+
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .feedback-correct {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .feedback-wrong {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* --- RWD 調整 --- */
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+            .cards-container {
+                grid-template-columns: 1fr 1fr; /* 手機版兩欄 */
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- A. 標題區 -->
+        <header>
+            <h1>電腦概論重點衝刺：資料結構</h1>
+            <p style="text-align: center; color: #7f8c8d;">主題：資料結構的定義與辨識</p>
+        </header>
+
+        <!-- B. 題目區 -->
+        <section class="question-block">
+            <div>32. 下列何者是一種資料結構? (複選)</div>
+            <ul class="options-list">
+                <li>(A) 樹</li>
+                <li>(B) 佇列</li>
+                <li>(C) 堆疊</li>
+                <li>(D) 連接串列</li>
+                <li>(E) 資料庫</li>
+            </ul>
+            <button class="toggle-btn" onclick="toggleAnswer()">顯示答案</button>
+            <div id="mainAnswer" class="hidden-answer">
+                答案：A, B, C, D
+            </div>
+        </section>
+
+        <!-- C. 第一步：找關鍵字 -->
+        <section>
+            <h2>Step 1：找關鍵字</h2>
+            <div class="note-box">
+                <p>請拿起你心中的螢光筆，圈出這幾個字：</p>
+                <p>「下列 <span class="highlight">何者</span> 是一種 <span class="highlight">資料結構</span>？」</p>
+                <hr style="border: 0; border-top: 1px solid #eee; margin: 10px 0;">
+                <p><strong>老師的話：</strong> 這一題考的是標準的「名詞分類」。題目問的是「結構 (Structure)」，也就是資料在電腦記憶體裡排隊的形狀，而不是問「軟體」或「系統」。</p>
+            </div>
+        </section>
+
+        <!-- D. 第二步：白話翻譯 -->
+        <section>
+            <h2>Step 2：白話翻譯</h2>
+            <div class="note-box">
+                <p>把題目翻譯成白話文，他在問：</p>
+                <p style="font-size: 1.2rem; font-weight: bold; color: #2c3e50;">
+                    「以下哪些是為了方便電腦處理，而設計出來的『資料排列隊形』？」
+                </p>
+                <p style="margin-top:10px; color: #7f8c8d; font-size: 0.9rem;">
+                    (排除掉那些用來管理資料的龐大系統軟體)
+                </p>
+            </div>
+        </section>
+
+        <!-- E. 第三步：解題思路 -->
+        <section>
+            <h2>Step 3：解題思路</h2>
+            <div class="note-box">
+                <h3>觀念核心：</h3>
+                <p><strong>資料結構 (Data Structure)</strong> 就像是「工具箱裡的各種格子」。我們為了要把東西（資料）收好，會設計長條形的格子、堆疊的格子、樹狀的掛鉤...這些「形狀」本身就是資料結構。</p>
+                
+                <h3>解題三步驟：</h3>
+                <ol style="margin-left: 20px;">
+                    <li><strong>抓定義：</strong>資料結構是「資料在記憶體中的組織方式」。</li>
+                    <li><strong>逐一檢查：</strong>這個選項是不是一種單純的「組織形狀」？</li>
+                    <li><strong>排除系統：</strong>看到「資料庫」要警覺，它是一整間「圖書館（系統）」，不是單純的一種書架（結構）。</li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- F. 互動圖卡區 -->
+        <section>
+            <h2>互動圖解：五個選項一眼懂</h2>
+            <p style="text-align: center; margin-bottom: 10px; font-size: 0.9rem; color: #666;">點擊按鈕查看提示與比喻</p>
+            <div class="cards-container">
+                
+                <!-- Card A: Tree -->
+                <div class="card" id="card-a">
+                    <div class="card-icon">
+                        <!-- Simple Tree SVG -->
+                        <svg viewBox="0 0 100 100" fill="none" stroke="#2c3e50" stroke-width="4">
+                            <circle cx="50" cy="20" r="10" fill="#ecf0f1"/>
+                            <circle cx="30" cy="50" r="10" fill="#ecf0f1"/>
+                            <circle cx="70" cy="50" r="10" fill="#ecf0f1"/>
+                            <circle cx="20" cy="80" r="10" fill="#ecf0f1"/>
+                            <circle cx="40" cy="80" r="10" fill="#ecf0f1"/>
+                            <line x1="50" y1="30" x2="30" y2="40" />
+                            <line x1="50" y1="30" x2="70" y2="40" />
+                            <line x1="30" y1="60" x2="20" y2="70" />
+                            <line x1="30" y1="60" x2="40" y2="70" />
+                        </svg>
+                    </div>
+                    <div class="card-title">(A) 樹</div>
+                    <div class="card-eng">Tree</div>
+                    <div class="card-btns">
+                        <button class="small-btn" onclick="toggleHint('hint-a')">看分類提示</button>
+                        <button class="small-btn" onclick="toggleAnalogy('analogy-a')">看生活比喻</button>
+                    </div>
+                    <div id="hint-a" class="card-info info-hint">⭕ 是資料結構</div>
+                    <div id="analogy-a" class="card-info info-analogy">像家譜、公司組織圖</div>
+                </div>
+
+                <!-- Card B: Queue -->
+                <div class="card" id="card-b">
+                    <div class="card-icon">
+                        <!-- Simple Queue SVG -->
+                        <svg viewBox="0 0 100 100" fill="none" stroke="#2c3e50" stroke-width="4">
+                            <rect x="10" y="35" width="20" height="30" fill="#ecf0f1"/>
+                            <rect x="35" y="35" width="20" height="30" fill="#ecf0f1"/>
+                            <rect x="60" y="35" width="20" height="30" fill="#ecf0f1"/>
+                            <path d="M 5 50 L 80 50" stroke-dasharray="5,5"/>
+                            <text x="85" y="55" font-size="20">out</text>
+                        </svg>
+                    </div>
+                    <div class="card-title">(B) 佇列</div>
+                    <div class="card-eng">Queue</div>
+                    <div class="card-btns">
+                        <button class="small-btn" onclick="toggleHint('hint-b')">看分類提示</button>
+                        <button class="small-btn" onclick="toggleAnalogy('analogy-b')">看生活比喻</button>
+                    </div>
+                    <div id="hint-b" class="card-info info-hint">⭕ 是資料結構 (FIFO)</div>
+                    <div id="analogy-b" class="card-info info-analogy">像排隊買票，先來先贏</div>
+                </div>
+
+                <!-- Card C: Stack -->
+                <div class="card" id="card-c">
+                    <div class="card-icon">
+                        <!-- Simple Stack SVG -->
+                        <svg viewBox="0 0 100 100" fill="none" stroke="#2c3e50" stroke-width="4">
+                            <line x1="20" y1="80" x2="80" y2="80" stroke-width="6"/> <!-- Base -->
+                            <rect x="30" y="60" width="40" height="15" fill="#ecf0f1"/>
+                            <rect x="30" y="40" width="40" height="15" fill="#ecf0f1"/>
+                            <rect x="30" y="20" width="40" height="15" fill="#ecf0f1"/>
+                            <path d="M 80 30 L 80 10 L 50 10" marker-end="url(#arrow)" />
+                        </svg>
+                    </div>
+                    <div class="card-title">(C) 堆疊</div>
+                    <div class="card-eng">Stack</div>
+                    <div class="card-btns">
+                        <button class="small-btn" onclick="toggleHint('hint-c')">看分類提示</button>
+                        <button class="small-btn" onclick="toggleAnalogy('analogy-c')">看生活比喻</button>
+                    </div>
+                    <div id="hint-c" class="card-info info-hint">⭕ 是資料結構 (LIFO)</div>
+                    <div id="analogy-c" class="card-info info-analogy">像自助餐疊盤子，最後放的最先拿</div>
+                </div>
+
+                <!-- Card D: Linked List -->
+                <div class="card" id="card-d">
+                    <div class="card-icon">
+                        <!-- Linked List SVG -->
+                        <svg viewBox="0 0 100 100" fill="none" stroke="#2c3e50" stroke-width="4">
+                            <rect x="10" y="40" width="20" height="20" fill="#ecf0f1"/>
+                            <line x1="30" y1="50" x2="50" y2="50" marker-end="url(#arrow)" />
+                            <rect x="50" y="40" width="20" height="20" fill="#ecf0f1"/>
+                            <line x1="70" y1="50" x2="90" y2="50" marker-end="url(#arrow)" />
+                        </svg>
+                    </div>
+                    <div class="card-title">(D) 連接串列</div>
+                    <div class="card-eng">Linked List</div>
+                    <div class="card-btns">
+                        <button class="small-btn" onclick="toggleHint('hint-d')">看分類提示</button>
+                        <button class="small-btn" onclick="toggleAnalogy('analogy-d')">看生活比喻</button>
+                    </div>
+                    <div id="hint-d" class="card-info info-hint">⭕ 是資料結構</div>
+                    <div id="analogy-d" class="card-info info-analogy">像一群人手牽手，只有第一個人知道下一個人在哪</div>
+                </div>
+
+                <!-- Card E: Database -->
+                <div class="card" id="card-e" style="border-color: #e74c3c;">
+                    <div class="card-icon">
+                        <!-- Database SVG -->
+                        <svg viewBox="0 0 100 100" fill="none" stroke="#c0392b" stroke-width="4">
+                            <ellipse cx="50" cy="20" rx="30" ry="10" fill="#fdedec"/>
+                            <path d="M 20 20 L 20 80 A 30 10 0 0 0 80 80 L 80 20" fill="#fdedec"/>
+                            <ellipse cx="50" cy="80" rx="30" ry="10" fill="#fdedec"/> <!-- Bottom curve helper -->
+                            <path d="M 20 50 A 30 10 0 0 0 80 50" />
+                        </svg>
+                    </div>
+                    <div class="card-title" style="color:#c0392b;">(E) 資料庫</div>
+                    <div class="card-eng">Database</div>
+                    <div class="card-btns">
+                        <button class="small-btn" onclick="toggleHint('hint-e')">看分類提示</button>
+                        <button class="small-btn" onclick="toggleAnalogy('analogy-e')">看生活比喻</button>
+                    </div>
+                    <div id="hint-e" class="card-info info-hint" style="color:#c0392b; background:#fdedec; border-color:#e74c3c;">❌ 是「系統/軟體」</div>
+                    <div id="analogy-e" class="card-info info-analogy">像整座圖書館（包含管理規則、查詢員、書架）</div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- G. 選項分析 -->
+        <section>
+            <h2>Step 4：選項分析</h2>
+            <div class="note-box">
+                <ul class="options-list">
+                    <li>✅ <strong>(A) 樹 (Tree)</strong>：分層的結構，有根節點、子節點。是經典的非線性資料結構。</li>
+                    <li>✅ <strong>(B) 佇列 (Queue)</strong>：先進先出 (FIFO) 的線性結構。</li>
+                    <li>✅ <strong>(C) 堆疊 (Stack)</strong>：後進先出 (LIFO) 的線性結構。</li>
+                    <li>✅ <strong>(D) 連接串列 (Linked List)</strong>：節點與節點之間透過指標 (Pointer) 連結的結構。</li>
+                    <li>❌ <strong>(E) 資料庫 (Database)</strong>：這是一個<strong>「概念」或「系統」</strong>。雖然資料庫裡面使用了 B-Tree、Hash Table 等資料結構來存資料，但「資料庫」本身不是一種單一的資料結構。</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- H/I/J. 記憶與陷阱 -->
+        <section>
+            <h2>記憶與陷阱</h2>
+            
+            <div class="memory-tip">
+                <h3>🧠 記憶口訣</h3>
+                <p>「<strong>樹、佇、堆、串</strong> 都是結構，只有 <strong>資料庫</strong> 是大系統。」</p>
+            </div>
+
+            <div class="trap-alert">
+                <h3>⚠️ 常見陷阱：避坑指南</h3>
+                <p><strong>陷阱：</strong> 看到「資料庫」這三個字，因為它也有「資料」兩個字，而且也是用來存東西的，很多同學直覺就選下去。</p>
+                <p><strong>破解：</strong> 請自問一句話：「它是一個具體的『排隊形狀』(如圓形、長條、樹枝)，還是一套『管理的軟體系統』？」資料庫是後者。</p>
+            </div>
+        </section>
+
+        <!-- K. 作答區 -->
+        <section class="quiz-section">
+            <h2 style="border:none; padding:0; background:none;">✍️ 互動練習：換你試試看</h2>
+            <p>請重新勾選這題的正確答案 (複選)：</p>
+            
+            <form id="quizForm">
+                <label class="quiz-option"><input type="checkbox" name="opt" value="A"> (A) 樹 (Tree)</label>
+                <label class="quiz-option"><input type="checkbox" name="opt" value="B"> (B) 佇列 (Queue)</label>
+                <label class="quiz-option"><input type="checkbox" name="opt" value="C"> (C) 堆疊 (Stack)</label>
+                <label class="quiz-option"><input type="checkbox" name="opt" value="D"> (D) 連接串列 (Linked List)</label>
+                <label class="quiz-option"><input type="checkbox" name="opt" value="E"> (E) 資料庫 (Database)</label>
+                
+                <button type="button" class="quiz-btn" onclick="checkQuiz()">送出作答</button>
+            </form>
+
+            <div id="quizFeedback" class="quiz-feedback"></div>
+        </section>
+
+        <!-- M. 自我檢測 -->
+        <section style="margin-top: 40px; border-top: 1px solid #ddd; padding-top: 20px;">
+            <h3>🧐 自我檢測 (想一想，不用作答)</h3>
+            <ul style="margin-left: 20px; color: #555;">
+                <li style="margin-bottom: 10px;">如果題目改成問「下列何者屬於線性 (Linear) 資料結構」，你會選哪些？ (提示：看誰排成一條線)</li>
+                <li>為什麼資料庫不是資料結構？你能舉例資料庫系統裡面，可能會用到哪種資料結構來幫忙建立索引 (Index) 嗎？ (提示：跟樹有關)</li>
+            </ul>
+        </section>
+
+    </div>
+
+    <script>
+        // 顯示/隱藏 題目區的答案
+        function toggleAnswer() {
+            var answerDiv = document.getElementById("mainAnswer");
+            var btn = document.querySelector(".toggle-btn");
+            if (answerDiv.style.display === "none" || answerDiv.style.display === "") {
+                answerDiv.style.display = "block";
+                btn.textContent = "隱藏答案";
+            } else {
+                answerDiv.style.display = "none";
+                btn.textContent = "顯示答案";
+            }
+        }
+
+        // 互動圖卡：顯示分類提示
+        function toggleHint(id) {
+            var el = document.getElementById(id);
+            // 關閉同卡片的另一個提示以保持整潔 (可選)
+            var sibling = el.parentElement.querySelector('.info-analogy');
+            if(sibling) sibling.style.display = 'none';
+            
+            el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+        }
+
+        // 互動圖卡：顯示比喻
+        function toggleAnalogy(id) {
+            var el = document.getElementById(id);
+            // 關閉同卡片的另一個提示 (可選)
+            var sibling = el.parentElement.querySelector('.info-hint');
+            if(sibling) sibling.style.display = 'none';
+
+            el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+        }
+
+        // 檢查測驗邏輯
+        function checkQuiz() {
+            // 取得所有勾選的 checkbox
+            var checkboxes = document.querySelectorAll('input[name="opt"]:checked');
+            var values = [];
+            checkboxes.forEach((cb) => {
+                values.push(cb.value);
+            });
+
+            var feedbackBox = document.getElementById("quizFeedback");
+            
+            // 正確答案：A, B, C, D
+            // 判斷邏輯：A,B,C,D 必須存在，且 E 不能存在，且總數為 4
+            var isCorrect = values.includes("A") && 
+                            values.includes("B") && 
+                            values.includes("C") && 
+                            values.includes("D") && 
+                            !values.includes("E") &&
+                            values.length === 4;
+
+            if (isCorrect) {
+                feedbackBox.className = "quiz-feedback feedback-correct";
+                feedbackBox.style.display = "block";
+                feedbackBox.innerHTML = "<strong>🎉 答對了！</strong><br>A, B, C, D 都是資料結構。<br>資料庫 (E) 是系統，不是結構喔！";
+            } else {
+                feedbackBox.className = "quiz-feedback feedback-wrong";
+                feedbackBox.style.display = "block";
+                
+                // 簡單的錯誤提示分析
+                let msg = "<strong>⚠️ 再想一下...</strong><br>";
+                if (values.includes("E")) {
+                    msg += "👉 這裡面混入了「資料庫」，它不是資料結構喔！(它是系統)<br>";
+                }
+                if (!values.includes("A") || !values.includes("B") || !values.includes("C") || !values.includes("D")) {
+                    msg += "👉 你漏選了一些正確的資料結構喔！樹、堆疊、佇列、串列都是。<br>";
+                }
+                feedbackBox.innerHTML = msg;
+            }
+        }
+    </script>
+</body>
+</html>

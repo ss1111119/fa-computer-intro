@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電腦概論：數位邏輯 XOR 運算解析</title>
+    <style>
+        /* --- 基礎設定 (Reset & Base) --- */
+        :root {
+            --primary-color: #333;
+            --accent-color: #2c3e50;
+            --highlight-bg: #fff3cd; /* 螢光筆黃 */
+            --highlight-text: #856404;
+            --border-color: #ddd;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --correct-color: #28a745;
+            --wrong-color: #dc3545;
+            --btn-color: #007bff;
+            --btn-hover: #0056b3;
+        }
+
+        body {
+            font-family: "Noto Sans TC", "Microsoft JhengHei", -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            color: var(--primary-color);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1, h2, h3 {
+            color: var(--accent-color);
+            margin-top: 0;
+        }
+
+        /* --- 容器與卡片樣式 (Layout) --- */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 5px solid var(--accent-color);
+        }
+
+        .card-header {
+            font-size: 1.2em;
+            font-weight: bold;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .tag {
+            background-color: #e9ecef;
+            color: #495057;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+        }
+
+        /* --- 題目專用樣式 --- */
+        .question-box {
+            font-size: 1.1em;
+            font-weight: 500;
+            background-color: #fdfdfe;
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        .options-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .options-list li {
+            padding: 5px 0;
+        }
+
+        /* --- 螢光筆與強調 --- */
+        mark {
+            background-color: var(--highlight-bg);
+            color: var(--highlight-text);
+            padding: 0 2px;
+            border-radius: 2px;
+        }
+
+        .highlight-text {
+            color: #d63384; /* 類似紅筆圈選 */
+            font-weight: bold;
+        }
+
+        /* --- 互動真值表 (Interactive Table) --- */
+        .truth-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+
+        .truth-table th, .truth-table td {
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .truth-table th {
+            background-color: #f8f9fa;
+        }
+
+        .truth-table tr:hover td {
+            background-color: #f1f3f5;
+        }
+
+        .truth-table tr.active td {
+            background-color: #e2e6ea;
+            font-weight: bold;
+            color: var(--btn-color);
+        }
+
+        /* --- 直式計算器 (Calculator) --- */
+        .calc-input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .calc-input-group input {
+            padding: 8px;
+            font-size: 1.2em;
+            font-family: monospace;
+            width: 80px;
+            text-align: center;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .calc-controls {
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            background-color: var(--btn-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+            margin-right: 5px;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background-color: var(--btn-hover);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--btn-color);
+            color: var(--btn-color);
+        }
+
+        .btn-outline:hover {
+            background-color: #e7f1ff;
+        }
+
+        /* 計算過程視覺化區塊 */
+        .calc-visual {
+            font-family: monospace;
+            font-size: 2em;
+            background-color: #222;
+            color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            display: inline-block;
+            min-width: 200px;
+            text-align: right;
+            position: relative;
+        }
+
+        .calc-row {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 5px;
+        }
+
+        .calc-bit {
+            width: 40px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 2px;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .result-row {
+            border-top: 2px solid #fff;
+            padding-top: 5px;
+            margin-top: 5px;
+        }
+
+        .calc-bit.active {
+            background-color: #f1c40f; /* 運算中高亮 (黃) */
+            color: #000;
+            transform: scale(1.1);
+        }
+
+        .calc-bit.done {
+            /* 完成狀態 */
+        }
+
+        .calc-hint {
+            margin-top: 10px;
+            font-size: 1rem;
+            color: var(--accent-color);
+            min-height: 1.5em;
+            font-weight: bold;
+        }
+
+        /* --- 選項分析與互動題 --- */
+        .analysis-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-left: 3px solid #ccc;
+        }
+
+        .analysis-item.correct {
+            border-left-color: var(--correct-color);
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .quiz-btn {
+            padding: 12px;
+            text-align: left;
+            background: white;
+            border: 2px solid #eee;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.2s;
+        }
+
+        .quiz-btn:hover {
+            border-color: var(--btn-color);
+            background-color: #f0f7ff;
+        }
+
+        .quiz-btn.correct {
+            border-color: var(--correct-color);
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .quiz-btn.wrong {
+            border-color: var(--wrong-color);
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .hidden-content {
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            background: #f1f3f5;
+            border-radius: 4px;
+        }
+
+        /* --- 頁尾 --- */
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+
+        /* 手機版調整 */
+        @media (max-width: 600px) {
+            .calc-visual {
+                font-size: 1.5em;
+                width: 100%;
+                text-align: center;
+            }
+            .calc-row {
+                justify-content: center;
+            }
+            .calc-bit {
+                width: 30px;
+                height: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <!-- Header -->
+    <header style="text-align: center; margin-bottom: 30px;">
+        <h1>電腦概論：數位邏輯運算</h1>
+        <p style="color: #666;">針對 110 XOR 010 考題的互動詳解</p>
+    </header>
+
+    <!-- A. 標題與題目區 -->
+    <section class="card">
+        <div class="card-header">
+            <span>題號 29</span>
+            <span class="tag">數位邏輯</span>
+        </div>
+        <div class="question-box">
+            <p>29. 二進位的計算中，110 跟 010 作 EX-OR 的運算，其結果為何?</p>
+            <ul class="options-list">
+                <li>(A) 100</li>
+                <li>(B) 101</li>
+                <li>(C) 010</li>
+                <li>(D) 110</li>
+            </ul>
+        </div>
+        <!-- 預設折疊答案 -->
+        <div style="margin-top: 15px;">
+            <button class="btn btn-outline" onclick="toggleVisibility('ans-top')">顯示答案</button>
+            <span id="ans-top" style="display:none; font-weight:bold; margin-left: 10px; color: var(--correct-color);">答案：A</span>
+        </div>
+    </section>
+
+    <!-- C. 第一步：找關鍵字 -->
+    <section class="card">
+        <div class="card-header">第一步：找關鍵字</div>
+        <p>在題目中，請特別注意這幾個字：</p>
+        <p style="font-size: 1.1em; line-height: 2;">
+            <mark>110</mark> 跟 <mark>010</mark> 作 <mark>EX-OR</mark> 的運算，其 <mark>結果</mark> 為何?
+        </p>
+        <p>💡 <strong>老師提示</strong>：這題是在考「逐位元運算」，也就是要把數字對齊，一個一個位數分開算。</p>
+    </section>
+
+    <!-- D. 第二步：白話翻譯 -->
+    <section class="card">
+        <div class="card-header">第二步：白話翻譯</div>
+        <p>這題如果翻譯成白話文，就是：</p>
+        <blockquote style="border-left: 4px solid var(--highlight-text); margin: 0; padding-left: 15px; background: #fffbf0; padding: 10px;">
+            「請把 110 和 010 上下對齊，一位一位比較：<br>
+            <strong>不一樣就寫 1，一樣就寫 0</strong>，<br>
+            最後拼出來的答案是什麼？」
+        </blockquote>
+    </section>
+
+    <!-- E. 第三步：解題思路 -->
+    <section class="card">
+        <div class="card-header">第三步：解題思路 & 觀念</div>
+        <h3>1. 認識 XOR (Exclusive OR)</h3>
+        <p>XOR 中文叫「互斥或」，符號常用 ⊕ 表示。它的規則非常單純：</p>
+        <ul>
+            <li>像兩個開關控制一盞燈（雙切開關）。</li>
+            <li>狀態<strong>不同</strong> → 燈亮 (Result: 1)</li>
+            <li>狀態<strong>相同</strong> → 燈滅 (Result: 0)</li>
+        </ul>
+        
+        <!-- F. 互動示範 1：XOR 真值表 -->
+        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 10px;">
+            <h4 style="margin-top:0;">👇 點擊下方真值表看看 (Interactive)</h4>
+            <table class="truth-table">
+                <thead>
+                    <tr>
+                        <th>輸入 A</th>
+                        <th>輸入 B</th>
+                        <th>結果 (A XOR B)</th>
+                        <th>說明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr onclick="highlightRow(this, '同')">
+                        <td>0</td>
+                        <td>0</td>
+                        <td><strong>0</strong></td>
+                        <td>都一樣，所以是 0</td>
+                    </tr>
+                    <tr onclick="highlightRow(this, '異')">
+                        <td>0</td>
+                        <td>1</td>
+                        <td><strong>1</strong></td>
+                        <td>不同，所以是 1</td>
+                    </tr>
+                    <tr onclick="highlightRow(this, '異')">
+                        <td>1</td>
+                        <td>0</td>
+                        <td><strong>1</strong></td>
+                        <td>不同，所以是 1</td>
+                    </tr>
+                    <tr onclick="highlightRow(this, '同')">
+                        <td>1</td>
+                        <td>1</td>
+                        <td><strong>0</strong></td>
+                        <td>都一樣，所以是 0</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p id="table-feedback" style="min-height: 1.5em; color: var(--btn-color); font-weight: bold;"></p>
+        </div>
+    </section>
+
+    <!-- G. 互動示範 2：逐位元對齊計算器 (重點) -->
+    <section class="card" style="border-left-color: #e83e8c;">
+        <div class="card-header">
+            <span>互動示範：直式對齊計算器</span>
+            <span class="tag">重點</span>
+        </div>
+        
+        <p>試著操作看看，這就是電腦內部運算的過程：</p>
+
+        <div class="calc-input-group">
+            <label>數字 A: <input type="text" id="binA" value="110" maxlength="8"></label>
+            <label>數字 B: <input type="text" id="binB" value="010" maxlength="8"></label>
+            <button class="btn btn-outline" onclick="resetCalc()">重置</button>
+        </div>
+
+        <div class="calc-controls">
+            <button class="btn" onclick="nextStep()">👣 逐步運算 (Step)</button>
+            <button class="btn" onclick="calcAll()">🚀 一次算完</button>
+        </div>
+
+        <div style="display: flex; flex-direction: column; align-items: center;">
+            <div id="calc-container" class="calc-visual">
+                <!-- 這裡會由 JS 動態生成直式運算 -->
+                <div style="color: #aaa; font-size: 0.5em; text-align: center;">請按按鈕開始計算</div>
+            </div>
+            <div id="calc-hint" class="calc-hint">準備開始...</div>
+        </div>
+    </section>
+
+    <!-- H. 第四步：選項分析 -->
+    <section class="card">
+        <div class="card-header">第四步：選項分析</div>
+        <p>我們剛剛算出來的結果是 <strong>100</strong>，現在來檢查選項：</p>
+        
+        <div class="analysis-item correct">
+            <strong>(A) 100</strong>：正確！
+            <br><small>過程：1⊕0=1, 1⊕1=0, 0⊕0=0。</small>
+        </div>
+        <div class="analysis-item">
+            <strong>(B) 101</strong>：錯誤。
+            <br><small>錯在最後一位：0 跟 0 相同，應該是 0，不是 1。</small>
+        </div>
+        <div class="analysis-item">
+            <strong>(C) 010</strong>：錯誤。
+            <br><small>錯在第一位：1 跟 0 不同，應該是 1，不是 0。</small>
+        </div>
+        <div class="analysis-item">
+            <strong>(D) 110</strong>：錯誤。
+            <br><small>錯在中間位：1 跟 1 相同，應該是 0，不是 1。</small>
+        </div>
+    </section>
+
+    <!-- I. 觀念補充與 J. 記憶口訣 -->
+    <section class="card">
+        <div class="card-header">記憶口訣與觀念延伸</div>
+        
+        <h3>🧠 記憶口訣</h3>
+        <ul>
+            <li><strong>XOR 看「不同」</strong>：不同就亮燈 (1)，相同就熄燈 (0)。</li>
+            <li>生活比喻：男女合唱 (不同性別) → 成功 (1)；男男或女女 (相同) → 失敗 (0)。</li>
+        </ul>
+
+        <h3>📚 觸類旁通</h3>
+        <table style="width:100%; border-collapse: collapse; margin-top: 10px;">
+            <tr style="background: #eee; border-bottom: 2px solid #ddd;">
+                <th style="padding:8px; text-align:left;">運算</th>
+                <th style="padding:8px; text-align:left;">規則</th>
+                <th style="padding:8px; text-align:left;">1 vs 0</th>
+            </tr>
+            <tr>
+                <td style="padding:8px; border-bottom:1px solid #eee;"><strong>AND (且)</strong></td>
+                <td style="padding:8px; border-bottom:1px solid #eee;">兩個都 1 才是 1</td>
+                <td style="padding:8px; border-bottom:1px solid #eee;">1 & 0 = 0</td>
+            </tr>
+            <tr>
+                <td style="padding:8px; border-bottom:1px solid #eee;"><strong>OR (或)</strong></td>
+                <td style="padding:8px; border-bottom:1px solid #eee;">有一個 1 就是 1</td>
+                <td style="padding:8px; border-bottom:1px solid #eee;">1 | 0 = 1</td>
+            </tr>
+            <tr style="background: #fff3cd;">
+                <td style="padding:8px;"><strong>XOR (互斥)</strong></td>
+                <td style="padding:8px;"><strong>不一樣才是 1</strong></td>
+                <td style="padding:8px;">1 ⊕ 0 = 1</td>
+            </tr>
+        </table>
+
+        <h3>⚠️ 常見陷阱</h3>
+        <ul>
+            <li>把 XOR 看成 OR：看到有 1 就寫 1 (錯！若是兩個 1，XOR 會變 0)。</li>
+            <li>位數沒對齊：若題目是 11 XOR 101，記得前面補 0 變成 011 XOR 101。</li>
+        </ul>
+    </section>
+
+    <!-- L. 作答區：互動測驗 -->
+    <section class="card">
+        <div class="card-header">
+            <span>自我挑戰</span>
+            <span class="tag">隨堂考</span>
+        </div>
+        <p><strong>題目：</strong>若計算 <strong>101 XOR 111</strong>，結果為何？</p>
+        
+        <div class="quiz-options">
+            <button class="quiz-btn" onclick="checkQuiz(this, 'A')">(A) 101</button>
+            <button class="quiz-btn" onclick="checkQuiz(this, 'B')">(B) 010</button>
+            <button class="quiz-btn" onclick="checkQuiz(this, 'C')">(C) 001</button>
+            <button class="quiz-btn" onclick="checkQuiz(this, 'D')">(D) 111</button>
+        </div>
+        <div id="quiz-feedback" class="hidden-content"></div>
+    </section>
+
+    <!-- N. 自我檢測 -->
+    <section class="card">
+        <div class="card-header">自我檢測 (想一想)</div>
+        <ol>
+            <li>為什麼 <code>a XOR a</code> 的結果永遠是 0？ (提示：自己跟自己比，一定相同還是不同？)</li>
+            <li><code>a XOR 0</code> 會等於什麼？ (提示：0 表示「不改變」)</li>
+        </ol>
+    </section>
+
+    <footer>
+        <p>Design for Computer Science Education</p>
+    </footer>
+
+</div>
+
+<!-- JavaScript 邏輯區 -->
+<script>
+    /* --- 1. 互動真值表邏輯 --- */
+    function highlightRow(row, type) {
+        // 清除所有選取
+        document.querySelectorAll('.truth-table tr').forEach(tr => tr.classList.remove('active'));
+        // 選取當前
+        row.classList.add('active');
+        
+        const feedback = document.getElementById('table-feedback');
+        if (type === '同') {
+            feedback.textContent = "👉 兩個輸入「相同」，所以結果是 0 (不亮燈)";
+            feedback.style.color = "#666";
+        } else {
+            feedback.textContent = "👉 兩個輸入「不同」，所以結果是 1 (亮燈！)";
+            feedback.style.color = "#d63384";
+        }
+    }
+
+    /* --- 2. 顯示/隱藏答案 --- */
+    function toggleVisibility(id) {
+        const el = document.getElementById(id);
+        if (el.style.display === 'none') {
+            el.style.display = 'inline';
+        } else {
+            el.style.display = 'none';
+        }
+    }
+
+    /* --- 3. 逐位元計算器核心邏輯 --- */
+    let currentStepIndex = 0;
+    let bitLength = 0;
+    let valA = "";
+    let valB = "";
+
+    // 初始化計算器 UI
+    function initCalc() {
+        const inputA = document.getElementById('binA').value.trim();
+        const inputB = document.getElementById('binB').value.trim();
+        
+        // 簡單驗證：只允許 0 和 1
+        if (/[^01]/.test(inputA) || /[^01]/.test(inputB)) {
+            alert("請只輸入二進位數字 (0 或 1)");
+            return false;
+        }
+
+        // 補零對齊 (取最長長度)
+        const maxLen = Math.max(inputA.length, inputB.length);
+        valA = inputA.padStart(maxLen, '0');
+        valB = inputB.padStart(maxLen, '0');
+        bitLength = maxLen;
+
+        const container = document.getElementById('calc-container');
+        container.innerHTML = ''; // 清空
+
+        // 建立三列 HTML：A, B, Result
+        let rowAHtml = '<div class="calc-row" id="row-a">';
+        let rowBHtml = '<div class="calc-row" id="row-b">';
+        let rowRHtml = '<div class="calc-row result-row" id="row-r">';
+
+        for (let i = 0; i < maxLen; i++) {
+            rowAHtml += `<div class="calc-bit" id="bit-a-${i}">${valA[i]}</div>`;
+            rowBHtml += `<div class="calc-bit" id="bit-b-${i}">${valB[i]}</div>`;
+            rowRHtml += `<div class="calc-bit" id="bit-r-${i}">?</div>`;
+        }
+
+        rowAHtml += '</div>';
+        rowBHtml += '<div style="position:absolute; left:10px; top:45px; font-size:1em; color:#888;">XOR</div></div>'; // XOR 標籤
+        rowRHtml += '</div>';
+
+        container.innerHTML = rowAHtml + rowBHtml + rowRHtml;
+        return true;
+    }
+
+    function resetCalc() {
+        currentStepIndex = 0;
+        document.getElementById('binA').value = "110";
+        document.getElementById('binB').value = "010";
+        document.getElementById('calc-hint').textContent = "準備開始... 請按「逐步運算」";
+        initCalc();
+    }
+
+    function nextStep() {
+        // 如果還沒初始化過或內容變了，重新初始化
+        if (document.getElementById('calc-container').children.length === 0) {
+            if(!initCalc()) return;
+        }
+
+        if (currentStepIndex >= bitLength) {
+            document.getElementById('calc-hint').textContent = "計算完成！結果是 " + calculateResult(valA, valB);
+            return;
+        }
+
+        // 清除上一步的高亮
+        if (currentStepIndex > 0) {
+            toggleHighlight(currentStepIndex - 1, false);
+        }
+
+        // 高亮當前位數
+        toggleHighlight(currentStepIndex, true);
+
+        // 計算邏輯
+        const bitA = parseInt(valA[currentStepIndex]);
+        const bitB = parseInt(valB[currentStepIndex]);
+        const result = bitA ^ bitB; // XOR 運算
+
+        // 更新 UI
+        const resEl = document.getElementById(`bit-r-${currentStepIndex}`);
+        resEl.textContent = result;
+        resEl.style.color = "#f1c40f"; // 強調剛算出來的字
+
+        // 提示文字
+        const hint = document.getElementById('calc-hint');
+        if (bitA === bitB) {
+            hint.innerHTML = `第 ${currentStepIndex+1} 位：${bitA} 與 ${bitB} <span style="color:#dc3545">相同</span> → 結果 0`;
+        } else {
+            hint.innerHTML = `第 ${currentStepIndex+1} 位：${bitA} 與 ${bitB} <span style="color:#28a745">不同</span> → 結果 1`;
+        }
+
+        currentStepIndex++;
+    }
+
+    function calcAll() {
+        if (document.getElementById('calc-container').children.length === 0) {
+            if(!initCalc()) return;
+        }
+        
+        // 快速跑完迴圈
+        while(currentStepIndex < bitLength) {
+            const bitA = parseInt(valA[currentStepIndex]);
+            const bitB = parseInt(valB[currentStepIndex]);
+            document.getElementById(`bit-r-${currentStepIndex}`).textContent = bitA ^ bitB;
+            currentStepIndex++;
+        }
+        
+        // 清除所有高亮
+        for(let i=0; i<bitLength; i++) toggleHighlight(i, false);
+        
+        document.getElementById('calc-hint').textContent = "計算完成！結果是 " + calculateResult(valA, valB);
+    }
+
+    function toggleHighlight(index, isActive) {
+        const els = [
+            document.getElementById(`bit-a-${index}`),
+            document.getElementById(`bit-b-${index}`),
+            document.getElementById(`bit-r-${index}`)
+        ];
+        els.forEach(el => {
+            if(isActive) el.classList.add('active');
+            else el.classList.remove('active');
+        });
+    }
+
+    function calculateResult(a, b) {
+        let res = "";
+        for(let i=0; i<a.length; i++) {
+            res += (parseInt(a[i]) ^ parseInt(b[i]));
+        }
+        return res;
+    }
+
+    // 頁面載入時先初始化一次顯示
+    window.onload = function() {
+        initCalc();
+    };
+
+    /* --- 4. 隨堂測驗邏輯 --- */
+    function checkQuiz(btn, answer) {
+        const feedback = document.getElementById('quiz-feedback');
+        const buttons = document.querySelectorAll('.quiz-btn');
+        
+        // 重置按鈕樣式
+        buttons.forEach(b => {
+            b.classList.remove('correct', 'wrong');
+            b.disabled = true; // 鎖定
+        });
+
+        feedback.style.display = 'block';
+
+        if (answer === 'B') {
+            btn.classList.add('correct');
+            feedback.innerHTML = `<strong style="color:var(--correct-color)">答對了！🎉</strong><br>
+            題目：101 XOR 111<br>
+            第一位：1⊕1=0 (同)<br>
+            第二位：0⊕1=1 (異)<br>
+            第三位：1⊕1=0 (同)<br>
+            所以結果是 010。`;
+        } else {
+            btn.classList.add('wrong');
+            feedback.innerHTML = `<strong style="color:var(--wrong-color)">答錯囉 😅</strong><br>
+            請記得「相同為 0，不同為 1」。<br>
+            正確答案是 (B) 010。<br>
+            試著用上面的計算機輸入 101 和 111 驗證看看！`;
+        }
+    }
+</script>
+
+</body>
+</html>

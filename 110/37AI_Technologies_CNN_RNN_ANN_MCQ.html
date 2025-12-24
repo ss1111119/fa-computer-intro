@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電腦概論互動講義：AI 技術辨識</title>
+    <style>
+        /* --- 基礎設定 --- */
+        :root {
+            --primary-color: #333; /* 主色調：深灰 */
+            --accent-color: #2c3e50; /* 標題色 */
+            --highlight-color: #fff9c4; /* 螢光筆黃 */
+            --bg-color: #f9f9f9; /* 背景淺灰 */
+            --card-bg: #ffffff; /* 卡片白 */
+            --correct-color: #27ae60; /* 正確綠 */
+            --wrong-color: #c0392b; /* 錯誤紅 */
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            line-height: 1.6;
+            color: var(--primary-color);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        /* --- 標題區 --- */
+        h1, h2, h3 {
+            color: var(--accent-color);
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            border-bottom: 3px solid var(--accent-color);
+            padding-bottom: 10px;
+            font-size: 1.8rem;
+        }
+
+        h2 {
+            font-size: 1.4rem;
+            margin-top: 30px;
+            border-left: 5px solid var(--accent-color);
+            padding-left: 10px;
+            background: #f0f0f0;
+            padding: 8px 10px;
+        }
+
+        /* --- 題目區 --- */
+        .question-box {
+            background-color: #eef2f5;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            font-size: 1.1rem;
+            border: 1px solid #ddd;
+        }
+
+        .options {
+            list-style: none;
+            padding: 0;
+            margin-top: 10px;
+        }
+
+        .options li {
+            margin: 8px 0;
+            padding: 5px 0;
+        }
+
+        /* --- 螢光筆效果 --- */
+        .highlight {
+            background-color: var(--highlight-color);
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+
+        /* --- 互動卡片區 --- */
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: 1px solid #ccc;
+            background: white;
+            cursor: pointer;
+            border-radius: 20px;
+            transition: all 0.3s;
+            font-size: 0.95rem;
+        }
+
+        .btn:hover, .btn.active {
+            background: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+        }
+
+        .card-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        .term-card {
+            border: 1px solid #eee;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            background: white;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .term-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .term-card.hidden {
+            display: none;
+        }
+
+        .term-card.ai-card { border-left: 5px solid var(--correct-color); }
+        .term-card.network-card { border-left: 5px solid var(--wrong-color); }
+
+        .term-title { font-size: 1.2rem; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+        .term-full { font-size: 0.85rem; color: #666; font-style: italic; margin-bottom: 8px; }
+        .term-desc { font-size: 0.95rem; }
+        .badge { font-size: 0.8rem; padding: 2px 8px; border-radius: 4px; color: white; }
+        .bg-ai { background-color: var(--correct-color); }
+        .bg-net { background-color: var(--wrong-color); }
+
+        /* --- 作答區 --- */
+        .quiz-area {
+            background: #fff;
+            border: 2px dashed #ccc;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-top: 20px;
+        }
+
+        .quiz-options label {
+            display: block;
+            margin: 10px 0;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background 0.2s;
+        }
+
+        .quiz-options label:hover {
+            background: #f5f5f5;
+        }
+
+        .action-btn {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-right: 10px;
+            margin-top: 10px;
+        }
+        
+        .action-btn.secondary {
+            background: #7f8c8d;
+        }
+
+        .result-box {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .result-box.correct { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .result-box.wrong { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+        .answer-reveal {
+            display: none;
+            margin-top: 10px;
+            font-weight: bold;
+            color: var(--wrong-color);
+        }
+
+        /* --- 響應式調整 --- */
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            h1 { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- A. 標題區 -->
+    <header>
+        <h1>題號 37：AI 相關技術辨識</h1>
+        <p>主題：人工智慧 vs. 網路通訊技術的區分</p>
+    </header>
+
+    <!-- B. 題目區 -->
+    <section class="question-box">
+        <div><strong>37. 下列何者為人工智慧 (AI) 相關的技術? (複選)</strong></div>
+        <ul class="options">
+            <li>(A) VLAN</li>
+            <li>(B) CNN</li>
+            <li>(C) ISDN</li>
+            <li>(D) RNN</li>
+            <li>(E) ANN</li>
+        </ul>
+    </section>
+
+    <!-- C. 第一步：找關鍵字 -->
+    <section>
+        <h2>第一步：找關鍵字</h2>
+        <p>請用螢光筆圈出題目重點：</p>
+        <div style="background: white; padding: 15px; border-left: 4px solid #f1c40f;">
+            下列何者為 <span class="highlight">人工智慧 (AI)</span> <span class="highlight">相關的技術</span>?
+        </div>
+        <p>💡 <strong>解釋：</strong> 題目要找的是屬於「AI 領域」的方法或模型，而不是一般的電腦或網路技術。</p>
+    </section>
+
+    <!-- D. 第二步：白話翻譯 -->
+    <section>
+        <h2>第二步：題目白話翻譯</h2>
+        <p>「這五個英文縮寫中，哪幾個是用來讓電腦<strong>『學習、模仿人腦、進行預測』</strong>的技術？」</p>
+    </section>
+
+    <!-- E. 第三步：解題思路 -->
+    <section>
+        <h2>第三步：解題思路</h2>
+        <p>這題主要考這兩個領域的區分：</p>
+        <ul>
+            <li><strong>AI 技術 (O)：</strong> 重點在「模仿神經系統」、「學習」、「資料分析」。</li>
+            <li><strong>網路/通訊技術 (X)：</strong> 重點在「資料傳輸」、「網路連接」、「訊號處理」。</li>
+        </ul>
+        <p><strong>🧠 快速判斷法：</strong> 看到結尾是 <strong>NN (Neural Network)</strong> 的，通常就是神經網路，屬於 AI。</p>
+    </section>
+
+    <!-- F. 互動圖卡：五個名詞快速分類 -->
+    <section>
+        <h2>互動圖卡：名詞分類大師</h2>
+        <p>點擊按鈕切換，看看誰是 AI，誰是網路技術！</p>
+        
+        <div class="filter-buttons">
+            <button class="btn active" onclick="filterCards('all', this)">顯示全部</button>
+            <button class="btn" onclick="filterCards('ai', this)">只看 AI 技術</button>
+            <button class="btn" onclick="filterCards('network', this)">只看網路/通訊</button>
+        </div>
+
+        <div class="card-container">
+            <!-- 卡片 A -->
+            <div class="term-card network-card" data-category="network">
+                <div class="term-title">VLAN <span class="badge bg-net">網路</span></div>
+                <div class="term-full">Virtual Local Area Network</div>
+                <div class="term-desc"><strong>(A) 虛擬區域網路</strong><br>把實體網路切分成不同群組的技術，跟 AI 無關。</div>
+            </div>
+
+            <!-- 卡片 B -->
+            <div class="term-card ai-card" data-category="ai">
+                <div class="term-title">CNN <span class="badge bg-ai">AI</span></div>
+                <div class="term-full">Convolutional Neural Network</div>
+                <div class="term-desc"><strong>(B) 卷積神經網路</strong><br>擅長「看圖片」的 AI 模型。常用於人臉辨識、影像分析。</div>
+            </div>
+
+            <!-- 卡片 C -->
+            <div class="term-card network-card" data-category="network">
+                <div class="term-title">ISDN <span class="badge bg-net">通訊</span></div>
+                <div class="term-full">Integrated Services Digital Network</div>
+                <div class="term-desc"><strong>(C) 整合服務數位網路</strong><br>早期的數位電話線技術，用來上網和打電話，非 AI。</div>
+            </div>
+
+            <!-- 卡片 D -->
+            <div class="term-card ai-card" data-category="ai">
+                <div class="term-title">RNN <span class="badge bg-ai">AI</span></div>
+                <div class="term-full">Recurrent Neural Network</div>
+                <div class="term-desc"><strong>(D) 遞迴神經網路</strong><br>擅長處理「時間序列」或「語言」的 AI。常用於翻譯、語音識別。</div>
+            </div>
+
+            <!-- 卡片 E -->
+            <div class="term-card ai-card" data-category="ai">
+                <div class="term-title">ANN <span class="badge bg-ai">AI</span></div>
+                <div class="term-full">Artificial Neural Network</div>
+                <div class="term-desc"><strong>(E) 人工神經網路</strong><br>AI 的老祖宗，模仿人類腦神經運作的基礎數學模型。</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- G. 選項分析 -->
+    <section>
+        <h2>第四步：逐項解析</h2>
+        <ul style="list-style: none; padding: 0;">
+            <li>❌ <strong>(A) VLAN：</strong> 用來管理網路交換器 (Switch) 的技術，屬於「網路層」。</li>
+            <li>✅ <strong>(B) CNN：</strong> 有 "Neural Network"，是 AI 處理影像的主流技術。</li>
+            <li>❌ <strong>(C) ISDN：</strong> 這是以前撥接上網時代的數位傳輸標準，屬於「通訊層」。</li>
+            <li>✅ <strong>(D) RNN：</strong> 有 "Neural Network"，是 AI 處理文字和語音的主流技術。</li>
+            <li>✅ <strong>(E) ANN：</strong> 有 "Neural Network"，是所有深度學習的基礎架構。</li>
+        </ul>
+    </section>
+
+    <!-- H, I, J. 觀念補充與記憶口訣 -->
+    <section style="background: #eaf2f8; padding: 15px; border-radius: 8px; margin-top: 20px;">
+        <h3>🎓 觀念懶人包</h3>
+        <p><strong>1. 核心定義：</strong></p>
+        <ul>
+            <li><strong>ANN (人工神經網路)：</strong> 模仿大腦神經元連結，透過「訓練」來學習規則。</li>
+            <li><strong>CNN (擅長看圖)：</strong> 像人類眼睛，一層層過濾圖片特徵。</li>
+            <li><strong>RNN (擅長記順序)：</strong> 像人類記憶，記得上文下理（例如：這句話是在罵人還是稱讚）。</li>
+        </ul>
+
+        <p><strong>2. 記憶口訣：</strong></p>
+        <div style="background: #fff; padding: 10px; border-left: 5px solid #e74c3c;">
+            📢 <strong>「看到 NN 結尾，就是 AI 神經網路！」</strong><br>
+            (Network 在電腦領域有兩種：一種是連結電腦的「網路」，一種是模仿大腦的「神經網路」。題目問 AI，找後者。)
+        </div>
+
+        <p><strong>3. 常見陷阱：</strong></p>
+        <ul>
+            <li>不要看到全是英文縮寫就慌張。</li>
+            <li>VLAN, ISDN, VPN, DNS 都是讓電腦「互相傳資料」的技術，不是讓電腦「思考」的技術。</li>
+        </ul>
+    </section>
+
+    <!-- K. 作答區 -->
+    <section>
+        <h2>🎯 實戰演練</h2>
+        <div class="quiz-area">
+            <p><strong>題目：下列何者為人工智慧 (AI) 相關的技術? (複選)</strong></p>
+            <div class="quiz-options">
+                <label><input type="checkbox" name="quiz" value="A"> (A) VLAN</label>
+                <label><input type="checkbox" name="quiz" value="B"> (B) CNN</label>
+                <label><input type="checkbox" name="quiz" value="C"> (C) ISDN</label>
+                <label><input type="checkbox" name="quiz" value="D"> (D) RNN</label>
+                <label><input type="checkbox" name="quiz" value="E"> (E) ANN</label>
+            </div>
+            
+            <button class="action-btn" onclick="checkAnswer()">送出作答</button>
+            <button class="action-btn secondary" onclick="toggleAnswer()">偷看答案</button>
+
+            <div id="result" class="result-box"></div>
+            <div id="answer-key" class="answer-reveal">正確答案：B, D, E</div>
+        </div>
+    </section>
+
+    <!-- M. 自我檢測 -->
+    <section style="margin-top: 30px; border-top: 2px solid #eee; padding-top: 20px;">
+        <h3>🤔 自我檢測（動動腦）</h3>
+        <p>1. 為什麼說 <strong>CNN</strong> 適合用來做人臉辨識？它跟一般的 ANN 有什麼不同？</p>
+        <p>2. 現今最強大的 AI 模型（如 ChatGPT）使用的是 <strong>Transformer</strong> 架構，請問它算是神經網路的一種嗎？</p>
+        <p style="font-size: 0.9rem; color: #888;">(試著用自己的話回答，不確定的話可以往上回顧觀念喔！)</p>
+    </section>
+
+</div>
+
+<script>
+    // --- 功能 1: 互動圖卡篩選 ---
+    function filterCards(category, btnElement) {
+        // 1. 處理按鈕樣式
+        const buttons = document.querySelectorAll('.filter-buttons .btn');
+        buttons.forEach(btn => btn.classList.remove('active'));
+        btnElement.classList.add('active');
+
+        // 2. 處理卡片顯示/隱藏
+        const cards = document.querySelectorAll('.term-card');
+        
+        cards.forEach(card => {
+            if (category === 'all') {
+                card.classList.remove('hidden');
+            } else {
+                if (card.dataset.category === category) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            }
+        });
+    }
+
+    // --- 功能 2: 檢查答案 ---
+    function checkAnswer() {
+        // 取得所有被勾選的選項
+        const checkboxes = document.querySelectorAll('input[name="quiz"]:checked');
+        let userAnswers = [];
+        checkboxes.forEach((checkbox) => {
+            userAnswers.push(checkbox.value);
+        });
+
+        // 排序以便比對
+        userAnswers.sort();
+        const correctAnswers = ['B', 'D', 'E'];
+        
+        const resultBox = document.getElementById('result');
+        
+        // 比對邏輯
+        // 1. 數量是否正確
+        // 2. 內容是否完全一致
+        const isCorrect = JSON.stringify(userAnswers) === JSON.stringify(correctAnswers);
+
+        resultBox.style.display = 'block';
+        
+        if (isCorrect) {
+            resultBox.className = 'result-box correct';
+            resultBox.innerHTML = `
+                <strong>🎉 答對了！太棒了！</strong><br>
+                你有抓到重點：CNN, RNN, ANN 都是神經網路家族成員。
+            `;
+        } else {
+            resultBox.className = 'result-box wrong';
+            let msg = '<strong>⚠️ 差一點點喔！</strong><br>';
+            
+            // 簡單除錯提示
+            if (userAnswers.includes('A') || userAnswers.includes('C')) {
+                msg += '提示：VLAN 和 ISDN 是網路通訊技術，不是 AI 喔。<br>';
+            }
+            if (!userAnswers.includes('B') || !userAnswers.includes('D') || !userAnswers.includes('E')) {
+                msg += '提示：凡是結尾有 "NN" (Neural Network) 的通常都是 AI 相關技術。<br>';
+            }
+            
+            msg += '再試試看吧！';
+            resultBox.innerHTML = msg;
+        }
+    }
+
+    // --- 功能 3: 顯示/隱藏答案 ---
+    function toggleAnswer() {
+        const ansDiv = document.getElementById('answer-key');
+        if (ansDiv.style.display === 'block') {
+            ansDiv.style.display = 'none';
+        } else {
+            ansDiv.style.display = 'block';
+        }
+    }
+</script>
+
+</body>
+</html>

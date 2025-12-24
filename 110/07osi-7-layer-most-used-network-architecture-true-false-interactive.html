@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電腦概論互動教學：網路架構是非題 第 7 題</title>
+    <style>
+        /* --- 全域設定 --- */
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --success-color: #27ae60;
+            --error-color: #c0392b;
+            --bg-color: #f4f6f7;
+            --card-bg: #ffffff;
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            background-color: var(--bg-color);
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        h1, h2, h3 {
+            color: var(--primary-color);
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        h1 { text-align: center; }
+
+        .highlight {
+            color: var(--error-color);
+            font-weight: bold;
+            background-color: #fff3cd;
+            padding: 2px 5px;
+            border-radius: 4px;
+        }
+
+        /* --- 題目區塊 --- */
+        .question-box {
+            background-color: #eaf2f8;
+            padding: 20px;
+            border-left: 5px solid var(--accent-color);
+            margin-bottom: 30px;
+            font-size: 1.2em;
+        }
+
+        .question-number {
+            font-weight: bold;
+            color: var(--accent-color);
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        /* --- 互動按鈕 (O/X) --- */
+        .interaction-area {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .btn-option {
+            font-size: 2em;
+            width: 120px;
+            height: 120px;
+            border: 2px solid #ddd;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .btn-option:hover {
+            transform: scale(1.05);
+            background-color: #f0f0f0;
+        }
+
+        .btn-o { color: var(--success-color); }
+        .btn-x { color: var(--error-color); }
+
+        .feedback {
+            display: none;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .feedback.correct {
+            background-color: #d4efdf;
+            color: var(--success-color);
+            border: 1px solid var(--success-color);
+        }
+
+        .feedback.wrong {
+            background-color: #fadbd8;
+            color: var(--error-color);
+            border: 1px solid var(--error-color);
+        }
+
+        /* --- 觀念說明區 --- */
+        .concept-section {
+            margin-top: 40px;
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+        }
+
+        .key-point {
+            background-color: #fef9e7;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin: 10px 0;
+            text-align: center;
+            font-size: 1.1em;
+            font-weight: bold;
+            border: 2px dashed #f1c40f;
+        }
+
+        /* --- 表格樣式 --- */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .comparison-table th, .comparison-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .comparison-table th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .comparison-table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        /* --- 拖曳互動區 (通用) --- */
+        .drag-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+
+        .draggable-item {
+            background-color: var(--accent-color);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: move;
+            user-select: none;
+            margin: 5px;
+            display: inline-block;
+        }
+
+        .drop-zone {
+            border: 2px dashed #aaa;
+            border-radius: 8px;
+            padding: 15px;
+            min-height: 100px;
+            background-color: #fafafa;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .drop-zone h4 {
+            margin-top: 0;
+            text-align: center;
+            color: #555;
+        }
+
+        .drop-zone.drag-over {
+            background-color: #e8f6f3;
+            border-color: var(--success-color);
+        }
+
+        /* --- 陷阱卡互動 --- */
+        .trap-cards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .card {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-left: 4px solid var(--error-color);
+            padding: 15px;
+            width: 200px;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+            position: relative;
+            cursor: pointer;
+            transition: opacity 0.5s;
+        }
+
+        .card-close {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            font-size: 12px;
+            color: #999;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+        /* --- 自我檢測 --- */
+        .quiz-item {
+            margin-bottom: 15px;
+            border-bottom: 1px dashed #ccc;
+            padding-bottom: 10px;
+        }
+        
+        .hint-btn {
+            background-color: #95a5a6;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        .hint-text {
+            display: none;
+            margin-top: 5px;
+            color: var(--success-color);
+            font-weight: bold;
+        }
+
+        /* --- 頁尾 --- */
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+        }
+
+        .reset-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1em;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .reset-btn:hover {
+            background-color: #1a252f;
+        }
+
+        /* RWD 小調整 */
+        @media (max-width: 600px) {
+            .btn-option { width: 80px; height: 80px; font-size: 1.5em; }
+            .drag-container { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>電腦概論：網路架構特訓</h1>
+        <p style="text-align: center;">標準模型 vs 實際應用（OSI vs TCP/IP）</p>
+    </header>
+
+    <!-- 1. 題目區 -->
+    <section class="question-box">
+        <span class="question-number">【第 7 題】是非題</span>
+        <p>OSI 七層的網路通訊標準，是目前最為廣泛使用的電腦網路架構。</p>
+        <p>(A) O <br> (B) X</p>
+    </section>
+
+    <!-- 2. O/X 互動區 -->
+    <section>
+        <div class="interaction-area">
+            <button class="btn-option btn-o" onclick="checkAnswer('O')">O</button>
+            <button class="btn-option btn-x" onclick="checkAnswer('X')">X</button>
+        </div>
+        <div id="answerFeedback" class="feedback"></div>
+    </section>
+
+    <!-- 3. 核心觀念說明區 -->
+    <section class="concept-section">
+        <h2>💡 觀念解析</h2>
+        <p>這題的關鍵在於區分<b>「理論標準」</b>與<b>「實務應用」</b>。</p>
+        
+        <ul>
+            <li><b>OSI 七層模型</b>：由國際標準化組織（ISO）制定。它是一個完美的<b>理論模型</b>，主要用於教學、定義通訊規範、以及釐清問題（Debug）。但在實作上過於複雜。</li>
+            <li><b>TCP/IP 架構</b>：這是網際網路（Internet）實際運作所採用的<b>實務架構</b>。因為它發展得早，且實用性強，成為了全球網路通訊的事實標準（De facto standard）。</li>
+        </ul>
+
+        <div class="key-point">
+            👉 一句話記憶：「OSI 用來學；TCP/IP 用來跑網路」
+        </div>
+
+        <h3>📊 架構對照表</h3>
+        <p>現代網路工程主要依循 TCP/IP，但我們會用 OSI 的邏輯去理解它。</p>
+        
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th>OSI 模型 (7 層)</th>
+                    <th>TCP/IP 架構 (4 或 5 層)</th>
+                    <th>功能關鍵字</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>應用層<br>展示層<br>會議層</td>
+                    <td><b>應用層 (Application)</b></td>
+                    <td>HTTP, Email, 檔案傳輸</td>
+                </tr>
+                <tr>
+                    <td>傳輸層</td>
+                    <td><b>傳輸層 (Transport)</b></td>
+                    <td>TCP (可靠), UDP (快速)</td>
+                </tr>
+                <tr>
+                    <td>網路層</td>
+                    <td><b>網際網路層 (Internet)</b></td>
+                    <td>IP 位址, 路由選擇</td>
+                </tr>
+                <tr>
+                    <td>資料連結層<br>實體層</td>
+                    <td><b>網路介面層 (Network Interface)</b></td>
+                    <td>網路卡, 網路線, Wi-Fi</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- 4. 互動練習 B：OSI 歸類 -->
+    <section class="concept-section">
+        <h2>🛠️ 互動練習：OSI 七層歸位</h2>
+        <p>請將下方的 <b>OSI 層級</b> 拖曳到右側對應的 <b>TCP/IP 分類</b> 中：</p>
+        
+        <div class="drag-container">
+            <!-- 來源：OSI 層級 -->
+            <div id="osi-pool" class="drop-zone" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <h4>OSI 層級池 (請拖曳)</h4>
+                <div class="draggable-item" draggable="true" ondragstart="drag(event)" id="osi-app">應用層</div>
+                <div class="draggable-item" draggable="true" ondragstart="drag(event)" id="osi-pres">展示層</div>
+                <div class="draggable-item" draggable="true" ondragstart="drag(event)" id="osi-sess">會議層</div>
+                <div class="draggable-item" draggable="true" ondragstart="drag(event)" id="osi-trans">傳輸層</div>
+                <div class="draggable-item" draggable="true" ondragstart="drag(event)" id="osi-net">網路層</div>
+                <div class="draggable-item" draggable="true" ondragstart="drag(event)" id="osi-data">資料連結層</div>
+                <div class="draggable-item" draggable="true" ondragstart="drag(event)" id="osi-phy">實體層</div>
+            </div>
+
+            <!-- 目標：TCP/IP 對應 -->
+            <div style="flex: 2; display:flex; flex-direction:column; gap:10px;">
+                <div class="drop-zone" id="tcp-app" ondrop="drop(event)" ondragover="allowDrop(event)" data-target="application">
+                    <h4>TCP/IP 應用層 (包含 OSI 上三層)</h4>
+                </div>
+                <div class="drop-zone" id="tcp-trans" ondrop="drop(event)" ondragover="allowDrop(event)" data-target="transport">
+                    <h4>TCP/IP 傳輸層</h4>
+                </div>
+                <div class="drop-zone" id="tcp-net" ondrop="drop(event)" ondragover="allowDrop(event)" data-target="internet">
+                    <h4>TCP/IP 網際網路層</h4>
+                </div>
+                <div class="drop-zone" id="tcp-link" ondrop="drop(event)" ondragover="allowDrop(event)" data-target="link">
+                    <h4>TCP/IP 網路介面層</h4>
+                </div>
+            </div>
+        </div>
+        <button onclick="checkMapping()" class="hint-btn" style="margin-top:10px; background-color:var(--accent-color);">檢查配對答案</button>
+        <p id="mapping-feedback" style="font-weight:bold; margin-top:5px;"></p>
+    </section>
+
+    <!-- 5. 互動練習 C：協定分類 -->
+    <section class="concept-section">
+        <h2>🔌 互動練習：協定是哪一層？</h2>
+        <p>請將下列 <b>通訊協定</b> 拖曳到正確的功能層級：</p>
+        
+        <div class="drag-container">
+            <div id="protocol-pool" class="drop-zone" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <h4>待分類協定</h4>
+                <div class="draggable-item" draggable="true" ondragstart="drag(event)" id="proto-http" style="background:#e67e22;">HTTP (網頁)</div>
+                <div class="draggable-item" draggable="true" ondragstart="drag(event)" id="proto-tcp" style="background:#e67e22;">TCP (可靠傳輸)</div>
+                <div class="draggable-item" draggable="true" ondragstart="drag(event)" id="proto-ip" style="background:#e67e22;">IP (定址)</div>
+                <div class="draggable-item" draggable="true" ondragstart="drag(event)" id="proto-eth" style="background:#e67e22;">Ethernet (乙太網)</div>
+            </div>
+
+            <div style="flex: 2;">
+                <div class="drop-zone" id="layer-app" ondrop="drop(event)" ondragover="allowDrop(event)" data-accept="proto-http">
+                    <h4>應用層 (資料內容)</h4>
+                </div>
+                <div class="drop-zone" id="layer-trans" ondrop="drop(event)" ondragover="allowDrop(event)" data-accept="proto-tcp">
+                    <h4>傳輸層 (埠號 Port)</h4>
+                </div>
+                <div class="drop-zone" id="layer-net" ondrop="drop(event)" ondragover="allowDrop(event)" data-accept="proto-ip">
+                    <h4>網際網路層 (IP 位址)</h4>
+                </div>
+                <div class="drop-zone" id="layer-link" ondrop="drop(event)" ondragover="allowDrop(event)" data-accept="proto-eth">
+                    <h4>網路介面層 (MAC/硬體)</h4>
+                </div>
+            </div>
+        </div>
+        <button onclick="checkProtocol()" class="hint-btn" style="margin-top:10px; background-color:#e67e22;">檢查協定答案</button>
+        <p id="protocol-feedback" style="font-weight:bold; margin-top:5px;"></p>
+    </section>
+
+    <!-- 6. 陷阱卡區 -->
+    <section class="concept-section">
+        <h2>⚠️ 考試常見陷阱卡 (點擊卡片以破解)</h2>
+        <div class="trap-cards">
+            <div class="card" onclick="dismissCard(this)">
+                <span class="card-close">點我破解</span>
+                <h3>陷阱 1</h3>
+                <p>以為 OSI 分 7 層比較詳細，所以大家都在用 OSI？</p>
+                <p style="color:red; font-weight:bold;">錯！太複雜反而沒人用。</p>
+            </div>
+            <div class="card" onclick="dismissCard(this)">
+                <span class="card-close">點我破解</span>
+                <h3>陷阱 2</h3>
+                <p>看到「標準」二字就選 OSI？</p>
+                <p style="color:red; font-weight:bold;">錯！題目問的是「最廣泛使用」。</p>
+            </div>
+            <div class="card" onclick="dismissCard(this)">
+                <span class="card-close">點我破解</span>
+                <h3>陷阱 3</h3>
+                <p>TCP/IP 只有 4 層，功能比較少？</p>
+                <p style="color:red; font-weight:bold;">錯！功能一樣強大，只是分層比較實務。</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 7. 自我檢測 -->
+    <section class="concept-section">
+        <h2>📝 自我檢測</h2>
+        
+        <div class="quiz-item">
+            <p><b>問題 1：</b>如果現在網路都用 TCP/IP，那為什麼我們還要學 OSI 七層？</p>
+            <button class="hint-btn" onclick="toggleHint('hint1')">顯示提示</button>
+            <p id="hint1" class="hint-text">提示：OSI 是一個很好的「參考模型」與「共同語言」，方便工程師溝通與除錯（例如：這是 Layer 2 的問題還是 Layer 3 的問題？）。</p>
+        </div>
+
+        <div class="quiz-item">
+            <p><b>問題 2：</b>題目若出現「實務上」、「網際網路基石」等關鍵字，答案通常是？</p>
+            <button class="hint-btn" onclick="toggleHint('hint2')">顯示提示</button>
+            <p id="hint2" class="hint-text">提示：TCP/IP 架構。</p>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <button class="reset-btn" onclick="resetPage()">🔄 重置所有練習</button>
+        <p style="font-size: 0.8em; color: #888;">電腦概論互動講義 © 2024</p>
+    </footer>
+</div>
+
+<script>
+    /* --- 1. 是非題判斷邏輯 --- */
+    function checkAnswer(userChoice) {
+        const feedbackEl = document.getElementById('answerFeedback');
+        feedbackEl.style.display = 'block';
+        feedbackEl.className = 'feedback'; // 重置 class
+
+        if (userChoice === 'X') {
+            feedbackEl.classList.add('correct');
+            feedbackEl.innerHTML = `
+                ✅ <b>答對了！(B) X</b><br>
+                OSI 是「理論參考模型」，雖然標準很完整，但過於複雜。<br>
+                目前世界上最廣泛使用的實務架構是 <b>TCP/IP</b>。
+            `;
+        } else {
+            feedbackEl.classList.add('wrong');
+            feedbackEl.innerHTML = `
+                ❌ <b>答錯了！</b><br>
+                題目問的是「最廣泛使用」的架構。<br>
+                OSI 是教學用的理論模型，真正運作網際網路的是 <b>TCP/IP</b> 架構。
+            `;
+        }
+    }
+
+    /* --- 2. 拖曳功能 (通用) --- */
+    function allowDrop(ev) {
+        ev.preventDefault();
+        ev.currentTarget.classList.add('drag-over');
+    }
+
+    // 當離開拖曳區時移除樣式
+    document.addEventListener('dragenter', function(e) {
+        if (e.target.classList.contains('drop-zone')) {
+            e.target.classList.add('drag-over');
+        }
+    });
+
+    document.addEventListener('dragleave', function(e) {
+        if (e.target.classList.contains('drop-zone')) {
+            e.target.classList.remove('drag-over');
+        }
+    });
+
+    function drag(ev) {
+        ev.dataTransfer.setData("text", ev.target.id);
+    }
+
+    function drop(ev) {
+        ev.preventDefault();
+        ev.currentTarget.classList.remove('drag-over');
+        var data = ev.dataTransfer.getData("text");
+        
+        // 確保不會把容器拖進容器
+        if(ev.target.classList.contains('drop-zone')) {
+            ev.target.appendChild(document.getElementById(data));
+        }
+    }
+
+    /* --- 3. 檢查 OSI 配對 --- */
+    function checkMapping() {
+        const answers = {
+            'tcp-app': ['osi-app', 'osi-pres', 'osi-sess'], // 應用層包含 OSI 上三層
+            'tcp-trans': ['osi-trans'],
+            'tcp-net': ['osi-net'],
+            'tcp-link': ['osi-data', 'osi-phy'] // 網路介面層包含 OSI 下兩層
+        };
+        
+        let score = 0;
+        let total = 7;
+        let message = "";
+
+        for (let tcpId in answers) {
+            const container = document.getElementById(tcpId);
+            const children = container.querySelectorAll('.draggable-item');
+            
+            children.forEach(child => {
+                if (answers[tcpId].includes(child.id)) {
+                    score++;
+                    child.style.backgroundColor = "#27ae60"; // 正確變綠
+                } else {
+                    child.style.backgroundColor = "#c0392b"; // 錯誤變紅
+                }
+            });
+        }
+
+        const feedback = document.getElementById('mapping-feedback');
+        if (score === total) {
+            feedback.innerHTML = "🎉 全對！你已經掌握了 OSI 與 TCP/IP 的對應關係！";
+            feedback.style.color = "green";
+        } else {
+            feedback.innerHTML = `⚠️ 只有 ${score} 個正確。再試試看！提示：OSI 上三層合併，下兩層合併。`;
+            feedback.style.color = "red";
+        }
+    }
+
+    /* --- 4. 檢查協定分類 --- */
+    function checkProtocol() {
+        let correctCount = 0;
+        const zones = ['layer-app', 'layer-trans', 'layer-net', 'layer-link'];
+        
+        zones.forEach(zoneId => {
+            const zone = document.getElementById(zoneId);
+            const correctId = zone.getAttribute('data-accept');
+            const items = zone.querySelectorAll('.draggable-item');
+            
+            items.forEach(item => {
+                if (item.id === correctId) {
+                    item.style.backgroundColor = "#27ae60";
+                    correctCount++;
+                } else {
+                    item.style.backgroundColor = "#c0392b";
+                }
+            });
+        });
+
+        const feedback = document.getElementById('protocol-feedback');
+        if (correctCount === 4) {
+            feedback.innerHTML = "🎉 太棒了！協定觀念完全正確！";
+            feedback.style.color = "green";
+        } else {
+            feedback.innerHTML = "⚠️ 還有分錯的協定喔，請參考前面表格再試一次。";
+            feedback.style.color = "red";
+        }
+    }
+
+    /* --- 5. 陷阱卡邏輯 --- */
+    function dismissCard(element) {
+        element.style.opacity = '0';
+        setTimeout(() => {
+            element.style.display = 'none';
+        }, 500);
+    }
+
+    /* --- 6. 自我檢測提示 --- */
+    function toggleHint(id) {
+        const hint = document.getElementById(id);
+        if (hint.style.display === 'block') {
+            hint.style.display = 'none';
+        } else {
+            hint.style.display = 'block';
+        }
+    }
+
+    /* --- 7. 重置功能 --- */
+    function resetPage() {
+        location.reload();
+    }
+</script>
+
+</body>
+</html>

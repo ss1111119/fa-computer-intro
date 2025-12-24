@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>題號 33：網路拓樸辨識 - 互動教學講義</title>
+    <style>
+        /* --- 全域變數與基礎設定 --- */
+        :root {
+            --primary-color: #333;       /* 主要文字黑 */
+            --accent-color: #0056b3;     /* 連結與按鈕藍 */
+            --highlight-bg: #fff9c4;     /* 螢光筆黃 */
+            --bg-color: #f4f4f4;         /* 背景灰 */
+            --card-bg: #ffffff;          /* 卡片白 */
+            --border-color: #ddd;        /* 邊框灰 */
+            --success-color: #28a745;    /* 正確綠 */
+            --error-color: #dc3545;      /* 錯誤紅 */
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            line-height: 1.6;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        /* --- 版面容器 --- */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        /* --- 標題區 --- */
+        header {
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin: 0;
+            color: #2c3e50;
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            margin-top: 10px;
+            color: #555;
+            border-left: 5px solid var(--accent-color);
+            padding-left: 10px;
+        }
+
+        /* --- 通用區塊樣式 --- */
+        .section-block {
+            margin-bottom: 25px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: #fff;
+        }
+
+        .section-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            display: inline-block;
+            background: var(--primary-color);
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+
+        /* --- 螢光筆特效 --- */
+        mark {
+            background-color: var(--highlight-bg);
+            padding: 2px 4px;
+            border-radius: 2px;
+            font-weight: bold;
+        }
+
+        /* --- 題目區 --- */
+        .question-box {
+            background-color: #fcfcfc;
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .options-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .options-list li {
+            margin-bottom: 8px;
+            padding: 8px;
+            transition: background 0.2s;
+        }
+
+        .options-list li:hover {
+            background-color: #f0f8ff;
+        }
+
+        /* --- 互動圖解區 (Tab) --- */
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .tab-btn {
+            padding: 10px 15px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 1rem;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab-btn:hover {
+            background-color: #f9f9f9;
+        }
+
+        .tab-btn.active {
+            color: var(--accent-color);
+            border-bottom: 3px solid var(--accent-color);
+            font-weight: bold;
+        }
+
+        .tab-content {
+            display: none; /* 預設隱藏 */
+            animation: fadeIn 0.5s;
+        }
+
+        .tab-content.active {
+            display: flex; /* 顯示時使用 flex 佈局 */
+            flex-direction: row;
+            gap: 20px;
+            align-items: center;
+        }
+
+        /* 手機版圖解變直排 */
+        @media (max-width: 600px) {
+            .tab-content.active {
+                flex-direction: column;
+            }
+        }
+
+        /* SVG 容器 */
+        .svg-container {
+            flex: 1;
+            min-width: 250px;
+            height: 250px;
+            border: 1px dashed #ccc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #fff;
+        }
+
+        /* SVG 樣式 */
+        svg line, svg path, svg polyline {
+            stroke: #333;
+            stroke-width: 3;
+            fill: none;
+        }
+        svg circle {
+            fill: #fff;
+            stroke: #333;
+            stroke-width: 3;
+        }
+        svg .center-node {
+            fill: #333; /* 星狀中心點填滿 */
+        }
+        svg .main-line {
+            stroke-width: 5; /* 匯流排主幹線加粗 */
+        }
+
+        .info-panel {
+            flex: 1;
+        }
+
+        .info-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            margin-bottom: 10px;
+        }
+
+        .pros-cons {
+            font-size: 0.9rem;
+            color: #555;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        /* 比較模式 (Grid) */
+        .compare-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            width: 100%;
+        }
+        .compare-item {
+            text-align: center;
+            border: 1px solid #eee;
+            padding: 5px;
+            border-radius: 5px;
+        }
+        .compare-item svg {
+            width: 80px;
+            height: 80px;
+        }
+        .compare-item p {
+            font-size: 0.8rem;
+            margin: 5px 0 0 0;
+        }
+
+        /* --- 作答區 --- */
+        .quiz-area {
+            background-color: #e9ecef;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .checkbox-group label {
+            display: inline-block;
+            margin-right: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 5px 10px;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        
+        .checkbox-group input:checked + span {
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
+        button {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background-color: #004494;
+        }
+        
+        button.toggle-btn {
+            background-color: #6c757d;
+        }
+
+        #feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+        .correct { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .wrong { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+        /* --- 摺疊區 --- */
+        .collapsible-content {
+            display: none;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #ccc;
+        }
+        .show { display: block; }
+
+        /* --- 實用動畫 --- */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>電腦概論 / 網路概論</h1>
+        <p>題號 33：網路拓樸 (Network Topology)</p>
+    </header>
+
+    <!-- 1. 題目區 -->
+    <div class="section-block question-box">
+        <div class="section-title">題目</div>
+        <p><strong>33. 下列何者可作為電腦網路的拓樸圖?</strong></p>
+        <ul class="options-list">
+            <li>(A) 樹狀</li>
+            <li>(B) 環狀</li>
+            <li>(C) 星狀</li>
+            <li>(D) 直條狀</li>
+            <li>(E) 網狀</li>
+        </ul>
+    </div>
+
+    <!-- 2. 第一步與第二步：關鍵字與翻譯 -->
+    <div class="section-block">
+        <div class="section-title">第一步：找關鍵字</div>
+        <p>請拿起螢光筆畫下：<mark>電腦網路</mark>、<mark>拓樸圖</mark>。</p>
+        <p><strong>名詞解釋：</strong>拓樸 (Topology) 指的是「網路連線的實體形狀」，也就是「線是怎麼接的」，跟網路速度快慢無關。</p>
+        
+        <hr style="border-top:1px dashed #ddd; margin: 15px 0;">
+
+        <div class="section-title">第二步：白話翻譯</div>
+        <p>這題其實在問：「<strong>如果你要架設網路，把電腦連起來，線可以接成哪些形狀？</strong>」</p>
+    </div>
+
+    <!-- 3. 互動圖解區 (重點) -->
+    <div class="section-block">
+        <div class="section-title">互動圖解：五種拓樸一鍵切換</div>
+        <p>點擊下方分頁，看看這些形狀長什麼樣子：</p>
+        
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showTab('tree')">Tree (樹狀)</button>
+            <button class="tab-btn" onclick="showTab('ring')">Ring (環狀)</button>
+            <button class="tab-btn" onclick="showTab('star')">Star (星狀)</button>
+            <button class="tab-btn" onclick="showTab('bus')">Bus (直條狀)</button>
+            <button class="tab-btn" onclick="showTab('mesh')">Mesh (網狀)</button>
+            <button class="tab-btn" onclick="showTab('all')">比較模式</button>
+        </div>
+
+        <!-- Tree Content -->
+        <div id="tree" class="tab-content active">
+            <div class="svg-container">
+                <svg viewBox="0 0 200 200">
+                    <!-- Root -->
+                    <circle cx="100" cy="30" r="10" />
+                    <!-- Level 2 -->
+                    <line x1="100" y1="40" x2="60" y2="80" />
+                    <line x1="100" y1="40" x2="140" y2="80" />
+                    <circle cx="60" cy="80" r="10" />
+                    <circle cx="140" cy="80" r="10" />
+                    <!-- Level 3 -->
+                    <line x1="60" y1="90" x2="40" y2="140" />
+                    <line x1="60" y1="90" x2="80" y2="140" />
+                    <circle cx="40" cy="140" r="10" />
+                    <circle cx="80" cy="140" r="10" />
+                    <line x1="140" y1="90" x2="120" y2="140" />
+                    <line x1="140" y1="90" x2="160" y2="140" />
+                    <circle cx="120" cy="140" r="10" />
+                    <circle cx="160" cy="140" r="10" />
+                </svg>
+            </div>
+            <div class="info-panel">
+                <div class="info-title">Tree Topology (樹狀拓樸)</div>
+                <p><strong>白話解說：</strong>像家族族譜或公司組織圖，由上而下分支。</p>
+                <div class="pros-cons">
+                    <p>✅ <strong>優點：</strong>易於擴充，結構分明（階層式）。</p>
+                    <p>❌ <strong>缺點：</strong>根節點（最上面那個）若壞掉，整串分支都會斷線。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ring Content -->
+        <div id="ring" class="tab-content">
+            <div class="svg-container">
+                <svg viewBox="0 0 200 200">
+                    <polygon points="100,20 180,80 150,170 50,170 20,80" stroke="#333" stroke-width="3" fill="none" />
+                    <circle cx="100" cy="20" r="10" />
+                    <circle cx="180" cy="80" r="10" />
+                    <circle cx="150" cy="170" r="10" />
+                    <circle cx="50" cy="170" r="10" />
+                    <circle cx="20" cy="80" r="10" />
+                </svg>
+            </div>
+            <div class="info-panel">
+                <div class="info-title">Ring Topology (環狀拓樸)</div>
+                <p><strong>白話解說：</strong>大家手牽手圍成一個圈，資料繞圈圈傳。</p>
+                <div class="pros-cons">
+                    <p>✅ <strong>優點：</strong>訊號傳輸有序（通常用 Token 傳遞），不會發生碰撞。</p>
+                    <p>❌ <strong>缺點：</strong>若沒有雙環保護，斷一處則全網癱瘓。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Star Content -->
+        <div id="star" class="tab-content">
+            <div class="svg-container">
+                <svg viewBox="0 0 200 200">
+                    <!-- Lines from center -->
+                    <line x1="100" y1="100" x2="100" y2="30" />
+                    <line x1="100" y1="100" x2="170" y2="100" />
+                    <line x1="100" y1="100" x2="100" y2="170" />
+                    <line x1="100" y1="100" x2="30" y2="100" />
+                    <line x1="100" y1="100" x2="150" y2="50" />
+                    <line x1="100" y1="100" x2="50" y2="150" />
+                    <!-- Nodes -->
+                    <circle cx="100" cy="30" r="10" />
+                    <circle cx="170" cy="100" r="10" />
+                    <circle cx="100" cy="170" r="10" />
+                    <circle cx="30" cy="100" r="10" />
+                    <circle cx="150" cy="50" r="10" />
+                    <circle cx="50" cy="150" r="10" />
+                    <!-- Center Hub -->
+                    <circle cx="100" cy="100" r="15" class="center-node" />
+                </svg>
+            </div>
+            <div class="info-panel">
+                <div class="info-title">Star Topology (星狀拓樸)</div>
+                <p><strong>白話解說：</strong>像星星光芒，中間有一台集線器(Hub/Switch)，大家都連它。<strong>(目前最常見)</strong></p>
+                <div class="pros-cons">
+                    <p>✅ <strong>優點：</strong>好管理，一台電腦壞掉不影響別人。</p>
+                    <p>❌ <strong>缺點：</strong>中間那台設備（集線器）壞掉，全網掛點。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bus Content -->
+        <div id="bus" class="tab-content">
+            <div class="svg-container">
+                <svg viewBox="0 0 200 200">
+                    <!-- Main Backbone -->
+                    <line x1="20" y1="100" x2="180" y2="100" class="main-line" />
+                    <!-- Branches -->
+                    <line x1="50" y1="100" x2="50" y2="60" />
+                    <line x1="90" y1="100" x2="90" y2="140" />
+                    <line x1="130" y1="100" x2="130" y2="60" />
+                    <line x1="160" y1="100" x2="160" y2="140" />
+                    <!-- Nodes -->
+                    <circle cx="50" cy="60" r="10" />
+                    <circle cx="90" cy="140" r="10" />
+                    <circle cx="130" cy="60" r="10" />
+                    <circle cx="160" cy="140" r="10" />
+                    <!-- Terminators -->
+                    <rect x="15" y="95" width="5" height="10" fill="#333" />
+                    <rect x="180" y="95" width="5" height="10" fill="#333" />
+                </svg>
+            </div>
+            <div class="info-panel">
+                <div class="info-title">Bus Topology (匯流排/直條狀拓樸)</div>
+                <p><strong>白話解說：</strong>像公車路線（Bus），一條主幹線貫穿，大家掛在同一條線上。</p>
+                <div class="pros-cons">
+                    <p>✅ <strong>優點：</strong>省線、便宜、架設容易（早期常見）。</p>
+                    <p>❌ <strong>缺點：</strong>主幹線一斷，全部斷線；多人同時傳輸易碰撞。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mesh Content -->
+        <div id="mesh" class="tab-content">
+            <div class="svg-container">
+                <svg viewBox="0 0 200 200">
+                    <!-- Fully connected Pentagon (approx) -->
+                    <!-- Outer -->
+                    <polygon points="100,20 180,80 150,170 50,170 20,80" stroke="#ccc" stroke-width="1" />
+                    <!-- Inner connections -->
+                    <line x1="100" y1="20" x2="150" y2="170" />
+                    <line x1="100" y1="20" x2="50" y2="170" />
+                    <line x1="180" y1="80" x2="50" y2="170" />
+                    <line x1="180" y1="80" x2="20" y2="80" /> <!-- Horizontal -->
+                    <line x1="150" y1="170" x2="20" y2="80" />
+                    <!-- Nodes -->
+                    <circle cx="100" cy="20" r="10" />
+                    <circle cx="180" cy="80" r="10" />
+                    <circle cx="150" cy="170" r="10" />
+                    <circle cx="50" cy="170" r="10" />
+                    <circle cx="20" cy="80" r="10" />
+                </svg>
+            </div>
+            <div class="info-panel">
+                <div class="info-title">Mesh Topology (網狀拓樸)</div>
+                <p><strong>白話解說：</strong>像蜘蛛網，節點之間有很多條路互連，四通八達。</p>
+                <div class="pros-cons">
+                    <p>✅ <strong>優點：</strong>最可靠！一條路斷了可以走別條（高容錯）。</p>
+                    <p>❌ <strong>缺點：</strong>成本最高，線路最複雜。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- All Compare Mode -->
+        <div id="all" class="tab-content">
+            <div class="compare-grid">
+                <div class="compare-item">
+                    <svg viewBox="0 0 100 100"><circle cx="50" cy="20" r="5"/><line x1="50" y1="25" x2="30" y2="50"/><line x1="50" y1="25" x2="70" y2="50"/><circle cx="30" cy="50" r="5"/><circle cx="70" cy="50" r="5"/></svg>
+                    <p><strong>Tree</strong><br>階層分支</p>
+                </div>
+                <div class="compare-item">
+                    <svg viewBox="0 0 100 100"><circle cx="50" cy="20" r="5"/><circle cx="80" cy="50" r="5"/><circle cx="50" cy="80" r="5"/><circle cx="20" cy="50" r="5"/><polygon points="50,20 80,50 50,80 20,50" fill="none" stroke="#333"/></svg>
+                    <p><strong>Ring</strong><br>繞圈圈</p>
+                </div>
+                <div class="compare-item">
+                    <svg viewBox="0 0 100 100"><line x1="50" y1="50" x2="50" y2="10"/><line x1="50" y1="50" x2="90" y2="50"/><line x1="50" y1="50" x2="50" y2="90"/><line x1="50" y1="50" x2="10" y2="50"/><circle cx="50" cy="50" r="8" fill="#333"/><circle cx="50" cy="10" r="5"/><circle cx="90" cy="50" r="5"/><circle cx="50" cy="90" r="5"/><circle cx="10" cy="50" r="5"/></svg>
+                    <p><strong>Star</strong><br>中心發散</p>
+                </div>
+                <div class="compare-item">
+                    <svg viewBox="0 0 100 100"><line x1="10" y1="50" x2="90" y2="50" stroke-width="4"/><line x1="30" y1="50" x2="30" y2="20"/><line x1="70" y1="50" x2="70" y2="80"/><circle cx="30" cy="20" r="5"/><circle cx="70" cy="80" r="5"/></svg>
+                    <p><strong>Bus</strong><br>一條直線</p>
+                </div>
+                <div class="compare-item">
+                    <svg viewBox="0 0 100 100"><polygon points="50,10 90,40 70,90 30,90 10,40" fill="none" stroke="#ccc"/><line x1="50" y1="10" x2="70" y2="90" stroke="#ccc"/><line x1="90" y1="40" x2="30" y2="90" stroke="#ccc"/><circle cx="50" cy="10" r="4"/><circle cx="90" cy="40" r="4"/><circle cx="70" cy="90" r="4"/><circle cx="30" cy="90" r="4"/><circle cx="10" cy="40" r="4"/></svg>
+                    <p><strong>Mesh</strong><br>複雜互連</p>
+                </div>
+            </div>
+            <p style="width: 100%; text-align: center; margin-top: 10px; color: #666;">（↑ 點擊上方分頁可看詳細說明）</p>
+        </div>
+    </div>
+
+    <!-- 4. 解題思路與分析 -->
+    <div class="section-block">
+        <div class="section-title">第三步：解題思路</div>
+        <p><strong>題目問的是「下列何者可作為拓樸圖？」</strong></p>
+        <p>這是一個觀念題，不是計算題。只要該形狀能描述「電腦怎麼連接」，它就是一種拓樸。</p>
+        <ul style="list-style-type: decimal;">
+            <li>看到(A) <strong>樹狀</strong> → 聯想組織圖，有！</li>
+            <li>看到(B) <strong>環狀</strong> → 聯想繞圈圈，有！</li>
+            <li>看到(C) <strong>星狀</strong> → 聯想最常用的集線器接法，有！</li>
+            <li>看到(D) <strong>直條狀</strong> → 這是<strong>關鍵字</strong>！在英文叫 Bus Topology，中文常翻成總線或匯流排，但因為形狀就是一條直線，所以題目叫它直條狀。<strong>這也是拓樸！</strong></li>
+            <li>看到(E) <strong>網狀</strong> → 聯想互聯網核心，有！</li>
+        </ul>
+        <p><strong>結論：</strong>這五個選項，全都是教科書上定義的網路拓樸。</p>
+    </div>
+
+    <!-- 5. 記憶口訣與陷阱 -->
+    <div class="section-block" style="background-color: #fffde7; border-color: #ffeb3b;">
+        <div class="section-title" style="background-color: #fbc02d; color: #000;">名師口訣 & 避坑指南</div>
+        <p>🧠 <strong>記憶口訣：</strong>「<strong>樹環星直網，五型都是拓樸</strong>」</p>
+        <p>⚠️ <strong>常見陷阱：</strong></p>
+        <ol>
+            <li><strong>直條狀 (Bus)</strong>：很多學生以為「直條狀」是用詞不精確，其實它就是 Bus Topology 的直譯，千萬別刪去它。</li>
+            <li><strong>拓樸不是協定</strong>：拓樸是「形狀」，TCP/IP 是「規則（協定）」，不要搞混。</li>
+        </ol>
+    </div>
+
+    <!-- 6. 作答區 -->
+    <div class="quiz-area">
+        <h3>✍️ 立即練習 (複選題)</h3>
+        <p>33. 下列何者可作為電腦網路的拓樸圖?</p>
+        <div class="checkbox-group">
+            <label><input type="checkbox" name="option" value="A"> <span>(A) 樹狀</span></label>
+            <label><input type="checkbox" name="option" value="B"> <span>(B) 環狀</span></label>
+            <label><input type="checkbox" name="option" value="C"> <span>(C) 星狀</span></label>
+            <br>
+            <label><input type="checkbox" name="option" value="D"> <span>(D) 直條狀</span></label>
+            <label><input type="checkbox" name="option" value="E"> <span>(E) 網狀</span></label>
+        </div>
+        
+        <button onclick="checkAnswer()">送出作答</button>
+        <button class="toggle-btn" onclick="toggleAnswer()">顯示/隱藏詳解</button>
+
+        <div id="feedback"></div>
+
+        <div id="answer-block" class="collapsible-content">
+            <h4 style="color: var(--success-color);">✅ 正確答案：A, B, C, D, E (全選)</h4>
+            <p><strong>詳細解析：</strong></p>
+            <ul>
+                <li><strong>(A) 樹狀 (Tree)</strong>：由根節點分支，常見於大型網路架構。</li>
+                <li><strong>(B) 環狀 (Ring)</strong>：節點形成封閉迴路，如早期的 Token Ring。</li>
+                <li><strong>(C) 星狀 (Star)</strong>：透過中心設備 (Switch/Hub) 連接，現代區域網路 (LAN) 最常用。</li>
+                <li><strong>(D) 直條狀 (Bus)</strong>：即匯流排拓樸，共用一條傳輸線，雖然現代少用，但仍屬基本拓樸定義。</li>
+                <li><strong>(E) 網狀 (Mesh)</strong>：節點間有多條路徑，常用於需要高可靠度的廣域網路或軍事網路。</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 7. 自我檢測 -->
+    <div class="section-block">
+        <div class="section-title">自我檢測 (延伸思考)</div>
+        <ul>
+            <li>Q1: 如果中間那個集線器壞掉了，哪一種拓樸會導致所有電腦都無法上網？(提示：星星)</li>
+            <li>Q2: 哪一種拓樸最省線材費用，但維護除錯最麻煩？(提示：公車)</li>
+            <li>Q3: 網際網路的核心骨幹通常採用哪種拓樸，以確保斷了一條線還能走別條？(提示：蜘蛛網)</li>
+        </ul>
+    </div>
+
+</div>
+
+<script>
+    // --- 分頁切換功能 ---
+    function showTab(tabName) {
+        // 1. 隱藏所有內容
+        var contents = document.getElementsByClassName('tab-content');
+        for (var i = 0; i < contents.length; i++) {
+            contents[i].classList.remove('active');
+        }
+        
+        // 2. 移除所有按鈕的 active 狀態
+        var btns = document.getElementsByClassName('tab-btn');
+        for (var i = 0; i < btns.length; i++) {
+            btns[i].classList.remove('active');
+        }
+
+        // 3. 顯示選定的內容並啟用按鈕
+        document.getElementById(tabName).classList.add('active');
+        // 找到觸發此函數的按鈕並設為 active (這裡簡單用迴圈對應文字，或直接傳 this)
+        // 簡單做法：重新抓取所有按鈕，根據 onclick 內容判斷
+        for (var i = 0; i < btns.length; i++) {
+            if (btns[i].getAttribute('onclick').includes("'" + tabName + "'")) {
+                btns[i].classList.add('active');
+            }
+        }
+    }
+
+    // --- 檢查答案功能 ---
+    function checkAnswer() {
+        // 取得所有被勾選的選項
+        var checkboxes = document.querySelectorAll('input[name="option"]:checked');
+        var userAnswers = [];
+        checkboxes.forEach((checkbox) => {
+            userAnswers.push(checkbox.value);
+        });
+        
+        // 排序以便比較
+        userAnswers.sort();
+
+        // 正確答案
+        var correctAnswers = ['A', 'B', 'C', 'D', 'E'];
+        
+        var feedbackDiv = document.getElementById('feedback');
+        feedbackDiv.style.display = 'block';
+
+        // 比較陣列
+        if (JSON.stringify(userAnswers) === JSON.stringify(correctAnswers)) {
+            feedbackDiv.className = 'correct';
+            feedbackDiv.innerHTML = '<strong>🎉 答對了！</strong> 太棒了，你已經掌握了所有基本拓樸類型！';
+        } else {
+            feedbackDiv.className = 'wrong';
+            // 判斷漏了什麼
+            if (userAnswers.length === 0) {
+                feedbackDiv.innerHTML = '<strong>❌ 請先作答</strong>：請勾選你認為正確的選項。';
+            } else if (!userAnswers.includes('D')) {
+                feedbackDiv.innerHTML = '<strong>⚠️ 差一點點！</strong> 你是不是漏選了 (D) 直條狀？記得「直條狀」就是 Bus Topology 喔！';
+            } else {
+                feedbackDiv.innerHTML = '<strong>❌ 答案不完整</strong>：這題所有的選項都是標準的拓樸類型喔！試著全選看看？';
+            }
+        }
+    }
+
+    // --- 顯示/隱藏詳解 ---
+    function toggleAnswer() {
+        var answerBlock = document.getElementById('answer-block');
+        if (answerBlock.classList.contains('show')) {
+            answerBlock.classList.remove('show');
+        } else {
+            answerBlock.classList.add('show');
+        }
+    }
+</script>
+
+</body>
+</html>

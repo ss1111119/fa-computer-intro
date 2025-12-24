@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電腦概論 - 命題邏輯蘊涵等價教學</title>
+    <style>
+        /* --- 全域設定 (Global Styles) --- */
+        :root {
+            --primary-color: #333;
+            --accent-color: #0056b3;
+            --highlight-bg: #fff9c4; /* 淡黃色螢光筆 */
+            --bg-color: #f4f4f4;
+            --card-bg: #ffffff;
+            --border-color: #ddd;
+            --success-color: #28a745;
+            --error-color: #dc3545;
+        }
+
+        body {
+            font-family: "Segoe UI", "Microsoft JhengHei", "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--primary-color);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1, h2, h3 {
+            color: #222;
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            border-bottom: 3px solid var(--accent-color);
+            padding-bottom: 10px;
+            font-size: 1.8rem;
+        }
+
+        h2 {
+            font-size: 1.4rem;
+            margin-top: 30px;
+            background-color: #eee;
+            padding: 8px 12px;
+            border-left: 5px solid var(--accent-color);
+            border-radius: 0 4px 4px 0;
+        }
+
+        h3 {
+            font-size: 1.2rem;
+            color: #444;
+            margin-top: 20px;
+        }
+
+        p, li {
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+
+        strong {
+            color: #000;
+            font-weight: 700;
+        }
+
+        code {
+            font-family: Consolas, Monaco, 'Courier New', monospace;
+            background-color: #f0f0f0;
+            padding: 2px 5px;
+            border-radius: 4px;
+            color: #d63384;
+            font-size: 1.1em;
+        }
+
+        /* --- 特殊區塊樣式 --- */
+        .highlight {
+            background-color: var(--highlight-bg);
+            padding: 0 2px;
+            border-radius: 2px;
+        }
+
+        .question-box {
+            border: 2px solid var(--accent-color);
+            padding: 20px;
+            background-color: #f9fbff;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .option-item {
+            display: block;
+            margin: 8px 0;
+            font-family: Consolas, "Microsoft JhengHei", monospace;
+        }
+
+        .concept-box {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+
+        .mnemonic-box {
+            background-color: #d1e7dd;
+            border: 1px solid #badbcc;
+            color: #0f5132;
+            padding: 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        /* --- 互動真值表區塊 (Interactive Table) --- */
+        .truth-table-container {
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+            font-family: Consolas, monospace;
+            text-align: center;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+        }
+
+        th {
+            background-color: #e9ecef;
+        }
+
+        .true-val { color: var(--success-color); font-weight: bold; }
+        .false-val { color: var(--error-color); font-weight: bold; }
+        .row-diff { background-color: #ffe6e6; } /* 標示不相同的列 */
+        .row-same { background-color: #e6fffa; }
+
+        .interactive-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        .radio-label {
+            display: inline-flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 5px 10px;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            user-select: none;
+        }
+        
+        .radio-label:hover {
+            background: #e2e6ea;
+        }
+
+        .radio-label input {
+            margin-right: 8px;
+        }
+
+        #comparison-result {
+            font-weight: bold;
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        /* --- 作答區塊 (Quiz) --- */
+        .quiz-area {
+            border-top: 2px dashed #ccc;
+            margin-top: 40px;
+            padding-top: 20px;
+        }
+
+        .quiz-options label {
+            display: block;
+            margin: 10px 0;
+            cursor: pointer;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .quiz-options label:hover {
+            background-color: #f8f8f8;
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: var(--accent-color);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 10px;
+            margin-right: 10px;
+        }
+
+        .btn:hover {
+            background-color: #004494;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: var(--accent-color);
+            border: 2px solid var(--accent-color);
+        }
+        
+        .btn-outline:hover {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        #quiz-feedback {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .correct-answer-box {
+            display: none;
+            margin-top: 10px;
+            padding: 15px;
+            background-color: #e2e3e5;
+            border-radius: 5px;
+        }
+
+        /* 手機 RWD 調整 */
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+            h1 { font-size: 1.5rem; }
+            .radio-label { width: 100%; margin-bottom: 5px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- A. 標題區 -->
+    <h1>題號 50：命題邏輯中的蘊涵等價 (Implication Equivalences)</h1>
+    <p>適用對象：電腦概論 / 離散數學 初學者</p>
+
+    <!-- B. 題目區 -->
+    <div class="question-box">
+        <h3>【題目】(複選題)</h3>
+        <p>50. 在命題的邏輯中，P &rarr; Q 跟下列何者命題為等價的關係?</p>
+        <div style="margin-left: 20px;">
+            <span class="option-item">(A) &not;Q &rarr; &not;P</span>
+            <span class="option-item">(B) &not;(Q &rarr; P)</span>
+            <span class="option-item">(C) &not;P &or; Q</span>
+            <span class="option-item">(D) P &and; &not;Q</span>
+            <span class="option-item">(E) P &or; &not;Q</span>
+        </div>
+    </div>
+
+    <!-- C. 第一步：找關鍵字 -->
+    <h2>第一步：找關鍵字</h2>
+    <p>請拿出心裡的螢光筆，圈出題目中的：</p>
+    <ul>
+        <li><span class="highlight">P &rarr; Q</span>：這是主角，數學上稱為 <strong>Implication (蘊涵)</strong>。</li>
+        <li><span class="highlight">等價 (Equivalent)</span>：這兩個字是重點！意思是「不管 P、Q 是真是假，算出來的真值表結果要<strong>完全一模一樣</strong>」。</li>
+    </ul>
+
+    <!-- D. 第二步：白話翻譯 -->
+    <h2>第二步：白話翻譯</h2>
+    <p>邏輯符號太抽象？我們用生活例子來翻譯：</p>
+    <div class="concept-box">
+        <p><strong>P &rarr; Q</strong>：如果 <span style="color:blue">下雨 (P)</span>，我就 <span style="color:green">帶傘 (Q)</span>。</p>
+    </div>
+    <p>題目問的是：這句話跟下面哪個選項意思完全一樣？</p>
+
+    <!-- E. 第三步：解題思路 -->
+    <h2>第三步：解題思路 (必背觀念)</h2>
+    <p>遇到 Implication ($P \rightarrow Q$) 的等價題，有兩個「必殺技」一定要背起來，考試直接秒選：</p>
+    
+    <ol>
+        <li>
+            <strong>逆否命題 (Contrapositive)</strong>：
+            <br><code>P &rarr; Q &equiv; &not;Q &rarr; &not;P</code>
+            <br>白話：如果 <span style="color:red">沒帶傘 (&not;Q)</span>，那就代表 <span style="color:red">沒下雨 (&not;P)</span>。
+            <br>(這兩句邏輯上是完全通的！)
+        </li>
+        <br>
+        <li>
+            <strong>化為「或」算式 (Disjunction form)</strong>：
+            <br><code>P &rarr; Q &equiv; &not;P &or; Q</code>
+            <br>記憶法：前面加負號，中間變 OR (<strong>Not P OR Q</strong>)。
+            <br>白話：要嘛 <span style="color:red">沒下雨 (&not;P)</span>，如果不幸下雨了，我就 <span style="color:green">一定帶傘 (Q)</span>。
+        </li>
+    </ol>
+
+    <!-- G. 必懂觀念 (插入強調) -->
+    <div class="concept-box" style="background-color: #ffe0e0; border-color: #ffcccc; color: #cc0000;">
+        <h3>⚠️ 只有一種情況 P &rarr; Q 是騙人的 (False)！</h3>
+        <p style="font-size: 1.1em;">
+            那就是：<strong>「P 發生了，但是 Q 沒做」</strong> (P is True, Q is False)。<br>
+            也就是：<strong>下雨了 (P)，但我沒帶傘 (&not;Q)</strong>。<br>
+            符號寫作：<code>P &and; &not;Q</code> (這是 P&rarr;Q 的否定，不是等價！)
+        </p>
+    </div>
+
+    <!-- F. 互動核心：真值表驗證 -->
+    <h2>互動實驗室：真值表對照</h2>
+    <p>別只用背的，我們直接跑一次真值表給你看。請選擇下方一個選項，系統會幫你檢查它跟題目 (P &rarr; Q) 是否等價。</p>
+
+    <div class="interactive-controls">
+        <strong>選擇要比對的選項：</strong>
+        <label class="radio-label"><input type="radio" name="compOption" value="A" onclick="updateTable('A')"> (A) &not;Q &rarr; &not;P</label>
+        <label class="radio-label"><input type="radio" name="compOption" value="B" onclick="updateTable('B')"> (B) &not;(Q &rarr; P)</label>
+        <label class="radio-label"><input type="radio" name="compOption" value="C" onclick="updateTable('C')"> (C) &not;P &or; Q</label>
+        <label class="radio-label"><input type="radio" name="compOption" value="D" onclick="updateTable('D')"> (D) P &and; &not;Q</label>
+        <label class="radio-label"><input type="radio" name="compOption" value="E" onclick="updateTable('E')"> (E) P &or; &not;Q</label>
+    </div>
+
+    <div id="comparison-result" style="display:none;"></div>
+
+    <div class="truth-table-container">
+        <table id="truthTable">
+            <thead>
+                <tr>
+                    <th width="15%">P</th>
+                    <th width="15%">Q</th>
+                    <th width="35%" style="background-color: #e3f2fd;">題目: P &rarr; Q</th>
+                    <th width="35%" id="optionHeader" style="background-color: #fff3cd;">選項</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <!-- Javascript 將填充這裡 -->
+                <tr><td colspan="4">請點選上方選項以產生真值表</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- H. 第四步：選項分析 -->
+    <h2>第四步：逐項解析</h2>
+    <ul>
+        <li>
+            <strong>(A) &not;Q &rarr; &not;P</strong> <span style="color:green">✅ 正確</span>
+            <br>這是標準的「逆否命題」(Contrapositive)。<span class="highlight">原命題與其逆否命題恆等價。</span>
+        </li>
+        <li>
+            <strong>(B) &not;(Q &rarr; P)</strong> <span style="color:red">❌ 錯誤</span>
+            <br>這是把「逆命題」(Q&rarr;P) 再否定。這完全改變了意思。
+        </li>
+        <li>
+            <strong>(C) &not;P &or; Q</strong> <span style="color:green">✅ 正確</span>
+            <br>這是蘊涵的定義轉換。<span class="highlight">前面否定，中間變 OR。</span>
+        </li>
+        <li>
+            <strong>(D) P &and; &not;Q</strong> <span style="color:red">❌ 錯誤 (陷阱)</span>
+            <br>這其實是「P &rarr; Q 為假」的情況，也就是它的<strong>否定命題 (Negation)</strong>，而不是等價。
+        </li>
+        <li>
+            <strong>(E) P &or; &not;Q</strong> <span style="color:red">❌ 錯誤</span>
+            <br>這是混淆選項。跟正確答案 (C) 相比，否定號放錯位置了。
+        </li>
+    </ul>
+
+    <!-- J. 記憶口訣 -->
+    <div class="mnemonic-box">
+        🚀 考前記憶口訣：
+        <br>
+        「看到箭頭 P&rarr;Q，找兩個人：」
+        <br>
+        1. 兄弟：逆否命題 (倒過來加 Not)
+        <br>
+        2. 變身：Not P OR Q (前面加 Not，變 OR)
+    </div>
+
+    <!-- L. 作答區 -->
+    <div class="quiz-area">
+        <h3>【模擬作答】請勾選正確答案 (複選)</h3>
+        <div class="quiz-options">
+            <label><input type="checkbox" id="optA" value="A"> (A) &not;Q &rarr; &not;P</label>
+            <label><input type="checkbox" id="optB" value="B"> (B) &not;(Q &rarr; P)</label>
+            <label><input type="checkbox" id="optC" value="C"> (C) &not;P &or; Q</label>
+            <label><input type="checkbox" id="optD" value="D"> (D) P &and; &not;Q</label>
+            <label><input type="checkbox" id="optE" value="E"> (E) P &or; &not;Q</label>
+        </div>
+        
+        <button class="btn" onclick="checkAnswer()">送出作答</button>
+        <button class="btn btn-outline" onclick="toggleAnswer()">顯示/隱藏答案</button>
+
+        <div id="quiz-feedback"></div>
+        
+        <div id="real-answer" class="correct-answer-box">
+            <strong>正確答案：A, C</strong>
+            <p>解析：如上所述，(A)是逆否命題，(C)是蘊涵定義轉換。</p>
+        </div>
+    </div>
+
+    <!-- N. 自我檢測 -->
+    <div style="margin-top: 40px; border-top: 1px solid #ddd; padding-top: 20px;">
+        <h3>🧠 自我檢測 (想一想，不給答案)</h3>
+        <ol>
+            <li>如果不看書，你能寫出 P &rarr; Q 的真值表嗎？(提示：只有一個 F)</li>
+            <li>「如果我考一百分，爸爸就給我一千元」。這句話的「否定」是什麼？(提示：要用到 P &and; &not;Q 的概念)</li>
+        </ol>
+    </div>
+
+</div>
+
+<!-- JavaScript 邏輯區 -->
+<script>
+    // 邏輯運算輔助函式
+    // 1 = True, 0 = False
+    function not(val) { return val === 1 ? 0 : 1; }
+    function or(a, b) { return (a === 1 || b === 1) ? 1 : 0; }
+    function and(a, b) { return (a === 1 && b === 1) ? 1 : 0; }
+    function impl(a, b) { 
+        // P -> Q 只有在 True -> False 時為 False (0)
+        if (a === 1 && b === 0) return 0;
+        return 1;
+    }
+
+    // 將 1/0 轉為 HTML 顯示 (T/F)
+    function fmt(val) {
+        return val === 1 
+            ? '<span class="true-val">T</span>' 
+            : '<span class="false-val">F</span>';
+    }
+
+    // 更新真值表的函式
+    function updateTable(optionChar) {
+        const tbody = document.getElementById('tableBody');
+        const header = document.getElementById('optionHeader');
+        const resultDiv = document.getElementById('comparison-result');
+        
+        tbody.innerHTML = ''; // 清空舊內容
+        
+        // P 與 Q 的四種組合
+        const combinations = [
+            {p: 1, q: 1},
+            {p: 1, q: 0},
+            {p: 0, q: 1},
+            {p: 0, q: 0}
+        ];
+
+        let allMatch = true;
+        let optionText = "";
+        let optionFormula = "";
+
+        // 設定表頭與公式邏輯
+        switch(optionChar) {
+            case 'A':
+                optionText = "(A) &not;Q &rarr; &not;P";
+                optionFormula = (p, q) => impl(not(q), not(p));
+                break;
+            case 'B':
+                optionText = "(B) &not;(Q &rarr; P)";
+                optionFormula = (p, q) => not(impl(q, p));
+                break;
+            case 'C':
+                optionText = "(C) &not;P &or; Q";
+                optionFormula = (p, q) => or(not(p), q);
+                break;
+            case 'D':
+                optionText = "(D) P &and; &not;Q";
+                optionFormula = (p, q) => and(p, not(q));
+                break;
+            case 'E':
+                optionText = "(E) P &or; &not;Q";
+                optionFormula = (p, q) => or(p, not(q));
+                break;
+        }
+
+        header.innerHTML = optionText;
+
+        // 生成每一列
+        combinations.forEach(row => {
+            const valOriginal = impl(row.p, row.q); // 題目 P->Q
+            const valOption = optionFormula(row.p, row.q); // 選項結果
+            
+            const isMatch = valOriginal === valOption;
+            if (!isMatch) allMatch = false;
+
+            const tr = document.createElement('tr');
+            if (!isMatch) tr.className = 'row-diff'; // 標示不同之處
+            else tr.className = 'row-same';
+
+            tr.innerHTML = `
+                <td>${fmt(row.p)}</td>
+                <td>${fmt(row.q)}</td>
+                <td>${fmt(valOriginal)}</td>
+                <td>${fmt(valOption)} ${isMatch ? '' : '⚠️'}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        // 顯示總結
+        resultDiv.style.display = 'block';
+        if (allMatch) {
+            resultDiv.style.backgroundColor = '#d4edda';
+            resultDiv.style.color = '#155724';
+            resultDiv.innerHTML = `驗證結果：選項 ${optionChar} 與題目 P&rarr;Q <span style="font-size:1.2em">等價 ✅</span> (四列結果完全相同)`;
+        } else {
+            resultDiv.style.backgroundColor = '#f8d7da';
+            resultDiv.style.color = '#721c24';
+            resultDiv.innerHTML = `驗證結果：選項 ${optionChar} 與題目 <span style="font-size:1.2em">不等價 ❌</span> (請看紅底標示處不同)`;
+        }
+    }
+
+    // 檢查作答
+    function checkAnswer() {
+        const feedback = document.getElementById('quiz-feedback');
+        const a = document.getElementById('optA').checked;
+        const b = document.getElementById('optB').checked;
+        const c = document.getElementById('optC').checked;
+        const d = document.getElementById('optD').checked;
+        const e = document.getElementById('optE').checked;
+
+        feedback.style.display = 'block';
+
+        // 正確答案是 A 和 C
+        if (a && c && !b && !d && !e) {
+            feedback.style.backgroundColor = '#d4edda';
+            feedback.style.color = '#155724';
+            feedback.innerHTML = '<strong>恭喜答對了！🎉</strong><br>你已經完全掌握了蘊涵等價的觀念。';
+        } else {
+            feedback.style.backgroundColor = '#f8d7da';
+            feedback.style.color = '#721c24';
+            let msg = '<strong>答案不完全正確喔！💪</strong><br>提示：';
+            if (!a) msg += '<br> - 選項 (A) 是逆否命題，一定要選。';
+            if (!c) msg += '<br> - 選項 (C) 是定義轉換，一定要選。';
+            if (b) msg += '<br> - 選項 (B) 是錯誤的，整句否定不等於原意。';
+            if (d) msg += '<br> - 選項 (D) 是 P->Q 的「否定」，不是等價。';
+            if (e) msg += '<br> - 選項 (E) 否定放錯位置了。';
+            
+            feedback.innerHTML = msg;
+        }
+    }
+
+    // 顯示/隱藏答案
+    function toggleAnswer() {
+        const ansBox = document.getElementById('real-answer');
+        if (ansBox.style.display === 'none' || ansBox.style.display === '') {
+            ansBox.style.display = 'block';
+        } else {
+            ansBox.style.display = 'none';
+        }
+    }
+</script>
+
+</body>
+</html>

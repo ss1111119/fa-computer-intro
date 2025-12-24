@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>31. 四個節點二元樹高度可能值 - 互動詳解</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50; /* 深藍灰 */
+            --accent-color: #e74c3c; /* 重點紅 */
+            --highlight-bg: #fff3cd; /* 螢光筆黃 */
+            --success-color: #27ae60;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* 卡片通用樣式 */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 25px;
+            margin-bottom: 20px;
+            border-left: 5px solid var(--primary-color);
+        }
+
+        h1, h2, h3 {
+            color: var(--primary-color);
+            margin-top: 0;
+        }
+
+        h1 { font-size: 1.5rem; text-align: center; margin-bottom: 20px; }
+        h2 { font-size: 1.2rem; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+
+        /* 題目區 */
+        .question-box {
+            background-color: #eef2f3;
+            padding: 15px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .options-list { list-style: none; padding: 0; }
+        .options-list li { margin: 5px 0; }
+        
+        /* 螢光筆特效 */
+        .highlight {
+            background-color: var(--highlight-bg);
+            padding: 2px 4px;
+            border-radius: 3px;
+            border-bottom: 2px solid #f1c40f;
+            font-weight: bold;
+        }
+
+        /* 互動核心區 */
+        .interactive-panel {
+            background: #fff;
+            border: 2px solid var(--primary-color);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .controls {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+
+        select {
+            padding: 8px;
+            font-size: 1rem;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+
+        .tree-display {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .tree-case {
+            flex: 1;
+            min-width: 280px;
+            text-align: center;
+            margin: 10px;
+            padding: 10px;
+            border: 1px dashed #ccc;
+            border-radius: 5px;
+        }
+
+        svg {
+            max-width: 100%;
+            height: 200px;
+            background: #fafafa;
+        }
+
+        .node { fill: var(--primary-color); }
+        .edge { stroke: #333; stroke-width: 2; }
+        .node-text { fill: white; font-size: 12px; font-family: monospace; text-anchor: middle; dominant-baseline: middle; }
+        
+        .height-badge {
+            display: inline-block;
+            background: var(--accent-color);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        .status-msg {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #e8f6f3;
+            color: #0e6251;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        /* 按鈕樣式 */
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 5px;
+            transition: background 0.3s;
+        }
+        .btn:hover { background-color: #34495e; }
+        .btn-toggle { background-color: #95a5a6; }
+        .btn-check { background-color: var(--success-color); }
+
+        /* 隱藏/顯示 */
+        .hidden-content { display: none; margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 15px; }
+
+        /* RWD */
+        @media (max-width: 600px) {
+            .tree-display { flex-direction: column; }
+            .card { padding: 15px; }
+        }
+
+        .tag {
+            display: inline-block;
+            background: #eee;
+            color: #555;
+            font-size: 0.8rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- A. 標題區 -->
+    <header>
+        <h1>電腦概論 / 資料結構：二元樹高度互動詳解</h1>
+    </header>
+
+    <!-- B. 題目區 -->
+    <section class="card">
+        <h2>【題目】</h2>
+        <div class="question-box">
+            <p><strong>31. 有四個節點的二元樹連接圖(connected binary tree)結構中，樹的高度有可能為：</strong></p>
+            <form id="quizForm">
+                <ul class="options-list">
+                    <li><label><input type="checkbox" name="opt" value="A"> (A) 1</label></li>
+                    <li><label><input type="checkbox" name="opt" value="B"> (B) 2</label></li>
+                    <li><label><input type="checkbox" name="opt" value="C"> (C) 3</label></li>
+                    <li><label><input type="checkbox" name="opt" value="D"> (D) 4</label></li>
+                    <li><label><input type="checkbox" name="opt" value="E"> (E) 5</label></li>
+                </ul>
+            </form>
+            <button class="btn btn-check" onclick="checkAnswer()">提交答案</button>
+            <button class="btn btn-toggle" onclick="toggleAnswer()">偷看官方答案</button>
+            <div id="officialAnswer" class="hidden-content" style="color: var(--accent-color); font-weight: bold;">
+                答案：B, C
+                <br><span style="font-size: 0.9em; color: #666;">(這暗示題目採用的是「邊數定義」)</span>
+            </div>
+            <div id="userFeedback" style="margin-top: 10px; font-weight: bold;"></div>
+        </div>
+    </section>
+
+    <!-- C & D. 關鍵字與白話翻譯 -->
+    <section class="card">
+        <h2>【第一步：拆解題目】</h2>
+        <p><strong>找關鍵字：</strong><span class="highlight">四個節點</span>、<span class="highlight">二元樹</span>、<span class="highlight">高度 (Height)</span></p>
+        
+        <h3>白話翻譯</h3>
+        <p>「給我 4 顆珠子串成一串葡萄（二元樹），這串葡萄<strong>最扁</strong>可以多扁？<strong>最長</strong>可以多長？算出這兩個極端值，中間的數字通常也都有可能。」</p>
+        <p>最大的陷阱在於：<strong>「高度」到底是從 0 開始數，還是從 1 開始數？</strong></p>
+    </section>
+
+    <!-- F. 互動核心：定義切換與視覺化 -->
+    <section class="card" style="border-left-color: var(--accent-color);">
+        <h2>【核心觀念實驗室】高度定義切換</h2>
+        <p>這題會選 B, C，是因為出題者使用了特定的定義。請切換下方的定義，看看樹的高度數字如何變化！</p>
+
+        <div class="interactive-panel">
+            <div class="controls">
+                <label for="heightDef"><strong>請選擇高度定義：</strong></label>
+                <select id="heightDef" onchange="updateTrees()">
+                    <option value="edges">定義 1 (邊數)：根到最深葉子的「邊數」 (Edge Count)</option>
+                    <option value="levels">定義 2 (層數)：樹共有幾「層」 (Level Count)</option>
+                </select>
+                <div id="defDescription" style="margin-top: 5px; font-size: 0.9rem; color: #555;">
+                    預設：Height = 0 (根節點) 到最深葉子的距離。
+                </div>
+            </div>
+
+            <div class="status-msg" id="matchStatus">
+                <!-- Javascript will update this -->
+            </div>
+
+            <div class="tree-display">
+                <!-- Case 1: Min Height -->
+                <div class="tree-case">
+                    <h3>情況一：最矮 (接近平衡)</h3>
+                    <svg id="svgMin" viewBox="0 0 200 200">
+                        <!-- Content drawn by JS -->
+                    </svg>
+                    <div id="labelMin" class="height-badge">高度：?</div>
+                    <p style="font-size:0.85rem;">盡量填滿，不要長高</p>
+                </div>
+
+                <!-- Case 2: Max Height -->
+                <div class="tree-case">
+                    <h3>情況二：最高 (退化成鏈)</h3>
+                    <svg id="svgMax" viewBox="0 0 200 200">
+                        <!-- Content drawn by JS -->
+                    </svg>
+                    <div id="labelMax" class="height-badge">高度：?</div>
+                    <p style="font-size:0.85rem;">變成一直線 (Linked List)</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- E & G. 解題思路與選項分析 -->
+    <section class="card">
+        <h2>【解題思路與選項分析】</h2>
+        <p>我們有 4 個節點 ($N=4$)。</p>
+        
+        <h3>1. 找最小高度 (Min Height)</h3>
+        <p>要讓樹最矮，就是要把節點塞滿每一層（Complete Binary Tree）。</p>
+        <ul>
+            <li>第 1 層：1 個 (根)</li>
+            <li>第 2 層：2 個 (滿了)</li>
+            <li>第 3 層：還剩 1 個 (4 - 1 - 2 = 1)</li>
+        </ul>
+        <p>所以樹一定會長到<strong>第 3 層</strong>。</p>
+        <ul>
+            <li>若高度定義為「邊數」：高度 = $3 - 1 = 2$ <span class="tag">對應選項 B</span></li>
+            <li>若高度定義為「層數」：高度 = $3$ <span class="tag">對應選項 C</span></li>
+        </ul>
+
+        <h3>2. 找最大高度 (Max Height)</h3>
+        <p>要讓樹最高，就是每個節點都只有一個小孩（退化成一直線/鏈狀）。</p>
+        <ul>
+            <li>4 個節點排成一列，會有 4 層。</li>
+        </ul>
+        <ul>
+            <li>若高度定義為「邊數」：高度 = $4 - 1 = 3$ <span class="tag">對應選項 C</span></li>
+            <li>若高度定義為「層數」：高度 = $4$ <span class="tag">對應選項 D</span></li>
+        </ul>
+
+        <h3>3. 結論</h3>
+        <table border="1" cellpadding="5" style="border-collapse: collapse; width: 100%; text-align: center;">
+            <tr style="background: #eee;">
+                <th>定義</th>
+                <th>最小高度 (Min)</th>
+                <th>最大高度 (Max)</th>
+                <th>可能區間</th>
+                <th>對應選項</th>
+            </tr>
+            <tr>
+                <td><strong>邊數 (Edges)</strong></td>
+                <td>2</td>
+                <td>3</td>
+                <td>2, 3</td>
+                <td style="color: var(--accent-color); font-weight: bold;">(B), (C) ✅</td>
+            </tr>
+            <tr>
+                <td>層數 (Levels)</td>
+                <td>3</td>
+                <td>4</td>
+                <td>3, 4</td>
+                <td>(C), (D)</td>
+            </tr>
+        </table>
+        <p style="margin-top: 10px;">
+            題目答案給 <strong>B, C</strong>，這證明了本題採用的是<strong>「邊數」</strong>定義。
+            <br>
+            <small>* 注意：選項 (A) 1 在 4 個節點的情況下是不可能的，因為 $2^1 + 1$ 最多只能放 3 個節點 (若高為邊數1) 或 1個節點 (若高為層數1)。</small>
+        </p>
+    </section>
+
+    <!-- I & J & K. 觀念補充與陷阱 -->
+    <section class="card">
+        <h2>【觀念補充與避坑指南】</h2>
+        
+        <h3>重要名詞</h3>
+        <ul>
+            <li><strong>Height (樹高)：</strong> 有兩種常見定義。
+                <ul>
+                    <li>定義 A：$\text{Height} = \text{max level}$ (層數)。</li>
+                    <li>定義 B：$\text{Height} = \text{depth of deepest node}$ (從根走到最深葉子經過幾條邊)。<br><strong>👉 考試技巧：若算出來答案選項裡沒有，就換另一個定義試試看！</strong></li>
+                </ul>
+            </li>
+            <li><strong>Degenerate Tree (退化樹)：</strong> 每個節點都只有一個子節點，形狀像 Linked List，高度最大。</li>
+        </ul>
+
+        <h3>記憶口訣</h3>
+        <blockquote style="background: #f9f9f9; padding: 10px; border-left: 4px solid var(--accent-color);">
+            「四點成樹，最矮兩條線，最高三條線。」(針對邊數定義)
+        </blockquote>
+
+        <h3>自我檢測 (不記分)</h3>
+        <p>如果是 <strong>5 個節點</strong>，邊數定義下，高度可能是多少？</p>
+        <button class="btn btn-toggle" onclick="document.getElementById('quiz2-ans').style.display='block'">顯示答案</button>
+        <div id="quiz2-ans" style="display:none; margin-top:10px;">
+            <ul>
+                <li>最小：$\lfloor \log_2 5 \rfloor = 2$ (其實是 $2.xxx \to 3$ 層 $\to 2$ 邊) ... 等等，第1層1，第2層2，第3層2(共5個)，所以是3層(2邊)。確實最矮是 2。</li>
+                <li>最大：$5 - 1 = 4$ (一條線)。</li>
+                <li>可能值：2, 3, 4。</li>
+            </ul>
+        </div>
+    </section>
+
+</div>
+
+<script>
+    // 定義畫布與參數
+    const svgMin = document.getElementById('svgMin');
+    const svgMax = document.getElementById('svgMax');
+    const labelMin = document.getElementById('labelMin');
+    const labelMax = document.getElementById('labelMax');
+    const matchStatus = document.getElementById('matchStatus');
+    const defDesc = document.getElementById('defDescription');
+
+    // 樹的結構數據 (4 Nodes)
+    // 座標系統: 200x200
+    
+    // 最小高度 (Balanced-ish): Root(100,40), L(60,90), R(140,90), LL(40,140)
+    // 這是一個 3 層的樹
+    const treeMin = {
+        nodes: [
+            {x: 100, y: 40, id: 'Root'},
+            {x: 60, y: 90, id: 'L'},
+            {x: 140, y: 90, id: 'R'},
+            {x: 40, y: 140, id: 'LL'}
+        ],
+        edges: [
+            [0, 1], [0, 2], [1, 3]
+        ]
+    };
+
+    // 最大高度 (Skewed): Root(100,30), L(100,70), LL(100,110), LLL(100,150)
+    // 這是一個 4 層的樹
+    const treeMax = {
+        nodes: [
+            {x: 100, y: 30, id: 'Root'},
+            {x: 100, y: 75, id: 'A'},
+            {x: 100, y: 120, id: 'B'},
+            {x: 100, y: 165, id: 'C'}
+        ],
+        edges: [
+            [0, 1], [1, 2], [2, 3]
+        ]
+    };
+
+    function drawTree(svgElement, treeData) {
+        let html = '';
+        // 畫線
+        treeData.edges.forEach(edge => {
+            const n1 = treeData.nodes[edge[0]];
+            const n2 = treeData.nodes[edge[1]];
+            html += `<line x1="${n1.x}" y1="${n1.y}" x2="${n2.x}" y2="${n2.y}" class="edge" />`;
+        });
+        // 畫點
+        treeData.nodes.forEach((node, index) => {
+            html += `<circle cx="${node.x}" cy="${node.y}" r="12" class="node" />`;
+            html += `<text x="${node.x}" y="${node.y + 1}" class="node-text">${index+1}</text>`;
+        });
+        svgElement.innerHTML = html;
+    }
+
+    function updateTrees() {
+        const def = document.getElementById('heightDef').value;
+        
+        // 繪製樹 (形狀不變，變的是解釋)
+        drawTree(svgMin, treeMin);
+        drawTree(svgMax, treeMax);
+
+        let minH, maxH, possibleValues, matchText;
+
+        if (def === 'edges') {
+            // 定義：邊數
+            // Min Tree: Root->L->LL (2 edges)
+            minH = 2;
+            // Max Tree: Root->A->B->C (3 edges)
+            maxH = 3;
+            possibleValues = "2, 3";
+            matchText = "✅ 吻合！此定義下的可能值 (2, 3) 對應選項 (B), (C)。這是本題的正解邏輯。";
+            defDesc.innerHTML = "定義：從根節點走到最深葉子經過的「邊(Edge)的數量」。(Root 高度為 0)";
+            
+            // 更新狀態樣式
+            matchStatus.style.backgroundColor = "#d4efdf"; // Greenish
+            matchStatus.style.color = "#145a32";
+        } else {
+            // 定義：層數
+            // Min Tree: 3 levels
+            minH = 3;
+            // Max Tree: 4 levels
+            maxH = 4;
+            possibleValues = "3, 4";
+            matchText = "⚠️ 不完全吻合。此定義下的可能值 (3, 4) 對應選項 (C), (D)。但題目標準答案沒選 D。";
+            defDesc.innerHTML = "定義：樹共有幾層 (Level)。(Root 在第 1 層)";
+            
+            // 更新狀態樣式
+            matchStatus.style.backgroundColor = "#fcf3cf"; // Yellowish
+            matchStatus.style.color = "#7d6608";
+        }
+
+        labelMin.textContent = `高度：${minH}`;
+        labelMax.textContent = `高度：${maxH}`;
+        matchStatus.innerHTML = `<strong>${matchText}</strong><br>在此定義下，4 節點高度範圍：[${minH}, ${maxH}]`;
+    }
+
+    // 題目檢查邏輯
+    function checkAnswer() {
+        const checkboxes = document.querySelectorAll('input[name="opt"]:checked');
+        const userAnswers = Array.from(checkboxes).map(cb => cb.value).sort();
+        const feedback = document.getElementById('userFeedback');
+        
+        if (userAnswers.length === 0) {
+            feedback.textContent = "請先選擇選項！";
+            feedback.style.color = "red";
+            return;
+        }
+
+        // 正解 B, C
+        const isCorrect = JSON.stringify(userAnswers) === JSON.stringify(['B', 'C']);
+
+        if (isCorrect) {
+            feedback.innerHTML = "🎉 <strong>答對了！</strong> 4 節點二元樹在「邊數」定義下，高度可能是 2 或 3。";
+            feedback.style.color = "var(--success-color)";
+        } else {
+            feedback.innerHTML = `❌ <strong>答錯囉</strong>。你選了 ${userAnswers.join(', ')}。<br>提示：思考一下最矮與最高的情況 (Edge count)。`;
+            feedback.style.color = "var(--accent-color)";
+        }
+    }
+
+    function toggleAnswer() {
+        const div = document.getElementById('officialAnswer');
+        if (div.style.display === 'none' || div.style.display === '') {
+            div.style.display = 'block';
+        } else {
+            div.style.display = 'none';
+        }
+    }
+
+    // 初始化
+    window.onload = function() {
+        updateTrees();
+    };
+</script>
+
+</body>
+</html>

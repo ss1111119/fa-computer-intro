@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電腦概論重點：CPU 時脈與指令時間計算</title>
+    <style>
+        :root {
+            --primary-color: #333;
+            --accent-color: #d32f2f; /* 補習班改考卷的紅筆色 */
+            --highlight-bg: #fff59d; /* 螢光筆黃 */
+            --bg-color: #f4f6f8;
+            --card-bg: #ffffff;
+            --border-radius: 8px;
+            --correct-color: #2e7d32;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* A. 標題區 */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid var(--primary-color);
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            margin: 0;
+        }
+
+        header span {
+            display: inline-block;
+            background: var(--primary-color);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+
+        /* 通用卡片樣式 */
+        section {
+            background: var(--card-bg);
+            padding: 25px;
+            margin-bottom: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-left: 5px solid transparent;
+        }
+
+        section.highlight-border {
+            border-left-color: var(--accent-color);
+        }
+
+        h2 {
+            font-size: 1.3rem;
+            border-bottom: 1px dashed #ccc;
+            padding-bottom: 10px;
+            margin-top: 0;
+            color: #444;
+        }
+
+        /* 重點螢光筆 */
+        mark {
+            background-color: var(--highlight-bg);
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+
+        /* B. 題目區 */
+        .question-box {
+            font-size: 1.2rem;
+            font-weight: bold;
+            background-color: #fffde7;
+            border: 2px solid #333;
+        }
+
+        .options li {
+            list-style: none;
+            margin: 5px 0;
+        }
+
+        /* F. 互動模擬區 */
+        .simulation-box {
+            background: #e3f2fd;
+            border: 2px solid #2196f3;
+        }
+
+        .control-group {
+            margin: 15px 0;
+            padding: 10px;
+            background: rgba(255,255,255,0.6);
+            border-radius: 5px;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 10px;
+            background: #ddd;
+            border-radius: 5px;
+            outline: none;
+        }
+
+        input[type="number"] {
+            padding: 5px;
+            font-size: 1rem;
+            width: 80px;
+        }
+
+        .result-display {
+            background: #2196f3;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            border-bottom: 1px solid rgba(255,255,255,0.3);
+            padding-bottom: 5px;
+        }
+
+        .result-row.main-result {
+            font-size: 1.4rem;
+            font-weight: bold;
+            border-bottom: none;
+            margin-top: 10px;
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+
+        /* K. 作答區 */
+        .quiz-options button {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            text-align: left;
+            font-size: 1.1rem;
+            border: 2px solid #ddd;
+            background: white;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.2s;
+        }
+
+        .quiz-options button:hover {
+            background-color: #f0f0f0;
+            border-color: #999;
+        }
+
+        .quiz-options button.correct {
+            background-color: #dcedc8;
+            border-color: var(--correct-color);
+            color: var(--correct-color);
+            font-weight: bold;
+        }
+
+        .quiz-options button.wrong {
+            background-color: #ffcdd2;
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+            text-decoration: line-through;
+        }
+
+        #feedback-area {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .feedback-correct {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #a5d6a7;
+        }
+
+        .feedback-wrong {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #ef9a9a;
+        }
+
+        /* 小標籤 */
+        .tag {
+            background: #607d8b;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.8rem;
+            margin-right: 5px;
+        }
+
+        /* 響應式調整 */
+        @media (max-width: 600px) {
+            header h1 { font-size: 1.5rem; }
+            .question-box { font-size: 1rem; }
+            .result-row { flex-direction: column; }
+        }
+
+        .hidden-answer {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background: #f1f1f1;
+            border: 1px solid #ccc;
+        }
+        
+        .toggle-btn {
+            background-color: #666;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+
+        .math-highlight {
+            font-family: "Courier New", monospace;
+            color: #d32f2f;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- A. 標題區 -->
+    <header>
+        <h1>電腦概論：CPU 時脈與指令執行時間</h1>
+        <span>題號：18</span> <span>主題：基本運算與效能</span>
+    </header>
+
+    <!-- B. 題目區 -->
+    <section class="question-box">
+        <p>18. 某電腦具有 500MHz 規格，若 Shift 指令需使用 10 週期(clock cycle)，則執行此一指令的時間為：</p>
+        <ul class="options">
+            <li>(A) 2ns</li>
+            <li>(B) 2μs</li>
+            <li>(C) 20ns</li>
+            <li>(D) 20μs</li>
+        </ul>
+    </section>
+
+    <!-- C. 第一步：找關鍵字 -->
+    <section class="highlight-border">
+        <h2>📍 第一步：抓出題目關鍵字</h2>
+        <p>這類題目通常只給兩個數字，不要被其他文字混淆。</p>
+        <ul>
+            <li><mark>500MHz</mark>：這是 <strong>時脈頻率 (Frequency)</strong>，也就是 CPU 每秒跳動的速度。</li>
+            <li><mark>10 週期 (clock cycle)</mark>：這是 <strong>執行長度</strong>，這個指令需要 CPU 跳幾下才能做完。</li>
+            <li><mark>時間</mark>：這是我們要求的答案。</li>
+        </ul>
+    </section>
+
+    <!-- D. 第二步：白話翻譯 -->
+    <section>
+        <h2>🗣️ 第二步：白話翻譯機</h2>
+        <p>把生硬的電腦術語換成日常生活的例子：</p>
+        <div style="background:#f9f9f9; padding:15px; border-left: 4px solid #666;">
+            <p><strong>想像你在跑步...</strong></p>
+            <p>1. <strong>500MHz</strong> 代表你的步頻超快，一秒鐘可以跑 5 億步。</p>
+            <p>2. <strong>10 週期</strong> 代表完成「跨欄」這個動作需要跑 10 步。</p>
+            <p>3. 題目問的是：<strong>你做完一次跨欄動作，總共花了多少時間？</strong></p>
+        </div>
+    </section>
+
+    <!-- E. 第三步：解題思路 -->
+    <section class="highlight-border">
+        <h2>💡 第三步：解題思路與公式</h2>
+        <p>解題只有兩個步驟，請背下來：</p>
+        
+        <h3>Step 1. 先算跑一步要多久（週期時間）</h3>
+        <p>公式：<span class="math-highlight">週期時間(T) = 1 / 頻率(f)</span></p>
+        <p>單位換算重點：</p>
+        <ul>
+            <li>1 Hz = 1 秒跳 1 次 → 1次花 1 秒</li>
+            <li>1 MHz (百萬) = $10^6$ Hz → 1次花 1 微秒 ($10^{-6}$s)</li>
+            <li>目前 CPU 常用 GHz，週期通常是奈秒 (ns) 等級。</li>
+        </ul>
+
+        <h3>Step 2. 再乘上總步數（指令時間）</h3>
+        <p>公式：<span class="math-highlight">執行時間 = 週期時間 × 週期數</span></p>
+    </section>
+
+    <!-- F. 互動式計算模擬 -->
+    <section class="simulation-box">
+        <h2>🎛️ 互動實驗室：自己動手調調看</h2>
+        <p>調整下方的數值，觀察時間如何變化。試著調成題目中的數值：<strong>500MHz</strong> 與 <strong>10 Cycles</strong>。</p>
+
+        <div class="control-group">
+            <label>🖥️ CPU 時脈 (Frequency): <span id="freq-val" style="color:#d32f2f;">500</span> MHz</label>
+            <input type="range" id="freq-range" min="100" max="1000" step="50" value="500">
+            <small>往右拉，時脈越快，每一步花的時間越短</small>
+        </div>
+
+        <div class="control-group">
+            <label>⚙️ 指令需要週期 (Cycles): <span id="cycle-val" style="color:#d32f2f;">10</span> cycles</label>
+            <input type="range" id="cycle-range" min="1" max="50" step="1" value="10">
+        </div>
+
+        <div class="result-display">
+            <div class="result-row">
+                <span>1. 計算單一週期時間 (T = 1/f)：</span>
+                <span id="period-result">2.000 ns</span>
+            </div>
+            <div class="result-row">
+                <span>2. 乘以週期數 (× <span id="cycle-display">10</span>)：</span>
+                <span></span>
+            </div>
+            <hr style="border-color: rgba(255,255,255,0.3);">
+            <div class="result-row main-result">
+                <span>總執行時間：</span>
+                <span id="total-time-ns">20 ns</span>
+            </div>
+            <div style="text-align: right; font-size: 0.9rem; margin-top:5px; color:#e3f2fd;">
+                (等於 <span id="total-time-us">0.02</span> μs)
+            </div>
+        </div>
+    </section>
+
+    <!-- G. 選項分析 -->
+    <section>
+        <h2>🔍 第四步：選項逐一擊破</h2>
+        <p>計算結果出來是 <strong>20奈秒 (20ns)</strong>，我們來看選項：</p>
+        <ul>
+            <li><strong>(A) 2ns</strong>：❌ 這是單一週期 (Clock Cycle) 的時間，忘了乘上指令需要的 10 個週期。</li>
+            <li><strong>(B) 2μs</strong>：❌ 單位錯誤。$2\mu s = 2000ns$，這差了100倍。</li>
+            <li><strong>(C) 20ns</strong>：✅ 正確！計算如下：
+                <br> $1 / 500\text{MHz} = 2\text{ns}$ (一拍的時間)
+                <br> $2\text{ns} \times 10 = 20\text{ns}$ (總時間)
+            </li>
+            <li><strong>(D) 20μs</strong>：❌ 單位錯誤，這是 20,000ns，太慢了。</li>
+        </ul>
+    </section>
+
+    <!-- I. 記憶口訣與 H. 觀念補充 -->
+    <section class="highlight-border">
+        <h2>🧠 老師的私房筆記</h2>
+        
+        <h3>⚡ 快速解題口訣</h3>
+        <p style="font-size: 1.2rem; font-weight: bold; text-align: center; color: var(--accent-color);">
+            「MHz 對應 ns，數字倒過來，再乘週期數」
+        </p>
+        <p>解釋：看到 MHz，直接聯想週期是 <strong>奈秒(ns)</strong> 等級。500 的倒數是 1/500 = 0.002 (以微秒計) 或直接記 1000/500 = 2 (奈秒)。</p>
+
+        <h3>⚠️ 常見陷阱 (Pitfalls)</h3>
+        <ul>
+            <li><strong>單位搞混</strong>：千萬別把 MHz (百萬赫茲) 當成 mS (毫秒)。</li>
+            <li><strong>數量級錯誤</strong>：
+                <ul>
+                    <li>1 ms (毫秒) = $10^{-3}$ s</li>
+                    <li>1 μs (微秒) = $10^{-6}$ s</li>
+                    <li>1 ns (奈秒) = $10^{-9}$ s  <span class="tag">電腦運算常用</span></li>
+                </ul>
+            </li>
+        </ul>
+    </section>
+
+    <!-- K. 作答區 -->
+    <section>
+        <h2>📝 實戰演練</h2>
+        <p>回到原題目，請點選正確答案：</p>
+        <div class="question-box" style="font-size: 1rem; padding: 10px; margin-bottom: 10px;">
+            某電腦具有500MHz規格，若Shift指令需使用10週期，執行時間為何？
+        </div>
+        
+        <div class="quiz-options">
+            <button onclick="checkAnswer(this, 'A')">(A) 2ns</button>
+            <button onclick="checkAnswer(this, 'B')">(B) 2μs</button>
+            <button onclick="checkAnswer(this, 'C')">(C) 20ns</button>
+            <button onclick="checkAnswer(this, 'D')">(D) 20μs</button>
+        </div>
+
+        <div id="feedback-area"></div>
+    </section>
+
+    <!-- M. 自我檢測 -->
+    <section style="border-left-color: #607d8b;">
+        <h2>💪 自我挑戰 (不附答案，試著算算看)</h2>
+        <ol>
+            <li>如果 CPU 升級成 <strong>1GHz</strong> (1000MHz)，同樣執行 10 週期的指令，時間會變成多少？</li>
+            <li>如果某指令執行時間是 <strong>10ns</strong>，CPU 時脈是 200MHz，請問這個指令花了幾個週期？</li>
+        </ol>
+    </section>
+
+    <footer>
+        <p>Designed for Computer Science Education</p>
+    </footer>
+
+</div>
+
+<script>
+    // 互動模擬區邏輯
+    const freqInput = document.getElementById('freq-range');
+    const cycleInput = document.getElementById('cycle-range');
+    const freqValDisplay = document.getElementById('freq-val');
+    const cycleValDisplay = document.getElementById('cycle-val');
+    const cycleDisplaySmall = document.getElementById('cycle-display');
+    
+    const periodResult = document.getElementById('period-result');
+    const totalTimeNs = document.getElementById('total-time-ns');
+    const totalTimeUs = document.getElementById('total-time-us');
+
+    function calculate() {
+        // 取得輸入值
+        let freq = parseInt(freqInput.value); // MHz
+        let cycles = parseInt(cycleInput.value); // Count
+
+        // 更新顯示數值
+        freqValDisplay.innerText = freq;
+        cycleValDisplay.innerText = cycles;
+        cycleDisplaySmall.innerText = cycles;
+
+        // 計算邏輯
+        // 週期 T (ns) = 1000 / Frequency (MHz)
+        // 因為: T(us) = 1/f(MHz), T(ns) = 1000/f(MHz)
+        let periodNs = 1000 / freq; 
+        
+        // 總時間 = 週期 * 次數
+        let totalNs = periodNs * cycles;
+        let totalUs = totalNs / 1000;
+
+        // 顯示結果 (保留小數點後適當位數)
+        periodResult.innerText = periodNs.toFixed(3).replace(/\.?0+$/, "") + " ns";
+        totalTimeNs.innerText = totalNs.toFixed(2).replace(/\.?0+$/, "") + " ns";
+        totalTimeUs.innerText = totalUs.toFixed(5).replace(/\.?0+$/, "");
+    }
+
+    // 綁定事件
+    freqInput.addEventListener('input', calculate);
+    cycleInput.addEventListener('input', calculate);
+
+    // 初始化一次
+    calculate();
+
+    // 測驗區邏輯
+    function checkAnswer(btn, option) {
+        // 重置所有按鈕樣式
+        const buttons = document.querySelectorAll('.quiz-options button');
+        buttons.forEach(b => {
+            b.className = '';
+            b.disabled = true; // 鎖定不讓重複選
+        });
+
+        const feedback = document.getElementById('feedback-area');
+        feedback.style.display = 'block';
+
+        if (option === 'C') {
+            btn.classList.add('correct');
+            feedback.className = 'feedback-correct';
+            feedback.innerHTML = `
+                <strong>✅ 答對了！太棒了！</strong><br>
+                解析：<br>
+                1. 500MHz → 週期 = 2ns<br>
+                2. 2ns × 10 = 20ns
+            `;
+        } else {
+            btn.classList.add('wrong');
+            // 找出正確答案並標示
+            buttons[2].classList.add('correct'); // C is index 2
+            
+            feedback.className = 'feedback-wrong';
+            let reason = "";
+            if(option === 'A') reason = "你選的是單一週期的時間，別忘了要乘上 10 個週期喔！";
+            if(option === 'B') reason = "單位要注意！μs (微秒) 比 ns (奈秒) 大了 1000 倍。";
+            if(option === 'D') reason = "數值跟單位都不對喔，請參考上方的互動模擬器。";
+
+            feedback.innerHTML = `
+                <strong>❌ 答錯囉！</strong><br>
+                ${reason}<br>
+                正確答案是 <strong>(C) 20ns</strong>。
+            `;
+        }
+    }
+</script>
+
+</body>
+</html>

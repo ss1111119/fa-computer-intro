@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電腦概論互動詳解：程式語言世代</title>
+    <style>
+        /* --- 基礎設定 --- */
+        :root {
+            --primary-color: #333; /* 主要文字黑 */
+            --accent-color: #2c3e50; /* 深藍灰標題 */
+            --highlight-bg: #fff9c4; /* 螢光筆黃 */
+            --border-color: #ddd;
+            --correct-color: #4CAF50;
+            --wrong-color: #f44336;
+            --bg-color: #f9f9f9;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Noto Sans TC", Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--primary-color);
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 15px rgba(0,0,0,0.05);
+        }
+
+        /* --- 標題區 --- */
+        header {
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-size: 1.5rem;
+            color: var(--accent-color);
+            margin: 0;
+        }
+        .subtitle {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        /* --- 通用區塊樣式 --- */
+        .section-card {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: #fff;
+        }
+        .section-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            color: var(--accent-color);
+        }
+        .section-title::before {
+            content: '';
+            display: inline-block;
+            width: 6px;
+            height: 20px;
+            background-color: var(--accent-color);
+            margin-right: 10px;
+            border-radius: 3px;
+        }
+
+        /* --- 題目區 --- */
+        .question-box {
+            background-color: #f4f6f8;
+            padding: 15px;
+            border-left: 5px solid #2196F3;
+            font-weight: bold;
+        }
+        .options-list {
+            list-style-type: none;
+            padding-left: 0;
+            margin-top: 10px;
+        }
+        .options-list li {
+            margin-bottom: 5px;
+        }
+
+        /* --- 螢光筆效果 --- */
+        .highlight {
+            background-color: var(--highlight-bg);
+            padding: 0 4px;
+            border-radius: 2px;
+            border-bottom: 2px solid #ffeb3b;
+        }
+
+        /* --- 互動教具：世代比較 --- */
+        .generation-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .gen-card {
+            border: 1px solid #eee;
+            border-radius: 5px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            background: #fff;
+        }
+        .gen-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-color: #bbb;
+        }
+        .gen-card h4 { margin: 5px 0; color: #d35400; }
+        .gen-details {
+            display: none;
+            font-size: 0.9rem;
+            text-align: left;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px dashed #eee;
+            color: #555;
+        }
+        .code-snippet {
+            font-family: Consolas, monospace;
+            background: #eee;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 0.85rem;
+            display: block;
+            margin: 5px 0;
+            color: #333;
+        }
+
+        /* --- 互動教具：語言分類器 --- */
+        .checker-tool {
+            background-color: #eef9f9;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .lang-btn {
+            background: #fff;
+            border: 1px solid #aaa;
+            padding: 5px 10px;
+            margin: 3px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .lang-btn:hover { background: #e0f7fa; border-color: #00bcd4; }
+        .result-display {
+            margin-top: 10px;
+            font-weight: bold;
+            height: 24px;
+            color: #00796b;
+        }
+
+        /* --- 互動答題區 --- */
+        .quiz-option {
+            display: block;
+            margin: 8px 0;
+            padding: 8px;
+            border: 1px solid #eee;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .quiz-option:hover { background-color: #f9f9f9; }
+        .quiz-option input { margin-right: 10px; transform: scale(1.2); }
+        
+        .btn-submit {
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
+        }
+        .btn-submit:hover { background-color: #1976D2; }
+
+        .btn-toggle-ans {
+            background-color: transparent;
+            color: #666;
+            border: 1px solid #ccc;
+            padding: 5px 10px;
+            font-size: 0.85rem;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        #feedback-area {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+        .correct-msg { background-color: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+        .wrong-msg { background-color: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
+
+        .explanation-detail {
+            margin-top: 10px;
+            padding: 10px;
+            background: #fff;
+            border: 1px solid #eee;
+        }
+
+        /* --- 陷阱與口訣區 --- */
+        .tips-box {
+            background-color: #fff8e1; /* 淡橘黃 */
+            border-left: 4px solid #ffc107;
+            padding: 10px;
+            margin-top: 10px;
+        }
+
+        /* RWD */
+        @media (max-width: 600px) {
+            .container { padding: 10px; }
+            h1 { font-size: 1.3rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>電腦概論：題庫解析</h1>
+        <div class="subtitle">主題：程式語言世代辨識 (1GL / 2GL / 3GL)</div>
+    </header>
+
+    <!-- B. 題目區 -->
+    <div class="section-card">
+        <div class="section-title">題目（複選題）</div>
+        <div class="question-box">
+            38. 下列何種屬於第三代的電腦程式語言?<br>
+            <div class="options-list">
+                (A) Machine Language<br>
+                (B) Assembly<br>
+                (C) C<br>
+                (D) Java<br>
+                (E) Fortran
+            </div>
+        </div>
+    </div>
+
+    <!-- C. 第一步：找關鍵字 -->
+    <div class="section-card">
+        <div class="section-title">Step 1：找關鍵字</div>
+        <p>請將目光鎖定在題目的：<span class="highlight">第三代</span> 與 <span class="highlight">程式語言</span>。</p>
+        <p style="font-size: 0.9rem; color: #666;">💡 解題直覺：看到「第幾代」，腦中要立刻浮現 1GL、2GL、3GL 的階層表。</p>
+    </div>
+
+    <!-- D. 第二步：白話翻譯 -->
+    <div class="section-card">
+        <div class="section-title">Step 2：題目白話翻譯</div>
+        <p>這題其實在問：</p>
+        <blockquote style="border-left: 3px solid #999; margin: 0; padding-left: 10px; color: #444;">
+            「下面哪些是<b>高階語言</b>（High-Level Language）？<br>
+            也就是那些寫起來<b>像人類語言或數學式</b>，而不是只有 0 和 1，也不是助記符號的語言？」
+        </blockquote>
+    </div>
+
+    <!-- E. 第三步：解題思路 -->
+    <div class="section-card">
+        <div class="section-title">Step 3：解題思路與教具</div>
+        
+        <p><b>核心原理：</b> 程式語言依照「抽象化程度」（離硬體多遠）分代：</p>
+        <ul>
+            <li><b>1GL (低階)：</b> 只有機器看得懂 (0/1)。</li>
+            <li><b>2GL (低階)：</b> 用縮寫代替 0/1，還是很難懂。</li>
+            <li><b>3GL (高階)：</b> 像人類語言，需要翻譯 (編譯/直譯)。</li>
+        </ul>
+
+        <!-- F. 互動教具 -->
+        <div style="margin: 20px 0;">
+            <p>👇 <b>點擊下方卡片，查看各世代特徵：</b></p>
+            <div class="generation-grid">
+                <div class="gen-card" onclick="toggleDetails('gen1')">
+                    <h4>1GL 第一代</h4>
+                    <div>機器語言<br>(Machine Language)</div>
+                    <span class="code-snippet">10110010 0011...</span>
+                    <div id="gen1" class="gen-details">
+                        <b>特徵：</b> 直接控制硬體，全由 0 與 1 組成。<br>
+                        <b>缺點：</b> 難寫、難懂、無可攜性（換台電腦就不能跑）。<br>
+                        <b>速度：</b> 最快（機器直接執行）。
+                    </div>
+                </div>
+                <div class="gen-card" onclick="toggleDetails('gen2')">
+                    <h4>2GL 第二代</h4>
+                    <div>組合語言<br>(Assembly)</div>
+                    <span class="code-snippet">MOV AX, 1</span>
+                    <div id="gen2" class="gen-details">
+                        <b>特徵：</b> 使用助記符號 (Mnemonics) 取代 0/1。<br>
+                        <b>工具：</b> 需用組譯器 (Assembler) 轉成機器碼。<br>
+                        <b>定位：</b> 仍屬低階語言，依賴硬體架構。
+                    </div>
+                </div>
+                <div class="gen-card" onclick="toggleDetails('gen3')">
+                    <h4>3GL 第三代</h4>
+                    <div>高階語言<br>(High-Level)</div>
+                    <span class="code-snippet">if (a > b) print(a);</span>
+                    <div id="gen3" class="gen-details">
+                        <b>特徵：</b> 語法接近英文或數學，適合人類閱讀。<br>
+                        <b>代表：</b> C, C++, Java, Fortran, Python。<br>
+                        <b>工具：</b> 需編譯器 (Compiler) 或直譯器 (Interpreter)。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 小互動：語言分類器 -->
+        <div class="checker-tool">
+            <p>🎮 <b>小測試：點選語言，判斷它屬於哪一代？</b></p>
+            <div>
+                <button class="lang-btn" onclick="checkLang('Machine Language')">Machine Language</button>
+                <button class="lang-btn" onclick="checkLang('Assembly')">Assembly</button>
+                <button class="lang-btn" onclick="checkLang('C')">C 語言</button>
+                <button class="lang-btn" onclick="checkLang('Java')">Java</button>
+                <button class="lang-btn" onclick="checkLang('Fortran')">Fortran</button>
+                <button class="lang-btn" onclick="checkLang('Python')">Python (補充)</button>
+            </div>
+            <div id="lang-result" class="result-display">請點擊上方按鈕</div>
+        </div>
+    </div>
+
+    <!-- G. 第四步：選項分析 -->
+    <div class="section-card">
+        <div class="section-title">Step 4：選項逐一分析</div>
+        <ul>
+            <li>❌ <b>(A) Machine Language：</b> 這是第一代 (1GL)，電腦唯一能直接執行的語言。</li>
+            <li>❌ <b>(B) Assembly：</b> 這是第二代 (2GL)，使用助記符號，仍屬低階。</li>
+            <li>✅ <b>(C) C：</b> 經典高階語言 (3GL)，廣泛用於系統程式。</li>
+            <li>✅ <b>(D) Java：</b> 物件導向高階語言 (3GL)，跨平台特性強。</li>
+            <li>✅ <b>(E) Fortran：</b> 最早的高階語言之一 (3GL)，專門用於科學計算。</li>
+        </ul>
+    </div>
+
+    <!-- H, I, J. 觀念補充與陷阱 -->
+    <div class="section-card">
+        <div class="section-title">觀念補充 & 避坑指南</div>
+        
+        <div class="tips-box">
+            <b>🧠 記憶口訣：</b><br>
+            「一機二組三高階」<br>
+            (1代機器、2代組合、3代所有高階 C/Java/Fortran...)
+        </div>
+
+        <div style="margin-top: 15px;">
+            <p><b>🚧 常見陷阱：</b></p>
+            <ol>
+                <li>
+                    <b>誤區：</b>「Fortran 這麼老，應該是 1GL 或 2GL 吧？」<br>
+                    <b>正解：</b> <span style="color: #d35400;">Fortran 是高階語言的始祖</span> (Formula Translation)，雖然老，但它是用來解決數學公式的「高階」語言，所以是 3GL。
+                </li>
+                <li>
+                    <b>誤區：</b>「Java 很新，是 4GL？」<br>
+                    <b>正解：</b> 大多數通用程式語言（C, C++, Java, Basic, Pascal）都歸類在 3GL。4GL 通常指針對特定領域（如資料庫 SQL）的語言。
+                </li>
+            </ol>
+        </div>
+        
+        <p style="margin-top:10px; font-size: 0.9em; color:#666;">
+            <b>延伸知識：</b><br>
+            4GL (第四代)：非程序導向，告訴電腦「做什麼」而非「怎麼做」。例：SQL。<br>
+            5GL (第五代)：人工智慧與邏輯推論。例：Prolog。
+        </p>
+    </div>
+
+    <!-- K. 作答區 -->
+    <div class="section-card" style="border: 2px solid #2196F3;">
+        <div class="section-title">模擬作答區</div>
+        <p>請根據上述觀念，選出正確答案（複選）：</p>
+        <form id="quiz-form">
+            <label class="quiz-option"><input type="checkbox" name="option" value="A"> (A) Machine Language</label>
+            <label class="quiz-option"><input type="checkbox" name="option" value="B"> (B) Assembly</label>
+            <label class="quiz-option"><input type="checkbox" name="option" value="C"> (C) C</label>
+            <label class="quiz-option"><input type="checkbox" name="option" value="D"> (D) Java</label>
+            <label class="quiz-option"><input type="checkbox" name="option" value="E"> (E) Fortran</label>
+            
+            <button type="button" class="btn-submit" onclick="submitQuiz()">送出作答</button>
+        </form>
+
+        <div id="feedback-area">
+            <div id="feedback-msg"></div>
+            <div id="feedback-detail" class="explanation-detail" style="display:none;">
+                <b>解析：</b><br>
+                題目問「第三代 (3GL)」，即所有的高階語言。<br>
+                (A) 是 1GL，(B) 是 2GL。<br>
+                (C) C 語言、(D) Java、(E) Fortran 都是人類可讀的高階語言，故皆為 3GL。<br>
+                <br>
+                <span style="color:red; font-weight:bold;">正確答案：C, D, E</span>
+            </div>
+        </div>
+        
+        <button class="btn-toggle-ans" onclick="toggleAnswer()">偷看/隱藏 標準答案</button>
+        <div id="official-answer" style="display:none; margin-top:5px; font-weight:bold; color:#2196F3;">
+            答案：C, D, E
+        </div>
+    </div>
+
+    <!-- M. 自我檢測 -->
+    <div class="section-card">
+        <div class="section-title">自我檢測 (想一想，不看答案)</div>
+        <ol>
+            <li>資料庫查詢語言 SQL，通常被歸類為第幾代語言？為什麼？</li>
+            <li>為什麼 3GL 寫完的程式不能直接執行，需要「編譯器」？</li>
+            <li>如果有人問「哪種語言執行速度最快？」，你會選 Machine Language 還是 Java？</li>
+        </ol>
+    </div>
+
+</div>
+
+<script>
+    // 互動教具：展開卡片詳情
+    function toggleDetails(id) {
+        var el = document.getElementById(id);
+        if (el.style.display === "block") {
+            el.style.display = "none";
+        } else {
+            el.style.display = "block";
+        }
+    }
+
+    // 互動教具：語言分類判斷
+    function checkLang(lang) {
+        var display = document.getElementById('lang-result');
+        var text = "";
+        
+        switch(lang) {
+            case 'Machine Language':
+                text = "Machine Language ➔ 1GL (第一代/機器語言) 🤖";
+                break;
+            case 'Assembly':
+                text = "Assembly ➔ 2GL (第二代/組合語言) 🔧";
+                break;
+            case 'C':
+            case 'Java':
+            case 'Fortran':
+            case 'Python':
+                text = lang + " ➔ 3GL (第三代/高階語言) 👨‍💻";
+                break;
+            default:
+                text = "未知語言";
+        }
+        display.innerHTML = text;
+        display.style.color = "#000";
+        // 簡單動畫重置
+        display.style.opacity = 0;
+        setTimeout(function(){ display.style.opacity = 1; }, 50);
+    }
+
+    // 作答區邏輯
+    function submitQuiz() {
+        // 取得所有勾選的選項
+        var checkboxes = document.querySelectorAll('input[name="option"]:checked');
+        var values = [];
+        checkboxes.forEach((cb) => {
+            values.push(cb.value);
+        });
+        
+        // 排序以便比對
+        values.sort();
+
+        var feedbackArea = document.getElementById('feedback-area');
+        var feedbackMsg = document.getElementById('feedback-msg');
+        var feedbackDetail = document.getElementById('feedback-detail');
+        
+        feedbackArea.style.display = 'block';
+        feedbackDetail.style.display = 'block'; // 作答後總是顯示詳解
+
+        // 正確答案是 C, D, E
+        // 陣列比對
+        var correct = ['C', 'D', 'E'];
+        
+        // 簡單判斷陣列是否相等
+        var isCorrect = JSON.stringify(values) === JSON.stringify(correct);
+
+        if (isCorrect) {
+            feedbackMsg.className = 'correct-msg';
+            feedbackMsg.innerHTML = '🎉 <b>答對了！</b> 觀念非常清楚！';
+            feedbackMsg.style.padding = '10px';
+        } else {
+            feedbackMsg.className = 'wrong-msg';
+            if (values.length === 0) {
+                feedbackMsg.innerHTML = '⚠️ <b>請先選擇選項再送出喔！</b>';
+            } else {
+                feedbackMsg.innerHTML = '❌ <b>答錯了，再試試看！</b><br>提示：排除 0/1 和助記符號，剩下的都是答案。';
+            }
+            feedbackMsg.style.padding = '10px';
+        }
+    }
+
+    function toggleAnswer() {
+        var ans = document.getElementById('official-answer');
+        if (ans.style.display === 'none') {
+            ans.style.display = 'block';
+        } else {
+            ans.style.display = 'none';
+        }
+    }
+</script>
+
+</body>
+</html>

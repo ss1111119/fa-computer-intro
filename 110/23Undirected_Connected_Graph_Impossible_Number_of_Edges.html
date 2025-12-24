@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>題號23：無向連通圖邊數範圍</title>
+    <style>
+        /* --- 全局設定 --- */
+        :root {
+            --primary-color: #333;
+            --accent-color: #2c3e50;
+            --highlight-bg: #fff9c4; /* 淡黃色螢光筆 */
+            --border-color: #e0e0e0;
+            --bg-color: #f9f9f9;
+            --card-bg: #ffffff;
+            --success-color: #27ae60;
+            --error-color: #c0392b;
+            --info-color: #2980b9;
+        }
+
+        body {
+            font-family: "Noto Sans TC", "Microsoft JhengHei", -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* --- 標題區 --- */
+        header {
+            border-bottom: 3px solid var(--accent-color);
+            margin-bottom: 25px;
+            padding-bottom: 10px;
+        }
+        
+        h1 {
+            font-size: 1.8rem;
+            margin: 0;
+            color: var(--accent-color);
+        }
+        
+        .subtitle {
+            font-size: 1rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        /* --- 區塊通用樣式 --- */
+        section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: #fff;
+        }
+
+        h2 {
+            font-size: 1.3rem;
+            color: var(--accent-color);
+            margin-top: 0;
+            border-left: 5px solid var(--info-color);
+            padding-left: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        /* --- 特殊文字樣式 --- */
+        .highlight {
+            background-color: var(--highlight-bg);
+            padding: 0 4px;
+            border-radius: 2px;
+            font-weight: bold;
+        }
+
+        .term {
+            font-weight: bold;
+            color: var(--info-color);
+        }
+
+        .note {
+            font-size: 0.95rem;
+            color: #555;
+            background-color: #f0f4f8;
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 4px solid #bdc3c7;
+            margin-top: 10px;
+        }
+
+        /* --- 題目區 --- */
+        .question-box {
+            font-size: 1.1rem;
+            background-color: #fdfdfd;
+            border: 2px solid var(--accent-color);
+        }
+
+        .options {
+            list-style-type: none;
+            padding: 0;
+            margin: 15px 0;
+        }
+
+        .options li {
+            padding: 5px 0;
+        }
+
+        /* --- 互動畫布區 --- */
+        .interactive-area {
+            background-color: #fcfcfc;
+            border: 2px dashed #bbb;
+            text-align: center;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #eee;
+            border-radius: 4px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 150px;
+        }
+
+        input[type=range] {
+            width: 100%;
+            cursor: pointer;
+        }
+
+        canvas {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            max-width: 100%;
+            height: auto;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+        }
+
+        .status-display {
+            font-weight: bold;
+            margin-top: 10px;
+            font-size: 1.1rem;
+        }
+
+        .status-connected { color: var(--success-color); }
+        .status-disconnected { color: var(--error-color); }
+
+        /* --- 按鈕與互動 --- */
+        .btn-toggle {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .btn-toggle:hover {
+            opacity: 0.9;
+        }
+
+        .answer-hidden {
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #e8f8f5;
+            border: 1px solid #a2d9ce;
+            border-radius: 4px;
+            color: #0e6655;
+        }
+
+        .quiz-option {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            background: white;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .quiz-option:hover {
+            background-color: #f0f0f0;
+        }
+
+        .quiz-option.correct {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+
+        .quiz-option.wrong {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+
+        .quiz-feedback {
+            margin-top: 10px;
+            font-weight: bold;
+            min-height: 1.5em;
+        }
+
+        /* --- 響應式調整 --- */
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            h1 { font-size: 1.5rem; }
+            .controls { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- A. 標題區 -->
+    <header>
+        <h1>題號 23：無向連通圖 - 邊數判斷</h1>
+        <div class="subtitle">電與概論 / 離散數學 / 圖論基礎</div>
+    </header>
+
+    <!-- B. 題目區 -->
+    <section class="question-box">
+        <h2>【題目】</h2>
+        <p>23. 一個沒方向性的連接圖，節點為 N，則其邊的個數不可能為</p>
+        <ul class="options">
+            <li>(A) N-2</li>
+            <li>(B) N-1</li>
+            <li>(C) N</li>
+            <li>(D) N+1</li>
+        </ul>
+        <button class="btn-toggle" onclick="toggleVisibility('answer-key')">顯示/隱藏答案</button>
+        <div id="answer-key" class="answer-hidden">
+            <strong>答案：A</strong>
+        </div>
+    </section>
+
+    <!-- C. 第一步：找關鍵字 -->
+    <section>
+        <h2>第一步：找關鍵字</h2>
+        <p>請拿起你心中的螢光筆，圈出以下重點：</p>
+        <ul>
+            <li><span class="highlight">沒方向性</span>：即 Undirected Graph，邊沒有箭頭，A連到B等於B連到A。</li>
+            <li><span class="highlight">連接圖（連通）</span>：即 Connected Graph，圖中任何兩個點都可以走得到，沒有孤島。</li>
+            <li><span class="highlight">節點為 N</span>：總共有 N 個點。</li>
+            <li><span class="highlight">邊的個數不可能</span>：這題在問「連通圖的最少邊數下限」。</li>
+        </ul>
+    </section>
+
+    <!-- D. 第二步：白話翻譯 -->
+    <section>
+        <h2>第二步：白話翻譯</h2>
+        <div class="note">
+            <p><strong>翻譯蒟蒻：</strong></p>
+            <p>「這題其實就是在問：如果有 N 個城市要鋪路，保證每個城市都能開車到達其他任何城市（不用直達，可以轉乘），請問最少最少要鋪幾條路？如果路鋪得比最少需求還少，系統就會崩潰（斷開）。」</p>
+        </div>
+    </section>
+
+    <!-- E. 第三步：解題思路 -->
+    <section>
+        <h2>第三步：解題思路</h2>
+        <p><strong>1. 核心觀念：最少邊數</strong></p>
+        <p>想像我們從第 1 個點開始，要把它連到第 2 個點，需要 1 條線。要把第 3 個點接進來，又需要 1 條線...依此類推。</p>
+        <ul>
+            <li>有 2 個點，至少要 1 條線連通。</li>
+            <li>有 3 個點，至少要 2 條線連通。</li>
+            <li>有 N 個點，至少要 <strong>N-1</strong> 條線才能全部串起來。</li>
+        </ul>
+        <p><strong>2. 結論</strong></p>
+        <p>如果要保持連通，邊數 (E) 必須滿足： <strong>E ≥ N - 1</strong>。</p>
+        <p>這種「剛好 N-1 條邊且連通」的圖，我們稱為<span class="term">樹 (Tree)</span>。</p>
+        <p><strong>3. 檢查選項</strong></p>
+        <p>任何小於 N-1 的數字，都無法讓 N 個點連通。題目問「不可能」，所以我們找比 N-1 小的數，就是 <strong>N-2</strong>。</p>
+    </section>
+
+    <!-- F. 互動示範區 -->
+    <section class="interactive-area">
+        <h2>互動示範：動手玩玩看</h2>
+        <p>調整下方的滑桿，觀察節點數 (N) 與邊數 (E) 對連通性的影響。</p>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="nodeRange">節點數量 (N): <span id="nodeVal">5</span></label>
+                <input type="range" id="nodeRange" min="2" max="10" value="5" oninput="updateGraph()">
+            </div>
+            <div class="control-group">
+                <label for="edgeRange">邊的數量 (E): <span id="edgeVal">3</span></label>
+                <input type="range" id="edgeRange" min="0" max="15" value="3" oninput="updateGraph()">
+            </div>
+        </div>
+
+        <canvas id="graphCanvas" width="500" height="300"></canvas>
+        
+        <div id="graphStatus" class="status-display"></div>
+        <div id="graphExplanation" class="note"></div>
+    </section>
+
+    <!-- G. 第四步：選項分析 -->
+    <section>
+        <h2>第四步：選項分析</h2>
+        <ul>
+            <li><strong>(A) N-2 <span class="highlight">【不可能】</span></strong>：比最少的 N-1 還少，絕對會斷成兩截以上（非連通）。</li>
+            <li><strong>(B) N-1 【可能】</strong>：這是連通的最少代價，形成「樹 (Tree)」。</li>
+            <li><strong>(C) N 【可能】</strong>：比樹多一條邊，會形成一個圈圈 (Cycle)，但依然連通。</li>
+            <li><strong>(D) N+1 【可能】</strong>：邊越多越穩固，當然連通。</li>
+        </ul>
+    </section>
+
+    <!-- H. 觀念補充與延伸 -->
+    <section>
+        <h2>觀念補充與延伸</h2>
+        <p><span class="term">Connected Graph（連通圖）</span>：圖上任兩點之間都有路徑相連。</p>
+        <p><span class="term">Tree（樹）</span>：連通且沒有迴圈的圖。特性是邊數剛好為 N-1。</p>
+        <p><span class="term">Cycle（迴圈/環）</span>：從某點出發，沿著邊走可以繞一圈回到原點。</p>
+        <hr>
+        <p><strong>🔥 進階思考：</strong></p>
+        <ol>
+            <li><strong>問最少邊數？</strong> 答案是 N-1。</li>
+            <li><strong>問最多邊數？</strong> 也就是兩兩都相連的<span class="term">完全圖 (Complete Graph)</span>，邊數為 $ \frac{N(N-1)}{2} $。</li>
+        </ol>
+    </section>
+
+    <!-- I. 記憶口訣 -->
+    <section>
+        <h2>記憶口訣</h2>
+        <div style="font-size: 1.2rem; text-align: center; font-weight: bold; color: var(--accent-color); background: #fffbe6; padding: 15px; border-radius: 8px;">
+            「要全連，至少 N減1」<br>
+            「少於 N減1，一定會斷掉」
+        </div>
+    </section>
+
+    <!-- J. 常見陷阱 -->
+    <section>
+        <h2>常見陷阱 ⚠️</h2>
+        <ul>
+            <li>❌ <strong>誤區：</strong> 以為每個點都有一條邊連出去就叫連通。</li>
+            <li>✅ <strong>正解：</strong> 就算每個點都有邊，也可能是兩個分開的圈圈（像是兩個分開的三角形），這樣是不連通的。必須確保所有群體都接在一起，這至少需要 N-1。</li>
+        </ul>
+    </section>
+
+    <!-- K. 作答區 -->
+    <section>
+        <h2>【考前演練】</h2>
+        <p>若 N=10，下列哪個邊數 <span style="color:red; font-weight:bold;">無法</span> 形成連通圖？</p>
+        <div id="quiz-area">
+            <button class="quiz-option" onclick="checkAnswer('A')">(A) 8</button>
+            <button class="quiz-option" onclick="checkAnswer('B')">(B) 9</button>
+            <button class="quiz-option" onclick="checkAnswer('C')">(C) 10</button>
+            <button class="quiz-option" onclick="checkAnswer('D')">(D) 45</button>
+        </div>
+        <div id="quiz-feedback" class="quiz-feedback"></div>
+    </section>
+
+    <!-- M. 自我檢測 -->
+    <section>
+        <h2>自我檢測</h2>
+        <p>試著回答以下問題，確認觀念是否清晰（不附標準答案，請用上方觀念推導）：</p>
+        <ol>
+            <li>如果一個圖有 5 個節點，邊數只有 3 條，請問它一定是連通圖嗎？</li>
+            <li>如果邊數是 N-1，而且確定是連通的，請問圖中會有圈圈 (Cycle) 嗎？</li>
+            <li>如果邊數有 N 條，且是連通圖，最少會有幾個圈圈？</li>
+        </ol>
+    </section>
+
+</div>
+
+<script>
+    // --- 互動邏輯 JavaScript ---
+
+    const canvas = document.getElementById('graphCanvas');
+    const ctx = canvas.getContext('2d');
+    const nodeInput = document.getElementById('nodeRange');
+    const edgeInput = document.getElementById('edgeRange');
+    const nodeValDisplay = document.getElementById('nodeVal');
+    const edgeValDisplay = document.getElementById('edgeVal');
+    const statusDisplay = document.getElementById('graphStatus');
+    const explanationDisplay = document.getElementById('graphExplanation');
+
+    // 初始化
+    updateGraph();
+
+    function updateGraph() {
+        const N = parseInt(nodeInput.value);
+        let E = parseInt(edgeInput.value);
+
+        // 限制 E 的最大值，避免過於混亂 (雖然完全圖是 N(N-1)/2，但示範不用那麼多)
+        const maxEdges = Math.min(N * (N - 1) / 2, 20); 
+        // 更新滑桿最大值 (若需要動態調整範圍)
+        // edgeInput.max = maxEdges + 2; 
+
+        nodeValDisplay.textContent = N;
+        edgeValDisplay.textContent = E;
+
+        drawGraph(N, E);
+        updateStatus(N, E);
+    }
+
+    function drawGraph(n, e) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const radius = 100;
+        const nodes = [];
+
+        // 1. 計算節點位置
+        for (let i = 0; i < n; i++) {
+            const angle = (2 * Math.PI * i) / n - Math.PI / 2; // 從上方開始
+            nodes.push({
+                x: centerX + radius * Math.cos(angle),
+                y: centerY + radius * Math.sin(angle),
+                id: i + 1
+            });
+        }
+
+        // 2. 決定要畫哪些邊
+        // 為了教學目的，我們優先連接相鄰節點 (0-1, 1-2...) 以最高效率達到連通
+        // 這樣能證明：即使你是「刻意要連通」，邊數不夠就是不夠
+        
+        ctx.beginPath();
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 2;
+
+        let edgesDrawn = 0;
+
+        // 第一階段：線性連接 (0-1, 1-2, 2-3...) -> 這是最省邊的連通方式
+        for (let i = 0; i < n - 1; i++) {
+            if (edgesDrawn < e) {
+                connectNodes(nodes[i], nodes[i+1]);
+                edgesDrawn++;
+            }
+        }
+
+        // 第二階段：頭尾相連 (n-1 -> 0) -> 形成第一個圈
+        if (edgesDrawn < e) {
+            connectNodes(nodes[n-1], nodes[0]);
+            edgesDrawn++;
+        }
+
+        // 第三階段：隨機/交叉連接 (增加更多圈圈)
+        // 簡單演算法：連接 (0,2), (1,3)... 跨一點連接
+        for (let i = 0; i < n; i++) {
+            if (edgesDrawn < e) {
+                let target = (i + 2) % n;
+                // 避免重複畫線 (雖視覺沒差，但邏輯上要對)
+                // 這裡簡化處理，僅作為示意圖
+                connectNodes(nodes[i], nodes[target]);
+                edgesDrawn++;
+            }
+        }
+        
+        // 如果還不夠 (大亂鬥模式，隨意連)，這裡簡單處理填滿剩餘
+        // 實際上對於教學，前三階段已足夠展示 N-1, N, N+1 的狀態
+
+        ctx.stroke();
+
+        // 3. 畫節點 (蓋在線上)
+        nodes.forEach(node => {
+            ctx.beginPath();
+            ctx.arc(node.x, node.y, 15, 0, 2 * Math.PI);
+            ctx.fillStyle = '#fff';
+            ctx.fill();
+            ctx.strokeStyle = '#2c3e50';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(node.id, node.x, node.y);
+        });
+    }
+
+    function connectNodes(nodeA, nodeB) {
+        ctx.moveTo(nodeA.x, nodeA.y);
+        ctx.lineTo(nodeB.x, nodeB.y);
+    }
+
+    function updateStatus(n, e) {
+        const threshold = n - 1;
+        let statusHTML = '';
+        let explainHTML = '';
+
+        if (e < threshold) {
+            statusHTML = `<span class="status-disconnected">❌ 不連通 (Disconnected)</span>`;
+            explainHTML = `目前邊數 <b>${e}</b> 小於最少需求 <b>${threshold}</b> (N-1)。<br>你可以看到圖形斷開了，無法從每一個點走到其他所有點。<br>這就是為什麼選項 (A) N-2 是不可能連通的。`;
+        } else if (e === threshold) {
+            statusHTML = `<span class="status-connected">✅ 連通 (Connected) - 樹 (Tree)</span>`;
+            explainHTML = `目前邊數 <b>${e}</b> 剛好等於 <b>${threshold}</b> (N-1)。<br>這是最精簡的連通狀態，沒有任何圈圈。這就是選項 (B) 的情況。`;
+        } else {
+            statusHTML = `<span class="status-connected">✅ 連通 (Connected) - 有圈圈 (Cycle)</span>`;
+            explainHTML = `目前邊數 <b>${e}</b> 大於 <b>${threshold}</b>。<br>圖形依然連通，且多餘的邊造成了圈圈。這符合選項 (C) 和 (D) 的情況。`;
+        }
+
+        statusDisplay.innerHTML = statusHTML;
+        explanationDisplay.innerHTML = explainHTML;
+    }
+
+    // --- 功能型 JavaScript ---
+    
+    function toggleVisibility(id) {
+        const el = document.getElementById(id);
+        if (el.style.display === 'block') {
+            el.style.display = 'none';
+        } else {
+            el.style.display = 'block';
+        }
+    }
+
+    function checkAnswer(option) {
+        const feedback = document.getElementById('quiz-feedback');
+        // 題目問 N=10，連通圖最少 N-1=9。
+        // 選項 (A) 8 -> 小於 9，不可能連通 -> 是正確答案 (因為題目問「無法」)
+        // 選項 (B) 9 -> 可能
+        // 選項 (C) 10 -> 可能
+        // 選項 (D) 45 -> 可能 (完全圖)
+        
+        // 重置樣式
+        document.querySelectorAll('.quiz-option').forEach(btn => {
+            btn.classList.remove('correct', 'wrong');
+        });
+
+        if (option === 'A') {
+            feedback.innerHTML = '<span style="color:green">答對了！</span><br>N=10 時，最少需要 9 條邊才能連通。8 條邊一定不夠，會斷開。';
+            event.target.classList.add('correct');
+        } else {
+            feedback.innerHTML = '<span style="color:red">答錯囉。</span><br>題目問的是「無法」形成連通圖。請想想 N=10 最少要幾條邊？(N-1)';
+            event.target.classList.add('wrong');
+        }
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電腦概論互動教學：檔案組織與即時處理</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --highlight-bg: #fff3cd;
+            --highlight-text: #856404;
+            --success-color: #28a745;
+            --error-color: #dc3545;
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", sans-serif;
+            background-color: var(--bg-color);
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* 卡片式設計 */
+        .card {
+            background: var(--card-bg);
+            padding: 25px;
+            margin-bottom: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--accent-color);
+        }
+
+        h1, h2, h3 {
+            color: var(--primary-color);
+            margin-top: 0;
+        }
+
+        h2 {
+            font-size: 1.4rem;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        /* 題目區樣式 */
+        .question-box {
+            background-color: #fff;
+            border: 2px solid #e9ecef;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .options-list {
+            list-style-type: none;
+            padding: 0;
+            margin-top: 15px;
+        }
+
+        .options-list li {
+            margin-bottom: 8px;
+            font-weight: normal;
+        }
+
+        /* 螢光筆特效 */
+        .highlight {
+            background-color: var(--highlight-bg);
+            color: var(--highlight-text);
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        /* 互動模擬區 */
+        .sim-container {
+            border: 1px solid #ddd;
+            padding: 15px;
+            background: #fafafa;
+            border-radius: var(--border-radius);
+            text-align: center;
+        }
+
+        .data-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .data-cell {
+            width: 30px;
+            height: 30px;
+            border: 1px solid #ccc;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .data-cell.active {
+            background-color: var(--accent-color);
+            color: white;
+            transform: scale(1.1);
+            border-color: var(--primary-color);
+        }
+
+        .data-cell.target {
+            border-color: var(--error-color);
+            border-width: 2px;
+        }
+
+        .data-cell.found {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .sim-controls button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .sim-controls button:hover {
+            background-color: #34495e;
+        }
+
+        .sim-log {
+            margin-top: 10px;
+            font-weight: bold;
+            min-height: 1.6em;
+            color: var(--accent-color);
+        }
+
+        /* 選項分析表格 */
+        .analysis-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .analysis-table th, .analysis-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        .analysis-table th {
+            background-color: #f8f9fa;
+            width: 30%;
+        }
+
+        .status-ok { color: var(--success-color); font-weight: bold; }
+        .status-no { color: var(--error-color); font-weight: bold; }
+
+        /* 作答區 */
+        .quiz-section {
+            background-color: #e8f4fc;
+            border-left-color: var(--accent-color);
+        }
+
+        .checkbox-group label {
+            display: block;
+            margin: 10px 0;
+            cursor: pointer;
+            padding: 8px;
+            background: white;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .checkbox-group label:hover {
+            background: #f0f0f0;
+        }
+
+        .feedback-area {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .feedback-area.correct {
+            background-color: #d4edda;
+            color: #155724;
+            display: block;
+        }
+
+        .feedback-area.wrong {
+            background-color: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+
+        /* 收合按鈕 */
+        .toggle-btn {
+            background: none;
+            border: none;
+            color: var(--accent-color);
+            cursor: pointer;
+            text-decoration: underline;
+            font-size: 0.9rem;
+            margin-left: 10px;
+        }
+
+        /* 標籤 Badge */
+        .badge {
+            display: inline-block;
+            background-color: #6c757d;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+
+        /* 手機版調整 */
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            .card { padding: 15px; }
+            .sim-controls button { width: 100%; margin: 5px 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- 標題區 -->
+    <div class="card" style="text-align: center; border-left: none;">
+        <span class="badge">電腦概論</span> <span class="badge">檔案組織</span>
+        <h1>題號 39：線上即時處理與檔案存取</h1>
+        <p style="color: #666; margin-bottom: 0;">高中職計算機概論 / 考前重點複習</p>
+    </div>
+
+    <!-- 題目區 -->
+    <div class="card">
+        <h2>【題目】</h2>
+        <div class="question-box">
+            39. 適合線上即時處理作業的資料檔為? (複選)<br>
+            <ul class="options-list">
+                <li>(A) 隨機存取檔</li>
+                <li>(B) 循序存取檔</li>
+                <li>(C) 批次存取檔</li>
+                <li>(D) 索引存取檔</li>
+                <li>(E) 直接存取檔</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 第一步：找關鍵字 -->
+    <div class="card">
+        <h2>第一步：找關鍵字</h2>
+        <p>請用「螢光筆」視角看題目，圈出重點：</p>
+        <div style="background: #fff; padding: 15px; border-radius: 4px; font-size: 1.1em;">
+            適合 <span class="highlight">線上即時處理</span> 作業的 <span class="highlight">資料檔</span> 為?
+        </div>
+        <ul>
+            <li><strong>線上即時處理 (Online Real-Time)：</strong> 代表「現在問，馬上要答案」。重點是<span style="color:red">速度</span>。</li>
+            <li><strong>資料檔 (File)：</strong> 資料在硬碟裡的排隊方式，決定了找資料快不快。</li>
+        </ul>
+    </div>
+
+    <!-- 第二步：白話翻譯 -->
+    <div class="card">
+        <h2>第二步：白話翻譯</h2>
+        <p>這題其實是在問：</p>
+        <blockquote style="border-left: 4px solid #ddd; padding-left: 15px; margin: 10px 0; color: #555; font-style: italic;">
+            「如果使用者現在輸入一個學號就要『立刻』看到成績，我們應該用哪種方式把資料存在電腦裡，才不會讓他等太久？」
+        </blockquote>
+    </div>
+
+    <!-- 第三步：解題思路與模擬 -->
+    <div class="card">
+        <h2>第三步：解題思路 & 互動模擬</h2>
+        <p>即時處理 (Real-Time) 的核心需求是<strong>「隨點隨到」</strong>。我們來比較看看不同存取方式的速度：</p>
+        
+        <div class="sim-container">
+            <h3>🔍 查找速度模擬器</h3>
+            <p>假設我們要找學號 <strong>15</strong> 的資料 (共 20 筆)</p>
+            
+            <div class="data-grid" id="grid">
+                <!-- JS 會在這裡產生 20 個格子 -->
+            </div>
+
+            <div class="sim-controls">
+                <button onclick="simulateSequential()">🐢 循序存取 (Sequential)</button>
+                <button onclick="simulateDirect()">🚀 直接/隨機存取 (Direct/Random)</button>
+                <button onclick="simulateIndexed()">📖 索引存取 (Indexed)</button>
+            </div>
+            
+            <div class="sim-log" id="simLog">準備就緒...請選擇存取方式</div>
+        </div>
+
+        <div style="margin-top: 20px;">
+            <p><strong>原理比喻：</strong></p>
+            <ul>
+                <li><strong>循序存取 (Sequential)：</strong> 像錄音帶 (Cassette)，想聽第5首歌，必須先捲過前4首。 <span style="color:red">→ 慢，不適合即時。</span></li>
+                <li><strong>隨機/直接存取 (Random/Direct)：</strong> 像黑膠唱片或 CD，指針直接跳到那一軌。 <span style="color:green">→ 快，適合即時。</span></li>
+                <li><strong>索引存取 (Indexed)：</strong> 像查字典，先看目錄 (Index) 找到頁碼，再一次翻到位。 <span style="color:green">→ 很快，適合即時。</span></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 第四步：選項分析 -->
+    <div class="card">
+        <h2>第四步：選項分析</h2>
+        <table class="analysis-table">
+            <thead>
+                <tr>
+                    <th>選項</th>
+                    <th>分析</th>
+                    <th>結果</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>(A) 隨機存取檔<br><small>Random Access</small></td>
+                    <td>可以直接跳到任何一筆記錄，不需要經過前面的資料。速度極快。</td>
+                    <td class="status-ok">✅ 適合</td>
+                </tr>
+                <tr>
+                    <td>(B) 循序存取檔<br><small>Sequential Access</small></td>
+                    <td>必須從頭開始找 (第1筆, 第2筆...)。如果是最後一筆，使用者會等到睡著。</td>
+                    <td class="status-no">❌ 不適合</td>
+                </tr>
+                <tr>
+                    <td>(C) 批次存取檔<br><small>Batch Processing</small></td>
+                    <td>這是「處理模式」而非單純檔案結構，通常指「累積一堆資料再一次處理」(例如水電費計算)，與「即時」概念相反。</td>
+                    <td class="status-no">❌ 不適合</td>
+                </tr>
+                <tr>
+                    <td>(D) 索引存取檔<br><small>Indexed Access</small></td>
+                    <td>透過「索引表」(Key) 快速查到資料的實際地址，查詢效率高。</td>
+                    <td class="status-ok">✅ 適合</td>
+                </tr>
+                <tr>
+                    <td>(E) 直接存取檔<br><small>Direct Access</small></td>
+                    <td>透過雜湊演算法 (Hashing) 算出資料地址，直接抓取，速度最快。</td>
+                    <td class="status-ok">✅ 適合</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 記憶口訣與陷阱 -->
+    <div class="card" style="background-color: #fff8e1; border-left-color: #ffc107;">
+        <h2>💡 記憶口訣 & 避坑指南</h2>
+        
+        <h3>🧠 口訣：</h3>
+        <p style="font-size: 1.2em; font-weight: bold; text-align: center;">
+            「即時就是要快，<br>
+            隨機、直接、索引快快來，<br>
+            循序、批次請排隊。」
+        </p>
+
+        <h3>⚠️ 常見陷阱：</h3>
+        <ul>
+            <li>看到<strong>「批次 (Batch)」</strong>不要選！批次是累積一整天或一個月才做一次 (例如銀行半夜結算)，絕對不是「即時」。</li>
+            <li>看到<strong>「磁帶 (Tape)」</strong>就要想到「循序」，它是最慢的設備，絕對不適合線上即時系統。</li>
+        </ul>
+    </div>
+
+    <!-- 作答區 -->
+    <div class="card quiz-section">
+        <h2>📝 互動練習 (試著選出正確答案)</h2>
+        <p>39. 適合線上即時處理作業的資料檔為?</p>
+        
+        <div class="checkbox-group">
+            <label><input type="checkbox" name="ans" value="A"> (A) 隨機存取檔</label>
+            <label><input type="checkbox" name="ans" value="B"> (B) 循序存取檔</label>
+            <label><input type="checkbox" name="ans" value="C"> (C) 批次存取檔</label>
+            <label><input type="checkbox" name="ans" value="D"> (D) 索引存取檔</label>
+            <label><input type="checkbox" name="ans" value="E"> (E) 直接存取檔</label>
+        </div>
+
+        <button onclick="checkAnswer()" style="background: var(--accent-color); color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin-top: 10px;">送出作答</button>
+        <button onclick="showCorrectAnswer()" class="toggle-btn">偷看正確答案</button>
+
+        <div id="feedback" class="feedback-area"></div>
+        
+        <div id="realAnswer" style="display: none; margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 10px;">
+            <strong>正確答案：A, D, E</strong>
+        </div>
+    </div>
+
+    <!-- 自我檢測 -->
+    <div class="card">
+        <h2>🧐 自我檢測 (延伸思考)</h2>
+        <ul>
+            <li><strong>Q1:</strong> 如果今天你要設計一個「全校成績查詢系統」，你會把資料放在「磁帶」還是「磁碟」？為什麼？</li>
+            <li><strong>Q2:</strong> 為什麼「索引存取檔」會比單純的資料檔佔用更多空間？(提示：目錄本身要不要空間？)</li>
+            <li><strong>Q3:</strong> 什麼情況下我們反而會用「循序存取」？(提示：當你要備份所有資料，或者計算全班平均成績時，需不需要跳來跳去？)</li>
+        </ul>
+    </div>
+
+</div>
+
+<script>
+    // --- 模擬器邏輯 ---
+    const grid = document.getElementById('grid');
+    const log = document.getElementById('simLog');
+    const totalItems = 20;
+    const targetItem = 15; // 我們要找第 15 號 (Index 14)
+
+    // 初始化格子
+    function initGrid() {
+        grid.innerHTML = '';
+        for (let i = 1; i <= totalItems; i++) {
+            let cell = document.createElement('div');
+            cell.className = 'data-cell';
+            cell.innerText = i;
+            cell.id = 'cell-' + i;
+            if (i === targetItem) {
+                cell.classList.add('target'); // 標記目標，方便教學觀看
+            }
+            grid.appendChild(cell);
+        }
+    }
+
+    // 重置樣式
+    function resetGrid() {
+        const cells = document.querySelectorAll('.data-cell');
+        cells.forEach(c => {
+            c.classList.remove('active', 'found');
+            c.style.backgroundColor = '';
+        });
+    }
+
+    // 1. 循序存取模擬
+    function simulateSequential() {
+        initGrid();
+        resetGrid();
+        log.innerText = "🐢 循序存取：從第 1 筆開始檢查...";
+        
+        let current = 1;
+        let interval = setInterval(() => {
+            // 清除上一格的 active
+            if (current > 1) {
+                document.getElementById('cell-' + (current-1)).classList.remove('active');
+            }
+
+            let cell = document.getElementById('cell-' + current);
+            cell.classList.add('active');
+
+            if (current === targetItem) {
+                clearInterval(interval);
+                cell.classList.remove('active');
+                cell.classList.add('found');
+                log.innerHTML = `🐢 循序存取：找到了！總共走了 ${current} 步。<br>(很慢，像錄音帶)`;
+            } else {
+                current++;
+            }
+        }, 150); // 每一格停頓 150ms
+    }
+
+    // 2. 直接存取模擬
+    function simulateDirect() {
+        initGrid();
+        resetGrid();
+        log.innerText = "🚀 直接存取：計算位置中...";
+
+        setTimeout(() => {
+            let cell = document.getElementById('cell-' + targetItem);
+            cell.classList.add('found');
+            // 視覺特效：閃爍一下
+            cell.style.transform = "scale(1.3)";
+            setTimeout(() => cell.style.transform = "scale(1)", 200);
+            
+            log.innerHTML = `🚀 直接/隨機存取：咻！一步到位。<br>(使用位址計算，不需要掃描前面)`;
+        }, 400);
+    }
+
+    // 3. 索引存取模擬
+    function simulateIndexed() {
+        initGrid();
+        resetGrid();
+        log.innerText = "📖 索引存取：先查索引表 (目錄)...";
+
+        // 模擬先查一個虛擬的索引
+        setTimeout(() => {
+            log.innerText = "📖 索引存取：查到位置了，正在跳轉...";
+            
+            setTimeout(() => {
+                let cell = document.getElementById('cell-' + targetItem);
+                cell.classList.add('found');
+                log.innerHTML = `📖 索引存取：找到了！<br>(先查目錄再翻頁，非常快)`;
+            }, 400);
+        }, 600);
+    }
+
+    // --- 答題邏輯 ---
+    function checkAnswer() {
+        const correctAnswers = ['A', 'D', 'E'];
+        // 取得所有勾選的選項
+        const checkboxes = document.querySelectorAll('input[name="ans"]:checked');
+        let userAnswers = [];
+        checkboxes.forEach((cb) => {
+            userAnswers.push(cb.value);
+        });
+
+        const feedback = document.getElementById('feedback');
+        
+        // 排序比較
+        userAnswers.sort();
+        correctAnswers.sort();
+
+        // 簡單判斷陣列是否相等
+        const isCorrect = JSON.stringify(userAnswers) === JSON.stringify(correctAnswers);
+
+        if (userAnswers.length === 0) {
+            feedback.className = "feedback-area wrong";
+            feedback.innerText = "請先勾選答案再送出喔！";
+            return;
+        }
+
+        if (isCorrect) {
+            feedback.className = "feedback-area correct";
+            feedback.innerHTML = "<strong>🎉 答對了！太棒了！</strong><br>隨機、索引、直接存取都具有「不需要從頭找」的特性，適合即時處理。";
+        } else {
+            feedback.className = "feedback-area wrong";
+            let msg = "<strong>⚠️ 答案不太對喔...</strong><br>";
+            
+            // 簡單除錯提示
+            if (userAnswers.includes('B')) msg += "👉 「循序存取」太慢了，要排隊，不適合即時。<br>";
+            if (userAnswers.includes('C')) msg += "👉 「批次」是一次處理一堆，不是即時回應。<br>";
+            if (!userAnswers.includes('A') || !userAnswers.includes('D') || !userAnswers.includes('E')) {
+                msg += "👉 少選了一些適合「快速定位」的檔案格式喔。<br>";
+            }
+            feedback.innerHTML = msg;
+        }
+    }
+
+    function showCorrectAnswer() {
+        const ansBlock = document.getElementById('realAnswer');
+        if (ansBlock.style.display === 'none') {
+            ansBlock.style.display = 'block';
+        } else {
+            ansBlock.style.display = 'none';
+        }
+    }
+
+    // 初始化頁面時執行一次
+    initGrid();
+</script>
+
+</body>
+</html>

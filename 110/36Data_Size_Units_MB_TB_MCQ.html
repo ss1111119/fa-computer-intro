@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電腦概論：資料量單位與名詞辨識</title>
+    <style>
+        /* --- CSSReset 與 基礎設定 --- */
+        * {
+            box-sizing: border-box;
+            font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+        }
+
+        body {
+            background-color: #f4f4f9;
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        /* --- 容器樣式 --- */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        /* --- 標題區 --- */
+        header {
+            border-bottom: 2px solid #eee;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            color: #2c3e50;
+            margin: 0;
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            color: #555;
+            margin: 10px 0 0;
+            font-weight: normal;
+        }
+
+        h3 {
+            color: #007bff;
+            border-left: 5px solid #007bff;
+            padding-left: 10px;
+            margin-top: 30px;
+            font-size: 1.2rem;
+        }
+
+        /* --- 題目區 --- */
+        .question-box {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            padding: 20px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+
+        .options {
+            list-style: none;
+            padding: 0;
+        }
+
+        .options li {
+            margin: 8px 0;
+            padding: 5px;
+        }
+
+        /* --- 螢光筆特效 --- */
+        .highlight {
+            background-color: #fff9c4;
+            padding: 0 4px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: #d35400;
+        }
+
+        /* --- 步驟說明區 --- */
+        .step-box {
+            background: #fff;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin: 15px 0;
+            background-color: #f1f8e9;
+        }
+
+        .concept-text {
+            color: #555;
+            font-size: 0.95rem;
+        }
+
+        /* --- 互動分類卡片區 (重點) --- */
+        .game-area {
+            background: #eef2f5;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .cards-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: #fff;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            width: 120px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            user-select: none;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .card-term {
+            font-size: 1.4rem;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .card-category {
+            font-size: 0.8rem;
+            color: #888;
+            display: block;
+            min-height: 1.2em;
+        }
+
+        /* 卡片狀態顏色 */
+        .card[data-type="data"] { border-color: #007bff; background-color: #e7f1ff; }
+        .card[data-type="data"] .card-category { color: #007bff; font-weight: bold; }
+
+        .card[data-type="time"] { border-color: #ffc107; background-color: #fff3cd; }
+        .card[data-type="time"] .card-category { color: #d39e00; font-weight: bold; }
+
+        .card[data-type="concept"] { border-color: #dc3545; background-color: #f8d7da; }
+        .card[data-type="concept"] .card-category { color: #721c24; font-weight: bold; }
+
+        .btn-check-game {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }
+
+        .btn-check-game:hover {
+            background-color: #5a6268;
+        }
+
+        #game-msg {
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        /* --- 詳細解析列表 --- */
+        .analysis-list li {
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px dashed #eee;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            margin-right: 8px;
+            color: white;
+        }
+        .tag-wrong { background-color: #dc3545; }
+        .tag-correct { background-color: #28a745; }
+
+        /* --- 記憶口訣與陷阱 --- */
+        .tip-box {
+            background-color: #fff3cd;
+            border: 2px solid #ffeeba;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        /* --- 模擬作答區 --- */
+        .quiz-area {
+            background-color: #e9ecef;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .quiz-option-label {
+            display: block;
+            margin: 10px 0;
+            cursor: pointer;
+            padding: 10px;
+            background: #fff;
+            border-radius: 5px;
+            border: 1px solid #ced4da;
+            transition: background 0.2s;
+        }
+
+        .quiz-option-label:hover {
+            background-color: #f8f9fa;
+        }
+
+        .quiz-option-label input {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+
+        .btn-submit {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            margin-top: 15px;
+            width: 100%;
+        }
+
+        .btn-submit:hover { background-color: #0056b3; }
+
+        .feedback-box {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: white;
+            border-left: 5px solid #ccc;
+        }
+
+        /* --- 答案顯示區 --- */
+        details {
+            margin-top: 20px;
+            background: #eee;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        summary {
+            font-weight: bold;
+            color: #555;
+        }
+
+        /* --- 自我檢測 --- */
+        .self-check {
+            background: #fff;
+            border: 1px dashed #aaa;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        /* --- RWD 手機版調整 --- */
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            h1 { font-size: 1.3rem; }
+            .card { width: 45%; } /* 手機版一列兩個卡片 */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- A. 標題區 -->
+        <header>
+            <h1>電腦概論：資料量單位辨識</h1>
+            <h2>題號 36 - 複選題</h2>
+        </header>
+
+        <!-- B. 題目區 -->
+        <section class="question-box">
+            <p><strong>36. 下列何者是常用的資料量的單位?</strong></p>
+            <ul class="options">
+                <li>(A) ms</li>
+                <li>(B) ns</li>
+                <li>(C) MB</li>
+                <li>(D) TB</li>
+                <li>(E) HPC</li>
+            </ul>
+        </section>
+
+        <!-- C & D & E. 步驟引導與翻譯 -->
+        <h3>第一步：解碼題目</h3>
+        <div class="step-box">
+            <p>請先用螢光筆找出關鍵字：<span class="highlight">資料量</span>、<span class="highlight">單位</span></p>
+            <p><strong>白話翻譯：</strong>題目在問「哪一個選項是用來形容 <span class="highlight">檔案有多大</span> 的？」</p>
+            <hr style="border: 0; border-top: 1px dashed #ccc; margin: 10px 0;">
+            <p><strong>解題思路：</strong></p>
+            <ul class="concept-text">
+                <li>看到 <strong>B (Byte)</strong> 或 <strong>b (bit)</strong> 結尾 ➝ 90% 是資料量。</li>
+                <li>看到 <strong>s (second)</strong> 結尾 ➝ 是時間（秒）。</li>
+                <li>看起來像縮寫但沒有 B 或 s ➝ 可能是技術名詞。</li>
+            </ul>
+        </div>
+
+        <!-- F. 互動分類卡片區 (重點) -->
+        <h3>第二步：互動分類特訓</h3>
+        <p style="text-align: center; color: #666; font-size: 0.9rem;">👇 請點擊下方卡片，將它們分類為「資料量」、「時間」或「技術名詞」</p>
+        
+        <div class="game-area">
+            <div class="cards-container">
+                <!-- 卡片 A: ms -->
+                <div class="card" id="card-ms" onclick="toggleCard('ms')" data-type="none">
+                    <span class="card-term">ms</span>
+                    <span class="card-category" id="label-ms">點擊分類</span>
+                </div>
+                <!-- 卡片 B: ns -->
+                <div class="card" id="card-ns" onclick="toggleCard('ns')" data-type="none">
+                    <span class="card-term">ns</span>
+                    <span class="card-category" id="label-ns">點擊分類</span>
+                </div>
+                <!-- 卡片 C: MB -->
+                <div class="card" id="card-mb" onclick="toggleCard('mb')" data-type="none">
+                    <span class="card-term">MB</span>
+                    <span class="card-category" id="label-mb">點擊分類</span>
+                </div>
+                <!-- 卡片 D: TB -->
+                <div class="card" id="card-tb" onclick="toggleCard('tb')" data-type="none">
+                    <span class="card-term">TB</span>
+                    <span class="card-category" id="label-tb">點擊分類</span>
+                </div>
+                <!-- 卡片 E: HPC -->
+                <div class="card" id="card-hpc" onclick="toggleCard('hpc')" data-type="none">
+                    <span class="card-term">HPC</span>
+                    <span class="card-category" id="label-hpc">點擊分類</span>
+                </div>
+            </div>
+            <button class="btn-check-game" onclick="checkGame()">檢查分類結果</button>
+            <div id="game-msg"></div>
+        </div>
+
+        <!-- G. 選項分析 -->
+        <h3>第三步：選項逐一擊破</h3>
+        <ul class="options analysis-list">
+            <li>
+                <span class="tag tag-wrong">錯誤</span> 
+                <strong>(A) ms</strong>：<br>
+                英文是 millisecond（毫秒）。結尾是 <strong>s</strong>，這是<strong>時間單位</strong>（1/1000 秒），常在網路延遲（Ping）看到。
+            </li>
+            <li>
+                <span class="tag tag-wrong">錯誤</span> 
+                <strong>(B) ns</strong>：<br>
+                英文是 nanosecond（奈秒）。結尾是 <strong>s</strong>，這是極短的<strong>時間單位</strong>（10<sup>-9</sup> 秒），常在記憶體存取速度看到。
+            </li>
+            <li>
+                <span class="tag tag-correct">正確</span> 
+                <strong>(C) MB</strong>：<br>
+                英文是 Megabyte（百萬位元組）。結尾是 <strong>B</strong>，這是常用的<strong>資料量單位</strong>（例如一張照片約 3~5 MB）。
+            </li>
+            <li>
+                <span class="tag tag-correct">正確</span> 
+                <strong>(D) TB</strong>：<br>
+                英文是 Terabyte（兆位元組）。結尾是 <strong>B</strong>，這是超大的<strong>資料量單位</strong>（例如電腦硬碟常見 1 TB）。
+            </li>
+            <li>
+                <span class="tag tag-wrong">錯誤</span> 
+                <strong>(E) HPC</strong>：<br>
+                英文是 High Performance Computing（高效能運算）。它是<strong>技術或概念的名稱</strong>（如超級電腦領域），不是拿來當單位的。
+            </li>
+        </ul>
+
+        <!-- H. 觀念補充與 I. 記憶口訣 -->
+        <h3>觀念補充與記憶口訣</h3>
+        <div class="tip-box">
+            <p><strong>🔥 必殺口訣：</strong></p>
+            <p style="font-size: 1.2rem; text-align: center;">「<strong>B</strong> 結尾是資料，<strong>s</strong> 結尾是時間」</p>
+            <hr>
+            <p><strong>📊 資料量階層（由小到大）：</strong></p>
+            <p>bit (b) < Byte (B) < KB < MB < GB < TB < PB</p>
+            <p><strong>⏳ 時間階層（由大到小）：</strong></p>
+            <p>s (秒) > ms (毫秒) > μs (微秒) > ns (奈秒)</p>
+        </div>
+
+        <!-- J. 常見陷阱 -->
+        <div style="margin-top: 20px;">
+            <h4>⚠️ 常見陷阱提醒</h4>
+            <ul>
+                <li><strong>別亂猜縮寫：</strong>看到像 HPC、GPS、IOT 這種全大寫的，通常是技術名稱，不是單位。</li>
+                <li><strong>小心大小寫 b：</strong>MB (Byte) 和 Mb (bit) 都是資料量，但大小差 8 倍，別跟時間搞混就好。</li>
+            </ul>
+        </div>
+
+        <!-- K. 作答區 -->
+        <h3>實戰演練</h3>
+        <div class="quiz-area">
+            <p>請重新作答本題（複選）：下列何者是常用的資料量的單位?</p>
+            <form id="quizForm">
+                <label class="quiz-option-label">
+                    <input type="checkbox" name="option" value="A"> (A) ms
+                </label>
+                <label class="quiz-option-label">
+                    <input type="checkbox" name="option" value="B"> (B) ns
+                </label>
+                <label class="quiz-option-label">
+                    <input type="checkbox" name="option" value="C"> (C) MB
+                </label>
+                <label class="quiz-option-label">
+                    <input type="checkbox" name="option" value="D"> (D) TB
+                </label>
+                <label class="quiz-option-label">
+                    <input type="checkbox" name="option" value="E"> (E) HPC
+                </label>
+                <button type="button" class="btn-submit" onclick="checkQuiz()">送出作答</button>
+            </form>
+            
+            <div id="quiz-feedback" class="feedback-box"></div>
+        </div>
+
+        <!-- L. 正確答案 -->
+        <details>
+            <summary>點此顯示正確答案</summary>
+            <div style="padding: 10px; background: #fff; margin-top: 5px;">
+                <h3 style="margin-top:0; color: #28a745;">正確答案：C, D</h3>
+                <p>只有 MB 和 TB 是用來衡量資料（檔案）大小的。</p>
+            </div>
+        </details>
+
+        <!-- M. 自我檢測 -->
+        <h3>自我檢測（延伸思考）</h3>
+        <div class="self-check">
+            <p>1. 如果題目出現 <strong>Mbps</strong>（網路速度常見），它是純粹的資料量單位嗎？還是速度？</p>
+            <p>2. 硬碟常見規格是 500GB，隨身碟是 32GB，請問 GB 和 Gb 有什麼不一樣？</p>
+            <p style="font-size: 0.8rem; color: #888;">（試著回答看看，確認自己是否真的懂了！）</p>
+        </div>
+
+    </div>
+
+    <script>
+        /* --- 互動分類遊戲邏輯 --- */
+        
+        // 定義狀態循環：0:未分類 -> 1:資料量 -> 2:時間 -> 3:概念
+        const categories = [
+            { id: 'none', label: '點擊分類', color: '#888' },
+            { id: 'data', label: '資料量單位', color: '#007bff' },
+            { id: 'time', label: '時間單位', color: '#d39e00' },
+            { id: 'concept', label: '技術/概念', color: '#721c24' }
+        ];
+
+        // 每個卡片的當前狀態索引
+        let cardStates = {
+            'ms': 0, 'ns': 0, 'mb': 0, 'tb': 0, 'hpc': 0
+        };
+
+        // 正確答案對照表
+        const correctAnswers = {
+            'ms': 'time',
+            'ns': 'time',
+            'mb': 'data',
+            'tb': 'data',
+            'hpc': 'concept'
+        };
+
+        function toggleCard(cardId) {
+            // 循環切換狀態 0 -> 1 -> 2 -> 3 -> 0
+            cardStates[cardId] = (cardStates[cardId] + 1) % 4;
+            updateCardUI(cardId);
+        }
+
+        function updateCardUI(cardId) {
+            const stateIndex = cardStates[cardId];
+            const state = categories[stateIndex];
+            const cardElement = document.getElementById(`card-${cardId}`);
+            const labelElement = document.getElementById(`label-${cardId}`);
+
+            // 更新 HTML data-type 屬性以觸發 CSS 樣式
+            cardElement.setAttribute('data-type', state.id);
+            // 更新文字
+            labelElement.innerText = state.label;
+        }
+
+        function checkGame() {
+            let correctCount = 0;
+            let total = 5;
+            let isAllCorrect = true;
+
+            for (let id in correctAnswers) {
+                const userStateId = categories[cardStates[id]].id;
+                const correctStateId = correctAnswers[id];
+                
+                if (userStateId === 'none') {
+                    alert('還有卡片沒分類喔！請點擊卡片進行分類。');
+                    return;
+                }
+
+                if (userStateId === correctStateId) {
+                    correctCount++;
+                } else {
+                    isAllCorrect = false;
+                }
+            }
+
+            const msgDiv = document.getElementById('game-msg');
+            if (isAllCorrect) {
+                msgDiv.innerHTML = '<span style="color: #28a745; font-size: 1.2rem;">🎉 太棒了！全部答對！你已經完全掌握了！</span>';
+                document.querySelector('.btn-check-game').style.backgroundColor = '#28a745';
+                document.querySelector('.btn-check-game').innerText = '挑戰成功';
+            } else {
+                msgDiv.innerHTML = `<span style="color: #dc3545;">答對 ${correctCount} / 5 題。再試試看！提示：ms/ns 是時間，MB/TB 是資料。</span>`;
+            }
+        }
+
+        /* --- 實戰演練作答邏輯 --- */
+        function checkQuiz() {
+            const checkboxes = document.querySelectorAll('input[name="option"]:checked');
+            const feedbackBox = document.getElementById('quiz-feedback');
+            
+            // 收集使用者選的答案
+            let userAnswers = [];
+            checkboxes.forEach((checkbox) => {
+                userAnswers.push(checkbox.value);
+            });
+            userAnswers.sort(); // 排序以便比較
+
+            const correct = ['C', 'D'];
+            
+            // 判斷邏輯
+            let isCorrect = JSON.stringify(userAnswers) === JSON.stringify(correct);
+            
+            feedbackBox.style.display = 'block';
+
+            if (userAnswers.length === 0) {
+                feedbackBox.style.borderLeftColor = '#dc3545';
+                feedbackBox.innerHTML = '<strong style="color: #dc3545;">請先選擇答案！</strong>';
+                return;
+            }
+
+            if (isCorrect) {
+                feedbackBox.style.borderLeftColor = '#28a745';
+                feedbackBox.innerHTML = `
+                    <h4 style="color: #28a745; margin-top:0;">✅ 恭喜答對！</h4>
+                    <p>MB 和 TB 確實是資料量單位。</p>
+                    <p>你已經學會如何區分時間與資料單位了！</p>
+                `;
+            } else {
+                feedbackBox.style.borderLeftColor = '#dc3545';
+                let msg = '<h4 style="color: #dc3545; margin-top:0;">❌ 答案不完全正確</h4>';
+                
+                // 具體錯誤分析
+                if (userAnswers.includes('A') || userAnswers.includes('B')) {
+                    msg += '<p>👉 <strong>ms, ns</strong> 是「時間」單位（看到 s 結尾要想到 Second 秒）。</p>';
+                }
+                if (userAnswers.includes('E')) {
+                    msg += '<p>👉 <strong>HPC</strong> 是「高效能運算」，它是個名詞，不是單位。</p>';
+                }
+                if (!userAnswers.includes('C') || !userAnswers.includes('D')) {
+                    msg += '<p>👉 少選了資料量單位（MB 或 TB）。</p>';
+                }
+                
+                msg += '<p><strong>提示：找有 "B" 結尾的！</strong></p>';
+                feedbackBox.innerHTML = msg;
+            }
+        }
+    </script>
+</body>
+</html>

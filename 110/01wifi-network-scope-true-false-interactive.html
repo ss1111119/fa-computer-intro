@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電腦概論 - 網路基礎觀念教學 - 第 1 題</title>
+    <style>
+        /* --- 全域樣式設定 (Reset & Base) --- */
+        :root {
+            --primary-color: #2c3e50; /* 深藍色 - 專業感 */
+            --accent-color: #3498db;  /* 亮藍色 - 重點標示 */
+            --success-color: #27ae60; /* 綠色 - 正確 */
+            --error-color: #c0392b;   /* 紅色 - 錯誤 */
+            --bg-color: #f4f6f7;      /* 淺灰背景 - 護眼 */
+            --card-bg: #ffffff;       /* 卡片背景 */
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* --- 通用元件樣式 --- */
+        h1, h2, h3 {
+            margin-top: 0;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 25px;
+            margin-bottom: 25px;
+            border-left: 5px solid var(--accent-color);
+        }
+
+        .highlight {
+            color: var(--error-color);
+            font-weight: bold;
+            background-color: #fdebd0;
+            padding: 2px 5px;
+            border-radius: 4px;
+        }
+
+        .btn {
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            transition: all 0.2s;
+            display: inline-block;
+            margin: 5px;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        /* --- 標題區塊 --- */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        header h1 {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+        }
+        .tag {
+            background: var(--primary-color);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            vertical-align: middle;
+        }
+
+        /* --- 題目區塊 --- */
+        .question-box {
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-align: center;
+            padding: 20px;
+            border: 2px dashed var(--accent-color);
+            border-radius: 10px;
+            background-color: #eaf2f8;
+            margin-bottom: 20px;
+        }
+
+        /* --- 互動(A)：O/X 按鈕 --- */
+        .ox-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .btn-ox {
+            width: 120px;
+            height: 120px;
+            font-size: 3rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-o { background-color: #ecf0f1; color: var(--success-color); border: 4px solid var(--success-color); }
+        .btn-x { background-color: #ecf0f1; color: var(--error-color); border: 4px solid var(--error-color); }
+
+        .btn-o:hover { background-color: var(--success-color); color: white; }
+        .btn-x:hover { background-color: var(--error-color); color: white; }
+
+        #feedback-area {
+            display: none; /* 預設隱藏 */
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .feedback-correct {
+            background-color: #d4efdf;
+            color: #145a32;
+            border: 1px solid #27ae60;
+        }
+
+        .feedback-wrong {
+            background-color: #fadbd8;
+            color: #78281f;
+            border: 1px solid #c0392b;
+        }
+
+        /* --- 專有名詞與核心觀念 --- */
+        .term-box {
+            background-color: #f8f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 0.95rem;
+        }
+        .term-title {
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
+        .core-concept {
+            background-color: #fff8e1; /* 淡黃色背景強調 */
+            border-left-color: #f1c40f;
+        }
+
+        /* --- 互動(B)：拖拉配對 --- */
+        .match-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .drag-source, .drop-zones {
+            flex: 1;
+            min-width: 280px;
+            background: #fdfefe;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        .draggable-item {
+            background: var(--accent-color);
+            color: white;
+            padding: 10px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: grab;
+            text-align: center;
+            display: inline-block;
+        }
+
+        .drop-zone {
+            height: 100px;
+            border: 2px dashed #bdc3c7;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .drop-zone span {
+            font-weight: bold;
+            color: #7f8c8d;
+            margin-bottom: 5px;
+            pointer-events: none; /* 讓文字不影響拖放 */
+        }
+
+        .drop-zone.hover {
+            background-color: #ebf5fb;
+            border-color: var(--accent-color);
+        }
+
+        /* --- 互動(C)：覆蓋範圍示意 --- */
+        .scenario-btns {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+        .btn-scenario {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        #scenario-result {
+            min-height: 60px;
+            padding: 10px;
+            background: #f2f3f4;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        /* --- 互動(D)：陷阱卡 --- */
+        .trap-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .trap-card {
+            background: #fadbd8;
+            border: 1px solid #e6b0aa;
+            padding: 15px;
+            border-radius: 8px;
+            position: relative;
+            transition: opacity 0.5s;
+        }
+        .trap-card h4 {
+            margin: 0 0 10px 0;
+            color: #c0392b;
+        }
+        .btn-dismiss {
+            background: #c0392b;
+            color: white;
+            font-size: 0.8rem;
+            padding: 5px 10px;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        /* --- 互動(E)：自我檢測 --- */
+        .quiz-item {
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+        }
+        .hint-box {
+            display: none;
+            background-color: #d6eaf8;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+            color: #21618c;
+            font-size: 0.9rem;
+        }
+        .btn-hint {
+            background: #85c1e9;
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        /* --- 底部重置按鈕 --- */
+        .footer-controls {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ccc;
+        }
+        .btn-reset {
+            background-color: #7f8c8d;
+            color: white;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+        }
+
+        /* 手機版適配 */
+        @media (max-width: 600px) {
+            .btn-ox { width: 90px; height: 90px; font-size: 2rem; }
+            .match-container { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <span class="tag">電腦概論</span> <span class="tag">網路基礎</span>
+        <h1>是非題互動教學</h1>
+        <p>跟著補教名師，一題搞懂「網路範圍」觀念！</p>
+    </header>
+
+    <!-- 1. 題目展示區 -->
+    <section class="card">
+        <h3>題目展示</h3>
+        <div class="question-box">
+            第 1 題：<br>
+            WiFi 屬於一種<span class="highlight">廣域的網路連接技術</span>。<br><br>
+            (A) O &nbsp;&nbsp;&nbsp; (B) X
+        </div>
+        
+        <!-- 專有名詞解釋 -->
+        <div class="term-box">
+            <div class="term-title">🧐 老師幫你翻譯（專有名詞白話文）：</div>
+            <ul>
+                <li><strong>WiFi</strong>：一種無線區域網路技術，用來在小範圍內（如房間）連接裝置。</li>
+                <li><strong>LAN (Local Area Network)</strong>：區域網路，範圍小，像家庭、學校、網咖。</li>
+                <li><strong>WAN (Wide Area Network)</strong>：廣域網路，範圍大，跨城市、跨國（像 Internet）。</li>
+                <li><strong>網路連接技術</strong>：就是讓電腦、手機可以彼此傳送資料的方法。</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- 2. 核心觀念 (教學重點) -->
+    <section class="card core-concept">
+        <h3>💡 核心觀念說明</h3>
+        <p>這題其實是在考你「WiFi 的有效範圍」有多大：</p>
+        <ul>
+            <li>WiFi 是「無線」的，但不代表它能傳很遠。</li>
+            <li>WiFi 通常用在：<strong>家裡、教室、辦公室、咖啡廳</strong>。</li>
+            <li>這些地點範圍都很小，屬於 <strong>區域網路 (LAN)</strong>。</li>
+        </ul>
+        <div style="text-align: center; font-size: 1.3rem; font-weight: bold; color: var(--error-color); margin: 15px 0;">
+            👉 一句話記憶：「WiFi = 無線 LAN，不是 WAN」
+        </div>
+    </section>
+
+    <!-- 3. 互動 (A)：O/X 判斷 -->
+    <section class="card">
+        <h3>(1) 試著回答看看</h3>
+        <p>根據上面的觀念，這題的答案是？</p>
+        <div class="ox-buttons">
+            <button class="btn btn-ox btn-o" onclick="checkAnswer('A')">O</button>
+            <button class="btn btn-ox btn-x" onclick="checkAnswer('B')">X</button>
+        </div>
+        <div id="feedback-area"></div>
+    </section>
+
+    <!-- 4. 互動 (B)：網路類型配對 -->
+    <section class="card">
+        <h3>(2) 觀念強化：網路類型配對</h3>
+        <p>請將下方的技術名稱，用滑鼠拖曳到正確的「範圍分類」框框中。（手機請用手指長按拖曳）</p>
+        
+        <div class="match-container">
+            <!-- 來源區 -->
+            <div class="drag-source" id="drag-source">
+                <h4>待分類項目：</h4>
+                <div class="draggable-item" draggable="true" id="item-wifi" ondragstart="drag(event)">WiFi</div>
+                <div class="draggable-item" draggable="true" id="item-4g" ondragstart="drag(event)">4G 行動網路</div>
+                <div class="draggable-item" draggable="true" id="item-5g" ondragstart="drag(event)">5G 行動網路</div>
+                <div class="draggable-item" draggable="true" id="item-ethernet" ondragstart="drag(event)">乙太網路(有線)</div>
+            </div>
+
+            <!-- 目標區 -->
+            <div class="drop-zones">
+                <h4>分類區：</h4>
+                <!-- LAN 區塊 -->
+                <div class="drop-zone" id="zone-lan" ondrop="drop(event)" ondragover="allowDrop(event)">
+                    <span>區域網路 (LAN)</span>
+                    <small>範圍小：家裡、學校</small>
+                </div>
+                <!-- WAN 區塊 -->
+                <div class="drop-zone" id="zone-wan" ondrop="drop(event)" ondragover="allowDrop(event)">
+                    <span>廣域網路 (WAN)</span>
+                    <small>範圍大：跨縣市、跨國</small>
+                </div>
+            </div>
+        </div>
+        <button class="btn btn-scenario" style="margin-top:10px; width:100%" onclick="checkMatching()">檢查配對答案</button>
+        <p id="match-result" style="text-align: center; font-weight: bold;"></p>
+    </section>
+
+    <!-- 5. 互動 (C)：覆蓋範圍情境 -->
+    <section class="card">
+        <h3>(3) 情境模擬：WiFi 適合用在哪？</h3>
+        <p>點擊下方按鈕，看看該地點是否適合主要依賴單一 WiFi 基地台？</p>
+        <div class="scenario-btns">
+            <button class="btn btn-scenario" onclick="showScenario('home')">🏠 家庭客廳</button>
+            <button class="btn btn-scenario" onclick="showScenario('school')">🏫 學校教室</button>
+            <button class="btn btn-scenario" onclick="showScenario('city')">🏙️ 整個台北市</button>
+        </div>
+        <div id="scenario-result">請點擊上方按鈕查看結果...</div>
+    </section>
+
+    <!-- 6. 互動 (D)：陷阱卡 -->
+    <section class="card">
+        <h3>⚠️ 考試常見陷阱 (點擊卡片消除)</h3>
+        <p>這些是學長姐最常搞混的觀念，讀懂了就按「我懂了」把它消掉！</p>
+        <div class="trap-grid">
+            <div class="trap-card" id="trap1">
+                <h4>陷阱 1</h4>
+                <p>以為「無線」就是「廣域」。<br><strong>(錯！無線只是沒線，不代表傳得遠)</strong></p>
+                <button class="btn btn-dismiss" onclick="removeTrap('trap1')">我懂了 🗑️</button>
+            </div>
+            <div class="trap-card" id="trap2">
+                <h4>陷阱 2</h4>
+                <p>把 WiFi 跟 4G/5G 搞混。<br><strong>(錯！4G/5G 靠基地台涵蓋全市，才是廣域)</strong></p>
+                <button class="btn btn-dismiss" onclick="removeTrap('trap2')">我懂了 🗑️</button>
+            </div>
+            <div class="trap-card" id="trap3">
+                <h4>陷阱 3</h4>
+                <p>看到英文就暈頭。<br><strong>(記住：W開頭的 WAN 是 Wide 寬廣的意思)</strong></p>
+                <button class="btn btn-dismiss" onclick="removeTrap('trap3')">我懂了 🗑️</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 7. 互動 (E)：自我檢測 -->
+    <section class="card">
+        <h3>📝 自我檢測 (不給答案，自己想)</h3>
+        
+        <div class="quiz-item">
+            <strong>Q1：為什麼 4G、5G 屬於 WAN (廣域網路)？</strong>
+            <br>
+            <button class="btn btn-hint" onclick="toggleHint('hint1')">顯示提示</button>
+            <div id="hint1" class="hint-box">提示：你從台北搭高鐵到高雄，手機是不是大概都能上網？範圍很大對吧！</div>
+        </div>
+
+        <div class="quiz-item">
+            <strong>Q2：WiFi 訊號最遠大概可以用到哪？</strong>
+            <br>
+            <button class="btn btn-hint" onclick="toggleHint('hint2')">顯示提示</button>
+            <div id="hint2" class="hint-box">提示：通常隔幾道牆訊號就弱了，走出家門口可能就沒了。大概幾十公尺而已。</div>
+        </div>
+
+        <div class="quiz-item">
+            <strong>Q3：考試看到「廣域 / 區域」分類題，第一步要想什麼？</strong>
+            <br>
+            <button class="btn btn-hint" onclick="toggleHint('hint3')">顯示提示</button>
+            <div id="hint3" class="hint-box">提示：先想「距離」！距離短的是 LAN，距離長的是 WAN。</div>
+        </div>
+    </section>
+
+    <!-- 全頁重置 -->
+    <div class="footer-controls">
+        <button class="btn btn-reset" onclick="resetAll()">🔄 重置所有練習狀態</button>
+    </div>
+
+</div>
+
+<script>
+    /* --- 互動 (A) 邏輯：是非題判斷 --- */
+    function checkAnswer(answer) {
+        const feedbackArea = document.getElementById('feedback-area');
+        feedbackArea.style.display = 'block';
+        
+        if (answer === 'B') {
+            // 答對了
+            feedbackArea.className = 'feedback-correct';
+            feedbackArea.innerHTML = `
+                <h2>✅ 答對了！(B) 是正確答案</h2>
+                <p>理由：WiFi 是設計給小範圍（如家裡、辦公室）使用的，屬於<strong>區域網路 (LAN)</strong> 的技術，不是廣域網路。</p>
+            `;
+        } else {
+            // 答錯了
+            feedbackArea.className = 'feedback-wrong';
+            feedbackArea.innerHTML = `
+                <h2>❌ 答錯囉！</h2>
+                <p>別被騙了！雖然 WiFi 是無線的，但它的範圍很小（離開家裡就收不到了對吧？）。<br>
+                <strong>範圍小的 = 區域網路 (LAN)。</strong><br>
+                請再看一次上方的核心觀念喔！</p>
+            `;
+        }
+    }
+
+    /* --- 互動 (B) 邏輯：拖拉配對 --- */
+    function allowDrop(ev) {
+        ev.preventDefault();
+        // 增加視覺提示效果
+        ev.currentTarget.classList.add('hover');
+    }
+
+    function drag(ev) {
+        ev.dataTransfer.setData("text", ev.target.id);
+    }
+    
+    // 處理 drop 區域離開時移除 hover 效果
+    document.addEventListener("dragleave", function(event) {
+        if (event.target.classList && event.target.classList.contains("drop-zone")) {
+            event.target.classList.remove("hover");
+        }
+    });
+
+    function drop(ev) {
+        ev.preventDefault();
+        ev.currentTarget.classList.remove('hover'); // 移除 hover 效果
+        
+        var data = ev.dataTransfer.getData("text");
+        var draggedElement = document.getElementById(data);
+        
+        // 確保只能放在 drop-zone 內，而不是放在裡面的 span 或 small 標籤上
+        if (ev.target.classList.contains('drop-zone')) {
+            ev.target.appendChild(draggedElement);
+        } else {
+            // 如果使用者放到了 drop-zone 裡的文字上，我們要往上找父層
+            ev.target.closest('.drop-zone').appendChild(draggedElement);
+        }
+    }
+
+    function checkMatching() {
+        const zoneLan = document.getElementById('zone-lan');
+        const zoneWan = document.getElementById('zone-wan');
+        const resultText = document.getElementById('match-result');
+        
+        // 取得各區內的項目 ID
+        const lanItems = Array.from(zoneLan.children).map(el => el.id).filter(id => id); // filter 去除無 id 的標題文字元素
+        const wanItems = Array.from(zoneWan.children).map(el => el.id).filter(id => id);
+
+        // 正確答案定義
+        // LAN: item-wifi, item-ethernet
+        // WAN: item-4g, item-5g
+        
+        let isCorrect = true;
+        let errorMsg = "";
+
+        // 檢查 LAN 區
+        if (!lanItems.includes('item-wifi')) { isCorrect = false; errorMsg += "WiFi 應該在區域網路喔！<br>"; }
+        if (!lanItems.includes('item-ethernet')) { isCorrect = false; errorMsg += "乙太網路應該在區域網路喔！<br>"; }
+        if (lanItems.includes('item-4g') || lanItems.includes('item-5g')) { isCorrect = false; errorMsg += "4G/5G 跑太遠了，不屬於區域網路！<br>"; }
+
+        // 檢查 WAN 區 (其實上面檢查完大概就知道了，但嚴謹一點)
+        if (!wanItems.includes('item-4g')) { isCorrect = false; }
+        if (!wanItems.includes('item-5g')) { isCorrect = false; }
+        if (wanItems.includes('item-wifi')) { isCorrect = false; errorMsg += "WiFi 範圍太小了，不是廣域網路！<br>"; }
+
+        if (isCorrect) {
+            resultText.style.color = "green";
+            resultText.innerHTML = "💯 完全正確！你已經掌握分類技巧了！";
+        } else {
+            resultText.style.color = "red";
+            resultText.innerHTML = "❌ 還有點小錯誤喔：<br>" + errorMsg;
+        }
+    }
+
+    /* --- 互動 (C) 邏輯：情境模擬 --- */
+    function showScenario(type) {
+        const resultBox = document.getElementById('scenario-result');
+        
+        if (type === 'home') {
+            resultBox.innerHTML = "<strong>✅ 適合！</strong><br>家裡空間不大，一台 WiFi 分享器通常就能覆蓋客廳和房間。<br>(這就是 LAN 的典型應用)";
+            resultBox.style.color = "#145a32";
+        } else if (type === 'school') {
+            resultBox.innerHTML = "<strong>✅ 適合！</strong><br>教室或校園也是固定範圍，透過佈建多個 WiFi 熱點可以覆蓋。<br>(這也是 LAN/WLAN 的範圍)";
+            resultBox.style.color = "#145a32";
+        } else if (type === 'city') {
+            resultBox.innerHTML = "<strong>❌ 不適合！</strong><br>整個城市太大了吧！WiFi 訊號傳不了那麼遠。<br>城市範圍通常要靠 4G/5G 基地台，這屬於 <strong>WAN</strong>。";
+            resultBox.style.color = "#c0392b";
+        }
+    }
+
+    /* --- 互動 (D) 邏輯：陷阱卡消除 --- */
+    function removeTrap(id) {
+        const card = document.getElementById(id);
+        card.style.opacity = '0';
+        setTimeout(() => {
+            card.style.display = 'none';
+        }, 500); // 等待淡出動畫結束
+    }
+
+    /* --- 互動 (E) 邏輯：顯示提示 --- */
+    function toggleHint(id) {
+        const hint = document.getElementById(id);
+        if (hint.style.display === 'block') {
+            hint.style.display = 'none';
+        } else {
+            hint.style.display = 'block';
+        }
+    }
+
+    /* --- 全域重置 --- */
+    function resetAll() {
+        // 1. 重置 O/X
+        document.getElementById('feedback-area').style.display = 'none';
+        
+        // 2. 重置配對 (把項目搬回來源區)
+        const source = document.getElementById('drag-source');
+        ['item-wifi', 'item-4g', 'item-5g', 'item-ethernet'].forEach(id => {
+            source.appendChild(document.getElementById(id));
+        });
+        document.getElementById('match-result').innerHTML = "";
+
+        // 3. 重置情境
+        document.getElementById('scenario-result').innerHTML = "請點擊上方按鈕查看結果...";
+        document.getElementById('scenario-result').style.color = "black";
+
+        // 4. 重置陷阱卡 (恢復顯示)
+        ['trap1', 'trap2', 'trap3'].forEach(id => {
+            const card = document.getElementById(id);
+            card.style.display = 'block';
+            setTimeout(() => { card.style.opacity = '1'; }, 50);
+        });
+
+        // 5. 重置提示
+        ['hint1', 'hint2', 'hint3'].forEach(id => {
+            document.getElementById(id).style.display = 'none';
+        });
+
+        // 滾動到頂部
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        
+        alert("已重置所有練習狀態！");
+    }
+</script>
+
+</body>
+</html>

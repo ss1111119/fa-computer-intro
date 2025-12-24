@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電腦概論 - 通訊協定辨識 (題號34)</title>
+    <style>
+        /* =========================================
+           基礎設定 (Reset & Base Styles)
+           ========================================= */
+        :root {
+            --primary-color: #333;       /* 主要文字黑 */
+            --accent-color: #fbc02d;     /* 重點螢光黃 */
+            --light-bg: #f9f9f9;         /* 淺灰背景 */
+            --border-color: #ddd;        /* 邊框色 */
+            --correct-color: #4caf50;    /* 正確綠 */
+            --wrong-color: #f44336;      /* 錯誤紅 */
+            --card-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+            line-height: 1.6;
+            color: var(--primary-color);
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f2f5;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        /* =========================================
+           共用元件 (Components)
+           ========================================= */
+        h1, h2, h3 {
+            margin-top: 1.2em;
+            margin-bottom: 0.5em;
+            color: #222;
+        }
+        
+        h1 {
+            border-bottom: 3px solid var(--accent-color);
+            padding-bottom: 10px;
+            font-size: 1.8rem;
+            text-align: center;
+        }
+
+        h2 {
+            background-color: var(--primary-color);
+            color: #fff;
+            padding: 8px 15px;
+            font-size: 1.2rem;
+            border-radius: 4px;
+            margin-top: 40px;
+        }
+
+        h3 {
+            font-size: 1.1rem;
+            border-left: 4px solid var(--accent-color);
+            padding-left: 10px;
+            margin-top: 25px;
+        }
+
+        p {
+            margin-bottom: 1em;
+        }
+
+        /* 螢光筆效果 */
+        mark {
+            background-color: #fff9c4;
+            padding: 0 4px;
+            border-radius: 2px;
+        }
+
+        /* 區塊樣式 */
+        .section-box {
+            background: #fff;
+            margin-bottom: 20px;
+        }
+
+        /* 題目區塊特別樣式 */
+        .question-box {
+            background-color: #fffde7;
+            border: 2px solid var(--accent-color);
+            padding: 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .options-list {
+            list-style-type: none;
+            padding-left: 0;
+            margin: 15px 0;
+        }
+
+        .options-list li {
+            margin-bottom: 8px;
+        }
+
+        /* 摺疊區塊 (Details/Summary) */
+        details {
+            background: var(--light-bg);
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        
+        summary {
+            cursor: pointer;
+            font-weight: bold;
+            color: #555;
+        }
+
+        /* =========================================
+           互動圖卡區 (Interactive Cards)
+           ========================================= */
+        .filter-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 1px solid #ccc;
+            background: #fff;
+            cursor: pointer;
+            border-radius: 20px;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .filter-btn:hover {
+            background: #eee;
+        }
+
+        .filter-btn.active {
+            background: var(--primary-color);
+            color: #fff;
+            border-color: var(--primary-color);
+        }
+
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+        }
+
+        .protocol-card {
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: var(--card-shadow);
+            border-top: 4px solid var(--accent-color);
+            transition: transform 0.2s;
+        }
+
+        .protocol-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .card-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #000;
+        }
+
+        .card-subtitle {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+
+        .card-tag {
+            display: inline-block;
+            background: #e0e0e0;
+            color: #333;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-bottom: 10px;
+        }
+
+        .card-desc {
+            font-size: 0.95rem;
+            color: #444;
+            line-height: 1.4;
+        }
+
+        /* =========================================
+           重要考試提醒 (Alert Box)
+           ========================================= */
+        .exam-alert {
+            background-color: #ffebee;
+            border-left: 5px solid #f44336;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .exam-alert h4 {
+            margin-top: 0;
+            color: #d32f2f;
+        }
+
+        /* =========================================
+           作答區 (Quiz Section)
+           ========================================= */
+        .quiz-section {
+            background: #e3f2fd;
+            padding: 25px;
+            border-radius: 8px;
+            border: 2px dashed #90caf9;
+        }
+
+        .checkbox-group label {
+            display: block;
+            margin: 10px 0;
+            cursor: pointer;
+            padding: 10px;
+            background: #fff;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        .checkbox-group label:hover {
+            background: #f5f5f5;
+        }
+
+        .checkbox-group input {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+
+        .action-btn {
+            background-color: var(--primary-color);
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-top: 15px;
+        }
+
+        .action-btn:hover {
+            opacity: 0.9;
+        }
+
+        .toggle-ans-btn {
+            background-color: #757575;
+        }
+
+        .feedback-area {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 4px;
+            display: none; /* 預設隱藏 */
+        }
+
+        .feedback-correct {
+            background-color: #e8f5e9;
+            border: 1px solid #a5d6a7;
+            color: #2e7d32;
+        }
+
+        .feedback-wrong {
+            background-color: #ffebee;
+            border: 1px solid #ef9a9a;
+            color: #c62828;
+        }
+
+        /* =========================================
+           RWD 調整
+           ========================================= */
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+            h1 {
+                font-size: 1.5rem;
+            }
+            .filter-controls {
+                flex-direction: column;
+            }
+            .filter-btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <!-- A. 標題區 -->
+    <header>
+        <h1>電腦概論／電腦網路：通訊協定辨識</h1>
+        <p style="text-align: center; color: #666;">題號：34 (複選題) | 適合對象：初學者、考前衝刺</p>
+    </header>
+
+    <!-- B. 題目區 -->
+    <section class="question-box">
+        <div>34. 下列何者屬於電腦網路的通訊協定?</div>
+        <ul class="options-list">
+            <li>(A) SMTP</li>
+            <li>(B) HTTP</li>
+            <li>(C) WiFi</li>
+            <li>(D) IP</li>
+            <li>(E) TCP</li>
+        </ul>
+        <details>
+            <summary>點此查看正確答案</summary>
+            <p style="margin-top: 10px; font-weight: bold; color: var(--correct-color);">
+                答案：A, B, C, D, E
+            </p>
+        </details>
+    </section>
+
+    <!-- C. 第一步：找關鍵字 -->
+    <section class="section-box">
+        <h2>第一步：找關鍵字</h2>
+        <p>
+            請先用螢光筆將題目中的 
+            <mark>電腦網路</mark> 與 <mark>通訊協定</mark> 畫起來。
+        </p>
+        <p>
+            <strong>💡 老師解說：</strong><br>
+            這題不是問你硬體設備（如路由器），也不是問速度單位（如 Mbps）。它問的是「<strong>溝通規則</strong>」。
+        </p>
+    </section>
+
+    <!-- D. 第二步：白話翻譯 -->
+    <section class="section-box">
+        <h2>第二步：白話翻譯</h2>
+        <p>把題目翻譯成人話：</p>
+        <blockquote style="border-left: 4px solid #ccc; padding-left: 15px; margin: 10px 0; color: #555;">
+            「下面這五個選項，哪些是用來規定『電腦彼此怎麼說話、怎麼傳資料』的規則？」
+        </blockquote>
+    </section>
+
+    <!-- E. 第三步：解題思路 -->
+    <section class="section-box">
+        <h2>第三步：解題思路</h2>
+        <p>這題考的是「Protocol（通訊協定）」的廣義定義與常見種類。</p>
+        <ol>
+            <li>
+                <strong>看到 SMTP、HTTP</strong>：<br>
+                這兩個是應用層最有名的協定，看到結尾有 "P" (Protocol) 通常直接選。
+            </li>
+            <li>
+                <strong>看到 IP、TCP</strong>：<br>
+                這是網路運作的核心（TCP/IP 模型），絕對是協定。
+            </li>
+            <li>
+                <strong>看到 WiFi</strong>：<br>
+                <span style="color: #d32f2f;">⚠️ 這是陷阱也是關鍵！</span><br>
+                雖然 WiFi 常被稱為「技術」，但它背後是 IEEE 802.11 標準，定義了無線訊號如何發送、碰撞如何避免。在考試定義中，這就是一種實體層/連結層的通訊協定。
+            </li>
+        </ol>
+    </section>
+
+    <!-- F. 互動圖卡：五種通訊協定一覽 -->
+    <section class="section-box">
+        <h2>互動圖卡：五種通訊協定一覽</h2>
+        <p>點擊按鈕切換不同層級，釐清觀念：</p>
+        
+        <!-- 篩選按鈕 -->
+        <div class="filter-controls">
+            <button class="filter-btn active" onclick="filterCards('all')">顯示全部</button>
+            <button class="filter-btn" onclick="filterCards('app')">應用層 (Application)</button>
+            <button class="filter-btn" onclick="filterCards('transport')">傳輸層 (Transport)</button>
+            <button class="filter-btn" onclick="filterCards('network')">網路層 (Network)</button>
+            <button class="filter-btn" onclick="filterCards('access')">網路存取/實體 (Access)</button>
+        </div>
+
+        <!-- 卡片容器 -->
+        <div class="cards-container" id="cards-area">
+            <!-- 卡片內容將由 JavaScript 動態產生 -->
+        </div>
+    </section>
+
+    <!-- G. 第四步：選項分析 -->
+    <section class="section-box">
+        <h2>第四步：選項分析</h2>
+        <ul style="list-style: none; padding-left: 0;">
+            <li>✅ <strong>(A) SMTP</strong> <br> <small>Simple Mail Transfer Protocol (簡單郵件傳輸協定)</small>：負責寄信的規則。</li>
+            <hr style="border-top: 1px dashed #eee; margin: 10px 0;">
+            
+            <li>✅ <strong>(B) HTTP</strong> <br> <small>HyperText Transfer Protocol (超文字傳輸協定)</small>：瀏覽網頁時，瀏覽器跟伺服器溝通的規則。</li>
+            <hr style="border-top: 1px dashed #eee; margin: 10px 0;">
+            
+            <li>✅ <strong>(C) WiFi</strong> <br> <small>IEEE 802.11 標準</small>：無線網路傳輸的規範。雖然是無線技術，但包含完整的傳輸協定堆疊。</li>
+            <hr style="border-top: 1px dashed #eee; margin: 10px 0;">
+            
+            <li>✅ <strong>(D) IP</strong> <br> <small>Internet Protocol (網際網路協定)</small>：負責定位址（IP Address）與把資料封包送出去。</li>
+            <hr style="border-top: 1px dashed #eee; margin: 10px 0;">
+            
+            <li>✅ <strong>(E) TCP</strong> <br> <small>Transmission Control Protocol (傳輸控制協定)</small>：負責確保資料準確送達（會握手、會重傳）。</li>
+        </ul>
+    </section>
+
+    <!-- H. 重要考試提醒 -->
+    <section class="exam-alert">
+        <h4>⚡ 重要考試提醒：關於 WiFi</h4>
+        <ul>
+            <li><strong>實務觀點：</strong> 工程師常說 WiFi 是「無線通訊技術」。</li>
+            <li><strong>考試觀點：</strong> 只要是「規範資料如何傳送的規則」，在選擇題中常被統稱為通訊協定。</li>
+            <li><strong>結論：</strong> 本題依考試定義，請勇敢選下去！(A, B, C, D, E 全選)。</li>
+        </ul>
+    </section>
+
+    <!-- J. 記憶口訣 -->
+    <section class="section-box">
+        <h3>🧠 記憶口訣</h3>
+        <p style="font-size: 1.2em; text-align: center; background: #fff3e0; padding: 15px; border-radius: 8px;">
+            「<strong>信</strong>(SMTP) <strong>網</strong>(HTTP) <strong>傳</strong>(TCP/IP) 都算協定，<br>
+            <strong>WiFi</strong> 考試也算進！」
+        </p>
+    </section>
+
+    <!-- K. 常見陷阱 -->
+    <section class="section-box">
+        <h3>🕳️ 常見陷阱避坑指南</h3>
+        <ul>
+            <li>❌ <strong>陷阱 1</strong>：看到 WiFi 覺得它是「硬體」或「技術」而不選。（記得：它背後是 IEEE 802.11 協定）。</li>
+            <li>❌ <strong>陷阱 2</strong>：把硬體設備（Router 路由器、Switch 交換器）誤認為通訊協定。（硬體是實體機器，協定是溝通語言）。</li>
+            <li>💡 <strong>技巧</strong>：如果選項全是「英文縮寫」且沒有明顯硬體名稱，通常全選的機率很高。</li>
+        </ul>
+    </section>
+
+    <!-- L. 作答區 -->
+    <section class="quiz-section">
+        <h2 style="margin-top: 0; background: none; color: #000; padding-left: 0;">✍️ 模擬作答區</h2>
+        <p>請勾選屬於「通訊協定」的選項：</p>
+        
+        <div class="checkbox-group">
+            <label><input type="checkbox" id="optA" value="A"> (A) SMTP</label>
+            <label><input type="checkbox" id="optB" value="B"> (B) HTTP</label>
+            <label><input type="checkbox" id="optC" value="C"> (C) WiFi</label>
+            <label><input type="checkbox" id="optD" value="D"> (D) IP</label>
+            <label><input type="checkbox" id="optE" value="E"> (E) TCP</label>
+        </div>
+
+        <div>
+            <button class="action-btn" onclick="submitQuiz()">送出作答</button>
+            <button class="action-btn toggle-ans-btn" onclick="toggleAnswer()">顯示/隱藏答案</button>
+        </div>
+
+        <!-- 顯示結果 -->
+        <div id="quiz-feedback" class="feedback-area"></div>
+        
+        <!-- 隱藏的正確答案 -->
+        <div id="correct-answer-block" style="display: none; margin-top: 15px; font-weight: bold;">
+            正確答案：A, B, C, D, E
+        </div>
+    </section>
+
+    <!-- N. 自我檢測 -->
+    <footer style="margin-top: 50px; border-top: 1px solid #ccc; padding-top: 20px;">
+        <h3>🧐 自我檢測與延伸思考</h3>
+        <p>1. <strong>HTTPS</strong> 是不是通訊協定？它跟 HTTP 差在哪裡？（提示：S 代表 Secure，安全加密）</p>
+        <p>2. <strong>UDP</strong> 為什麼也屬於通訊協定？它跟 TCP 的差別是？（提示：TCP 講究可靠，UDP 講究速度）</p>
+        <p style="text-align: center; color: #888; margin-top: 30px; font-size: 0.8rem;">
+            Created for Computer Science Education | HTML5/CSS3/JS
+        </p>
+    </footer>
+
+</div>
+
+<script>
+    /* =========================================
+       互動圖卡資料與邏輯
+       ========================================= */
+    const protocols = [
+        {
+            id: 'A',
+            name: 'SMTP',
+            fullName: 'Simple Mail Transfer Protocol',
+            layer: 'app',
+            layerName: '應用層',
+            desc: '就像網路世界的「郵差」，專門負責幫你把 Email 寄出去。'
+        },
+        {
+            id: 'B',
+            name: 'HTTP',
+            fullName: 'HyperText Transfer Protocol',
+            layer: 'app',
+            layerName: '應用層',
+            desc: '就像網路世界的「櫃台人員」，負責處理你瀏覽網頁時的請求與回應。'
+        },
+        {
+            id: 'E', // 按層級順序排列顯示時，TCP 通常在 IP 之上，這裡依題目選項順序排列會比較直觀，或可依邏輯
+            name: 'TCP',
+            fullName: 'Transmission Control Protocol',
+            layer: 'transport',
+            layerName: '傳輸層',
+            desc: '就像「掛號信」，確保資料一定要準確送達，沒送到會重新傳一次。'
+        },
+        {
+            id: 'D',
+            name: 'IP',
+            fullName: 'Internet Protocol',
+            layer: 'network',
+            layerName: '網路層',
+            desc: '就像「門牌地址」，負責給每個裝置一個位址，並指引封包該往哪條路走。'
+        },
+        {
+            id: 'C',
+            name: 'WiFi',
+            fullName: 'IEEE 802.11',
+            layer: 'access',
+            layerName: '網路存取層 (實體/連結)',
+            desc: '雖然常說是無線技術，但它是關於「無線訊號如何傳遞」的一套嚴格規則。'
+        }
+    ];
+
+    const cardsContainer = document.getElementById('cards-area');
+
+    function renderCards(filterType) {
+        cardsContainer.innerHTML = ''; // 清空
+        
+        protocols.forEach(p => {
+            // 篩選邏輯：如果 filterType 是 'all' 或者 與卡片層級相符
+            if (filterType === 'all' || p.layer === filterType) {
+                const card = document.createElement('div');
+                card.className = 'protocol-card';
+                card.innerHTML = `
+                    <div class="card-title">${p.name}</div>
+                    <div class="card-subtitle">${p.fullName}</div>
+                    <span class="card-tag">${p.layerName}</span>
+                    <div class="card-desc">${p.desc}</div>
+                `;
+                cardsContainer.appendChild(card);
+            }
+        });
+
+        // 更新按鈕狀態
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        // 找出對應的按鈕加上 active (簡單實作)
+        const activeBtn = Array.from(document.querySelectorAll('.filter-btn')).find(b => b.getAttribute('onclick').includes(filterType));
+        if(activeBtn) activeBtn.classList.add('active');
+    }
+
+    // 初始化顯示所有卡片
+    renderCards('all');
+
+    function filterCards(type) {
+        renderCards(type);
+    }
+
+    /* =========================================
+       作答區邏輯
+       ========================================= */
+    function submitQuiz() {
+        const correctAnswers = ['A', 'B', 'C', 'D', 'E'];
+        const userSelection = [];
+        
+        // 取得使用者勾選的項目
+        ['A', 'B', 'C', 'D', 'E'].forEach(opt => {
+            if (document.getElementById('opt' + opt).checked) {
+                userSelection.push(opt);
+            }
+        });
+
+        const feedbackBox = document.getElementById('quiz-feedback');
+        feedbackBox.style.display = 'block';
+
+        // 判斷對錯
+        const isCorrect = JSON.stringify(userSelection.sort()) === JSON.stringify(correctAnswers.sort());
+
+        if (isCorrect) {
+            feedbackBox.className = 'feedback-area feedback-correct';
+            feedbackBox.innerHTML = `
+                <strong>🎉 答對了！太棒了！</strong><br>
+                觀念完全正確：SMTP, HTTP, WiFi, IP, TCP 全部都是廣義的通訊協定。
+            `;
+        } else {
+            feedbackBox.className = 'feedback-area feedback-wrong';
+            let msg = '<strong>❌ 答錯囉，再想一下！</strong><br>';
+            
+            if (userSelection.length === 0) {
+                msg += '您沒有勾選任何選項。';
+            } else if (!userSelection.includes('C')) {
+                msg += '是不是漏選了 WiFi？記得考試中 WiFi 也算是一種無線傳輸的規則(協定)喔！';
+            } else {
+                msg += '請參考上方的圖卡與解析，這五個選項在電腦網路中都扮演重要的「溝通規則」角色。';
+            }
+            feedbackBox.innerHTML = msg;
+        }
+    }
+
+    function toggleAnswer() {
+        const ansBlock = document.getElementById('correct-answer-block');
+        if (ansBlock.style.display === 'none') {
+            ansBlock.style.display = 'block';
+        } else {
+            ansBlock.style.display = 'none';
+        }
+    }
+</script>
+
+</body>
+</html>

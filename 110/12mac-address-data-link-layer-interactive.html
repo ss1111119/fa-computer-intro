@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第 12 題：OSI 與 MAC 位址 - 互動式教學講義</title>
+    <style>
+        /* --- 基礎設定 --- */
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db; /* 補習班藍 */
+            --highlight-color: #f1c40f; /* 重點黃 */
+            --correct-color: #27ae60; /* 正確綠 */
+            --wrong-color: #e74c3c; /* 錯誤紅 */
+            --bg-color: #f4f6f7;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* --- 標題區 --- */
+        header {
+            text-align: center;
+            background: var(--primary-color);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 { margin: 0; font-size: 1.8rem; }
+        header p { margin: 10px 0 0; opacity: 0.9; }
+
+        /* --- 通用卡片樣式 --- */
+        .card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--accent-color);
+        }
+
+        h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        .highlight {
+            background-color: var(--highlight-color);
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+
+        .keyword {
+            color: var(--wrong-color);
+            font-weight: bold;
+        }
+
+        /* --- 題目區樣式 --- */
+        .question-box {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        @media (max-width: 600px) {
+            .options-grid { grid-template-columns: 1fr; }
+        }
+
+        .option-btn {
+            background: white;
+            border: 2px solid #ddd;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            text-align: left;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .option-btn:hover {
+            border-color: var(--accent-color);
+            background: #f0f8ff;
+        }
+
+        .option-btn.correct {
+            background-color: #d5f5e3;
+            border-color: var(--correct-color);
+            color: var(--correct-color);
+        }
+
+        .option-btn.wrong {
+            background-color: #fadbd8;
+            border-color: var(--wrong-color);
+            color: var(--wrong-color);
+        }
+
+        .result-area {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none; /* 預設隱藏 */
+        }
+
+        .result-area.show { display: block; }
+        .result-area.correct-box { background: #d5f5e3; border: 1px solid var(--correct-color); }
+        .result-area.wrong-box { background: #fadbd8; border: 1px solid var(--wrong-color); }
+
+        /* --- 核心觀念區 --- */
+        .concept-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .concept-table th, .concept-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .concept-table th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .concept-table tr.active-row {
+            background-color: #fff9c4; /* 強調鏈結層 */
+            font-weight: bold;
+            border: 2px solid var(--wrong-color);
+        }
+
+        /* --- 拖曳配對遊戲 --- */
+        .game-container {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .draggables {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .draggable-item {
+            background: var(--accent-color);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: grab;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .drop-zones {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .drop-zone {
+            width: 250px;
+            height: 50px;
+            border: 2px dashed #aaa;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fafafa;
+            transition: background 0.3s;
+            position: relative;
+        }
+
+        .drop-zone::before {
+            content: attr(data-label);
+            position: absolute;
+            left: -110px;
+            font-weight: bold;
+            color: #555;
+            width: 100px;
+            text-align: right;
+        }
+
+        .drop-zone.hovered {
+            background: #e8f6f3;
+            border-color: var(--correct-color);
+        }
+
+        .drop-zone.correct {
+            border: 2px solid var(--correct-color);
+            background: #d5f5e3;
+        }
+
+        /* --- 封包流程互動 --- */
+        .flow-diagram {
+            border: 1px solid #ddd;
+            padding: 20px;
+            background: white;
+            position: relative;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .packet {
+            width: 120px;
+            background: #e74c3c;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            transition: all 0.5s ease;
+        }
+
+        .header-added {
+            background: #3498db;
+            color: white;
+            padding: 5px;
+            margin: 2px;
+            border-radius: 3px;
+            display: inline-block;
+            font-size: 0.9rem;
+            animation: fadeIn 0.5s;
+        }
+        
+        .mac-header {
+            background: #f1c40f; /* MAC用黃色特別標示 */
+            color: black;
+            font-weight: bold;
+            border: 2px solid red;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- 陷阱卡 --- */
+        .trap-grid {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .trap-card {
+            flex: 1;
+            min-width: 200px;
+            background: #fff3e0;
+            border: 1px solid #ffcc80;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: opacity 0.5s;
+            position: relative;
+        }
+        
+        .trap-card::after {
+            content: "點擊消除陷阱";
+            display: block;
+            margin-top: 10px;
+            font-size: 0.8rem;
+            color: #e67e22;
+            text-align: center;
+        }
+
+        /* --- 自我檢測 --- */
+        .quiz-item {
+            margin-bottom: 15px;
+            border-bottom: 1px dashed #ddd;
+            padding-bottom: 10px;
+        }
+        .hint-text {
+            display: none;
+            color: var(--accent-color);
+            margin-top: 5px;
+            font-weight: bold;
+            background: #f0f8ff;
+            padding: 5px;
+        }
+
+        /* --- 按鈕 --- */
+        .btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .btn:hover { opacity: 0.9; }
+        .btn-reset { background: #7f8c8d; display: block; margin: 30px auto; }
+        .btn-flow { background: var(--correct-color); width: 100%; font-size: 1.1rem; padding: 12px; margin-top: 10px; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>電腦概論 - 網路通訊篇</h1>
+        <p>單元主題：MAC 位址與 OSI 模型定位</p>
+    </header>
+
+    <!-- 1. 題目區 -->
+    <section class="card" id="question-section">
+        <h2>📝 第 12 題：隨堂測驗</h2>
+        <div class="question-box">
+            網路通訊協定中，檢視並填充 MAC 位址的是屬於哪一層的功能？
+        </div>
+        <div class="options-grid">
+            <button class="option-btn" onclick="checkAnswer('A', this)">(A) 實體層</button>
+            <button class="option-btn" onclick="checkAnswer('B', this)">(B) 鏈結層</button>
+            <button class="option-btn" onclick="checkAnswer('C', this)">(C) 網路層</button>
+            <button class="option-btn" onclick="checkAnswer('D', this)">(D) 傳輸層</button>
+        </div>
+
+        <div id="answer-feedback" class="result-area">
+            <!-- JS 動態填入結果 -->
+        </div>
+    </section>
+
+    <!-- 2. 核心觀念區 -->
+    <section class="card">
+        <h2>💡 老師的重點筆記</h2>
+        <p>這題是考試必考題！請一定要分清楚「位址」與「層級」的對應關係。</p>
+        
+        <p><strong>名詞解釋（第一次學看這裡）：</strong></p>
+        <ul>
+            <li><strong>MAC 位址</strong>：網路卡的身分證號碼，用於區域網路辨識設備。</li>
+            <li><strong>鏈結層 (Data Link Layer)</strong>：OSI 第二層，負責處理 Frame (資料框)、錯誤檢查與 MAC 位址。</li>
+        </ul>
+
+        <div style="text-align: center; margin: 20px 0; font-size: 1.2rem; background: #fffbe6; padding: 15px; border-radius: 8px;">
+            🔑 <strong>一句話口訣：</strong><br>
+            <span class="keyword" style="font-size: 1.5rem;">「MAC 在鏈結層；IP 在網路層」</span>
+        </div>
+
+        <h3>📊 OSI 各層與位址對照表</h3>
+        <table class="concept-table">
+            <thead>
+                <tr>
+                    <th>OSI 層級</th>
+                    <th>使用位址 / 關鍵字</th>
+                    <th>主要職責</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>傳輸層 (Transport)</td>
+                    <td>Port (連接埠)</td>
+                    <td>可靠傳輸、TCP/UDP</td>
+                </tr>
+                <tr>
+                    <td>網路層 (Network)</td>
+                    <td>IP 位址</td>
+                    <td>路由選擇、路徑規劃</td>
+                </tr>
+                <tr class="active-row">
+                    <td>鏈結層 (Data Link)</td>
+                    <td>MAC 位址 ✅</td>
+                    <td>檢查與填充 MAC、資料框</td>
+                </tr>
+                <tr>
+                    <td>實體層 (Physical)</td>
+                    <td>無 (只有訊號)</td>
+                    <td>電壓、電線、光纖</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>🧐 選項解析</h3>
+        <ul>
+            <li>(A) 實體層 ❌：只負責傳送 0 與 1 的電子訊號，看不懂位址。</li>
+            <li>(B) 鏈結層 ✅：<strong>負責將資料封裝成 Frame，並填上來源與目的地的 MAC 位址。</strong></li>
+            <li>(C) 網路層 ❌：負責 IP 位址，那是用來找跨國/跨網段路徑的。</li>
+            <li>(D) 傳輸層 ❌：負責 Port，那是用來區分電腦裡不同軟體 (如 Chrome vs Line) 的。</li>
+        </ul>
+    </section>
+
+    <!-- 3. 互動遊戲區：配對 -->
+    <section class="card">
+        <h2>🎮 互動練習：把位址拖到正確的家</h2>
+        <p>請將上方的位址卡片，拖曳（或點選後再點目標）到對應的 OSI 層級框框中。</p>
+        
+        <div class="game-container">
+            <div class="draggables">
+                <div class="draggable-item" draggable="true" id="drag-mac" ondragstart="drag(event)" onclick="selectItem('drag-mac')">MAC 位址 (網卡號碼)</div>
+                <div class="draggable-item" draggable="true" id="drag-ip" ondragstart="drag(event)" onclick="selectItem('drag-ip')">IP 位址 (門牌號碼)</div>
+                <div class="draggable-item" draggable="true" id="drag-port" ondragstart="drag(event)" onclick="selectItem('drag-port')">Port (軟體窗口)</div>
+            </div>
+
+            <div class="drop-zones">
+                <div class="drop-zone" id="drop-transport" data-label="傳輸層" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="clickDrop('drop-transport')"></div>
+                <div class="drop-zone" id="drop-network" data-label="網路層" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="clickDrop('drop-network')"></div>
+                <div class="drop-zone" id="drop-link" data-label="鏈結層" ondrop="drop(event)" ondragover="allowDrop(event)" onclick="clickDrop('drop-link')"></div>
+            </div>
+        </div>
+        <p id="game-msg" style="text-align: center; color: var(--correct-color); font-weight: bold; height: 20px;"></p>
+    </section>
+
+    <!-- 4. 封包流程互動 -->
+    <section class="card">
+        <h2>📦 資料封裝流程演示</h2>
+        <p>觀察資料從上往下傳遞時，是「誰」負責貼上 MAC 標籤的？</p>
+        
+        <div class="flow-diagram" id="packet-container">
+            <div id="data-payload" class="packet">資料 (Data)</div>
+            <div id="packet-visual" style="margin-top: 10px;"></div>
+        </div>
+        
+        <button class="btn btn-flow" onclick="playEncapsulation()">開始封裝 (往下層傳送)</button>
+        <p id="flow-status" style="text-align: center; font-weight: bold;">準備傳送...</p>
+    </section>
+
+    <!-- 5. 陷阱卡區 -->
+    <section class="card">
+        <h2>⚠️ 考試常見陷阱 (點擊消除)</h2>
+        <div class="trap-grid">
+            <div class="trap-card" onclick="removeTrap(this)">
+                <h3>陷阱 1：看到「位址」就選網路層？</h3>
+                <p>錯！要看是哪種位址。<br>MAC 是鏈結層，IP 才是網路層。</p>
+            </div>
+            <div class="trap-card" onclick="removeTrap(this)">
+                <h3>陷阱 2：MAC 位址用來上網？</h3>
+                <p>錯！MAC 只在區域網路 (LAN) 內有效，跨出去要靠 IP。</p>
+            </div>
+            <div class="trap-card" onclick="removeTrap(this)">
+                <h3>陷阱 3：實體層也有位址？</h3>
+                <p>錯！實體層只有電線跟訊號，完全沒有位址的概念。</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. 自我檢測 -->
+    <section class="card">
+        <h2>🧠 自我檢測 (不給答案，只給提示)</h2>
+        
+        <div class="quiz-item">
+            <p><strong>Q1：ARP 協定 (查 IP 對應的 MAC) 主要在哪一層運作？</strong></p>
+            <button class="btn" onclick="toggleHint('hint1')">顯示提示</button>
+            <div id="hint1" class="hint-text">提示：既然它是在處理 MAC 位址，那就跟我們這一題的答案一樣喔！</div>
+        </div>
+
+        <div class="quiz-item">
+            <p><strong>Q2：資料封包什麼時候會加上 MAC 位址？</strong></p>
+            <button class="btn" onclick="toggleHint('hint2')">顯示提示</button>
+            <div id="hint2" class="hint-text">提示：當資料從網路層(L3)往下一層傳遞，準備變成「Frame」的時候。</div>
+        </div>
+
+        <div class="quiz-item">
+            <p><strong>Q3：考試中如何快速分辨 MAC 與 IP？</strong></p>
+            <button class="btn" onclick="toggleHint('hint3')">顯示提示</button>
+            <div id="hint3" class="hint-text">提示：MAC 像身分證字號(燒在硬體上、鏈結層)；IP 像門牌號碼(可變動、網路層)。</div>
+        </div>
+    </section>
+
+    <button class="btn btn-reset" onclick="resetPage()">🔄 全部重置 / 再練習一次</button>
+
+    <footer style="text-align: center; font-size: 0.8rem; color: #777; margin-top: 30px;">
+        電腦概論互動教學網頁 | Designed for Learning
+    </footer>
+</div>
+
+<script>
+    // --- 1. 單選題邏輯 ---
+    function checkAnswer(selectedOption, btnElement) {
+        const feedback = document.getElementById('answer-feedback');
+        const allBtns = document.querySelectorAll('.option-btn');
+        
+        // 重置按鈕樣式
+        allBtns.forEach(btn => {
+            btn.classList.remove('correct', 'wrong');
+            btn.disabled = true; // 鎖定作答
+        });
+
+        if (selectedOption === 'B') {
+            btnElement.classList.add('correct');
+            feedback.className = "result-area correct-box show";
+            feedback.innerHTML = `
+                <h3>🎉 答對了！太棒了！</h3>
+                <p><strong>解析：</strong>沒錯！<strong>鏈結層 (Data Link Layer)</strong> 的主要工作就是處理資料框 (Frame)，並且檢查、填充來源與目的地的 <strong>MAC 位址</strong>。</p>
+                <p>記住口訣：<strong>MAC 在鏈結層，IP 在網路層。</strong></p>
+            `;
+        } else {
+            btnElement.classList.add('wrong');
+            // 找出正確答案並標示
+            allBtns[1].classList.add('correct'); // B is index 1
+            feedback.className = "result-area wrong-box show";
+            
+            let reason = "";
+            if(selectedOption === 'A') reason = "實體層只負責傳送電子訊號，不管位址喔！";
+            if(selectedOption === 'C') reason = "網路層負責的是 IP 位址，不是 MAC 位址。";
+            if(selectedOption === 'D') reason = "傳輸層負責的是 Port (連接埠) 與可靠傳輸。";
+
+            feedback.innerHTML = `
+                <h3>😢 答錯囉！</h3>
+                <p><strong>錯誤原因：</strong>${reason}</p>
+                <p><strong>正確答案是 (B) 鏈結層</strong>。</p>
+                <p>因為只有鏈結層會處理硬體位址 (MAC)。</p>
+            `;
+        }
+    }
+
+    // --- 2. 拖曳配對邏輯 (支援點擊與拖曳) ---
+    let selectedId = null;
+
+    function allowDrop(ev) {
+        ev.preventDefault();
+        ev.target.classList.add('hovered');
+    }
+
+    function drag(ev) {
+        ev.dataTransfer.setData("text", ev.target.id);
+        selectedId = ev.target.id; // 為了點擊模式備份
+    }
+
+    // 點擊模式：選擇項目
+    function selectItem(id) {
+        // 清除之前的選擇樣式
+        document.querySelectorAll('.draggable-item').forEach(el => el.style.border = "none");
+        
+        selectedId = id;
+        document.getElementById(id).style.border = "3px solid #f1c40f";
+        document.getElementById("game-msg").innerText = "已選擇，請點擊下方的正確層級框框";
+    }
+
+    // 點擊模式：放置
+    function clickDrop(targetId) {
+        if (!selectedId) return;
+        processMatch(selectedId, targetId);
+        // 清除選擇狀態
+        document.querySelectorAll('.draggable-item').forEach(el => el.style.border = "none");
+        selectedId = null;
+    }
+
+    // 拖曳模式：放置
+    function drop(ev) {
+        ev.preventDefault();
+        ev.target.classList.remove('hovered');
+        var data = ev.dataTransfer.getData("text");
+        processMatch(data, ev.target.id);
+    }
+
+    function processMatch(itemId, zoneId) {
+        // 定義正確配對關係
+        const answers = {
+            'drag-mac': 'drop-link',
+            'drag-ip': 'drop-network',
+            'drag-port': 'drop-transport'
+        };
+
+        const msg = document.getElementById("game-msg");
+
+        if (answers[itemId] === zoneId) {
+            const item = document.getElementById(itemId);
+            const zone = document.getElementById(zoneId);
+            
+            // 視覺移動
+            zone.innerHTML = ""; // 清空文字
+            item.style.margin = "0";
+            item.style.cursor = "default";
+            item.draggable = false;
+            item.onclick = null; // 移除點擊事件
+            zone.appendChild(item);
+            zone.classList.add('correct');
+            
+            msg.innerText = "✨ 配對正確！";
+            msg.style.color = "#27ae60";
+        } else {
+            msg.innerText = "❌ 配對錯誤，再想一下定義！";
+            msg.style.color = "#e74c3c";
+            setTimeout(() => { msg.innerText = ""; }, 1500);
+        }
+    }
+
+    // --- 3. 封包流程動畫 ---
+    function playEncapsulation() {
+        const visual = document.getElementById('packet-visual');
+        const status = document.getElementById('flow-status');
+        const btn = document.querySelector('.btn-flow');
+        
+        btn.disabled = true;
+        visual.innerHTML = ""; 
+        status.innerText = "應用層資料產生中...";
+
+        // 步驟 1: 原始資料
+        setTimeout(() => {
+            visual.innerHTML = `<div class="packet" style="width:100px;">Data</div>`;
+            status.innerText = "傳輸層：加上 Port...";
+        }, 500);
+
+        // 步驟 2: 傳輸層
+        setTimeout(() => {
+            visual.innerHTML = `
+                <div style="border:2px dashed #3498db; padding:5px; display:inline-block;">
+                    <span class="header-added">Port</span>
+                    <span class="packet" style="width:100px; display:inline-block;">Data</span>
+                </div>`;
+            status.innerText = "網路層：加上 IP 位址...";
+        }, 1500);
+
+        // 步驟 3: 網路層
+        setTimeout(() => {
+            visual.innerHTML = `
+                <div style="border:2px dashed #2980b9; padding:5px; display:inline-block;">
+                    <span class="header-added">IP</span>
+                    <span class="header-added">Port</span>
+                    <span class="packet" style="width:100px; display:inline-block;">Data</span>
+                </div>`;
+            status.innerHTML = "🔴 關鍵時刻！鏈結層：加上 MAC 位址...";
+        }, 2500);
+
+        // 步驟 4: 鏈結層 (重點)
+        setTimeout(() => {
+            visual.innerHTML = `
+                <div style="border:2px solid red; background:#fff9c4; padding:5px; display:inline-block; transform: scale(1.1);">
+                    <span class="header-added mac-header">MAC Header</span>
+                    <span class="header-added">IP</span>
+                    <span class="header-added">Port</span>
+                    <span class="packet" style="width:100px; display:inline-block;">Data</span>
+                    <span class="header-added mac-header">FCS(檢查碼)</span>
+                </div>`;
+            status.innerHTML = "✨ 完成！在鏈結層填上了 MAC 位址，變成 Frame！";
+            status.style.color = "#d35400";
+            btn.disabled = false;
+            btn.innerText = "再看一次流程";
+        }, 4000);
+    }
+
+    // --- 4. 陷阱卡邏輯 ---
+    function removeTrap(card) {
+        card.style.opacity = "0";
+        setTimeout(() => {
+            card.style.display = "none";
+        }, 500);
+    }
+
+    // --- 5. 自我檢測提示 ---
+    function toggleHint(id) {
+        const hint = document.getElementById(id);
+        if (hint.style.display === "block") {
+            hint.style.display = "none";
+        } else {
+            hint.style.display = "block";
+        }
+    }
+
+    // --- 6. 全局重置 ---
+    function resetPage() {
+        location.reload();
+    }
+</script>
+
+</body>
+</html>
